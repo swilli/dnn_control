@@ -57,13 +57,13 @@ class Simulator:
 			sensor_data = self.sensor_simulator.simulate(self.spacecraft_state)
 			action = self.controller.get_action(sensor_data)
 			pertubations_acceleration = self.simulate_pertubations()
-			self.step(pertubations_acceleration, action, time_passed, next_time)
+			self.simulate(pertubations_acceleration, action, time_passed, next_time)
 			time_passed = next_time
 			next_time += self.control_interval
 
 
 	# Integrate the system from start_time to end_time
-	def step(self, pertubations_acceleration, action, start_time, end_time):
+	def simulate(self, pertubations_acceleration, action, start_time, end_time):
 		result = odeint(self.dynamics, self.spacecraft_state, [start_time, end_time], (pertubations_acceleration,action))
 		self.spacecraft_state = result[1][:]
 
