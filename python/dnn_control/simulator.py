@@ -1,6 +1,7 @@
 import string
 import math
 import constants
+import numpy
 from scipy.integrate import odeint
 
 '''
@@ -55,20 +56,20 @@ class Simulator:
 		while next_time <= time:
 			sensor_data = self.sensor_simulator.simulate(self.spacecraft_state)
 			action = self.controller.get_action(sensor_data)
-			self.step(action, time_passed, next_time)
+			pertubations_acceleration = self.simulate_pertubations()
+			self.step(pertubations_acceleration, action, time_passed, next_time)
 			time_passed = next_time
 			next_time += self.control_interval
 
 
 	# Integrate the system from start_time to end_time
-	def step(self, action, start_time, end_time):
-		result = odeint(self.dynamics, self.spacecraft_state, [start_time, end_time], (action,))
+	def step(self, pertubations_acceleration, action, start_time, end_time):
+		result = odeint(self.dynamics, self.spacecraft_state, [start_time, end_time], (pertubations_acceleration,action))
 		self.spacecraft_state = result[1][:]
-		print self.spacecraft_state
 
 
     # Simulator dynamics from "Control of Hovering Spacecraft Using Altimetry" eq (69) and "Robust Spacecraft Hovering Near Small Bodies in Environments with Unknown Dynamics using Reinforcement Learning" eq (6)
-	def dynamics(self, state, time, action):
+	def dynamics(self, state, time, pertubations_acceleration, action):
 		cos_theta = self.cos_theta
 		cos_theta_pow2 = self.cos_theta_pow2
 		sin_theta = self.sin_theta
@@ -81,28 +82,30 @@ class Simulator:
 		cos_omega_n_t = math.cos(self.omega_n*time)
 		cos_omega_n_t_pow2 = cos_omega_n_t**2
 
-		a_solar_radiation_pressure = self.solar_radiation_pressure_for_position(state[0:3])
-		a_gravity = self.gravity_for_position(state[0:3])
-		a_action = [action[0]/state[6], action[1]/state[6], action[2]/state[6]]
+		gravity_acceleration = self.simulate_gravity(state[0:3])
+		action_acceleration = [action[0]/state[6], action[1]/state[6], action[2]/state[6]]
 
 		d_dt_state = [0] * 7
 		d_dt_state[0] = state[3]
 		d_dt_state[1] = state[4]
 		d_dt_state[2] = state[5]
 
-		d_dt_state[3] = a_solar_radiation_pressure[0] + a_gravity[0] + a_action[0] - omega_zero_mul2*(-state[4]*cos_theta + state[5]*sin_theta*sin_omega_n_t) - omega_zero_pow2*(-state[0]*(sin_theta_pow2*sin_omega_n_t_pow2 + cos_theta_pow2) + state[1]*sin_theta_pow2*sin_omega_n_t*cos_omega_n_t + state[2]*sin_theta*cos_theta*cos_omega_n_t)
-		d_dt_state[4] = a_solar_radiation_pressure[1] + a_gravity[1] + a_action[1] - omega_zero_mul2*(state[3]*cos_theta - state[5]*sin_theta*cos_omega_n_t) - omega_zero_pow2*(state[0]*sin_theta_pow2*sin_omega_n_t*cos_omega_n_t - state[1]*(sin_theta_pow2*cos_omega_n_t_pow2 + cos_theta_pow2) + state[2]*(sin_theta*cos_theta*sin_omega_n_t))
-		d_dt_state[5] = a_solar_radiation_pressure[2] + a_gravity[2] + a_action[2] - omega_zero_mul2*(-state[3]*sin_theta*sin_omega_n_t + state[4]*sin_theta*cos_omega_n_t) - omega_zero_pow2*(state[0]*sin_theta*cos_theta*cos_omega_n_t + state[1]*sin_theta*cos_theta*sin_omega_n_t - state[2]*sin_theta_pow2)
+		d_dt_state[3] = pertubations_acceleration[0] + gravity_acceleration[0] + action_acceleration[0] - omega_zero_mul2*(-state[4]*cos_theta + state[5]*sin_theta*sin_omega_n_t) - omega_zero_pow2*(-state[0]*(sin_theta_pow2*sin_omega_n_t_pow2 + cos_theta_pow2) + state[1]*sin_theta_pow2*sin_omega_n_t*cos_omega_n_t + state[2]*sin_theta*cos_theta*cos_omega_n_t)
+		d_dt_state[4] = pertubations_acceleration[1] + gravity_acceleration[1] + action_acceleration[1] - omega_zero_mul2*(state[3]*cos_theta - state[5]*sin_theta*cos_omega_n_t) - omega_zero_pow2*(state[0]*sin_theta_pow2*sin_omega_n_t*cos_omega_n_t - state[1]*(sin_theta_pow2*cos_omega_n_t_pow2 + cos_theta_pow2) + state[2]*(sin_theta*cos_theta*sin_omega_n_t))
+		d_dt_state[5] = pertubations_acceleration[2] + gravity_acceleration[2] + action_acceleration[2] - omega_zero_mul2*(-state[3]*sin_theta*sin_omega_n_t + state[4]*sin_theta*cos_omega_n_t) - omega_zero_pow2*(state[0]*sin_theta*cos_theta*cos_omega_n_t + state[1]*sin_theta*cos_theta*sin_omega_n_t - state[2]*sin_theta_pow2)
 		
 		# d/dt m
 		d_dt_state[6] = math.sqrt(action[0]**2 + action[1]**2 + action[2]**2) / self.earth_acceleration_mul_specific_impulse
 
 		return d_dt_state
 
-	# Solar radiation pressure acceleration at position
-	def solar_radiation_pressure_for_position(self, position):
-		return [0,0,0]
+	# External pertubations acceleration at position
+	def simulate_pertubations(self):
+		mean = 1e-4
+		variance = 1e-5 
+		spacecraft_mass = self.spacecraft_state[6]
+		return [spacecraft_mass*numpy.random.normal(mean, variance),spacecraft_mass*numpy.random.normal(mean, variance),spacecraft_mass*numpy.random.normal(mean, variance)]
 
 	# Gravity acceleration at position
-	def gravity_for_position(self, position):
+	def simulate_gravity(self, position):
 		return [0,0,0]

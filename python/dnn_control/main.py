@@ -4,7 +4,7 @@ import sensorsimulator
 import simulator
 
 # Simulation settings
-TIME = 100 # [s]
+TIME = 10 # [s]
 
 # Asteroid settings
 C_SEMI_AXIS = 4000 # [m]
