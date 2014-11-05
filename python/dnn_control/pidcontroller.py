@@ -1,8 +1,3 @@
-import controller
-
-class PIDController(controller.Controller):
-
-
-	# Overrides Controller::get_action
+class PIDController:
 	def get_action(self, state):
 		return [0,0,0]
