@@ -2,6 +2,7 @@ import string
 import math
 import constants
 import numpy
+import sys
 from scipy.integrate import odeint
 
 '''
@@ -45,25 +46,31 @@ class Simulator:
 		self.omega_n = sigma * self.omega_zero * self.cos_theta
 
 		self.spacecraft_specific_impulse = spacecraft_specific_impulse
-		self.spacecraft_state = [spacecraft_position[0], spacecraft_position[1], spacecraft_position[2], spacecraft_velocity[0], spacecraft_velocity[1], spacecraft_velocity[2], spacecraft_mass]
+		self.spacecraft_state = numpy.array([spacecraft_position[0], spacecraft_position[1], spacecraft_position[2], spacecraft_velocity[0], spacecraft_velocity[1], spacecraft_velocity[2], spacecraft_mass])
 		self.earth_acceleration_mul_specific_impulse = constants.EARTH_ACCELERATION * self.spacecraft_specific_impulse
 
 
 	# Perform the simulation for time seconds
-	def run(self, time):
-		time_passed = 0
-		next_time = self.control_interval
-		while next_time <= time:
+	def run(self, time, collect_positions=False):
+		control_interval = self.control_interval
+		iterations = int(time/self.control_interval)
+		positions = numpy.empty([iterations,3])
+
+		for i in range(iterations):
 			sensor_data = self.sensor_simulator.simulate(self.spacecraft_state)
 			action = self.controller.get_action(sensor_data)
 			pertubations_acceleration = self.simulate_pertubations()
-			self.step(pertubations_acceleration, action, time_passed, next_time)
-			time_passed = next_time
-			next_time += self.control_interval
+
+			if collect_positions == True:
+				positions[i][:] = self.spacecraft_state[0:3]
+			
+			self.simulate_dynamics(pertubations_acceleration, action, i*control_interval, (i+1)*control_interval)
+
+		return positions
 
 
 	# Integrate the system from start_time to end_time
-	def step(self, pertubations_acceleration, action, start_time, end_time):
+	def simulate_dynamics(self, pertubations_acceleration, action, start_time, end_time):
 		result = odeint(self.dynamics, self.spacecraft_state, [start_time, end_time], (pertubations_acceleration,action))
 		self.spacecraft_state = result[1][:]
 
@@ -85,7 +92,7 @@ class Simulator:
 		gravity_acceleration = self.simulate_gravity(state[0:3])
 		action_acceleration = [action[0]/state[6], action[1]/state[6], action[2]/state[6]]
 
-		d_dt_state = [0] * 7
+		d_dt_state = [0,0,0,0,0,0,0]
 		d_dt_state[0] = state[3]
 		d_dt_state[1] = state[4]
 		d_dt_state[2] = state[5]
@@ -104,7 +111,9 @@ class Simulator:
 		mean = 1e-4
 		variance = 1e-5 
 		spacecraft_mass = self.spacecraft_state[6]
-		return [spacecraft_mass*numpy.random.normal(mean, variance),spacecraft_mass*numpy.random.normal(mean, variance),spacecraft_mass*numpy.random.normal(mean, variance)]
+		return [0,0,0]
+		#return[spacecraft_mass*numpy.random.normal(mean, variance), spacecraft_mass*numpy.random.normal(mean, variance), spacecraft_mass*numpy.random.normal(mean, variance)]
+
 
 	# Gravity acceleration at position
 	def simulate_gravity(self, position):
