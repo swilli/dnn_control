@@ -54,7 +54,10 @@ class Simulator:
 	def run(self, time, collect_positions=False):
 		control_interval = self.control_interval
 		iterations = int(time/self.control_interval)
-		positions = numpy.empty([iterations,3])
+		positions = []
+		
+		if collect_positions == True:
+			positions = numpy.empty([iterations,3])
 
 		for i in range(iterations):
 			sensor_data = self.sensor_simulator.simulate(self.spacecraft_state)
