@@ -10,14 +10,14 @@ import simulator
 
 
 # Simulation settings
-TIME = 120 # [s]
+TIME = 10 # [s]
 
 # Asteroid settings
 A_SEMI_AXIS = 4000 # [m]
 B_SEMI_AXIS = 2000 # [m]
 C_SEMI_AXIS = 1000 # [m]
 DENSITY = 2000 # [kg/m^3]
-THETA = 0#constants.PI/2
+THETA = 0 #constants.PI/2
 OMEGA_ZERO = 0.1
 
 # Spacecraft settings

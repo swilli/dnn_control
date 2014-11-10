@@ -47,7 +47,7 @@ def carlson_elliptic_integral_rd(x, y, z, error_tolerance):
 	eb = zn_dev**2
 	ec = ea - eb
 	ed = ea - 6.0*eb
-	ef = ed + 2*ec
+	ef = ed + 2.0*ec
 	s1 = ed*(-coef_1 + 0.25*coef_3*ed - 1.5*coef_4*zn_dev*ef)
 	s2 = zn_dev*(coef_2*ef + zn_dev*(-coef_3*ec + zn_dev*coef_4*ea))
 	return 3.0*sigma + power4*(1.0 + s1 + s2)/(mu*math.sqrt(mu))

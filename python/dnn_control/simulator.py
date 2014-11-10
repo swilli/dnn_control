@@ -103,8 +103,10 @@ class Simulator:
 		cos_omega_n_t = math.cos(self.asteroid_omega_n*time)
 		cos_omega_n_t_pow2 = cos_omega_n_t**2
 
-		gravity_acceleration = self.simulate_gravity(state[0:3])
-		thrust_acceleration = [thrust[0]/state[6], thrust[1]/state[6], thrust[2]/state[6]]
+		gravity = self.simulate_gravity(state[0:3])
+		gravity_acceleration = [val/state[6] for val in gravity]
+		#print(gravity_acceleration)
+		thrust_acceleration = [val/state[6] for val in thrust]
 
 		d_dt_state = [0, 0, 0, 0, 0, 0, 0]
 		d_dt_state[0] = state[3]
