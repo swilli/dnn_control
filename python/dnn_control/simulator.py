@@ -105,7 +105,6 @@ class Simulator:
 
 		gravity = self.simulate_gravity(state[0:3])
 		gravity_acceleration = [val/state[6] for val in gravity]
-		#print(gravity_acceleration)
 		thrust_acceleration = [val/state[6] for val in thrust]
 
 		d_dt_state = [0, 0, 0, 0, 0, 0, 0]
