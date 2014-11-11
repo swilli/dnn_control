@@ -1,41 +1,43 @@
 import matplotlib
-import numpy 
 import matplotlib.pyplot as pyplot
 from mpl_toolkits.mplot3d import Axes3D
 import constants
-import pidcontroller
-import sensorsimulator
-import simulator
-
+from pidcontroller import *
+from sensorsimulator import *
+from simulator import *
+from asteroid import *
 
 
 # Simulation settings
-TIME = 600 # [s]
-TARGET_POSITION = [10000.0, 10000.0, 10000.0]
+TIME = 10 # [s]
+TARGET_POSITION = [10000.0, 10000.0, 10000.0] # [m]
 
 # Asteroid settings
 A_SEMI_AXIS = 4000.0 # [m]
 B_SEMI_AXIS = 2000.0 # [m]
 C_SEMI_AXIS = 1000.0 # [m]
 DENSITY = 2000.0 # [kg/m^3]
-THETA = 0.0 #constants.PI/2
+THETA = constants.PI/2 - 0.1
 OMEGA_ZERO = 0.00029565148
 
 # Spacecraft settings
 POSITION = [10000.0, 10000.0, 10000.0] # [m]
 VELOCITY = [0.0, 0.0, 0.0] # [m/s]
 MASS = 1000.0 # [kg]
-SPECIFIC_IMPULSE = 200.0
+SPECIFIC_IMPULSE = 200.0 # [s]
 
 # Controller settings
 CONTROL_FREQUENCY = 10.0 # [Hz]
 
+# Instantiate asteroid
+asteroid = Asteroid(A_SEMI_AXIS, B_SEMI_AXIS, C_SEMI_AXIS, DENSITY)
+
 # Instantiate sensor simulator
-sensor_simulator = sensorsimulator.SensorSimulator()
+sensor_simulator = SensorSimulator()
 # Instantiate controller
-controller = pidcontroller.PIDController(TARGET_POSITION,1.0/CONTROL_FREQUENCY)
+controller = PIDController(TARGET_POSITION,1.0/CONTROL_FREQUENCY)
 # Instantiate simulator
-simulator = simulator.Simulator(A_SEMI_AXIS, B_SEMI_AXIS, C_SEMI_AXIS, DENSITY, THETA, OMEGA_ZERO, POSITION, VELOCITY, MASS, SPECIFIC_IMPULSE, sensor_simulator, controller, CONTROL_FREQUENCY)
+simulator = Simulator(asteroid, THETA, OMEGA_ZERO, POSITION, VELOCITY, MASS, SPECIFIC_IMPULSE, sensor_simulator, controller, CONTROL_FREQUENCY)
 
 # Run simulator
 positions = simulator.run(TIME, True)
