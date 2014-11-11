@@ -10,29 +10,30 @@ import simulator
 
 
 # Simulation settings
-TIME = 10 # [s]
+TIME = 600 # [s]
+TARGET_POSITION = [10000.0, 10000.0, 10000.0]
 
 # Asteroid settings
-A_SEMI_AXIS = 4000 # [m]
-B_SEMI_AXIS = 2000 # [m]
-C_SEMI_AXIS = 1000 # [m]
-DENSITY = 2000 # [kg/m^3]
-THETA = 0 #constants.PI/2
-OMEGA_ZERO = 0.1
+A_SEMI_AXIS = 4000.0 # [m]
+B_SEMI_AXIS = 2000.0 # [m]
+C_SEMI_AXIS = 1000.0 # [m]
+DENSITY = 2000.0 # [kg/m^3]
+THETA = 0.0 #constants.PI/2
+OMEGA_ZERO = 0.00029565148
 
 # Spacecraft settings
-POSITION = [1e4, 1e4, 1e4] # [m]
-VELOCITY = [0, 0, 0] # [m/s]
-MASS = 1000 # [kg]
-SPECIFIC_IMPULSE = 200
+POSITION = [10000.0, 10000.0, 10000.0] # [m]
+VELOCITY = [0.0, 0.0, 0.0] # [m/s]
+MASS = 1000.0 # [kg]
+SPECIFIC_IMPULSE = 200.0
 
 # Controller settings
-CONTROL_FREQUENCY = 10 # [Hz]
+CONTROL_FREQUENCY = 10.0 # [Hz]
 
 # Instantiate sensor simulator
 sensor_simulator = sensorsimulator.SensorSimulator()
 # Instantiate controller
-controller = pidcontroller.PIDController()
+controller = pidcontroller.PIDController(TARGET_POSITION,1.0/CONTROL_FREQUENCY)
 # Instantiate simulator
 simulator = simulator.Simulator(A_SEMI_AXIS, B_SEMI_AXIS, C_SEMI_AXIS, DENSITY, THETA, OMEGA_ZERO, POSITION, VELOCITY, MASS, SPECIFIC_IMPULSE, sensor_simulator, controller, CONTROL_FREQUENCY)
 
