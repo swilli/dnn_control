@@ -5,9 +5,9 @@ class PIDController:
 		self.time_interval = time_interval
 		self.previous_error = [0.0,0.0,0.0]
 		self.integral = [0.0,0.0,0.0]
-		self.coef_proportional = 0.0001
-		self.coef_integral = 0.0
-		self.coef_derivative = 0.0001
+		self.coef_proportional = [200.0,200.0,10.0]
+		self.coef_integral = [0.0, 0.0, 0.0]
+		self.coef_derivative = [200.0,200.0,10.0]
 
 	def get_thrust(self, state):
 		target_position = self.target_position
@@ -15,11 +15,10 @@ class PIDController:
 		thrust = [0.0,0.0,0.0]
 		error = [0.0,0.0,0.0]
 		for i in range(3):
-			error[i] = current_position[i]-target_position[i]
+			error[i] = target_position[i]-current_position[i]
 			self.integral[i] = self.integral[i] + error[i]*self.time_interval
 			derivative = (error[i] - self.previous_error[i])/self.time_interval
 			self.previous_error[i] = error[i]
-			thrust[i] = self.coef_proportional*error[i] + self.coef_integral*self.integral[i] + self.coef_derivative*derivative
-
-		print("error: {0}".format(error))
+			thrust[i] = self.coef_proportional[i]*error[i] + self.coef_integral[i]*self.integral[i] + self.coef_derivative[i]*derivative
+			
 		return thrust
