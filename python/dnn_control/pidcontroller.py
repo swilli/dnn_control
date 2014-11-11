@@ -5,9 +5,9 @@ class PIDController:
 		self.time_interval = time_interval
 		self.previous_error = [0.0,0.0,0.0]
 		self.integral = [0.0,0.0,0.0]
-		self.coef_proportional = [200.0,200.0,10.0]
+		self.coef_proportional = [30.0, 30.0, 30.0]
 		self.coef_integral = [0.0, 0.0, 0.0]
-		self.coef_derivative = [200.0,200.0,10.0]
+		self.coef_derivative = [30.0, 30.0, 30.0]
 
 	def get_thrust(self, state):
 		target_position = self.target_position
