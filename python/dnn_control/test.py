@@ -42,35 +42,37 @@ min_error = float_info.max
 max_error = float_info.min
 avg_error = 0.0
 
-for i in range(1000):
-    print("Test run {0}".format(i + 1))
+#random.seed(0)
+trials = 2000
 
-    test_time = random.uniform(0.0, 100.0)
-    inertia_z = random.uniform(1000.0, 2000.0)
-    inertia_y = random.uniform(inertia_z + 1.0, inertia_z + 4000.0)
-    inertia_x = random.uniform(inertia_y + 1.0, inertia_y + 4000.0)
+for i in range(trials):
+    # print("Test run {}".format(i + 1))
+
+    I = []
+    test_time = random.uniform(1.0, 2.0)
+    [I.append(random.uniform(1000.0, 5000.0)) for i in range(3)]
+    inertia_x, inertia_y, inertia_z = sorted(I)
+
     density = 2000.0
-    angular_velocity = [random.uniform(
-        -2.0 * PI, 2.0 * PI), 0.0, random.uniform(-2.0 * PI, 2.0 * PI)]
+    angular_velocity = [random.uniform(-0.02 * PI, 0.02 * PI), 0.0, random.uniform(-0.02 * PI, 0.02 * PI)]
 
     asteroid = Asteroid(
         inertia_x, inertia_y, inertia_z, density, angular_velocity, 0.0)
 
-    result = odeint(
-        w_dot, angular_velocity, [0, test_time], (inertia_x, inertia_y, inertia_z))
+    result = odeint(w_dot, angular_velocity, [0, test_time], (inertia_x, inertia_y, inertia_z), rtol=1e-12, atol=1e-12)
     omega_numerical = result[1][:]
     omega_analytical = asteroid.angular_velocity_at_time(test_time)
-
     error = norm(omega_numerical - omega_analytical)
+
     avg_error += error
     if error < min_error:
         min_error = error
     elif error > max_error:
         max_error = error
 
-print(min_error)
-print(max_error)
-print(avg_error/1000.0)
+print("Min error: {}".format(min_error))
+print("Max error: {}".format(max_error))
+print("Avg error: {}".format(avg_error / trials))
 
 
 

@@ -16,23 +16,28 @@ class Asteroid:
 
         angular_velocity = [float(val) for val in angular_velocity]
 
-        self._sign_angular_velocity_x =  (1.0,-1.0)[angular_velocity[0] > 0 ]
-        self._sign_angular_velocity_z = (1.0,-1.0)[angular_velocity[2] > 0 ]
+        sgnx = (-1.0, 1.0)[angular_velocity[0] > 0]
+        sgny = (-1.0, 1.0)[angular_velocity[0] * angular_velocity[2] > 0]
+        sgnz = (-1.0, 1.0)[angular_velocity[2] > 0]
 
         self.energy_mul2 = self.inertia_x * angular_velocity[0] ** 2 + self.inertia_y * angular_velocity[1] ** 2 + self.inertia_z * angular_velocity[2] ** 2
         self.momentum_pow2 = self.inertia_x ** 2 * angular_velocity[0] ** 2 + self.inertia_y ** 2 * angular_velocity[1] ** 2 + self.inertia_z ** 2 * angular_velocity[2] ** 2
 
         inertia_y = self.inertia_y
+        self._inversion = False
         if self.momentum_pow2 < self.energy_mul2 * inertia_y:
             inertia_z = self.inertia_x
             inertia_x = self.inertia_z
+            self._inversion = True
+            sgnz = (-1.0, 1.0)[angular_velocity[0] > 0]
+            sgnx = (-1.0, 1.0)[angular_velocity[2] > 0]
 
-        self.elliptic_coef_angular_velocity_x = sqrt((self.energy_mul2 * inertia_z - self.momentum_pow2) / (inertia_x * (inertia_z - inertia_x)))
-        self.elliptic_coef_angular_velocity_y = sqrt((self.energy_mul2 * inertia_z - self.momentum_pow2) / (inertia_y * (inertia_z - inertia_y)))
-        self.elliptic_coef_angular_velocity_z = sqrt((self.momentum_pow2 - self.energy_mul2 * inertia_x) / (inertia_z * (inertia_z - inertia_x)))
+
+        self.elliptic_coef_angular_velocity_x = sgnx * sqrt((self.energy_mul2 * inertia_z - self.momentum_pow2) / (inertia_x * (inertia_z - inertia_x)))
+        self.elliptic_coef_angular_velocity_y = sgny * sqrt((self.energy_mul2 * inertia_z - self.momentum_pow2) / (inertia_y * (inertia_z - inertia_y)))
+        self.elliptic_coef_angular_velocity_z = sgnz * sqrt((self.momentum_pow2 - self.energy_mul2 * inertia_x) / (inertia_z * (inertia_z - inertia_x)))
 
         self.elliptic_tau = sqrt((inertia_z - inertia_y) * (self.momentum_pow2 - self.energy_mul2 * inertia_x) / (inertia_x * inertia_y * inertia_z))
-
         self.elliptic_modulus = (inertia_y - inertia_x) * (self.energy_mul2 * inertia_z - self.momentum_pow2) / ((inertia_z - inertia_y) * (self.momentum_pow2 - self.energy_mul2 * inertia_x))
 
         self._cached_angular_velocity_time = -1
@@ -105,7 +110,10 @@ class Asteroid:
         time += self.time_bias
         time *= self.elliptic_tau
         sn_tau, cn_tau, dn_tau, _ = ellipj(time, self.elliptic_modulus)
-        self._cached_angular_velocity = [self._sign_angular_velocity_x * self.elliptic_coef_angular_velocity_x * cn_tau, self.elliptic_coef_angular_velocity_y * sn_tau, self._sign_angular_velocity_z * self.elliptic_coef_angular_velocity_z * dn_tau]
+        if self._inversion:
+            self._cached_angular_velocity = [self.elliptic_coef_angular_velocity_z * dn_tau, self.elliptic_coef_angular_velocity_y * sn_tau, self.elliptic_coef_angular_velocity_x * cn_tau]
+        else:
+            self._cached_angular_velocity = [self.elliptic_coef_angular_velocity_x * cn_tau, self.elliptic_coef_angular_velocity_y * sn_tau, self.elliptic_coef_angular_velocity_z * dn_tau]
         return self._cached_angular_velocity
 
     # compute d/dt w
