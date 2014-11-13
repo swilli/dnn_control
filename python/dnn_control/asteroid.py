@@ -90,8 +90,8 @@ class Asteroid:
         time += self.time_bias
         time *= self.elliptic_tau
         sn_tau, cn_tau, dn_tau, _ = ellipj(time, self.elliptic_modulus)
-        self.cached_angular_velocity = [self.elliptic_coef_angular_velocity_x * cn_tau, self.elliptic_coef_angular_velocity_y * sn_tau, self.elliptic_coef_angular_velocity_z * dn_tau]
-        return self.cached_angular_velocity
+        self._cached_angular_velocity = [self.elliptic_coef_angular_velocity_x * cn_tau, self.elliptic_coef_angular_velocity_y * sn_tau, self.elliptic_coef_angular_velocity_z * dn_tau]
+        return self._cached_angular_velocity
 
     # compute d/dt w
     def angular_acceleration_at_time(self, time):
