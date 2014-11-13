@@ -1,6 +1,6 @@
 class Asteroid:
 
-    # inertia_x > inertia_y > inertia_z
+    # inertia_x < inertia_y < inertia_z
     # Implementation based on Landau Lifshitz Mechanics eq 37.8 - 37.10
     def __init__(self, inertia_x, inertia_y, inertia_z, density, angular_velocity, time_bias):
         from math import sqrt
@@ -24,17 +24,13 @@ class Asteroid:
             inertia_z = self.inertia_x
             inertia_x = self.inertia_z
 
-        self.elliptic_coef_angular_velocity_x = sqrt(
-            (self.momentum_pow2 - self.energy_mul2 * inertia_z) / (inertia_x * (inertia_x - inertia_z)))
-        self.elliptic_coef_angular_velocity_y = sqrt(
-            (self.energy_mul2 * inertia_x - self.momentum_pow2) / (inertia_y * (inertia_x - inertia_y)))
-        self.elliptic_coef_angular_velocity_z = sqrt(
-            (self.energy_mul2 * inertia_x - self.momentum_pow2) / (inertia_z * (inertia_x - inertia_z)))
+        self.elliptic_coef_angular_velocity_x = sqrt((self.energy_mul2 * inertia_z - self.momentum_pow2) / (inertia_x * (inertia_z - inertia_x)))
+        self.elliptic_coef_angular_velocity_y = sqrt((self.energy_mul2 * inertia_z - self.momentum_pow2) / (inertia_y * (inertia_z - inertia_y)))
+        self.elliptic_coef_angular_velocity_z = sqrt((self.momentum_pow2 - self.energy_mul2 * inertia_x) / (inertia_z * (inertia_z - inertia_x)))
 
-        self.elliptic_tau = sqrt((inertia_x - inertia_y) * (self.momentum_pow2 -
-                                                            self.energy_mul2 * inertia_z) / (inertia_x * inertia_y * inertia_z))
-        self.elliptic_modulus = (inertia_y - inertia_z) * (self.energy_mul2 * inertia_x - self.momentum_pow2) / (
-            (inertia_x - inertia_y) * (self.momentum_pow2 - self.energy_mul2 * inertia_z))
+        self.elliptic_tau = sqrt((inertia_z - inertia_y) * (self.momentum_pow2 - self.energy_mul2 * inertia_x) / (inertia_x * inertia_y * inertia_z))
+
+        self.elliptic_modulus = (inertia_y - inertia_x) * (self.energy_mul2 * inertia_z - self.momentum_pow2) / ((inertia_z - inertia_y) * (self.momentum_pow2 - self.energy_mul2 * inertia_x))
 
         self._cached_angular_velocity_time = -1
         self._cached_angular_velocity = [0.0, 0.0, 0.0]

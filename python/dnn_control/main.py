@@ -11,9 +11,9 @@ TIME = 1000  # [s]
 TARGET_POSITION = [3.0, 3.0, 3.0]  # [m]
 
 # Asteroid settings
-INERTIA_X = 4567.0  # [kg*m^2]
-INERTIA_Y = 2345.0  # [kg*m^2]
-INERTIA_Z = 1234.0  # [kg*m^2]
+INERTIA_Z = 4567.123  # [kg*m^2]
+INERTIA_Y = 2345.3456  # [kg*m^2]
+INERTIA_X = 1234.12  # [kg*m^2]
 DENSITY = 2000.0  # [kg/m^3]
 ANGULAR_VELOCITY = [0.0000, 0.0000, 0.0001]  # [1/s]
 TIME_BIAS = 0.0  # [s]
