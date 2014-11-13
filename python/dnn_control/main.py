@@ -1,11 +1,9 @@
-import matplotlib
 import matplotlib.pyplot as pyplot
 from mpl_toolkits.mplot3d import Axes3D
-import constants
-from pidcontroller import *
-from sensorsimulator import *
-from simulator import *
-from asteroid import *
+from pidcontroller import PIDController
+from sensorsimulator import SensorSimulator
+from simulator import Simulator
+from asteroid import Asteroid
 
 
 # Simulation settings
@@ -13,11 +11,11 @@ TIME = 100 # [s]
 TARGET_POSITION = [10000.0, 10000.0, 10000.0] # [m]
 
 # Asteroid settings
-INERTIA_X = 4567.0 # [m]
-INERTIA_Y = 2345.0 # [m]
-INERTIA_Z = 1234.0 # [m]
+INERTIA_X = 4567.0 # [kg*m^2]
+INERTIA_Y = 2345.0 # [kg*m^2]
+INERTIA_Z = 1234.0 # [kg*m^2]
 DENSITY = 2000.0 # [kg/m^3]
-ANGULAR_VELOCITY = [0.00029565148,0.00029565148,0.00029565148] # [1/s]
+ANGULAR_VELOCITY = [0.0001, 0.0001, 0.0001] # [1/s]
 TIME_BIAS = 0.0 # [s]
 
 # Spacecraft settings
@@ -35,7 +33,7 @@ asteroid = Asteroid(INERTIA_X, INERTIA_Y, INERTIA_Z, DENSITY, ANGULAR_VELOCITY, 
 # Instantiate sensor simulator
 sensor_simulator = SensorSimulator()
 # Instantiate controller
-controller = PIDController(TARGET_POSITION, 1.0/CONTROL_FREQUENCY)
+controller = PIDController(TARGET_POSITION, 1.0 / CONTROL_FREQUENCY)
 # Instantiate simulator
 simulator = Simulator(asteroid, POSITION, VELOCITY, MASS, SPECIFIC_IMPULSE, sensor_simulator, controller, CONTROL_FREQUENCY)
 
