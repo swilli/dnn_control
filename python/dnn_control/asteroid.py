@@ -70,7 +70,7 @@ class Asteroid():
 		return acceleration
 
 		# compute w
-	def angular_velocity_at(self,time):
+	def angular_velocity_at_time(self,time):
 		time += self.time_bias
 		time *= self.elliptic_tau
 		sn_cn_dn = ellipj(time, self.elliptic_modulus)
@@ -80,8 +80,8 @@ class Asteroid():
 		return [self.elliptic_coef_omega_x*cn_tau, self.elliptic_coef_omega_y*sn_tau, self.elliptic_coef_omega_z*dn_tau]
 
 	# compute d/dt w
-	def angular_acceleration_at(self,time):
-		omega = self.angular_velocity_at(time)
+	def angular_acceleration_at_time(self,time):
+		omega = self.angular_velocity_at_time(time)
 		inertia_x = self.inertia_x
 		inertia_y = self.inertia_y
 		inertia_z = self.inertia_z

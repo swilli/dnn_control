@@ -78,9 +78,9 @@ class Simulator:
 		gravity_acceleration = [val/mass for val in gravity]
 		thrust_acceleration = [val/mass for val in thrust]
 		
-		angular_velocity = self.asteroid.angular_velocity_at(time)
+		angular_velocity = self.asteroid.angular_velocity_at_time(time)
 		angular_velocity_mul2 = [2.0*val for val in angular_velocity]
-		angular_acceleration = self.asteroid.angular_acceleration_at(time)
+		angular_acceleration = self.asteroid.angular_acceleration_at_time(time)
 		
 		centrifugal_acceleration = cross_product(angular_velocity,cross_product(angular_velocity,position))
 		coriolis_acceleration = cross_product(angular_velocity_mul2,velocity)
