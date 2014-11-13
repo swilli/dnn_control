@@ -8,7 +8,7 @@ from constants import PI
 from math import fabs
 
 def w_dot(state, time, inertia_x, inertia_y, inertia_z):
-    return [(inertia_z - inertia_y) * state[2] * state[1] / inertia_x, (inertia_x - inertia_z) * state[0] * state[2] / inertia_y, (inertia_y - inertia_x) * state[1] * state[0] / inertia_z]
+    return [(inertia_y - inertia_z) * state[1] * state[2] / inertia_x, (inertia_z - inertia_x) * state[2] * state[0] / inertia_y, (inertia_x - inertia_y) * state[0] * state[1] / inertia_z]
 
 INERTIA_Z = 4567.123  # [kg*m^2]
 INERTIA_Y = 2345.3456  # [kg*m^2]
