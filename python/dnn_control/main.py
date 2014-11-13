@@ -9,16 +9,16 @@ from asteroid import *
 
 
 # Simulation settings
-TIME = 10 # [s]
+TIME = 100 # [s]
 TARGET_POSITION = [10000.0, 10000.0, 10000.0] # [m]
 
 # Asteroid settings
-A_SEMI_AXIS = 4000.0 # [m]
-B_SEMI_AXIS = 2000.0 # [m]
-C_SEMI_AXIS = 1000.0 # [m]
+INERTIA_X = 4567.0 # [m]
+INERTIA_Y = 2345.0 # [m]
+INERTIA_Z = 1234.0 # [m]
 DENSITY = 2000.0 # [kg/m^3]
-THETA = constants.PI/2 - 0.1
-OMEGA_ZERO = 0.00029565148
+ANGULAR_VELOCITY = [0.00029565148,0.00029565148,0.00029565148] # [1/s]
+TIME_BIAS = 0.0 # [s]
 
 # Spacecraft settings
 POSITION = [10000.0, 10000.0, 10000.0] # [m]
@@ -30,14 +30,14 @@ SPECIFIC_IMPULSE = 200.0 # [s]
 CONTROL_FREQUENCY = 10.0 # [Hz]
 
 # Instantiate asteroid
-asteroid = Asteroid(A_SEMI_AXIS, B_SEMI_AXIS, C_SEMI_AXIS, DENSITY)
+asteroid = Asteroid(INERTIA_X, INERTIA_Y, INERTIA_Z, DENSITY, ANGULAR_VELOCITY, TIME_BIAS)
 
 # Instantiate sensor simulator
 sensor_simulator = SensorSimulator()
 # Instantiate controller
-controller = PIDController(TARGET_POSITION,1.0/CONTROL_FREQUENCY)
+controller = PIDController(TARGET_POSITION, 1.0/CONTROL_FREQUENCY)
 # Instantiate simulator
-simulator = Simulator(asteroid, THETA, OMEGA_ZERO, POSITION, VELOCITY, MASS, SPECIFIC_IMPULSE, sensor_simulator, controller, CONTROL_FREQUENCY)
+simulator = Simulator(asteroid, POSITION, VELOCITY, MASS, SPECIFIC_IMPULSE, sensor_simulator, controller, CONTROL_FREQUENCY)
 
 # Run simulator
 positions = simulator.run(TIME, True)

@@ -21,4 +21,4 @@ class PIDController:
 			self.previous_error[i] = error[i]
 			thrust[i] = self.coef_proportional[i]*error[i] + self.coef_integral[i]*self.integral[i] + self.coef_derivative[i]*derivative
 			
-		return thrust
+		return [0.0,0.0,0.0]

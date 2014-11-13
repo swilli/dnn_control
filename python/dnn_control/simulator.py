@@ -3,6 +3,7 @@ from numpy import *
 from sys import *
 from scipy.integrate import odeint
 from constants import *
+from utility import *
 
 '''
 
@@ -26,24 +27,12 @@ spacecraft_controller thrust
 class Simulator:
 
 	# Constructor
-	def __init__(self, asteroid, asteroid_theta, asteroid_omega_zero, spacecraft_position, spacecraft_velocity, spacecraft_mass, spacecraft_specific_impulse, sensor_simulator, spacecraft_controller, control_frequency):
+	def __init__(self, asteroid, spacecraft_position, spacecraft_velocity, spacecraft_mass, spacecraft_specific_impulse, sensor_simulator, spacecraft_controller, control_frequency):
 		self.sensor_simulator = sensor_simulator
 		self.spacecraft_controller = spacecraft_controller
 		self.control_interval = 1.0/control_frequency
 
 		self.asteroid = asteroid
-		self.asteroid_cos_theta = cos(asteroid_theta)
-		self.asteroid_cos_theta_pow2 = self.asteroid_cos_theta**2
-
-		self.asteroid_sin_theta = sin(asteroid_theta)
-		self.asteroid_sin_theta_pow2 = self.asteroid_sin_theta**2
-
-		self.asteroid_omega_zero = float(asteroid_omega_zero)
-		self.asteroid_omega_zero_mul2 = self.asteroid_omega_zero * 2
-		self.asteroid_omega_zero_pow2 = self.asteroid_omega_zero**2
-
-		sigma = (self.asteroid.semi_axis_a_pow2 - self.asteroid.semi_axis_c_pow2)/(self.asteroid.semi_axis_b_pow2 + self.asteroid.semi_axis_c_pow2)
-		self.asteroid_omega_n = sigma * self.asteroid_omega_zero * self.asteroid_cos_theta
 
 		self.spacecraft_specific_impulse = float(spacecraft_specific_impulse)
 		self.spacecraft_state = array([float(spacecraft_position[0]), float(spacecraft_position[1]), float(spacecraft_position[2]), float(spacecraft_velocity[0]), float(spacecraft_velocity[1]), float(spacecraft_velocity[2]), float(spacecraft_mass)])
@@ -81,39 +70,41 @@ class Simulator:
 
     # Simulator dynamics from "Control of Hovering Spacecraft Using Altimetry" eq (69) and "Robust Spacecraft Hovering Near Small Bodies in Environments with Unknown Dynamics using Reinforcement Learning" eq (6)
 	def dynamics(self, state, time, pertubations_acceleration, thrust):
-		cos_theta = self.asteroid_cos_theta
-		cos_theta_pow2 = self.asteroid_cos_theta_pow2
-		sin_theta = self.asteroid_sin_theta
-		sin_theta_pow2 = self.asteroid_sin_theta_pow2
-		omega_zero_mul2 = self.asteroid_omega_zero_mul2
-		omega_zero_pow2 = self.asteroid_omega_zero_pow2
-
-		sin_omega_n_t = sin(self.asteroid_omega_n*time)
-		sin_omega_n_t_pow2 = sin_omega_n_t**2
-		cos_omega_n_t = cos(self.asteroid_omega_n*time)
-		cos_omega_n_t_pow2 = cos_omega_n_t**2
+		position = state[0:3]
+		velocity = state[3:6]
+		mass = state[6]
 
 		gravity = self.simulate_gravity(state[0:3])
-		gravity_acceleration = [val/state[6] for val in gravity]
-		thrust_acceleration = [val/state[6] for val in thrust]
+		gravity_acceleration = [val/mass for val in gravity]
+		thrust_acceleration = [val/mass for val in thrust]
+		
+		angular_velocity = self.asteroid.angular_velocity_at(time)
+		angular_velocity_mul2 = [2.0*val for val in angular_velocity]
+		angular_acceleration = self.asteroid.angular_acceleration_at(time)
+		
+		centrifugal_acceleration = cross_product(angular_velocity,cross_product(angular_velocity,position))
+		coriolis_acceleration = cross_product(angular_velocity_mul2,velocity)
+		euler_acceleration = cross_product(angular_acceleration,position)
 
 		d_dt_state = [0, 0, 0, 0, 0, 0, 0]
-		d_dt_state[0] = state[3]
-		d_dt_state[1] = state[4]
-		d_dt_state[2] = state[5]
 
-		d_dt_state[3] = pertubations_acceleration[0] + gravity_acceleration[0] + thrust_acceleration[0] - omega_zero_mul2*(-state[4]*cos_theta + state[5]*sin_theta*sin_omega_n_t) - omega_zero_pow2*(-state[0]*(sin_theta_pow2*sin_omega_n_t_pow2 + cos_theta_pow2) + state[1]*sin_theta_pow2*sin_omega_n_t*cos_omega_n_t + state[2]*sin_theta*cos_theta*cos_omega_n_t)
-		d_dt_state[4] = pertubations_acceleration[1] + gravity_acceleration[1] + thrust_acceleration[1] - omega_zero_mul2*(state[3]*cos_theta - state[5]*sin_theta*cos_omega_n_t) - omega_zero_pow2*(state[0]*sin_theta_pow2*sin_omega_n_t*cos_omega_n_t - state[1]*(sin_theta_pow2*cos_omega_n_t_pow2 + cos_theta_pow2) + state[2]*(sin_theta*cos_theta*sin_omega_n_t))
-		d_dt_state[5] = pertubations_acceleration[2] + gravity_acceleration[2] + thrust_acceleration[2] - omega_zero_mul2*(-state[3]*sin_theta*sin_omega_n_t + state[4]*sin_theta*cos_omega_n_t) - omega_zero_pow2*(state[0]*sin_theta*cos_theta*cos_omega_n_t + state[1]*sin_theta*cos_theta*sin_omega_n_t - state[2]*sin_theta_pow2)
+		# d/dt r
+		d_dt_state[0] = velocity[0]
+		d_dt_state[1] = velocity[1]
+		d_dt_state[2] = velocity[2]
+
+		# d/dt v
+		d_dt_state[3] = pertubations_acceleration[0] + gravity_acceleration[0] + thrust_acceleration[0] - coriolis_acceleration[0] - euler_acceleration[0] - centrifugal_acceleration[0]
+		d_dt_state[4] = pertubations_acceleration[1] + gravity_acceleration[1] + thrust_acceleration[1] - coriolis_acceleration[1] - euler_acceleration[1] - centrifugal_acceleration[1]
+		d_dt_state[5] = pertubations_acceleration[2] + gravity_acceleration[2] + thrust_acceleration[2] - coriolis_acceleration[2] - euler_acceleration[2] - centrifugal_acceleration[2]
 		
 		# d/dt m
 		d_dt_state[6] = sqrt(thrust[0]**2 + thrust[1]**2 + thrust[2]**2) / self.earth_acceleration_mul_spacecraft_specific_impulse
-
 		return d_dt_state
 
 	# External pertubations acceleration
 	def simulate_pertubations(self):
-		mean = 0
+		mean = 0.0
 		variance = 1e-6 
 		spacecraft_mass = self.spacecraft_state[6]
 		return[spacecraft_mass*random.normal(mean, variance), spacecraft_mass*random.normal(mean, variance), spacecraft_mass*random.normal(mean, variance)]
