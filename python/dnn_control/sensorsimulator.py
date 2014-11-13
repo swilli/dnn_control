@@ -1,4 +1,4 @@
 class SensorSimulator:
 
-	def simulate(self, state):
-		return state
+    def simulate(self, state):
+        return state
