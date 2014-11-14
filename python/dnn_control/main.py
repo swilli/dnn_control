@@ -10,19 +10,22 @@ from constants import PI
 
 
 # Simulation settings
-TIME = 1000.0  # [s]
-TARGET_POSITION = [3.0, 3.0, 3.0]  # [m]
+TIME = 100.0  # [s]
+TARGET_POSITION = [1000.0, 1000.0, 1000.0]  # [m]
 
 # Asteroid settings
 INERTIA = []
 [INERTIA.append(random.uniform(1000.0, 5000.0)) for i in range(3)]
-INERTIA_X, INERTIA_Y, INERTIA_Z = sorted(INERTIA)  # [kg*m^2]
+#INERTIA_X, INERTIA_Y, INERTIA_Z = sorted(INERTIA)  # [kg*m^2]
+INERTIA_Z = 3831.9655
+INERTIA_Y = 3094.5553
+INERTIA_X = 2574.7204
 DENSITY = random.uniform(1500.0, 2500.0)  # [kg/m^3]
 ANGULAR_VELOCITY = [random.uniform(-0.02 * PI, 0.02 * PI), 0.0, random.uniform(-0.02 * PI, 0.02 * PI)]  # [1/s]
 TIME_BIAS = random.uniform(0.0, 60.0 * 60.0 * 6.0)  # [s]
 
 # Spacecraft settings
-POSITION = [3.0, 3.0, 3.0]  # [m]
+POSITION = [2.02241723e-04, 9.40400579e+00, 3.60926602e+00]  # [m]
 VELOCITY = [0.0, 0.0, 0.0]  # [m/s]
 MASS = 1000.0  # [kg]
 SPECIFIC_IMPULSE = 200.0  # [s]

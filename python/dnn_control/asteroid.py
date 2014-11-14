@@ -130,9 +130,12 @@ class Asteroid:
         polynomial = array([1.0, coef_2, coef_1, coef_0])
         maximum_root = max(roots(polynomial))
 
-        #assert(inertia_x_pow2 > inertia_z_pow2)
-        #assert(maximum_root + inertia_x_pow2 > 0)
-        phi = asin(sqrt((inertia_x_pow2 - inertia_z_pow2) / (maximum_root + inertia_x_pow2)))
+        val_sin = (inertia_x_pow2 - inertia_z_pow2) / (maximum_root + inertia_x_pow2)
+        if val_sin > 1.0:
+            val_sin = 1.0
+        elif val_sin < -1.0:
+            val_sin = 1.0
+        phi = asin(sqrt(val_sin))
         k = sqrt((inertia_x_pow2 - inertia_y_pow2) /
                  (inertia_x_pow2 - inertia_z_pow2))
 
@@ -141,9 +144,14 @@ class Asteroid:
 
         fac_1 = 4.0 * PI * GRAVITATIONAL_CONSTANT * density * inertia_x * \
             inertia_y * inertia_z / sqrt(inertia_x_pow2 - inertia_z_pow2)
+
+        sum_z = inertia_z_pow2 + maximum_root
+        if sum_z <= 0.0:
+            sum_z = 1e-7
+
         fac_2 = sqrt((inertia_x_pow2 - inertia_z_pow2) / ((inertia_x_pow2 + maximum_root)
                                                           * (inertia_y_pow2 + maximum_root)
-                                                          * (inertia_z_pow2 + maximum_root)))
+                                                          * sum_z))
 
         acceleration[0] = fac_1 / (inertia_x_pow2 - inertia_y_pow2) * (integral_e1 - integral_f1)
         acceleration[1] = fac_1 * ((inertia_z_pow2 - inertia_x_pow2) * integral_e1 /
