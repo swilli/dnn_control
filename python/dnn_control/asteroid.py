@@ -1,8 +1,39 @@
 class Asteroid:
 
-    # inertia_x < inertia_y < inertia_z
-    # Implementation based on Landau Lifshitz Mechanics eq 37.8 - 37.10
+    """
+    This class represents the dynamics and gravity of an asteroid shaped as a rigid ellipsoid having different
+    rotational properties along its three principal inertia axis (Ix, Iy, Iz). 
+
+    For the angular velocity dynamics the analytical solution in terms of Jacobi elliptic functions is used (Implementation
+    largely inspired from Landau Lifshitz Mechanics paragrpah 37). We thus assume w_y(-t_bias) = 0. So we only are free to specify two
+    more initial conditions and we do so by assigning kinetic energy and angular momentum. As a result the user is not free to specify
+    the initial angular velocity, but only the values of the two prime integrals. He does so by defining an angular velocity vector in
+    the constructor, this is used only to compute kinetic energy and rotational momentum, the second of its components (w_y) will thus be disregarded
+    as 0 will instead be used.
+
+    For the asteroid gravity, we use the implementation of Dario Cersosimo whi kindly sent us his matlab files.
+    """
     def __init__(self, inertia_x, inertia_y, inertia_z, density, angular_velocity, time_bias):
+
+        """
+        This constructs the asteroid object from its inertia properties and its prime integrals value
+
+        USAGE: ast = Asteroid(0.1,0.2,0.3,2.3,[0.23,0.1,0.56],234)
+
+        * inertia_x, inertia_y, inertia_z:     Moments of inertia Ix < Iy < Iz (UNITS)
+        * density:                             Asteroid density (UNITS)
+        * angular_velocity:                    Asteroid hypothetical angular velocity (used to define prime integrals only)
+        * time_bias:                           A time bias applied so that w_y(-t_bias) = 0
+
+        """
+        # SU controls (Stupid User)
+        if ((inertia_x == inertia_y) or (inertia_x == inertia_z) or (inertia_y == inertia_z)):
+            print("This function does not work for symmetric tops, make sure Ix, Iy and Iz are different")
+        if (sorted([inertia_x, inertia_y, inertia_z]) != [inertia_x, inertia_y, inertia_z]):
+            print("This function assumes Ix < Iy < Iz, please make sure this is the case")
+        if (angular_velocity[0] == 0 or angular_velocity[2] == 0):
+            print("You cannot define zero values for w_x or w_z as this functions already assumes w_y=0 (thus the motion would be a rotation")
+
         from math import sqrt
 
         self.density = float(density)

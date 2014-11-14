@@ -55,7 +55,8 @@ for i in range(trials):
 
     density = 2000.0
     angular_velocity = [random.uniform(-0.02 * PI, 0.02 * PI), 0.0, random.uniform(-0.02 * PI, 0.02 * PI)]
-
+    angular_velocity = [0.0, 0.0, random.uniform(-0.02 * PI, 0.02 * PI)]
+    
     asteroid = Asteroid(
         inertia_x, inertia_y, inertia_z, density, angular_velocity, 0.0)
 
