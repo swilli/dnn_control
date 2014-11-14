@@ -90,6 +90,7 @@ class Simulator:
         for val in self.spacecraft_state:
             if isnan(val) or isinf(val):
                 raise Exception(self)
+                exit()
 
     # Simulator dynamics from "Control of Hovering Spacecraft Using Altimetry"
     # eq (69) and "Robust Spacecraft Hovering Near Small Bodies in

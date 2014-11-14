@@ -105,8 +105,7 @@ class Asteroid:
         acceleration = [0, 0, 0]
         error_tolerance = 1e-10
 
-        # since Ellipsoid_Gravity_Field.m assumes Ix > Iy > Iz, we have to swap axis
-
+        # since Ellipsoid_Gravity_Field.m assumes Ix > Iy > Iz, we have to rotate axis around y by 90 deg
         density = self.density
         inertia_z = self.inertia_x
         inertia_y = self.inertia_y
@@ -115,9 +114,9 @@ class Asteroid:
         inertia_y_pow2 = self._inertia_y_pow2
         inertia_x_pow2 = self._inertia_z_pow2
 
-        pos_z = position[2]
+        pos_z = -position[0]
         pos_z_pow_2 = pos_z ** 2
-        pos_x_pow_2 = position[0] ** 2
+        pos_x_pow_2 = position[2] ** 2
         pos_y_pow_2 = position[1] ** 2
 
         coef_2 = -(pos_x_pow_2 + pos_y_pow_2 + pos_z_pow_2 -
@@ -131,8 +130,8 @@ class Asteroid:
         polynomial = array([1.0, coef_2, coef_1, coef_0])
         maximum_root = max(roots(polynomial))
 
-        assert(inertia_x_pow2 > inertia_z_pow2)
-        assert(maximum_root + inertia_x_pow2 > 0)
+        #assert(inertia_x_pow2 > inertia_z_pow2)
+        #assert(maximum_root + inertia_x_pow2 > 0)
         phi = asin(sqrt((inertia_x_pow2 - inertia_z_pow2) / (maximum_root + inertia_x_pow2)))
         k = sqrt((inertia_x_pow2 - inertia_y_pow2) /
                  (inertia_x_pow2 - inertia_z_pow2))
@@ -154,6 +153,9 @@ class Asteroid:
 
         acceleration[2] = fac_1 * ((inertia_y_pow2 + maximum_root)
                                    * fac_2 - integral_e1) / (inertia_z_pow2 - inertia_y_pow2)
+
+        # rotate back
+        acceleration[0], acceleration[2] = -acceleration[2], acceleration[0]
         return acceleration
 
     # compute w

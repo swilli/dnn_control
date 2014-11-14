@@ -10,7 +10,7 @@ from constants import PI
 
 
 # Simulation settings
-TIME = 100.0  # [s]
+TIME = 1000.0  # [s]
 TARGET_POSITION = [3.0, 3.0, 3.0]  # [m]
 
 # Asteroid settings
