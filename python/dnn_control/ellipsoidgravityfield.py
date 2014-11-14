@@ -24,8 +24,8 @@ def carlson_elliptic_integral_rd(x, y, z, error_tolerance):
         yn_root = sqrt(yn)
         zn_root = sqrt(zn)
         val_lambda = xn_root * (yn_root + zn_root) + yn_root * zn_root
-        sigma = sigma + power4 / (zn_root * (zn + val_lambda))
-        power4 = 0.25 * power4
+        sigma += power4 / (zn_root * (zn + val_lambda))
+        power4 *= 0.25
         xn = 0.25 * (xn + val_lambda)
         yn = 0.25 * (yn + val_lambda)
         zn = 0.25 * (zn + val_lambda)
@@ -115,13 +115,15 @@ def legendre_elliptic_integral_pe(phi, k, error_tolerance):
     sin_phi_pow2 = sin_phi ** 2
     k_pow2 = k ** 2
     y = 1.0 - k_pow2 * sin_phi_pow2
-    return sin_phi * carlson_elliptic_integral_rf(cos_phi_pow2, y, 1.0, error_tolerance) - k_pow2 * sin_phi * sin_phi_pow2 * carlson_elliptic_integral_rd(cos_phi_pow2, y, 1.0, error_tolerance) / 3.0
+    return sin_phi * carlson_elliptic_integral_rf(cos_phi_pow2, y, 1.0, error_tolerance) \
+           - k_pow2 * sin_phi * sin_phi_pow2 * carlson_elliptic_integral_rd(cos_phi_pow2, y, 1.0, error_tolerance) / 3.0
 
 
+    # Assumes semi_axis_a > semi_axis_b > semi_axis_c
 def ellipsoid_gravity_field(position, semi_axis_a, semi_axis_b, semi_axis_c, density):
     from constants import GRAVITATIONAL_CONSTANT, PI
     from numpy import array, roots
-
+    from math import asin, sqrt
     acceleration = [0, 0, 0]
     error_tolerance = 1e-10
 
@@ -136,8 +138,9 @@ def ellipsoid_gravity_field(position, semi_axis_a, semi_axis_b, semi_axis_c, den
 
     coef_2 = -(pos_x_pow_2 + pos_y_pow_2 + pos_z_pow_2 -
                semi_axis_a_pow2 - semi_axis_b_pow2 - semi_axis_c_pow2)
-    coef_1 = -semi_axis_c_pow2 * (pos_x_pow_2 + pos_y_pow_2) + semi_axis_b_pow2 * (semi_axis_c_pow2 - pos_x_pow_2 -
-                                                                                   pos_z_pow_2) + semi_axis_a_pow2 * (semi_axis_b_pow2 + semi_axis_c_pow2 - pos_y_pow_2 - pos_z_pow_2)
+    coef_1 = -semi_axis_c_pow2 * (pos_x_pow_2 + pos_y_pow_2)\
+             + semi_axis_b_pow2 * (semi_axis_c_pow2 - pos_x_pow_2 - pos_z_pow_2) \
+             + semi_axis_a_pow2 * (semi_axis_b_pow2 + semi_axis_c_pow2 - pos_y_pow_2 - pos_z_pow_2)
     coef_0 = -semi_axis_b_pow2 * semi_axis_c_pow2 * pos_x_pow_2 + semi_axis_a_pow2 * \
         (-semi_axis_c_pow2 * pos_y_pow_2 + semi_axis_b_pow2 *
          (semi_axis_c - pos_z) * (semi_axis_c + pos_z))
@@ -154,13 +157,15 @@ def ellipsoid_gravity_field(position, semi_axis_a, semi_axis_b, semi_axis_c, den
 
     fac_1 = 4.0 * PI * GRAVITATIONAL_CONSTANT * density * semi_axis_a * \
         semi_axis_b * semi_axis_c / sqrt(semi_axis_a_pow2 - semi_axis_c_pow2)
-    fac_2 = sqrt((semi_axis_a_pow2 - semi_axis_c_pow2) / ((semi_axis_a_pow2 + maximum_root)
-                                                          * (semi_axis_b_pow2 + maximum_root) * (semi_axis_c_pow2 + maximum_root)))
+    fac_2 = sqrt((semi_axis_a_pow2 - semi_axis_c_pow2)
+                 / ((semi_axis_a_pow2 + maximum_root) * (semi_axis_b_pow2 + maximum_root)
+                    * (semi_axis_c_pow2 + maximum_root)))
 
-    acceleration[
-        0] = fac_1 / (semi_axis_a_pow2 - semi_axis_b_pow2) * (integral_e1 - integral_f1)
-    acceleration[1] = fac_1 * ((semi_axis_c_pow2 - semi_axis_a_pow2) * integral_e1 / ((semi_axis_a_pow2 - semi_axis_b_pow2) * (semi_axis_b_pow2 - semi_axis_c_pow2)
-                                                                                      ) + integral_f1 / (semi_axis_a_pow2 - semi_axis_b_pow2) + (semi_axis_c_pow2 + maximum_root) * fac_2 / (semi_axis_b_pow2 - semi_axis_c_pow2))
+    acceleration[0] = fac_1 / (semi_axis_a_pow2 - semi_axis_b_pow2) * (integral_e1 - integral_f1)
+    acceleration[1] = fac_1 * ((semi_axis_c_pow2 - semi_axis_a_pow2) * integral_e1 /
+                               ((semi_axis_a_pow2 - semi_axis_b_pow2) * (semi_axis_b_pow2 - semi_axis_c_pow2) )
+                               + integral_f1 / (semi_axis_a_pow2 - semi_axis_b_pow2) + (semi_axis_c_pow2 + maximum_root)
+                               * fac_2 / (semi_axis_b_pow2 - semi_axis_c_pow2))
     acceleration[2] = fac_1 * ((semi_axis_b_pow2 + maximum_root)
                                * fac_2 - integral_e1) / (semi_axis_c_pow2 - semi_axis_b_pow2)
     return acceleration

@@ -13,6 +13,7 @@ class Asteroid:
 
     For the asteroid gravity, we use the implementation of Dario Cersosimo whi kindly sent us his matlab files.
     """
+
     def __init__(self, inertia_x, inertia_y, inertia_z, density, angular_velocity, time_bias):
 
         """
@@ -27,12 +28,13 @@ class Asteroid:
 
         """
         # SU controls (Stupid User)
-        if ((inertia_x == inertia_y) or (inertia_x == inertia_z) or (inertia_y == inertia_z)):
-            print("This function does not work for symmetric tops, make sure Ix, Iy and Iz are different")
-        if (sorted([inertia_x, inertia_y, inertia_z]) != [inertia_x, inertia_y, inertia_z]):
-            print("This function assumes Ix < Iy < Iz, please make sure this is the case")
-        if (angular_velocity[0] == 0 or angular_velocity[2] == 0):
-            print("You cannot define zero values for w_x or w_z as this functions already assumes w_y=0 (thus the motion would be a rotation")
+        if (inertia_x == inertia_y) or (inertia_x == inertia_z) or (inertia_y == inertia_z):
+            raise Exception("This function does not work for symmetric tops, make sure Ix, Iy and Iz are different")
+        if sorted([inertia_x, inertia_y, inertia_z]) != [inertia_x, inertia_y, inertia_z]:
+            raise Exception("This function assumes Ix < Iy < Iz, please make sure this is the case")
+        if angular_velocity[0] == 0 or angular_velocity[2] == 0:
+            raise Exception("You cannot define zero values for w_x or w_z as this "
+                            "functions already assumes w_y=0 (thus the motion would be a rotation")
 
         from math import sqrt
 
@@ -45,14 +47,18 @@ class Asteroid:
         self._inertia_z_pow2 = inertia_z ** 2
         self.time_bias = float(time_bias)
 
-        angular_velocity = [float(val) for val in angular_velocity]
+        self._angular_velocity = [float(val) for val in angular_velocity]
 
-        sgnx = (-1.0, 1.0)[angular_velocity[0] > 0]
-        sgny = (-1.0, 1.0)[angular_velocity[0] * angular_velocity[2] > 0]
-        sgnz = (-1.0, 1.0)[angular_velocity[2] > 0]
+        sign_x = (-1.0, 1.0)[self._angular_velocity[0] > 0]
+        sign_y = (-1.0, 1.0)[self._angular_velocity[0] * self._angular_velocity[2] > 0]
+        sign_z = (-1.0, 1.0)[self._angular_velocity[2] > 0]
 
-        self.energy_mul2 = self.inertia_x * angular_velocity[0] ** 2 + self.inertia_y * angular_velocity[1] ** 2 + self.inertia_z * angular_velocity[2] ** 2
-        self.momentum_pow2 = self.inertia_x ** 2 * angular_velocity[0] ** 2 + self.inertia_y ** 2 * angular_velocity[1] ** 2 + self.inertia_z ** 2 * angular_velocity[2] ** 2
+        self.energy_mul2 = self.inertia_x * self._angular_velocity[0] ** 2 \
+                           + self.inertia_y * self._angular_velocity[1] ** 2 \
+                           + self.inertia_z * self._angular_velocity[2] ** 2
+        self.momentum_pow2 = self.inertia_x ** 2 * self._angular_velocity[0] ** 2 \
+                             + self.inertia_y ** 2 * self._angular_velocity[1] ** 2\
+                             + self.inertia_z ** 2 * self._angular_velocity[2] ** 2
 
         inertia_y = self.inertia_y
         self._inversion = False
@@ -60,19 +66,33 @@ class Asteroid:
             inertia_z = self.inertia_x
             inertia_x = self.inertia_z
             self._inversion = True
-            sgnz = (-1.0, 1.0)[angular_velocity[0] > 0]
-            sgnx = (-1.0, 1.0)[angular_velocity[2] > 0]
+            sign_z = (-1.0, 1.0)[self._angular_velocity[0] > 0]
+            sign_x = (-1.0, 1.0)[self._angular_velocity[2] > 0]
 
 
-        self.elliptic_coef_angular_velocity_x = sgnx * sqrt((self.energy_mul2 * inertia_z - self.momentum_pow2) / (inertia_x * (inertia_z - inertia_x)))
-        self.elliptic_coef_angular_velocity_y = sgny * sqrt((self.energy_mul2 * inertia_z - self.momentum_pow2) / (inertia_y * (inertia_z - inertia_y)))
-        self.elliptic_coef_angular_velocity_z = sgnz * sqrt((self.momentum_pow2 - self.energy_mul2 * inertia_x) / (inertia_z * (inertia_z - inertia_x)))
+        self.elliptic_coef_angular_velocity_x = sign_x * sqrt((self.energy_mul2 * inertia_z - self.momentum_pow2)
+                                                              / (inertia_x * (inertia_z - inertia_x)))
+        self.elliptic_coef_angular_velocity_y = sign_y * sqrt((self.energy_mul2 * inertia_z - self.momentum_pow2)
+                                                              / (inertia_y * (inertia_z - inertia_y)))
+        self.elliptic_coef_angular_velocity_z = sign_z * sqrt((self.momentum_pow2 - self.energy_mul2 * inertia_x)
+                                                              / (inertia_z * (inertia_z - inertia_x)))
 
-        self.elliptic_tau = sqrt((inertia_z - inertia_y) * (self.momentum_pow2 - self.energy_mul2 * inertia_x) / (inertia_x * inertia_y * inertia_z))
-        self.elliptic_modulus = (inertia_y - inertia_x) * (self.energy_mul2 * inertia_z - self.momentum_pow2) / ((inertia_z - inertia_y) * (self.momentum_pow2 - self.energy_mul2 * inertia_x))
+        self.elliptic_tau = sqrt((inertia_z - inertia_y) * (self.momentum_pow2 - self.energy_mul2 * inertia_x)
+                                 / (inertia_x * inertia_y * inertia_z))
+        self.elliptic_modulus = (inertia_y - inertia_x) * (self.energy_mul2 * inertia_z - self.momentum_pow2) \
+                                / ((inertia_z - inertia_y) * (self.momentum_pow2 - self.energy_mul2 * inertia_x))
 
         self._cached_angular_velocity_time = -1
         self._cached_angular_velocity = [0.0, 0.0, 0.0]
+
+
+    def __str__(self):
+        result = ["Asteroid:"]
+        keys = sorted([key for key in self.__dict__])
+        for key in keys:
+            result.append("{key}='{value}'".format(key=key, value=self.__dict__[key]))
+
+        return "\n ".join(result)
 
     # Ported from "Ellipsoid_Gravity_Field.m" written by Dario Cersosimo,
     # October 16, 2009.
@@ -85,13 +105,15 @@ class Asteroid:
         acceleration = [0, 0, 0]
         error_tolerance = 1e-10
 
+        # since Ellipsoid_Gravity_Field.m assumes Ix > Iy > Iz, we have to swap axis
+
         density = self.density
-        inertia_x = self.inertia_x
+        inertia_z = self.inertia_x
         inertia_y = self.inertia_y
-        inertia_z = self.inertia_z
-        inertia_x_pow2 = self._inertia_x_pow2
+        inertia_x = self.inertia_z
+        inertia_z_pow2 = self._inertia_x_pow2
         inertia_y_pow2 = self._inertia_y_pow2
-        inertia_z_pow2 = self._inertia_z_pow2
+        inertia_x_pow2 = self._inertia_z_pow2
 
         pos_z = position[2]
         pos_z_pow_2 = pos_z ** 2
@@ -100,16 +122,18 @@ class Asteroid:
 
         coef_2 = -(pos_x_pow_2 + pos_y_pow_2 + pos_z_pow_2 -
                    inertia_x_pow2 - inertia_y_pow2 - inertia_z_pow2)
-        coef_1 = -inertia_z_pow2 * (pos_x_pow_2 + pos_y_pow_2) + inertia_y_pow2 * (
-            inertia_z_pow2 - pos_x_pow_2 - pos_z_pow_2) + inertia_x_pow2 * (inertia_y_pow2 + inertia_z_pow2 - pos_y_pow_2 - pos_z_pow_2)
+        coef_1 = -inertia_z_pow2 * (pos_x_pow_2 + pos_y_pow_2) \
+                 + inertia_y_pow2 * (inertia_z_pow2 - pos_x_pow_2 - pos_z_pow_2) \
+                 + inertia_x_pow2 * (inertia_y_pow2 + inertia_z_pow2 - pos_y_pow_2 - pos_z_pow_2)
         coef_0 = -inertia_y_pow2 * inertia_z_pow2 * pos_x_pow_2 + inertia_x_pow2 * \
             (-inertia_z_pow2 * pos_y_pow_2 + inertia_y_pow2 *
              (inertia_z - pos_z) * (inertia_z + pos_z))
         polynomial = array([1.0, coef_2, coef_1, coef_0])
         maximum_root = max(roots(polynomial))
 
-        phi = asin(
-            sqrt((inertia_x_pow2 - inertia_z_pow2) / (maximum_root + inertia_x_pow2)))
+        assert(inertia_x_pow2 > inertia_z_pow2)
+        assert(maximum_root + inertia_x_pow2 > 0)
+        phi = asin(sqrt((inertia_x_pow2 - inertia_z_pow2) / (maximum_root + inertia_x_pow2)))
         k = sqrt((inertia_x_pow2 - inertia_y_pow2) /
                  (inertia_x_pow2 - inertia_z_pow2))
 
@@ -119,12 +143,15 @@ class Asteroid:
         fac_1 = 4.0 * PI * GRAVITATIONAL_CONSTANT * density * inertia_x * \
             inertia_y * inertia_z / sqrt(inertia_x_pow2 - inertia_z_pow2)
         fac_2 = sqrt((inertia_x_pow2 - inertia_z_pow2) / ((inertia_x_pow2 + maximum_root)
-                                                          * (inertia_y_pow2 + maximum_root) * (inertia_z_pow2 + maximum_root)))
+                                                          * (inertia_y_pow2 + maximum_root)
+                                                          * (inertia_z_pow2 + maximum_root)))
 
-        acceleration[
-            0] = fac_1 / (inertia_x_pow2 - inertia_y_pow2) * (integral_e1 - integral_f1)
-        acceleration[1] = fac_1 * ((inertia_z_pow2 - inertia_x_pow2) * integral_e1 / ((inertia_x_pow2 - inertia_y_pow2) * (inertia_y_pow2 - inertia_z_pow2)
-                                                                                      ) + integral_f1 / (inertia_x_pow2 - inertia_y_pow2) + (inertia_z_pow2 + maximum_root) * fac_2 / (inertia_y_pow2 - inertia_z_pow2))
+        acceleration[0] = fac_1 / (inertia_x_pow2 - inertia_y_pow2) * (integral_e1 - integral_f1)
+        acceleration[1] = fac_1 * ((inertia_z_pow2 - inertia_x_pow2) * integral_e1 /
+                                   ((inertia_x_pow2 - inertia_y_pow2) * (inertia_y_pow2 - inertia_z_pow2))
+                                   + integral_f1 / (inertia_x_pow2 - inertia_y_pow2) + (inertia_z_pow2 + maximum_root)
+                                   * fac_2 / (inertia_y_pow2 - inertia_z_pow2))
+
         acceleration[2] = fac_1 * ((inertia_y_pow2 + maximum_root)
                                    * fac_2 - integral_e1) / (inertia_z_pow2 - inertia_y_pow2)
         return acceleration
@@ -142,9 +169,13 @@ class Asteroid:
         time *= self.elliptic_tau
         sn_tau, cn_tau, dn_tau, _ = ellipj(time, self.elliptic_modulus)
         if self._inversion:
-            self._cached_angular_velocity = [self.elliptic_coef_angular_velocity_z * dn_tau, self.elliptic_coef_angular_velocity_y * sn_tau, self.elliptic_coef_angular_velocity_x * cn_tau]
+            self._cached_angular_velocity = [self.elliptic_coef_angular_velocity_z * dn_tau,
+                                             self.elliptic_coef_angular_velocity_y * sn_tau,
+                                             self.elliptic_coef_angular_velocity_x * cn_tau]
         else:
-            self._cached_angular_velocity = [self.elliptic_coef_angular_velocity_x * cn_tau, self.elliptic_coef_angular_velocity_y * sn_tau, self.elliptic_coef_angular_velocity_z * dn_tau]
+            self._cached_angular_velocity = [self.elliptic_coef_angular_velocity_x * cn_tau,
+                                             self.elliptic_coef_angular_velocity_y * sn_tau,
+                                             self.elliptic_coef_angular_velocity_z * dn_tau]
         return self._cached_angular_velocity
 
     # compute d/dt w
@@ -153,4 +184,6 @@ class Asteroid:
         inertia_x = self.inertia_x
         inertia_y = self.inertia_y
         inertia_z = self.inertia_z
-        return [(inertia_z - inertia_y) * angular_velocity[2] * angular_velocity[1] / inertia_x, (inertia_x - inertia_z) * angular_velocity[0] * angular_velocity[2] / inertia_y, (inertia_y - inertia_x) * angular_velocity[1] * angular_velocity[0] / inertia_z]
+        return [(inertia_z - inertia_y) * angular_velocity[2] * angular_velocity[1] / inertia_x,
+                (inertia_x - inertia_z) * angular_velocity[0] * angular_velocity[2] / inertia_y,
+                (inertia_y - inertia_x) * angular_velocity[1] * angular_velocity[0] / inertia_z]
