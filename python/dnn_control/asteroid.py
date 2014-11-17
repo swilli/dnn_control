@@ -97,7 +97,7 @@ class Asteroid:
     # Ported from "Ellipsoid_Gravity_Field.m" written by Dario Cersosimo,
     # October 16, 2009.
     def gravity_at_position(self, position):
-        from math import asin, sqrt
+        from math import asin, sqrt, fabs
         from numpy import array, roots
         from constants import PI, GRAVITATIONAL_CONSTANT
         from ellipsoidgravityfield import legendre_elliptic_integral_pf, legendre_elliptic_integral_pe
@@ -105,7 +105,7 @@ class Asteroid:
         acceleration = [0, 0, 0]
         error_tolerance = 1e-10
 
-        # since Ellipsoid_Gravity_Field.m assumes Ix > Iy > Iz, we have to rotate axis around y by 90 deg
+        # since Ellipsoid_Gravity_Field.m assumes Ix > Iy > Iz, we have to "rotate" axis around y by 90 deg
         density = self.density
         inertia_z = self.inertia_x
         inertia_y = self.inertia_y
@@ -114,7 +114,7 @@ class Asteroid:
         inertia_y_pow2 = self._inertia_y_pow2
         inertia_x_pow2 = self._inertia_z_pow2
 
-        pos_z = -position[0]
+        pos_z = position[0]
         pos_z_pow_2 = pos_z ** 2
         pos_x_pow_2 = position[2] ** 2
         pos_y_pow_2 = position[1] ** 2
@@ -146,8 +146,7 @@ class Asteroid:
             inertia_y * inertia_z / sqrt(inertia_x_pow2 - inertia_z_pow2)
 
         sum_z = inertia_z_pow2 + maximum_root
-        if sum_z <= 0.0:
-            sum_z = 1e-7
+        sum_z = fabs(sum_z)
 
         fac_2 = sqrt((inertia_x_pow2 - inertia_z_pow2) / ((inertia_x_pow2 + maximum_root)
                                                           * (inertia_y_pow2 + maximum_root)
@@ -163,7 +162,7 @@ class Asteroid:
                                    * fac_2 - integral_e1) / (inertia_z_pow2 - inertia_y_pow2)
 
         # rotate back
-        acceleration[0], acceleration[2] = -acceleration[2], acceleration[0]
+        acceleration[0], acceleration[2] = acceleration[2], acceleration[0]
         return acceleration
 
     # compute w

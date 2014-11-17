@@ -5,6 +5,19 @@ from scipy.integrate import odeint
 from asteroid import Asteroid
 from constants import PI
 
+#todo write test for asteroid gravity, compare values
+
+INERTIA_Z = 3000.0  # [kg*m^2]
+INERTIA_Y = 2000.0  # [kg*m^2]
+INERTIA_X = 1000.0  # [kg*m^2]
+DENSITY = 2.3  # [kg/m^3]
+ANGULAR_VELOCITY = [0.0005, 0.0, 0.0003]  # [1/s]
+TIME_BIAS = 0.0  # [s]
+asteroid = Asteroid(INERTIA_X, INERTIA_Y, INERTIA_Z, DENSITY, ANGULAR_VELOCITY, TIME_BIAS)
+
+position = [0, 50, 0]
+gravity = asteroid.gravity_at_position(position)
+print(gravity)
 
 '''
 def w_dot(state, time, inertia_x, inertia_y, inertia_z):
@@ -34,7 +47,7 @@ print("{0:.10f} {1:.10f} {2:.10f}".format(omega_analytical[0],omega_analytical[1
 
 '''
 
-
+'''
 def w_dot(state, time, inertia_x, inertia_y, inertia_z):
     return [(inertia_y - inertia_z) * state[1] * state[2] / inertia_x,
             (inertia_z - inertia_x) * state[2] * state[0] / inertia_y,
@@ -76,6 +89,7 @@ print("Min error: {}".format(min_error))
 print("Max error: {}".format(max_error))
 print("Avg error: {}".format(avg_error / trials))
 
+'''
 
 
 '''
