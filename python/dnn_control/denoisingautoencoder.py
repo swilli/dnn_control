@@ -28,7 +28,15 @@ class DenoisingAutoencoder:
             delta_weights = layer.back_propagate(delta_weights)
 
     def train(self, data):
-        output = self.compress_decompress(data)
+        from numpy import array, random
+
+        length = len(data)
+        permutation = random.permutation(length)
+        corrupt_indices = permutation[0:length/2]
+        corrupt_data = array(data)
+        corrupt_data[corrupt_indices] = 0.0
+
+        output = self.compress_decompress(corrupt_data)
         error = data - output
         self._back_propagate(error)
         return output

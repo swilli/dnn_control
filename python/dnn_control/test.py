@@ -8,7 +8,6 @@ from numpy import array
 from denoisingautoencoder import DenoisingAutoencoder
 from test import neuralnetwork
 
-'''
 encoder = DenoisingAutoencoder(3, 2)
 
 error = 0.0
@@ -16,16 +15,18 @@ num_tests = 100000
 for i in range(num_tests):
     seed_1 = random.rand()
     seed_2 = random.rand()
-    test_value = array([seed_1, seed_1, seed_1])
+    test_value = array([seed_1, seed_2, seed_1 + seed_2])
     error += norm(test_value - encoder.train(test_value))
 
 print(error / num_tests)
-'''
 
+
+'''
 nn = neuralnetwork.NeuralNetwork()
 print(0.5 - nn.forward_pass(array([0.35, 0.9])))
 nn.train(array([0.35, 0.9]), 0.5)
 print(0.5 - nn.forward_pass(array([0.35, 0.9])))
+'''
 
 '''#todo write test for asteroid gravity, compare values
 
