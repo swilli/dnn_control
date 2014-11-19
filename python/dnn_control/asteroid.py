@@ -70,6 +70,7 @@ class Asteroid:
             sign_x = (-1.0, 1.0)[self._angular_velocity[2] > 0]
 
 
+        # Lifshitz eq (37.10)
         self.elliptic_coef_angular_velocity_x = sign_x * sqrt((self.energy_mul2 * inertia_z - self.momentum_pow2)
                                                               / (inertia_x * (inertia_z - inertia_x)))
         self.elliptic_coef_angular_velocity_y = sign_y * sqrt((self.energy_mul2 * inertia_z - self.momentum_pow2)
@@ -77,8 +78,10 @@ class Asteroid:
         self.elliptic_coef_angular_velocity_z = sign_z * sqrt((self.momentum_pow2 - self.energy_mul2 * inertia_x)
                                                               / (inertia_z * (inertia_z - inertia_x)))
 
+        # Lifshitz eq (37.8)
         self.elliptic_tau = sqrt((inertia_z - inertia_y) * (self.momentum_pow2 - self.energy_mul2 * inertia_x)
                                  / (inertia_x * inertia_y * inertia_z))
+        # Lifshitz eq (37.9)
         self.elliptic_modulus = (inertia_y - inertia_x) * (self.energy_mul2 * inertia_z - self.momentum_pow2) \
                                 / ((inertia_z - inertia_y) * (self.momentum_pow2 - self.energy_mul2 * inertia_x))
 
@@ -114,7 +117,7 @@ class Asteroid:
         inertia_y_pow2 = self._inertia_y_pow2
         inertia_x_pow2 = self._inertia_z_pow2
 
-        pos_z = position[0]
+        pos_z = -position[0]
         pos_z_pow_2 = pos_z ** 2
         pos_x_pow_2 = position[2] ** 2
         pos_y_pow_2 = position[1] ** 2
@@ -163,20 +166,28 @@ class Asteroid:
 
         # rotate back
         acceleration[0], acceleration[2] = acceleration[2], acceleration[0]
-        return acceleration
+        return [0.0, 0.0, 0.0]
 
     # compute w
     def angular_velocity_at_time(self, time):
         from scipy.special import ellipj
-        from math import fabs
 
-        if fabs(time - self._cached_angular_velocity_time) < 1e-10:
+        # Check if we already computed this before:
+        if time == self._cached_angular_velocity_time:
             return self._cached_angular_velocity
 
         self._cached_angular_velocity_time = time
+
+        # Add time bias
         time += self.time_bias
+
+        # Multiply by tau
         time *= self.elliptic_tau
+
+        # Get analytical solution
         sn_tau, cn_tau, dn_tau, _ = ellipj(time, self.elliptic_modulus)
+
+        # Cache new values
         if self._inversion:
             self._cached_angular_velocity = [self.elliptic_coef_angular_velocity_z * dn_tau,
                                              self.elliptic_coef_angular_velocity_y * sn_tau,
@@ -193,6 +204,8 @@ class Asteroid:
         inertia_x = self.inertia_x
         inertia_y = self.inertia_y
         inertia_z = self.inertia_z
+
+        # Lifshitz eq (36.5)
         return [(inertia_z - inertia_y) * angular_velocity[2] * angular_velocity[1] / inertia_x,
                 (inertia_x - inertia_z) * angular_velocity[0] * angular_velocity[2] / inertia_y,
                 (inertia_y - inertia_x) * angular_velocity[1] * angular_velocity[0] / inertia_z]

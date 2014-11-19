@@ -1,26 +1,23 @@
-'''
-
-Simulator state:
-0 : x
-1 : y
-2 : z
-3 : dx
-4 : dy
-5 : dz
-6 : m
-
-spacecraft_controller thrust
-0 : T_x
-1 : T_y
-2 : T_z
-
-'''
-
-
 class Simulator:
-    # Constructor
+
     def __init__(self, asteroid, spacecraft_position, spacecraft_velocity, spacecraft_mass, spacecraft_specific_impulse,
                  sensor_simulator, spacecraft_controller, control_frequency):
+        """
+        Constructor. The spacecraft state is defined as follows:
+        0 : position x
+        1 : position y
+        2 : position z
+        3 : velocity x
+        4 : velocity y
+        5 : velocity z
+        6 : mass
+
+        The simulator expects the controller to return the following vector when calling get_thrust():
+        0 : thrust x
+        1 : thrust y
+        2 : thrust z
+        """
+
         from numpy import array
         from constants import EARTH_ACCELERATION
 
@@ -39,8 +36,8 @@ class Simulator:
                                        float(spacecraft_velocity[2]),
                                        float(spacecraft_mass)])
 
-        self.earth_acceleration_mul_spacecraft_specific_impulse = EARTH_ACCELERATION * \
-                                                                  self.spacecraft_specific_impulse
+        self._earth_acceleration_mul_spacecraft_specific_impulse = EARTH_ACCELERATION * \
+                                                                   self.spacecraft_specific_impulse
 
 
     def __str__(self):
@@ -66,13 +63,19 @@ class Simulator:
             positions = empty([iterations, 3])
 
         for i in range(iterations):
+            # Simulate sensor data for current spacecraft state
             sensor_data = self.sensor_simulator.simulate(self.spacecraft_state)
+
+            # Get thrust from controller
             thrust = self.spacecraft_controller.get_thrust(sensor_data)
+
+            # Get new perturbations
             perturbations_acceleration = self.simulate_perturbations()
 
             if collect_positions:
                 positions[i][:] = self.spacecraft_state[0:3]
 
+            # Simulate dynamics with current perturbations and thrust
             self.simulate_dynamics(perturbations_acceleration, thrust, i * control_interval,
                                    (i + 1) * control_interval)
 
@@ -92,9 +95,7 @@ class Simulator:
                 raise Exception(self)
                 exit()
 
-    # Simulator dynamics from "Control of Hovering Spacecraft Using Altimetry"
-    # eq (69) and "Robust Spacecraft Hovering Near Small Bodies in
-    # Environments with Unknown Dynamics using Reinforcement Learning" eq (6)
+    # Simulator dynamics from eq (1) in paper "Control of Hovering Spacecraft Using Altimetry" by Sawai et al.
     def dynamics(self, state, time, perturbations_acceleration, thrust):
         from utility import cross_product
         from math import sqrt
@@ -118,12 +119,12 @@ class Simulator:
 
         d_dt_state = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
-        # d/dt r
+        # derivative of position
         d_dt_state[0] = velocity[0]
         d_dt_state[1] = velocity[1]
         d_dt_state[2] = velocity[2]
 
-        # d/dt v
+        # derivative of velocity
         d_dt_state[3] = perturbations_acceleration[0] \
                         + gravity_acceleration[0] \
                         + thrust_acceleration[0] \
@@ -143,9 +144,9 @@ class Simulator:
                         - euler_acceleration[2] \
                         - centrifugal_acceleration[2]
 
-        # d/dt m
+        # derivative of mass
         d_dt_state[6] = sqrt(thrust[0] ** 2 + thrust[1] ** 2 + thrust[2]
-                             ** 2) / self.earth_acceleration_mul_spacecraft_specific_impulse
+                             ** 2) / self._earth_acceleration_mul_spacecraft_specific_impulse
         return d_dt_state
 
     # External perturbations acceleration

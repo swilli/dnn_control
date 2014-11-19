@@ -4,8 +4,30 @@ from numpy.linalg import norm
 from scipy.integrate import odeint
 from asteroid import Asteroid
 from constants import PI
+from numpy import array
+from denoisingautoencoder import DenoisingAutoencoder
+from test import neuralnetwork
 
-#todo write test for asteroid gravity, compare values
+'''
+encoder = DenoisingAutoencoder(3, 2)
+
+error = 0.0
+num_tests = 100000
+for i in range(num_tests):
+    seed_1 = random.rand()
+    seed_2 = random.rand()
+    test_value = array([seed_1, seed_1, seed_1])
+    error += norm(test_value - encoder.train(test_value))
+
+print(error / num_tests)
+'''
+
+nn = neuralnetwork.NeuralNetwork()
+print(0.5 - nn.forward_pass(array([0.35, 0.9])))
+nn.train(array([0.35, 0.9]), 0.5)
+print(0.5 - nn.forward_pass(array([0.35, 0.9])))
+
+'''#todo write test for asteroid gravity, compare values
 
 INERTIA_Z = 3000.0  # [kg*m^2]
 INERTIA_Y = 2000.0  # [kg*m^2]
@@ -15,10 +37,11 @@ ANGULAR_VELOCITY = [0.0005, 0.0, 0.0003]  # [1/s]
 TIME_BIAS = 0.0  # [s]
 asteroid = Asteroid(INERTIA_X, INERTIA_Y, INERTIA_Z, DENSITY, ANGULAR_VELOCITY, TIME_BIAS)
 
+
 position = [0, 50, 0]
 gravity = asteroid.gravity_at_position(position)
 print(gravity)
-
+'''
 '''
 def w_dot(state, time, inertia_x, inertia_y, inertia_z):
     return [(inertia_y - inertia_z) * state[1] * state[2] / inertia_x,
