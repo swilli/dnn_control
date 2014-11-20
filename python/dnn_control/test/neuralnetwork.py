@@ -10,8 +10,8 @@ def derivative_sigmoid(value):
 
 class NeuralNetwork:
     def __init__(self):
-        from outputlayer import OutputLayer
-        from hiddenlayer import HiddenLayer
+        from test.outputlayer import OutputLayer
+        from test.hiddenlayer import HiddenLayer
 
         from numpy import array
 

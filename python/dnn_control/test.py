@@ -1,4 +1,5 @@
 import sys
+
 from numpy import random
 from numpy.linalg import norm
 from scipy.integrate import odeint
@@ -7,18 +8,33 @@ from constants import PI
 from numpy import array
 from denoisingautoencoder import DenoisingAutoencoder
 from test import neuralnetwork
+from theano.printing import pp
+from theano import function
 
 encoder = DenoisingAutoencoder(3, 2)
 
-error = 0.0
-num_tests = 100000
+num_tests = 100
 for i in range(num_tests):
-    seed_1 = random.rand()
-    seed_2 = random.rand()
-    test_value = array([seed_1, seed_2, seed_1 + seed_2])
-    error += norm(test_value - encoder.train(test_value))
+    data = []
+    for j in range(2500):
+        seed_1 = (1.0, 0.0)[random.rand() > 0.5]
+        seed_2 = (1.0, 0.0)[random.rand() > 0.5]
+        data.append([seed_1, seed_2, seed_1 + seed_2])
 
-print(error / num_tests)
+    data = array(data)
+    print(encoder.train(data))
+    seed_1 = (1.0, 0.0)[random.rand() > 0.5]
+    seed_2 = (1.0, 0.0)[random.rand() > 0.5]
+    test_value = array([seed_1, seed_2, seed_1 + seed_2])
+    compressed_value = encoder.compress(test_value)
+    uncompressed_value = encoder.decompress(compressed_value)
+    print(test_value)
+    print(compressed_value)
+    print(uncompressed_value)
+    print(norm(test_value-uncompressed_value))
+    print("===")
+
+
 
 
 '''
