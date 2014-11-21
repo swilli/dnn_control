@@ -2,7 +2,7 @@ class Asteroid:
 
     """
     This class represents the dynamics and gravity of an asteroid shaped as a rigid ellipsoid having different
-    rotational properties along its three principal inertia axis (Ix, Iy, Iz). 
+    rotational properties along its three principal inertia axis (Ix, Iy, Iz).
 
     For the angular velocity dynamics the analytical solution in terms of Jacobi elliptic functions is used (Implementation
     largely inspired from Landau Lifshitz Mechanics paragrpah 37). We thus assume w_y(-t_bias) = 0. So we only are free to specify two
@@ -14,37 +14,47 @@ class Asteroid:
     For the asteroid gravity, we use the implementation of Dario Cersosimo whi kindly sent us his matlab files.
     """
 
-    def __init__(self, inertia_x, inertia_y, inertia_z, density, angular_velocity, time_bias):
+    def __init__(self, semi_axis_a, semi_axis_b, semi_axis_c, density, angular_velocity, time_bias):
 
         """
         This constructs the asteroid object from its inertia properties and its prime integrals value
 
         USAGE: ast = Asteroid(0.1,0.2,0.3,2.3,[0.23,0.1,0.56],234)
 
-        * inertia_x, inertia_y, inertia_z:     Moments of inertia Ix < Iy < Iz (UNITS)
-        * density:                             Asteroid density (UNITS)
-        * angular_velocity:                    Asteroid hypothetical angular velocity (used to define prime integrals only)
-        * time_bias:                           A time bias applied so that w_y(-t_bias) = 0
+        * semi_axis_a, semi_axis_b, semi_axis_c:        Semi Axis a,b,c  where a < b < c (UNITS)
+        * density:                                      Asteroid density (UNITS)
+        * angular_velocity:                             Asteroid hypothetical angular velocity (used to define prime integrals only)
+        * time_bias:                                    A time bias applied so that w_y(-t_bias) = 0
 
         """
+
+        from math import sqrt
+        from constants import PI
+
         # SU controls (Stupid User)
-        if (inertia_x == inertia_y) or (inertia_x == inertia_z) or (inertia_y == inertia_z):
+        if (semi_axis_a == semi_axis_b) or (semi_axis_a == semi_axis_c) or (semi_axis_b == semi_axis_c):
             raise Exception("This function does not work for symmetric tops, make sure Ix, Iy and Iz are different")
-        if sorted([inertia_x, inertia_y, inertia_z]) != [inertia_x, inertia_y, inertia_z]:
+        if sorted([semi_axis_a, semi_axis_b, semi_axis_c]) != [semi_axis_a, semi_axis_b, semi_axis_c]:
             raise Exception("This function assumes Ix < Iy < Iz, please make sure this is the case")
         if angular_velocity[0] == 0 or angular_velocity[2] == 0:
             raise Exception("You cannot define zero values for w_x or w_z as this "
                             "functions already assumes w_y=0 (thus the motion would be a rotation")
 
-        from math import sqrt
-
+        self.semi_axis_a = float(semi_axis_a)
+        self.semi_axis_a_pow2 = self.semi_axis_a ** 2
+        self.semi_axis_b = float(semi_axis_b)
+        self.semi_axis_b_pow2 = self.semi_axis_b ** 2
+        self.semi_axis_c = float(semi_axis_c)
+        self.semi_axis_c_pow2 = self.semi_axis_c ** 2
         self.density = float(density)
-        self.inertia_x = float(inertia_x)
-        self._inertia_x_pow2 = inertia_x ** 2
-        self.inertia_y = float(inertia_y)
-        self._inertia_y_pow2 = inertia_y ** 2
-        self.inertia_z = float(inertia_z)
-        self._inertia_z_pow2 = inertia_z ** 2
+        self.mass = 4.0 / 3.0 * PI * self.semi_axis_a * self.semi_axis_b * self.semi_axis_c * self.density
+
+        self.inertia_x = 0.2 * self.mass * (semi_axis_b ** 2 + semi_axis_c **2)
+        self._inertia_x_pow2 = self.inertia_x ** 2
+        self.inertia_y = 0.2 * self.mass * (semi_axis_a ** 2 + semi_axis_c **2)
+        self._inertia_y_pow2 = self.inertia_y ** 2
+        self.inertia_z = 0.2 * self.mass * (semi_axis_a ** 2 + semi_axis_b **2)
+        self._inertia_z_pow2 = self.inertia_z ** 2
         self.time_bias = float(time_bias)
 
         self._angular_velocity = [float(val) for val in angular_velocity]
@@ -60,7 +70,10 @@ class Asteroid:
                              + self.inertia_y ** 2 * self._angular_velocity[1] ** 2\
                              + self.inertia_z ** 2 * self._angular_velocity[2] ** 2
 
+        inertia_x = self.inertia_x
         inertia_y = self.inertia_y
+        inertia_z = self.inertia_z
+
         self._inversion = False
         if self.momentum_pow2 < self.energy_mul2 * inertia_y:
             inertia_z = self.inertia_x
@@ -76,11 +89,12 @@ class Asteroid:
         self.elliptic_coef_angular_velocity_y = sign_y * sqrt((self.energy_mul2 * inertia_z - self.momentum_pow2)
                                                               / (inertia_y * (inertia_z - inertia_y)))
         self.elliptic_coef_angular_velocity_z = sign_z * sqrt((self.momentum_pow2 - self.energy_mul2 * inertia_x)
-                                                              / (inertia_z * (inertia_z - inertia_x)))
 
+                                                              / (inertia_z * (inertia_z - inertia_x)))
         # Lifshitz eq (37.8)
         self.elliptic_tau = sqrt((inertia_z - inertia_y) * (self.momentum_pow2 - self.energy_mul2 * inertia_x)
                                  / (inertia_x * inertia_y * inertia_z))
+
         # Lifshitz eq (37.9)
         self.elliptic_modulus = (inertia_y - inertia_x) * (self.energy_mul2 * inertia_z - self.momentum_pow2) \
                                 / ((inertia_z - inertia_y) * (self.momentum_pow2 - self.energy_mul2 * inertia_x))
@@ -209,3 +223,138 @@ class Asteroid:
         return [(inertia_z - inertia_y) * angular_velocity[2] * angular_velocity[1] / inertia_x,
                 (inertia_x - inertia_z) * angular_velocity[0] * angular_velocity[2] / inertia_y,
                 (inertia_y - inertia_x) * angular_velocity[1] * angular_velocity[0] / inertia_z]
+
+    def _nearest_point_on_ellipse_first_quadrant(self, semi_axis, position):
+        from math import sqrt
+        from scipy.optimize import bisect
+
+        solution = [0.0, 0.0]
+
+        semi_axis_0 = semi_axis[0]
+        semi_axis_1 = semi_axis[1]
+        pos_0 = position[0]
+        pos_1 = position[1]
+
+        if pos_1 > 0.0:
+            if pos_0 > 0.0:
+                semi_axis_pow2 = [val * val for val in semi_axis]
+                semi_axis_mul_pos = [axis * pos for axis, pos in zip(semi_axis, position)]
+                lower_boundary = 0.0
+                upper_boundary = sqrt(sum([val * val for val in semi_axis_mul_pos]))
+
+                def fun(time):
+                    cur_position = [axis_pos / (time + axis_pow2) for axis_pos, axis_pow2 in zip(semi_axis_mul_pos, semi_axis_pow2)]
+                    return sum([val * val for val in cur_position]) - 1.0
+
+                time = bisect(fun, lower_boundary, upper_boundary)
+                solution = [axis * pos / (time + axis) for axis, pos in zip(semi_axis_pow2, position)]
+            else:
+                solution[0] = 0.0
+                solution[1] = semi_axis_1
+        else:
+            denominator = semi_axis_0 ** 2 - semi_axis_1 ** 2
+            semi_axis_mul_pos = semi_axis_0 * pos_0
+            if semi_axis_mul_pos < denominator:
+                semi_axis_div_denom = semi_axis_mul_pos / denominator
+                semi_axis_div_denom_pow2 = semi_axis_div_denom * semi_axis_div_denom
+                solution[0] = semi_axis_0 * semi_axis_div_denom
+                solution[1] = semi_axis_1 * sqrt(abs(1.0 - semi_axis_div_denom_pow2))
+            else:
+                solution[0] = semi_axis_0
+                solution[1] = 0.0
+
+        distance = sqrt(sum([(pos - sol) ** 2 for pos, sol in zip(position, solution)]))
+        return distance, solution
+
+    def _nearest_point_on_surface_at_position_first_quadrant(self, semi_axis, position):
+        from math import sqrt
+        from scipy.optimize import bisect
+
+        solution = [0.0, 0.0, 0.0]
+
+        semi_axis_0 = semi_axis[0]
+        semi_axis_1 = semi_axis[1]
+        semi_axis_2 = semi_axis[2]
+        pos_0 = position[0]
+        pos_1 = position[1]
+        pos_2 = position[2]
+
+        if pos_2 > 0.0:
+            if pos_1 > 0.0:
+                if pos_0 > 0.0:
+                    semi_axis_pow2 = [val * val for val in semi_axis]
+                    semi_axis_mul_pos = [val_axis * val_pos for val_axis, val_pos in zip(semi_axis, position)]
+                    lower_boundary = 0.0
+                    upper_boundary = sqrt(sum([val * val for val in semi_axis_mul_pos]))
+
+                    def fun(time):
+                        cur_position = [axis_pos / (time + axis_pow2) for axis_pos, axis_pow2 in zip(semi_axis_mul_pos, semi_axis_pow2)]
+                        return sum([val * val for val in cur_position]) - 1.0
+
+                    time = bisect(fun, lower_boundary, upper_boundary)
+                    solution = [axis * pos / (time + axis) for axis, pos in zip(semi_axis_pow2, position)]
+                else:
+                    solution[0] = 0.0
+                    semi_axis_2d = semi_axis[1:3]
+                    position_2d = position[1:3]
+                    _, solution_2d = self._nearest_point_on_ellipse_first_quadrant(semi_axis_2d, position_2d)
+                    solution[1] = solution_2d[0]
+                    solution[2] = solution_2d[1]
+            else:
+                solution[1] = 0.0
+                if pos_0 > 0.0:
+                    semi_axis_2d = [semi_axis_0, semi_axis_2]
+                    position_2d = [pos_0, pos_2]
+                    _, solution_2d = self._nearest_point_on_ellipse_first_quadrant(semi_axis_2d, position_2d)
+                    solution[0] = solution_2d[0]
+                    solution[2] = solution_2d[1]
+                else:
+                    solution[0] = 0.0
+                    solution[2] = semi_axis_2
+        else:
+            denominator = [semi_axis_0 ** 2 - semi_axis_2 ** 2, semi_axis_1 ** 2 - semi_axis_2 ** 2]
+            semi_axis_mul_pos = [semi_axis[i] * position[i] for i in range(2)]
+            if semi_axis_mul_pos < denominator[0] and semi_axis_mul_pos[1] < denominator[1]:
+                semi_axis_div_denom = [semi_axis_mul_pos[i] / denominator[i] for i in range(2)]
+                semi_axis_div_denom_pow2 = [val*val for val in semi_axis_div_denom]
+                discr = 1.0 - semi_axis_div_denom_pow2[0] - semi_axis_div_denom_pow2[1]
+                if discr > 0.0:
+                    solution[0] = semi_axis_0 * semi_axis_div_denom[0]
+                    solution[1] = semi_axis_1 * semi_axis_div_denom[1]
+                    solution[2] = semi_axis_2 * sqrt(discr)
+                else:
+                    solution[2] = 0.0
+                    semi_axis_2d = [semi_axis_0, semi_axis_1]
+                    position_2d = [pos_0, pos_1]
+                    _, solution_2d = self._nearest_point_on_ellipse_first_quadrant(semi_axis_2d, position_2d)
+                    solution[0] = solution_2d[0]
+                    solution[1] = solution_2d[1]
+            else:
+                solution[2] = 0.0
+                semi_axis_2d = [semi_axis_0, semi_axis_1]
+                position_2d = [pos_0, pos_1]
+                _, solution_2d = self._nearest_point_on_ellipse_first_quadrant(semi_axis_2d, position_2d)
+                solution[0] = solution_2d[0]
+                solution[1] = solution_2d[1]
+
+        distance = sqrt(sum([(pos - sol) ** 2 for pos, sol in zip(position, solution)]))
+        return distance, solution
+
+    def distance_to_surface_at_position(self, position):
+        '''
+            Port of Implementation from "Distance from a Point to an Ellipse, an Ellipsoid, or a Hyperellipsoid" by David Eberly, 2013.
+        '''
+        from math import copysign
+
+        semi_axis = [self.semi_axis_a, self.semi_axis_b, self.semi_axis_c]
+        signs = [copysign(1.0, val) for val in position]
+
+        permutation = [0, 1, 2]
+        perm_position = [abs(position[i]) for i in permutation]
+        perm_semi_axis = [semi_axis[i] for i in permutation]
+
+        distance, surface_position = self._nearest_point_on_surface_at_position_first_quadrant(perm_semi_axis, perm_position)
+
+        surface_position = [signs[permutation[i]] * surface_position[i] for i in permutation]
+
+        return distance, surface_position

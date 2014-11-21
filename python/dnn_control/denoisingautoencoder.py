@@ -55,15 +55,14 @@ class DenoisingAutoencoder:
         return nnet.sigmoid(dot(compressed_data, self._weights_transpose) + self._bias_input)
 
     def _get_cost_updates(self, data):
-        from theano.tensor import sum, log, mean, grad
+        from theano.tensor import sum, mean, grad, log
 
         data_corrupted = self._corrupt_input(data, self._corruption_level)
         data_compressed = self._compress(data_corrupted)
         data_uncompressed = self._decompress(data_compressed)
 
-        cross_entropy = -sum(data * log(data_uncompressed) + (1.0 - data) * log(1.0 - data_uncompressed), axis=1)
-
-        cost = mean(cross_entropy)
+        cost = mean(sum((data - data_uncompressed)**2, axis=1))
+        #cost = mean(-sum(data * log(data_uncompressed) + (1 - data) * log(1 - data_uncompressed), axis=1))
 
         grad_parameters = grad(cost, self._parameters)
         updates = [
@@ -73,18 +72,35 @@ class DenoisingAutoencoder:
 
         return cost, updates
 
-    def train(self, data):
+    def train(self, data, training_epochs, batch_size):
         from theano import function, shared, config
         from theano.tensor import matrix, lscalar
-        from numpy import asarray
+        from numpy import asarray, mean
+        from sys import stdout
 
         data = shared(asarray(data, dtype=config.floatX))
+        num_training_batches = data.get_value(borrow=True).shape[0] / batch_size
         data_container = matrix('x')
+        index = lscalar()
 
         cost, updates = self._get_cost_updates(data_container)
 
-        update = function([], cost, updates=updates, givens={data_container: data})
-        return update()
+        train_step = function([index], cost, updates=updates,
+                              givens={data_container: data[index * batch_size:(index + 1) * batch_size]})
+
+        mean_costs = []
+        for epoch in xrange(training_epochs):
+            costs = []
+            for batch_index in xrange(num_training_batches):
+                costs.append(train_step(batch_index))
+                stdout.write("\r")
+                stdout.write("epoch: {0} batch: {1}".format(epoch, batch_index))
+                stdout.flush()
+
+            mean_costs.append(mean(costs))
+
+        stdout.write("\n")
+        return mean_costs
 
     def compress(self, data):
         from theano.tensor import nnet, dot
