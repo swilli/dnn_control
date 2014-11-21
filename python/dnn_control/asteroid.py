@@ -34,7 +34,7 @@ class Asteroid:
         # SU controls (Stupid User)
         if (semi_axis_a == semi_axis_b) or (semi_axis_a == semi_axis_c) or (semi_axis_b == semi_axis_c):
             raise Exception("This function does not work for symmetric tops, make sure Ix, Iy and Iz are different")
-        if sorted([semi_axis_a, semi_axis_b, semi_axis_c]) != [semi_axis_a, semi_axis_b, semi_axis_c]:
+        if sorted([semi_axis_a, semi_axis_b, semi_axis_c]) != [semi_axis_c, semi_axis_b, semi_axis_a]:
             raise Exception("This function assumes Ix < Iy < Iz, please make sure this is the case")
         if angular_velocity[0] == 0 or angular_velocity[2] == 0:
             raise Exception("You cannot define zero values for w_x or w_z as this "

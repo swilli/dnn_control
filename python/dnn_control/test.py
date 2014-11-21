@@ -22,6 +22,10 @@ data = array(data)
 print(encoder.train(data, 15, 20))
 '''
 
+
+'''
+ASTEROID HEIGHT METHOD UNIT TEST
+
 SEMI_AXIS_A = 1000.0  # [m]
 SEMI_AXIS_B = 2000.0  # [m]
 SEMI_AXIS_C = 3000.0  # [m]
@@ -56,34 +60,11 @@ for i in range(10000):
 
 print(mean(times))
 '''
-def w_dot(state, time, inertia_x, inertia_y, inertia_z):
-    return [(inertia_y - inertia_z) * state[1] * state[2] / inertia_x,
-    (inertia_z - inertia_x) * state[2] * state[0] / inertia_y,
-     (inertia_x - inertia_y) * state[0] * state[1] / inertia_z]
-
-INERTIA_Z = 4567.123  # [kg*m^2]
-INERTIA_Y = 2345.3456  # [kg*m^2]
-INERTIA_X = 1234.12  # [kg*m^2]
-DENSITY = 2000.0  # [kg/m^3]
-ANGULAR_VELOCITY = [0.0005, 0.0, 0.0003]  # [1/s]
-TIME_BIAS = 0.0  # [s]
-asteroid = Asteroid(INERTIA_X, INERTIA_Y, INERTIA_Z, DENSITY, ANGULAR_VELOCITY, TIME_BIAS)
 
 
-test_time = 8000
 
-result = odeint(
-    w_dot, ANGULAR_VELOCITY, [0, test_time], (INERTIA_X, INERTIA_Y, INERTIA_Z))
-omega_odeint = result[1][:]
-omega_analytical = asteroid.angular_velocity_at_time(test_time)
+#ASTEROID ANGULAR VELOCITY UNIT TEST
 
-
-print("{0:.10f} {1:.10f} {2:.10f}".format(omega_odeint[0],omega_odeint[1],omega_odeint[2]))
-print("{0:.10f} {1:.10f} {2:.10f}".format(omega_analytical[0],omega_analytical[1],omega_analytical[2]))
-
-'''
-
-'''
 def w_dot(state, time, inertia_x, inertia_y, inertia_z):
     return [(inertia_y - inertia_z) * state[1] * state[2] / inertia_x,
             (inertia_z - inertia_x) * state[2] * state[0] / inertia_y,
@@ -99,18 +80,17 @@ trials = 2000
 for i in range(trials):
     # print("Test run {}".format(i + 1))
 
-    I = []
+    axis = []
     test_time = random.uniform(1.0, 2.0)
-    [I.append(random.uniform(1000.0, 5000.0)) for i in range(3)]
-    inertia_x, inertia_y, inertia_z = sorted(I)
+    [axis.append(random.uniform(1000.0, 5000.0)) for i in range(3)]
+    semi_axis_c, semi_axis_b, semi_axis_a = sorted(axis)
 
     density = 2000.0
     angular_velocity = [random.uniform(-0.02 * PI, 0.02 * PI), 0.0, random.uniform(-0.02 * PI, 0.02 * PI)]
     
-    asteroid = Asteroid(
-        inertia_x, inertia_y, inertia_z, density, angular_velocity, 0.0)
+    asteroid = Asteroid(semi_axis_a, semi_axis_b, semi_axis_c, density, angular_velocity, 0.0)
 
-    result = odeint(w_dot, angular_velocity, [0, test_time], (inertia_x, inertia_y, inertia_z), rtol=1e-12, atol=1e-12)
+    result = odeint(w_dot, angular_velocity, [0, test_time], (asteroid.inertia_x, asteroid.inertia_y, asteroid.inertia_z), rtol=1e-12, atol=1e-12)
     omega_numerical = result[1][:]
     omega_analytical = asteroid.angular_velocity_at_time(test_time)
     error = norm(omega_numerical - omega_analytical)
@@ -125,10 +105,12 @@ print("Min error: {}".format(min_error))
 print("Max error: {}".format(max_error))
 print("Avg error: {}".format(avg_error / trials))
 
-'''
 
 
+
 '''
+ASTEROID ANGULAR VELOCITY VISUALIZATION
+
 TIME = 100000.0
 SAMPLING_FREQUENCY = 10.0
 INERTIA_X = 4567.123  # [kg*m^2]
@@ -159,5 +141,4 @@ ax.set_xlabel('Omega_x')
 ax.set_ylabel('Omega_y')
 ax.set_zlabel('Omega_z')
 pyplot.show()
-
 '''
