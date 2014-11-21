@@ -9,7 +9,9 @@ class PIDController:
         self.coef_integral = [0.0, 0.0, 0.0]
         self.coef_derivative = [30.0, 30.0, 30.0]
 
-    def get_thrust(self, state):
+    def get_thrust(self, sensor_data):
+        '''
+
         target_position = self.target_position
         current_position = state[0:3]
         thrust = [0.0, 0.0, 0.0]
@@ -22,5 +24,7 @@ class PIDController:
             self.previous_error[i] = error[i]
             thrust[i] = self.coef_proportional[i] * error[i] + self.coef_integral[i] * \
                 self.integral[i] + self.coef_derivative[i] * derivative
+
+        '''
 
         return [0.0, 0.0, 0.0]

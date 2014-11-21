@@ -14,18 +14,16 @@ TIME = 100.0  # [s]
 TARGET_POSITION = [1000.0, 1000.0, 1000.0]  # [m]
 
 # Asteroid settings
-INERTIA = []
-[INERTIA.append(random.uniform(1000.0, 5000.0)) for i in range(3)]
-#INERTIA_X, INERTIA_Y, INERTIA_Z = sorted(INERTIA)  # [kg*m^2]
-INERTIA_Z = 3831.9655
-INERTIA_Y = 3094.5553
-INERTIA_X = 2574.7204
+AXIS = []
+[AXIS.append(random.uniform(1000.0, 5000.0)) for i in range(3)]
+AXIS_C, AXIS_B, AXIS_A = sorted(AXIS)  # [m]
+
 DENSITY = random.uniform(1500.0, 2500.0)  # [kg/m^3]
 ANGULAR_VELOCITY = [random.uniform(-0.02 * PI, 0.02 * PI), 0.0, random.uniform(-0.02 * PI, 0.02 * PI)]  # [1/s]
 TIME_BIAS = random.uniform(0.0, 60.0 * 60.0 * 6.0)  # [s]
 
 # Spacecraft settings
-POSITION = [2.02241723e-04, 9.40400579e+00, 3.60926602e+00]  # [m]
+POSITION = [6000, 6000, 6000]  # [m]
 VELOCITY = [0.0, 0.0, 0.0]  # [m/s]
 MASS = 1000.0  # [kg]
 SPECIFIC_IMPULSE = 200.0  # [s]
@@ -34,10 +32,10 @@ SPECIFIC_IMPULSE = 200.0  # [s]
 CONTROL_FREQUENCY = 10.0  # [Hz]
 
 # Instantiate asteroid
-asteroid = Asteroid(INERTIA_X, INERTIA_Y, INERTIA_Z, DENSITY, ANGULAR_VELOCITY, TIME_BIAS)
+asteroid = Asteroid(AXIS_A, AXIS_B, AXIS_C, DENSITY, ANGULAR_VELOCITY, TIME_BIAS)
 
 # Instantiate sensor simulator
-sensor_simulator = SensorSimulator()
+sensor_simulator = SensorSimulator(asteroid)
 # Instantiate controller
 controller = PIDController(TARGET_POSITION, 1.0 / CONTROL_FREQUENCY)
 # Instantiate simulator
@@ -48,6 +46,7 @@ simulator = Simulator(asteroid, POSITION, VELOCITY, MASS, SPECIFIC_IMPULSE,
 positions = simulator.run(TIME, True)
 
 # Visualize trajectory
+'''
 fig = pyplot.figure()
 ax = fig.gca(projection="3d")
 ax.plot(positions[:, 0], positions[:, 1], positions[
@@ -61,3 +60,4 @@ ax.set_xlabel('X')
 ax.set_ylabel('Y')
 ax.set_zlabel('Z')
 pyplot.show()
+'''

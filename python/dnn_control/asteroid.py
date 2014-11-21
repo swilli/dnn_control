@@ -266,7 +266,7 @@ class Asteroid:
         distance = sqrt(sum([(pos - sol) ** 2 for pos, sol in zip(position, solution)]))
         return distance, solution
 
-    def _nearest_point_on_surface_at_position_first_quadrant(self, semi_axis, position):
+    def _nearest_point_on_ellipsoid_at_position_first_quadrant(self, semi_axis, position):
         from math import sqrt
         from scipy.optimize import bisect
 
@@ -351,7 +351,7 @@ class Asteroid:
 
         abs_position = [abs(var) for var in position]
 
-        distance, surface_position = self._nearest_point_on_surface_at_position_first_quadrant(semi_axis, abs_position)
+        distance, surface_position = self._nearest_point_on_ellipsoid_at_position_first_quadrant(semi_axis, abs_position)
 
         surface_position = [sign * pos for sign, pos in zip(signs, surface_position)]
 

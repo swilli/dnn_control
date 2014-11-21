@@ -1,59 +1,107 @@
 import sys
 from numpy import random, mean
-from numpy.linalg import norm
+from numpy.linalg import norm, lstsq
 from scipy.integrate import odeint
 from asteroid import Asteroid
 from constants import PI
-from numpy import array, asarray
+from numpy import array, asarray, empty
 from denoisingautoencoder import DenoisingAutoencoder
 from time import time
 from theano.tensor import matrix, lscalar
 from theano import function, shared
 from theano import config as theano_config
+from sklearn.decomposition import PCA
 
-#AUTOENCODER UNIT TEST
-data = []
-for i in range(20 * 60000):
+def unit_test_pca():
+    data = []
+    for i in range(20 * 5000):
+        seed_1 = random.rand() / 2.1
+        seed_2 = random.rand() / 2.1
+        seed_3 = seed_1 + seed_2
+        data.append([seed_1, seed_2, seed_3])
+
+    data = array(data)
+    pca = PCA(n_components=2)
+    pca.fit(data)
+
+    for i in range(100):
+        seed_1 = random.rand() / 2.1
+        seed_2 = random.rand() / 2.1
+        test_case = array([seed_1, seed_2, seed_1 + seed_2])
+        print(test_case)
+        x_tilde = pca.transform(test_case)
+        z = pca.inverse_transform(x_tilde)
+        print(x_tilde)
+        print(z)
+        print(norm(test_case - z))
+
+'''
+# PCA Compression TEST
+test_cases = 20000
+Y = []
+X = empty([20000, 3])
+
+x1 = np.array([1,2,3,4,5,6])
+x2 = np.array([1,1.5,2,2.5,3.5,6])
+x3 = np.array([6,5,4,3,2,1])
+y = np.random.random(6)
+
+nvar = 3
+one = np.ones(x1.shape)
+A = np.vstack((x1,one,x2,one,x3,one)).T.reshape(nvar,x1.shape[0],2)
+
+for i,Ai in enumerate(A):
+    a = np.linalg.lstsq(Ai,y)[0]
+    R = np.sqrt( ((y - Ai.dot(a))**2).sum() )
+    print R
+'''
+
+def unit_test_autoencoder():
+    #AUTOENCODER UNIT TEST
+    data = []
+    for i in range(20 * 60000):
+        seed_1 = random.rand() / 2.1
+        seed_2 = random.rand() / 2.1
+        test_case = [seed_1, seed_2, seed_1 + seed_2]
+        data.append(test_case)
+    data = array(data)
+    train_set_x = shared(asarray(data, dtype=theano_config.floatX), borrow=True)
+
+    batch_size = 20
+
+    input = matrix('x')
+    index = lscalar()
+
+    num_training_batches = train_set_x.get_value(borrow=True).shape[0] / batch_size
+
+    encoder = DenoisingAutoencoder(3, 2, learning_rate=0.1, input=input, corruption_level=0.3)
+
+    cost, updates = encoder.get_cost_updates()
+
+    train = function([index], cost, updates=updates,
+                        givens={input: train_set_x[index * batch_size: (index + 1) * batch_size]})
+
+    mean_costs = 1.0
+    for epoch in xrange(15):
+        costs = []
+        for batch_index in xrange(num_training_batches):
+            costs.append(train(batch_index))
+
+        mean_costs = mean(costs)
+        print 'Training epoch %d, cost ' % epoch, mean_costs
+
+
     seed_1 = random.rand() / 2.1
     seed_2 = random.rand() / 2.1
-    test_case = [seed_1, seed_2, seed_1 + seed_2]
-    data.append(test_case)
-data = array(data)
-train_set_x = shared(asarray(data, dtype=theano_config.floatX), borrow=True)
-
-batch_size = 20
-
-input = matrix('x')
-index = lscalar()
-
-num_training_batches = train_set_x.get_value(borrow=True).shape[0] / batch_size
-
-encoder = DenoisingAutoencoder(3, 2, learning_rate=0.1, input=input)
-
-cost, updates = encoder.get_cost_updates()
-
-train = function([index], cost, updates=updates,
-                    givens={input: train_set_x[index * batch_size: (index + 1) * batch_size]})
-
-epoch = 1
-mean_costs = 1.0
-while mean_costs > 1e-10:
-    costs = []
-    for batch_index in xrange(num_training_batches):
-        costs.append(train(batch_index))
-
-    mean_costs = mean(costs)
-    print 'Training epoch %d, cost ' % epoch, mean_costs
+    test_case = array([seed_1, seed_2, seed_1 + seed_2])
+    print(test_case)
+    z = encoder.decompress(encoder.compress(test_case))
+    print(z)
+    print(norm(test_case - z))
 
 
-seed_1 = random.rand() / 2.1
-seed_2 = random.rand() / 2.1
-test_case = array([seed_1, seed_2, seed_1 + seed_2])
-print(test_case)
-z = encoder.decompress(encoder.compress(test_case))
-print(z)
-print(norm(test_case - z))
-
+#unit_test_autoencoder()
+unit_test_pca()
 
 '''
 #ASTEROID HEIGHT METHOD UNIT TEST

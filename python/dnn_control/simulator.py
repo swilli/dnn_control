@@ -52,8 +52,8 @@ class Simulator:
     def run(self, time, collect_positions=False):
         from numpy import empty
 
-        print("Run for {0} time with following configuration:".format(time))
-        print(self)
+        #print("Run for {0} time with following configuration:".format(time))
+        #print(self)
 
         control_interval = self.control_interval
         iterations = int(time / self.control_interval)
@@ -63,21 +63,23 @@ class Simulator:
             positions = empty([iterations, 3])
 
         for i in range(iterations):
-            # Simulate sensor data for current spacecraft state
-            sensor_data = self.sensor_simulator.simulate(self.spacecraft_state)
-
-            # Get thrust from controller
-            thrust = self.spacecraft_controller.get_thrust(sensor_data)
+            start_time = i * control_interval
+            end_time = start_time + control_interval
 
             # Get new perturbations
             perturbations_acceleration = self.simulate_perturbations()
+
+            # Simulate sensor data for current spacecraft state
+            sensor_data = self.sensor_simulator.simulate(self.spacecraft_state, perturbations_acceleration, start_time)
+
+            # Get thrust from controller
+            thrust = self.spacecraft_controller.get_thrust(sensor_data)
 
             if collect_positions:
                 positions[i][:] = self.spacecraft_state[0:3]
 
             # Simulate dynamics with current perturbations and thrust
-            self.simulate_dynamics(perturbations_acceleration, thrust, i * control_interval,
-                                   (i + 1) * control_interval)
+            self.simulate_dynamics(perturbations_acceleration, thrust, start_time, end_time)
 
         return positions
 
@@ -112,8 +114,7 @@ class Simulator:
         angular_velocity_mul2 = [2.0 * val for val in angular_velocity]
         angular_acceleration = self.asteroid.angular_acceleration_at_time(time)
 
-        centrifugal_acceleration = cross_product(
-            angular_velocity, cross_product(angular_velocity, position))
+        centrifugal_acceleration = cross_product(angular_velocity, cross_product(angular_velocity, position))
         coriolis_acceleration = cross_product(angular_velocity_mul2, velocity)
         euler_acceleration = cross_product(angular_acceleration, position)
 
@@ -145,8 +146,9 @@ class Simulator:
                         - centrifugal_acceleration[2]
 
         # derivative of mass
-        d_dt_state[6] = sqrt(thrust[0] ** 2 + thrust[1] ** 2 + thrust[2]
-                             ** 2) / self._earth_acceleration_mul_spacecraft_specific_impulse
+        d_dt_state[6] = sqrt(thrust[0] ** 2 + thrust[1] ** 2 + thrust[2] ** 2) \
+                        / self._earth_acceleration_mul_spacecraft_specific_impulse
+
         return d_dt_state
 
     # External perturbations acceleration
