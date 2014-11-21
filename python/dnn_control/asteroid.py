@@ -349,12 +349,10 @@ class Asteroid:
         semi_axis = [self.semi_axis_a, self.semi_axis_b, self.semi_axis_c]
         signs = [copysign(1.0, val) for val in position]
 
-        permutation = [0, 1, 2]
-        perm_position = [abs(position[i]) for i in permutation]
-        perm_semi_axis = [semi_axis[i] for i in permutation]
+        abs_position = [abs(var) for var in position]
 
-        distance, surface_position = self._nearest_point_on_surface_at_position_first_quadrant(perm_semi_axis, perm_position)
+        distance, surface_position = self._nearest_point_on_surface_at_position_first_quadrant(semi_axis, abs_position)
 
-        surface_position = [signs[permutation[i]] * surface_position[i] for i in permutation]
+        surface_position = [sign * pos for sign, pos in zip(signs, surface_position)]
 
         return distance, surface_position

@@ -44,9 +44,9 @@ def check(surface_point, position):
 signs = [-1.0, 1.0]
 times = []
 for i in range(10000):
-    x = random.choice(signs) * random.uniform(SEMI_AXIS_A, SEMI_AXIS_A*10.0)
-    y = random.choice(signs) * random.uniform(SEMI_AXIS_B, SEMI_AXIS_B*10.0)
-    z = random.choice(signs) * random.uniform(SEMI_AXIS_C, SEMI_AXIS_C*10.0)
+    x = random.choice(signs) * random.uniform(SEMI_AXIS_A, SEMI_AXIS_A*1000.0)
+    y = random.choice(signs) * random.uniform(SEMI_AXIS_B, SEMI_AXIS_B*1000.0)
+    z = random.choice(signs) * random.uniform(SEMI_AXIS_C, SEMI_AXIS_C*1000.0)
 
     position = [x, y, z]
     start = time()
