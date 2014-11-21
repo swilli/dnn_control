@@ -4,31 +4,63 @@ from numpy.linalg import norm
 from scipy.integrate import odeint
 from asteroid import Asteroid
 from constants import PI
-from numpy import array
+from numpy import array, asarray
 from denoisingautoencoder import DenoisingAutoencoder
 from time import time
+from theano.tensor import matrix, lscalar
+from theano import function, shared
+from theano import config as theano_config
 
-'''
-encoder = DenoisingAutoencoder(3, 2, learning_rate=0.00001)
-
+#AUTOENCODER UNIT TEST
 data = []
-for i in range(50000):
-    seed_1 = float(random.randint(0, 100))
-    seed_2 = float(random.randint(0, 100))
+for i in range(20 * 60000):
+    seed_1 = random.rand() / 2.1
+    seed_2 = random.rand() / 2.1
     test_case = [seed_1, seed_2, seed_1 + seed_2]
     data.append(test_case)
 data = array(data)
+train_set_x = shared(asarray(data, dtype=theano_config.floatX), borrow=True)
 
-print(encoder.train(data, 15, 20))
+batch_size = 20
+
+input = matrix('x')
+index = lscalar()
+
+num_training_batches = train_set_x.get_value(borrow=True).shape[0] / batch_size
+
+encoder = DenoisingAutoencoder(3, 2, learning_rate=0.1, input=input)
+
+cost, updates = encoder.get_cost_updates()
+
+train = function([index], cost, updates=updates,
+                    givens={input: train_set_x[index * batch_size: (index + 1) * batch_size]})
+
+epoch = 1
+mean_costs = 1.0
+while mean_costs > 1e-10:
+    costs = []
+    for batch_index in xrange(num_training_batches):
+        costs.append(train(batch_index))
+
+    mean_costs = mean(costs)
+    print 'Training epoch %d, cost ' % epoch, mean_costs
+
+
+seed_1 = random.rand() / 2.1
+seed_2 = random.rand() / 2.1
+test_case = array([seed_1, seed_2, seed_1 + seed_2])
+print(test_case)
+z = encoder.decompress(encoder.compress(test_case))
+print(z)
+print(norm(test_case - z))
+
+
 '''
+#ASTEROID HEIGHT METHOD UNIT TEST
 
-
-'''
-ASTEROID HEIGHT METHOD UNIT TEST
-
-SEMI_AXIS_A = 1000.0  # [m]
+SEMI_AXIS_C = 1000.0  # [m]
 SEMI_AXIS_B = 2000.0  # [m]
-SEMI_AXIS_C = 3000.0  # [m]
+SEMI_AXIS_A = 3000.0  # [m]
 DENSITY = 2000.0  # [kg/m^3]
 ANGULAR_VELOCITY = [0.0005, 0.0, 0.0003]  # [1/s]
 TIME_BIAS = 0.0  # [s]
@@ -62,7 +94,7 @@ print(mean(times))
 '''
 
 
-
+'''
 #ASTEROID ANGULAR VELOCITY UNIT TEST
 
 def w_dot(state, time, inertia_x, inertia_y, inertia_z):
@@ -104,12 +136,12 @@ for i in range(trials):
 print("Min error: {}".format(min_error))
 print("Max error: {}".format(max_error))
 print("Avg error: {}".format(avg_error / trials))
-
+'''
 
 
 
 '''
-ASTEROID ANGULAR VELOCITY VISUALIZATION
+#ASTEROID ANGULAR VELOCITY VISUALIZATION
 
 TIME = 100000.0
 SAMPLING_FREQUENCY = 10.0
