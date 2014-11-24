@@ -46,5 +46,5 @@ simulator = Simulator(asteroid, POSITION, VELOCITY, MASS, SPECIFIC_IMPULSE,
 positions, velocities, heights, velocities_vertical, velocities_remaining = simulator.run(TIME, True)
 
 # Visualize trajectory
-visualize(asteroid, positions, CONTROL_FREQUENCY)
+visualize(asteroid, positions, velocities, heights, velocities_vertical, velocities_remaining, CONTROL_FREQUENCY)
 print("done.")

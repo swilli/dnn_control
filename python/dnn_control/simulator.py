@@ -58,14 +58,14 @@ class Simulator:
         velocities = []
         heights = []
         velocities_vertical = []
-        velocities_remainig = []
+        velocities_remaining = []
 
         if collect_data:
             positions = empty([iterations, 3])
             velocities = empty([iterations, 3])
             heights = empty([iterations, 3])
             velocities_vertical = empty([iterations, 3])
-            velocities_remainig = empty([iterations, 3])
+            velocities_remaining = empty([iterations, 3])
 
         for i in range(iterations):
             start_time = i * control_interval
@@ -85,12 +85,12 @@ class Simulator:
                 velocities[i][:] = self.spacecraft_state[3:6]
                 heights[i][:] = height
                 velocities_vertical[i][:] = velocity_vertical
-                velocities_remainig[i][:] = velocity_remaining
+                velocities_remaining[i][:] = velocity_remaining
 
             # Simulate dynamics with current perturbations and thrust
             self.simulate_dynamics(perturbations_acceleration, thrust, start_time, end_time)
 
-        return positions, velocities, heights, velocity_vertical, velocity_remaining
+        return positions, velocities, heights, velocities_vertical, velocities_remaining
 
     # Integrate the system from start_time to end_time
     def simulate_dynamics(self, perturbations_acceleration, thrust, start_time, end_time):
