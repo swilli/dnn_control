@@ -182,7 +182,7 @@ class Asteroid:
         acceleration[0], acceleration[2] = acceleration[2], acceleration[0]
 
         # for now...
-        return [-1.0 * self.mass * GRAVITATIONAL_CONSTANT / (val * val) for val in position]
+        return [-copysign(1.0, val) * self.mass * GRAVITATIONAL_CONSTANT / (val * val) for val in position]
 
     # compute w
     def angular_velocity_at_time(self, time):
