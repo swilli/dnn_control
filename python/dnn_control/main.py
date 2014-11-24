@@ -47,3 +47,4 @@ positions, velocities, heights, velocities_vertical, velocities_remaining = simu
 
 # Visualize trajectory
 visualize(asteroid, positions, CONTROL_FREQUENCY)
+print("done.")
