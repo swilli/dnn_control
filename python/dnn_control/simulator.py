@@ -52,9 +52,6 @@ class Simulator:
     def run(self, time, collect_positions=False):
         from numpy import empty
 
-        #print("Run for {0} time with following configuration:".format(time))
-        #print(self)
-
         control_interval = self.control_interval
         iterations = int(time / self.control_interval)
         positions = []

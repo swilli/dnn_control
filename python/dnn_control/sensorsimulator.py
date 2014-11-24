@@ -6,6 +6,7 @@ class SensorSimulator:
     def simulate(self, state, perturbations_acceleration, time):
         from utility import cross_product
         from math import sqrt
+        from numpy import random
 
         sensor_data = [0.0, 0.0, 0.0, 0.0, 0.0]
 
@@ -48,5 +49,9 @@ class SensorSimulator:
                                  - coriolis_acceleration[i]\
                                  - euler_acceleration[i]\
                                  - centrifugal_acceleration[i]
+
+        variances = [0.05] * 5
+        for i in range(5):
+            sensor_data[i] += sensor_data[i] * random.normal(0, variances[i])
 
         return sensor_data
