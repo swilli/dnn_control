@@ -127,6 +127,11 @@ class Simulator:
         coriolis_acceleration = cross_product(angular_velocity_mul2, velocity)
         euler_acceleration = cross_product(angular_acceleration, position)
 
+        # print("G: %f" % sqrt(sum([val * val for val in gravity_acceleration])))
+        # print("O: %f" % sqrt(sum([(val_pert - val_cor - val_eu - val_centr) ** 2
+        # for val_pert, val_cor, val_eu, val_centr in
+        # zip(perturbations_acceleration, coriolis_acceleration, euler_acceleration, centrifugal_acceleration)])))
+
         d_dt_state = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
         # derivative of position

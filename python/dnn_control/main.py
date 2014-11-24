@@ -10,7 +10,7 @@ from visualization import visualize, plot_3d
 signs = [-1.0, 1.0]
 
 # Simulation settings
-TIME = 1000.0  # [s]
+TIME = 24*60*60  # [s]
 TARGET_POSITION = [1000.0, 1000.0, 1000.0]  # [m]
 
 # Asteroid settings
@@ -18,7 +18,9 @@ AXIS = [random.uniform(1000.0, 2000.0), random.uniform(2500.0, 3500.0), random.u
 AXIS_C, AXIS_B, AXIS_A = sorted(AXIS)
 
 DENSITY = random.uniform(1500.0, 2500.0)  # [kg/m^3]
-ANGULAR_VELOCITY = [random.uniform(-0.02 * PI, 0.02 * PI), 0.0, random.uniform(-0.02 * PI, 0.02 * PI)]  # [1/s]
+ANGULAR_VELOCITY = [random.choice(signs) * random.uniform(0.0002, 0.0004),
+                    0.0,
+                    random.choice(signs) * random.uniform(0.0002, 0.0004)]  # [1/s]
 TIME_BIAS = random.uniform(0.0, 60.0 * 60.0 * 6.0)  # [s]
 
 # Spacecraft settings
@@ -29,7 +31,7 @@ MASS = 1000.0  # [kg]
 SPECIFIC_IMPULSE = 200.0  # [s]
 
 # Controller settings
-CONTROL_FREQUENCY = 10.0  # [Hz]
+CONTROL_FREQUENCY = 1.0/30.0  # [Hz]
 
 # Instantiate asteroid
 asteroid = Asteroid(AXIS_A, AXIS_B, AXIS_C, DENSITY, ANGULAR_VELOCITY, TIME_BIAS)
@@ -46,6 +48,6 @@ simulator = Simulator(asteroid, POSITION, VELOCITY, MASS, SPECIFIC_IMPULSE,
 positions, velocities, heights, velocities_vertical, velocities_remaining = simulator.run(TIME, True)
 
 # Visualize trajectory
-visualize(asteroid, positions, velocities, heights, velocities_vertical, velocities_remaining, CONTROL_FREQUENCY)
+visualize(asteroid, positions, velocities, heights, velocities_vertical, velocities_remaining, 30)
 
 print("done.")
