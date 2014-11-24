@@ -10,7 +10,7 @@ from visualization import visualize, plot_3d
 signs = [-1.0, 1.0]
 
 # Simulation settings
-TIME = 1000.0  # [s]
+TIME = 100.0  # [s]
 TARGET_POSITION = [1000.0, 1000.0, 1000.0]  # [m]
 
 # Asteroid settings
@@ -43,7 +43,7 @@ simulator = Simulator(asteroid, POSITION, VELOCITY, MASS, SPECIFIC_IMPULSE,
                       sensor_simulator, controller, CONTROL_FREQUENCY)
 
 # Run simulator
-positions = simulator.run(TIME, True)
+positions, velocities, heights, velocities_vertical, velocities_remaining = simulator.run(TIME, True)
 
 # Visualize trajectory
 visualize(asteroid, positions, CONTROL_FREQUENCY)

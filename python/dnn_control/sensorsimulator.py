@@ -53,5 +53,4 @@ class SensorSimulator:
         variances = [0.05] * 5
         for i in range(5):
             sensor_data[i] += sensor_data[i] * random.normal(0, variances[i])
-
-        return sensor_data
+        return sensor_data, height, velocity_vertical, velocity_remaining

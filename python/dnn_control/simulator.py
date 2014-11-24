@@ -49,15 +49,23 @@ class Simulator:
         return "\n ".join(result)
 
     # Perform the simulation for time seconds
-    def run(self, time, collect_positions=False):
+    def run(self, time, collect_data=False):
         from numpy import empty
 
         control_interval = self.control_interval
         iterations = int(time / self.control_interval)
         positions = []
+        velocities = []
+        heights = []
+        velocities_vertical = []
+        velocities_remainig = []
 
-        if collect_positions:
+        if collect_data:
             positions = empty([iterations, 3])
+            velocities = empty([iterations, 3])
+            heights = empty([iterations, 3])
+            velocities_vertical = empty([iterations, 3])
+            velocities_remainig = empty([iterations, 3])
 
         for i in range(iterations):
             start_time = i * control_interval
@@ -67,18 +75,22 @@ class Simulator:
             perturbations_acceleration = self.simulate_perturbations()
 
             # Simulate sensor data for current spacecraft state
-            sensor_data = self.sensor_simulator.simulate(self.spacecraft_state, perturbations_acceleration, start_time)
+            sensor_data, height, velocity_vertical, velocity_remaining = self.sensor_simulator.simulate(self.spacecraft_state, perturbations_acceleration, start_time)
 
             # Get thrust from controller
             thrust = self.spacecraft_controller.get_thrust(sensor_data)
 
-            if collect_positions:
+            if collect_data:
                 positions[i][:] = self.spacecraft_state[0:3]
+                velocities[i][:] = self.spacecraft_state[3:6]
+                heights[i][:] = height
+                velocities_vertical[i][:] = velocity_vertical
+                velocities_remainig[i][:] = velocity_remaining
 
             # Simulate dynamics with current perturbations and thrust
             self.simulate_dynamics(perturbations_acceleration, thrust, start_time, end_time)
 
-        return positions
+        return positions, velocities, heights, velocity_vertical, velocity_remaining
 
     # Integrate the system from start_time to end_time
     def simulate_dynamics(self, perturbations_acceleration, thrust, start_time, end_time):

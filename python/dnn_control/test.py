@@ -1,5 +1,5 @@
 import sys
-from numpy import random, mean
+from numpy import random, mean, column_stack, ones
 from numpy.linalg import norm, lstsq
 from scipy.integrate import odeint
 from asteroid import Asteroid
@@ -35,26 +35,23 @@ def unit_test_pca():
         print(z)
         print(norm(test_case - z))
 
-'''
-# PCA Compression TEST
-test_cases = 20000
-Y = []
-X = empty([20000, 3])
 
-x1 = np.array([1,2,3,4,5,6])
-x2 = np.array([1,1.5,2,2.5,3.5,6])
-x3 = np.array([6,5,4,3,2,1])
-y = np.random.random(6)
+def unit_test_linear_regression():
+    data = []
+    num_samples = 50000
+    for i in range(num_samples):
+        seed_1 = random.rand() / 2.1
+        seed_2 = random.rand() / 2.1
+        test_case = [seed_1, seed_2, seed_1 + seed_2]
+        data.append(test_case)
+    data = array(data)
 
-nvar = 3
-one = np.ones(x1.shape)
-A = np.vstack((x1,one,x2,one,x3,one)).T.reshape(nvar,x1.shape[0],2)
 
-for i,Ai in enumerate(A):
-    a = np.linalg.lstsq(Ai,y)[0]
-    R = np.sqrt( ((y - Ai.dot(a))**2).sum() )
-    print R
-'''
+    compressed_data = column_stack((data[:, 0:2], ones((num_samples, 1))))
+
+    x, residuals, rank, s = lstsq(compressed_data, data)
+    print(x)
+
 
 def unit_test_autoencoder():
     #AUTOENCODER UNIT TEST
@@ -101,7 +98,8 @@ def unit_test_autoencoder():
 
 
 #unit_test_autoencoder()
-unit_test_pca()
+#unit_test_pca()
+unit_test_linear_regression()
 
 '''
 #ASTEROID HEIGHT METHOD UNIT TEST

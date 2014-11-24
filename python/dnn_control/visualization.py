@@ -45,3 +45,5 @@ def visualize(asteroid, positions, frequency):
         rate(frequency)
         spacecraft.pos = tuple(positions[i])
 
+
+
