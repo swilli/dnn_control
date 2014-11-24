@@ -58,23 +58,21 @@ def unit_test_lasso():
     from numpy import dot
 
     data = []
-    num_samples = 3
+    num_samples = 50000
     for i in range(num_samples):
-        seed_1 = random.rand() / 2.1
-        seed_2 = random.rand() / 2.1
+        seed_1 = random.randint(100)
+        seed_2 = random.randint(100)
         test_case = [seed_1, seed_2, seed_1 + seed_2]
         data.append(test_case)
 
     X = data
-    y = [values[0] for values in data]
-    enc = Lasso(alpha=0.1)
-    enc.fit(X, y)
+    enc = Lasso(alpha=0.0, max_iter=4000)
+    enc.fit(X, X)
     print(enc.coef_)
     seed_1 = random.rand() / 2.1
     seed_2 = random.rand() / 2.1
     test_case = array([seed_1, seed_2, seed_1 + seed_2])
     print(test_case)
-    print(enc.predict(test_case))
     print(dot(enc.coef_, test_case))
 
 
