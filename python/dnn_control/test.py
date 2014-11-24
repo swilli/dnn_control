@@ -53,6 +53,31 @@ def unit_test_linear_regression():
     print(x)
 
 
+def unit_test_lasso():
+    from sklearn.linear_model import Lasso
+    from numpy import dot
+
+    data = []
+    num_samples = 3
+    for i in range(num_samples):
+        seed_1 = random.rand() / 2.1
+        seed_2 = random.rand() / 2.1
+        test_case = [seed_1, seed_2, seed_1 + seed_2]
+        data.append(test_case)
+
+    X = data
+    y = [values[0] for values in data]
+    enc = Lasso(alpha=0.1)
+    enc.fit(X, y)
+    print(enc.coef_)
+    seed_1 = random.rand() / 2.1
+    seed_2 = random.rand() / 2.1
+    test_case = array([seed_1, seed_2, seed_1 + seed_2])
+    print(test_case)
+    print(enc.predict(test_case))
+    print(dot(enc.coef_, test_case))
+
+
 def unit_test_autoencoder():
     #AUTOENCODER UNIT TEST
     data = []
@@ -99,7 +124,8 @@ def unit_test_autoencoder():
 
 #unit_test_autoencoder()
 #unit_test_pca()
-unit_test_linear_regression()
+#unit_test_linear_regression()
+unit_test_lasso()
 
 '''
 #ASTEROID HEIGHT METHOD UNIT TEST

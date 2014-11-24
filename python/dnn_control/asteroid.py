@@ -114,7 +114,7 @@ class Asteroid:
     # Ported from "Ellipsoid_Gravity_Field.m" written by Dario Cersosimo,
     # October 16, 2009.
     def gravity_at_position(self, position):
-        from math import asin, sqrt, fabs
+        from math import asin, sqrt, fabs, copysign
         from numpy import array, roots
         from constants import PI, GRAVITATIONAL_CONSTANT
         from ellipsoidgravityfield import legendre_elliptic_integral_pf, legendre_elliptic_integral_pe
@@ -180,7 +180,9 @@ class Asteroid:
 
         # rotate back
         acceleration[0], acceleration[2] = acceleration[2], acceleration[0]
-        return [0.0, 0.0, 0.0]
+
+        # for now...
+        return [-1.0 * self.mass * GRAVITATIONAL_CONSTANT / (val * val) for val in position]
 
     # compute w
     def angular_velocity_at_time(self, time):
@@ -220,9 +222,9 @@ class Asteroid:
         inertia_z = self.inertia_z
 
         # Lifshitz eq (36.5)
-        return [(inertia_z - inertia_y) * angular_velocity[2] * angular_velocity[1] / inertia_x,
-                (inertia_x - inertia_z) * angular_velocity[0] * angular_velocity[2] / inertia_y,
-                (inertia_y - inertia_x) * angular_velocity[1] * angular_velocity[0] / inertia_z]
+        return [(inertia_y - inertia_z) * angular_velocity[1] * angular_velocity[2] / inertia_x,
+                (inertia_z - inertia_x) * angular_velocity[2] * angular_velocity[0] / inertia_y,
+                (inertia_x - inertia_y) * angular_velocity[0] * angular_velocity[1] / inertia_z]
 
     def _nearest_point_on_ellipse_first_quadrant(self, semi_axis, position):
         from math import sqrt
