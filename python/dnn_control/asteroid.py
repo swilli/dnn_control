@@ -114,10 +114,10 @@ class Asteroid:
     # Implementation of eq. (3.11a-c) from "EVALUATION OF NOVEL HOVERING STRATEGIES
     # TO IMPROVE GRAVITY-TRACTOR DEFLECTION MERITS" written by Dario Cersosimo,
     def gravity_at_position(self, position):
-        from math import asin, sqrt, fabs, copysign
+        from math import asin, sqrt
         from numpy import array, roots
         from constants import PI, GRAVITATIONAL_CONSTANT
-        from ellipsoidgravityfield import legendre_elliptic_integral_pe, legendre_elliptic_integral_pf
+        from scipy.special import ellipkinc, ellipeinc
 
         gravity = [0, 0, 0]
 
@@ -154,10 +154,10 @@ class Asteroid:
             val_sin = 1.0
         phi = asin(sqrt(val_sin))
 
-        k = sqrt((axis_a_pow2 - axis_b_pow2) / (axis_a_pow2 - axis_c_pow2))
+        k = (axis_a_pow2 - axis_b_pow2) / (axis_a_pow2 - axis_c_pow2)
 
-        integral_F = legendre_elliptic_integral_pf(phi, k, 1e-10)
-        integral_E = legendre_elliptic_integral_pe(phi, k, 1e-10)
+        integral_F = ellipkinc(phi, k)
+        integral_E = ellipeinc(phi, k)
 
         gamma = 4.0 * PI * GRAVITATIONAL_CONSTANT * density * axis_a * axis_b * axis_c \
                 / sqrt(axis_a_pow2 - axis_c_pow2)
@@ -175,15 +175,6 @@ class Asteroid:
 
         for i in range(3):
             gravity[i] *= position[i]
-
-        # for now...
-        '''
-        norm_position_pow2 = sum([(val * val) for val in position])
-        norm_position = sqrt(norm_position_pow2)
-        gravity_coef = self.mass * GRAVITATIONAL_CONSTANT / norm_position_pow2
-        gravity_vector = [-val for val in position]
-        gravity_vector = [val / norm_position * gravity_coef for val in gravity_vector]
-        '''
 
         return gravity
 
@@ -257,7 +248,7 @@ class Asteroid:
                 solution[0] = 0.0
                 solution[1] = semi_axis_1
         else:
-            denominator = semi_axis_0 ** 2 - semi_axis_1 ** 2
+            denominator = semi_axis_0 * semi_axis_0 - semi_axis_1 * semi_axis_1
             semi_axis_mul_pos = semi_axis_0 * pos_0
             if semi_axis_mul_pos < denominator:
                 semi_axis_div_denom = semi_axis_mul_pos / denominator
@@ -268,7 +259,7 @@ class Asteroid:
                 solution[0] = semi_axis_0
                 solution[1] = 0.0
 
-        distance = sqrt(sum([(pos - sol) ** 2 for pos, sol in zip(position, solution)]))
+        distance = sqrt(sum([(pos - sol) * (pos - sol) for pos, sol in zip(position, solution)]))
         return distance, solution
 
     def _nearest_point_on_ellipsoid_at_position_first_quadrant(self, semi_axis, position):
@@ -317,7 +308,8 @@ class Asteroid:
                     solution[0] = 0.0
                     solution[2] = semi_axis_2
         else:
-            denominator = [semi_axis_0 ** 2 - semi_axis_2 ** 2, semi_axis_1 ** 2 - semi_axis_2 ** 2]
+            denominator = [semi_axis_0 * semi_axis_0 - semi_axis_2 * semi_axis_2,
+                           semi_axis_1 * semi_axis_1 - semi_axis_2 * semi_axis_2]
             semi_axis_mul_pos = [semi_axis[i] * position[i] for i in range(2)]
             if semi_axis_mul_pos < denominator[0] and semi_axis_mul_pos[1] < denominator[1]:
                 semi_axis_div_denom = [semi_axis_mul_pos[i] / denominator[i] for i in range(2)]
@@ -342,7 +334,7 @@ class Asteroid:
                 solution[0] = solution_2d[0]
                 solution[1] = solution_2d[1]
 
-        distance = sqrt(sum([(pos - sol) ** 2 for pos, sol in zip(position, solution)]))
+        distance = sqrt(sum([(pos - sol) * (pos - sol) for pos, sol in zip(position, solution)]))
         return distance, solution
 
     def distance_to_surface_at_position(self, position):

@@ -39,7 +39,6 @@ class Simulator:
         self._earth_acceleration_mul_spacecraft_specific_impulse = EARTH_ACCELERATION * \
                                                                    self.spacecraft_specific_impulse
 
-
     def __str__(self):
         result = ["Simulator:"]
         keys = sorted([key for key in self.__dict__])
@@ -95,16 +94,10 @@ class Simulator:
     # Integrate the system from start_time to end_time
     def simulate_dynamics(self, perturbations_acceleration, thrust, start_time, end_time):
         from scipy.integrate import odeint
-        from math import isnan, isinf
 
         result = odeint(self.dynamics, self.spacecraft_state, [start_time, end_time],
                         (perturbations_acceleration, thrust))
         self.spacecraft_state = result[1][:]
-
-        for val in self.spacecraft_state:
-            if isnan(val) or isinf(val):
-                raise Exception(self)
-                exit()
 
     # Simulator dynamics from eq (1) in paper "Control of Hovering Spacecraft Using Altimetry" by Sawai et al.
     def dynamics(self, state, time, perturbations_acceleration, thrust):
@@ -123,15 +116,9 @@ class Simulator:
         angular_velocity_mul2 = [2.0 * val for val in angular_velocity]
         angular_acceleration = self.asteroid.angular_acceleration_at_time(time)
 
-
         euler_acceleration = cross_product(angular_acceleration, position)
         centrifugal_acceleration = cross_product(angular_velocity, cross_product(angular_velocity, position))
         coriolis_acceleration = cross_product(angular_velocity_mul2, velocity)
-
-        # print("G: %f" % sqrt(sum([val * val for val in gravity_acceleration])))
-        # print("O: %f" % sqrt(sum([(val_pert - val_cor - val_eu - val_centr) ** 2
-        # for val_pert, val_cor, val_eu, val_centr in
-        # zip(perturbations_acceleration, coriolis_acceleration, euler_acceleration, centrifugal_acceleration)])))
 
         d_dt_state = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
@@ -145,7 +132,7 @@ class Simulator:
                               - centrifugal_acceleration[i]
 
         # derivative of mass
-        d_dt_state[6] = sqrt(thrust[0] ** 2 + thrust[1] ** 2 + thrust[2] ** 2) \
+        d_dt_state[6] = sqrt(sum([val * val for val in thrust]))\
                         / self._earth_acceleration_mul_spacecraft_specific_impulse
 
         return d_dt_state

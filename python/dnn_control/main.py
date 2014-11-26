@@ -5,7 +5,6 @@ from sensorsimulator import SensorSimulator
 from simulator import Simulator
 from asteroid import Asteroid
 from time import time
-from visualization import visualize, plot_3d
 
 # Video Settings
 VIDEO_SPEED = 100.0
@@ -53,13 +52,14 @@ end = time()
 
 duration = end - start
 
+print("Simulation done. {0} seconds took {1} seconds to simulate (x{2}).".format(TIME, duration, TIME / duration))
 # Visualize trajectory
-try:
-    input("Simulation done. {0} seconds took {1} seconds to simulate (x{2})."
-          " Press enter to continue...".format(TIME, duration, TIME / duration))
+'''try:
+    input("Press enter to continue...")
 except SyntaxError:
     pass
 
 visualize(asteroid, positions, velocities, heights, velocities_vertical, velocities_remaining, VIDEO_SPEED * CONTROL_FREQUENCY)
 
 print("done.")
+'''

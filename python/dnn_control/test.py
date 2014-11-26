@@ -156,7 +156,6 @@ def unit_test_angular_velocity():
     from numpy.linalg import norm
     from asteroid import Asteroid
     from scipy.integrate import odeint
-    from constants import PI
 
     def w_dot(state, time, inertia_x, inertia_y, inertia_z):
         return [(inertia_y - inertia_z) * state[1] * state[2] / inertia_x,
@@ -179,7 +178,8 @@ def unit_test_angular_velocity():
         semi_axis_c, semi_axis_b, semi_axis_a = sorted(axis)
 
         density = 2000.0
-        angular_velocity = [random.uniform(-0.02 * PI, 0.02 * PI), 0.0, random.uniform(-0.02 * PI, 0.02 * PI)]
+        angular_velocity = [random.choice(signs) * random.uniform(0.0002, 0.0004), 0.0,
+                            random.choice(signs) * random.uniform(0.0002, 0.0004)]
 
         asteroid = Asteroid(semi_axis_a, semi_axis_b, semi_axis_c, density, angular_velocity, 0.0)
 
@@ -204,12 +204,13 @@ def unit_test_angular_acceleration():
     from numpy import random, array
     from numpy.linalg import norm
     from asteroid import Asteroid
-    from constants import PI
 
     def w_dot(state, inertia_x, inertia_y, inertia_z):
         return [(inertia_y - inertia_z) * state[1] * state[2] / inertia_x,
                 (inertia_z - inertia_x) * state[2] * state[0] / inertia_y,
                 (inertia_x - inertia_y) * state[0] * state[1] / inertia_z]
+
+    signs = [-1.0, 1.0]
 
     min_error = float_info.max
     max_error = float_info.min
@@ -227,7 +228,8 @@ def unit_test_angular_acceleration():
         semi_axis_c, semi_axis_b, semi_axis_a = sorted(axis)
 
         density = 2000.0
-        angular_velocity = [random.uniform(-0.02 * PI, 0.02 * PI), 0.0, random.uniform(-0.02 * PI, 0.02 * PI)]
+        angular_velocity = [random.choice(signs) * random.uniform(0.0002, 0.0004), 0.0,
+                            random.choice(signs) * random.uniform(0.0002, 0.0004)]
 
         asteroid = Asteroid(semi_axis_a, semi_axis_b, semi_axis_c, density, angular_velocity, 0.0)
 
@@ -248,45 +250,57 @@ def unit_test_angular_acceleration():
     print("Max error: {}".format(max_error))
     print("Avg error: {}".format(avg_error / trials))
 
-def unit_test_gravity():
-    from numpy import random, mean
+def unit_test_gravity_direction():
+    from numpy import random, array
     from math import copysign
     from asteroid import Asteroid
-    from constants import PI
+    from utility import sample_position_outside_ellipsoid
+    from mayavi import mlab
+
     signs = [-1.0, 1.0]
 
-    test_cases = 50000
+    num_samples = 1000
+    band_width = 5000.0
 
-    for i in range(test_cases):
-        axis = []
-        [axis.append(random.uniform(1000.0, 5000.0)) for i in range(3)]
-        semi_axis_c, semi_axis_b, semi_axis_a = sorted(axis)
+    axis = []
+    [axis.append(random.uniform(1000.0, 5000.0)) for i in range(3)]
+    semi_axis_c, semi_axis_b, semi_axis_a = sorted(axis)
 
-        density = random.uniform(1500.0, 2500.0)
-        angular_velocity = [random.uniform(-0.02 * PI, 0.02 * PI), 0.0, random.uniform(-0.02 * PI, 0.02 * PI)]
+    density = random.uniform(1500.0, 2500.0)
+    angular_velocity = [random.choice(signs) * random.uniform(0.0002, 0.0004), 0.0,
+                        random.choice(signs) * random.uniform(0.0002, 0.0004)]
 
-        asteroid = Asteroid(semi_axis_a, semi_axis_b, semi_axis_c, density, angular_velocity, 0.0)
+    asteroid = Asteroid(semi_axis_a, semi_axis_b, semi_axis_c, density, angular_velocity, 0.0)
 
-        position = [random.choice(signs) * semi_axis_a * (1.1 + 10.0 * random.rand()),
-                    random.choice(signs) * semi_axis_b * (1.1 + 10.0 * random.rand()),
-                    random.choice(signs) * semi_axis_c * (1.1 + 10.0 * random.rand())]
+    positions = sample_position_outside_ellipsoid(semi_axis_a, semi_axis_b, semi_axis_c, band_width, num_samples)
+    gravities = [asteroid.gravity_at_position(pos) for pos in positions]
 
-        gravity = asteroid.gravity_at_position(position)
-
-        for i in range(3):
-            sign_pos = copysign(1, position[i])
-            sign_grav = copysign(1, gravity[i])
+    positions = array(positions)
+    gravities = array(gravities)
+    for i in range(num_samples):
+        pos = positions[i]
+        grav = gravities[i]
+        for j in range(3):
+            sign_pos = copysign(1.0, pos[j])
+            sign_grav = copysign(1.0, grav[j])
             if sign_pos == sign_grav:
-                print("a = {0}; b = {1}; c = {2}; rho = {3}; x = {4}';".format(semi_axis_a, semi_axis_b, semi_axis_c, density, position))
-                print(gravity)
-                exit()
+                print("BUG")
+                assert(False)
 
-def unit_test_gravity_2():
+    mlab.figure()
+    mlab.quiver3d(positions[:, 0], positions[:, 1], positions[:, 2],
+             gravities[:, 0], gravities[:, 1], gravities[:, 2], line_width=0.5)
+    title_start = "a = {0} b = {1} c = {2} rho = {3}".format(semi_axis_a, semi_axis_b, semi_axis_c, density)
+    mlab.title(title_start)
+    mlab.show()
+
+
+
+def unit_test_gravity_contour():
     from numpy import random, linspace, meshgrid, array
     from numpy.linalg import norm
     from utility import sample_position_outside_ellipse
     from asteroid import Asteroid
-    from constants import PI
     from matplotlib.pyplot import imshow, scatter, colorbar, title, close, gcf, xlabel, ylabel
     from scipy.interpolate import Rbf
 
@@ -297,12 +311,13 @@ def unit_test_gravity_2():
     semi_axis_c, semi_axis_b, semi_axis_a = sorted(axis)
 
     density = random.uniform(1500.0, 2500.0)
-    angular_velocity = [random.uniform(-0.02 * PI, 0.02 * PI), 0.0, random.uniform(-0.02 * PI, 0.02 * PI)]
+    angular_velocity = [random.choice(signs) * random.uniform(0.0002, 0.0004), 0.0,
+                            random.choice(signs) * random.uniform(0.0002, 0.0004)]
 
     asteroid = Asteroid(semi_axis_a, semi_axis_b, semi_axis_c, density, angular_velocity, 0.0)
 
     num_samples = 1000
-    band_width = 5000.0
+    band_width = 2000.0
     title_start = "a = {0} b = {1} c = {2} \nrho = {3} plane = ".format(semi_axis_a, semi_axis_b, semi_axis_c, density)
     for dim in range(3):
         if dim == 0:
@@ -349,7 +364,47 @@ def unit_test_gravity_2():
         img.savefig("plane_{0}.png".format(plane))
         close()
 
+def unit_test_gravity_speed():
+    from numpy import random
+    from asteroid import Asteroid
+    from sys import float_info
+    from time import time
+    from utility import sample_position_outside_ellipsoid
 
+    signs = [-1.0, 1.0]
+
+    axis = []
+    [axis.append(random.uniform(1000.0, 10000.0)) for i in range(3)]
+    semi_axis_c, semi_axis_b, semi_axis_a = sorted(axis)
+
+    density = random.uniform(1500.0, 2500.0)
+    angular_velocity = [random.choice(signs) * random.uniform(0.0002, 0.0004), 0.0,
+                        random.choice(signs) * random.uniform(0.0002, 0.0004)]
+
+    asteroid = Asteroid(semi_axis_a, semi_axis_b, semi_axis_c, density, angular_velocity, 0.0)
+
+    min_time = float_info.max
+    max_time = float_info.min
+    avg_time = 0.0
+
+    num_samples = 20000
+    band_width = 2000.0
+    samples = sample_position_outside_ellipsoid(semi_axis_a, semi_axis_b, semi_axis_c, band_width, num_samples)
+    for i in xrange(num_samples):
+        start = time()
+        gravity = asteroid.gravity_at_position(samples[i])
+        end = time()
+        duration = end-start
+        avg_time += duration
+
+        if duration < min_time:
+            min_time = duration
+        elif duration > max_time:
+            max_time = duration
+
+    print("min: {0}".format(min_time))
+    print("max: {0}".format(max_time))
+    print("avg: {0}".format(avg_time / num_samples))
 
 
 
@@ -359,8 +414,9 @@ def unit_test_gravity_2():
 #unit_test_height()
 #unit_test_angular_velocity()
 #unit_test_angular_acceleration()
-#unit_test_gravity()
-unit_test_gravity_2()
+unit_test_gravity_direction()
+#unit_test_gravity_contour()
+#unit_test_gravity_speed()
 
 
 
