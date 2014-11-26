@@ -281,6 +281,77 @@ def unit_test_gravity():
                 print(gravity)
                 exit()
 
+def unit_test_gravity_2():
+    from numpy import random, linspace, meshgrid, array
+    from numpy.linalg import norm
+    from utility import sample_position_outside_ellipse
+    from asteroid import Asteroid
+    from constants import PI
+    from matplotlib.pyplot import imshow, scatter, colorbar, title, close, gcf, xlabel, ylabel
+    from scipy.interpolate import Rbf
+
+    signs = [-1.0, 1.0]
+
+    axis = []
+    [axis.append(random.uniform(1000.0, 10000.0)) for i in range(3)]
+    semi_axis_c, semi_axis_b, semi_axis_a = sorted(axis)
+
+    density = random.uniform(1500.0, 2500.0)
+    angular_velocity = [random.uniform(-0.02 * PI, 0.02 * PI), 0.0, random.uniform(-0.02 * PI, 0.02 * PI)]
+
+    asteroid = Asteroid(semi_axis_a, semi_axis_b, semi_axis_c, density, angular_velocity, 0.0)
+
+    num_samples = 1000
+    band_width = 5000.0
+    title_start = "a = {0} b = {1} c = {2} \nrho = {3} plane = ".format(semi_axis_a, semi_axis_b, semi_axis_c, density)
+    for dim in range(3):
+        if dim == 0:
+            plane = "yz"
+            samples = sample_position_outside_ellipse(semi_axis_b, semi_axis_c, band_width, num_samples)
+            samples = [[0.0] + pos for pos in samples]
+            samples = array(samples)
+            x = samples[:, 1]
+            y = samples[:, 2]
+        elif dim == 1:
+            plane = "xz"
+            samples = sample_position_outside_ellipse(semi_axis_a, semi_axis_c, band_width, num_samples)
+            samples = [[pos[0]] + [0.0] + [pos[1]] for pos in samples]
+            samples = array(samples)
+            x = samples[:, 0]
+            y = samples[:, 2]
+        else:
+            plane = "xy"
+            samples = sample_position_outside_ellipse(semi_axis_a, semi_axis_b, band_width, num_samples)
+            samples = [pos + [0.0] for pos in samples]
+            samples = array(samples)
+            x = samples[:, 0]
+            y = samples[:, 1]
+
+        z = array([norm(asteroid.gravity_at_position(pos)) for pos in samples])
+
+        # Set up a regular grid of interpolation points
+        xi, yi = linspace(x.min(), x.max(), 100), linspace(y.min(), y.max(), 100)
+        xi, yi = meshgrid(xi, yi)
+
+        # Interpolate
+        rbf = Rbf(x, y, z, function='linear')
+        zi = rbf(xi, yi)
+
+        imshow(zi, vmin=z.min(), vmax=z.max(), origin='lower',
+                   extent=[x.min(), x.max(), y.min(), y.max()])
+        scatter(x, y, c=z)
+        colorbar()
+
+        xlabel(plane[:1])
+        ylabel(plane[1:])
+        title(title_start + plane)
+        img = gcf()
+        img.savefig("plane_{0}.png".format(plane))
+        close()
+
+
+
+
 
 #unit_test_autoencoder()
 #unit_test_pca()
@@ -288,7 +359,8 @@ def unit_test_gravity():
 #unit_test_height()
 #unit_test_angular_velocity()
 #unit_test_angular_acceleration()
-unit_test_gravity()
+#unit_test_gravity()
+unit_test_gravity_2()
 
 
 
