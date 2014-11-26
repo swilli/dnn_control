@@ -123,9 +123,10 @@ class Simulator:
         angular_velocity_mul2 = [2.0 * val for val in angular_velocity]
         angular_acceleration = self.asteroid.angular_acceleration_at_time(time)
 
+
+        euler_acceleration = cross_product(angular_acceleration, position)
         centrifugal_acceleration = cross_product(angular_velocity, cross_product(angular_velocity, position))
         coriolis_acceleration = cross_product(angular_velocity_mul2, velocity)
-        euler_acceleration = cross_product(angular_acceleration, position)
 
         # print("G: %f" % sqrt(sum([val * val for val in gravity_acceleration])))
         # print("O: %f" % sqrt(sum([(val_pert - val_cor - val_eu - val_centr) ** 2
@@ -134,30 +135,14 @@ class Simulator:
 
         d_dt_state = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
-        # derivative of position
-        d_dt_state[0] = velocity[0]
-        d_dt_state[1] = velocity[1]
-        d_dt_state[2] = velocity[2]
-
-        # derivative of velocity
-        d_dt_state[3] = perturbations_acceleration[0] \
-                        + gravity_acceleration[0] \
-                        + thrust_acceleration[0] \
-                        - coriolis_acceleration[0] \
-                        - euler_acceleration[0] \
-                        - centrifugal_acceleration[0]
-        d_dt_state[4] = perturbations_acceleration[1] \
-                        + gravity_acceleration[1] \
-                        + thrust_acceleration[1] \
-                        - coriolis_acceleration[1] \
-                        - euler_acceleration[1] \
-                        - centrifugal_acceleration[1]
-        d_dt_state[5] = perturbations_acceleration[2] \
-                        + gravity_acceleration[2] \
-                        + thrust_acceleration[2] \
-                        - coriolis_acceleration[2] \
-                        - euler_acceleration[2] \
-                        - centrifugal_acceleration[2]
+        for i in range(3):
+            d_dt_state[i] = velocity[i]
+            d_dt_state[3+i] = perturbations_acceleration[i]\
+                              + gravity_acceleration[i]\
+                              + thrust_acceleration[i]\
+                              - coriolis_acceleration[i]\
+                              - euler_acceleration[i]\
+                              - centrifugal_acceleration[i]
 
         # derivative of mass
         d_dt_state[6] = sqrt(thrust[0] ** 2 + thrust[1] ** 2 + thrust[2] ** 2) \
@@ -170,7 +155,7 @@ class Simulator:
         from numpy import random
 
         mean = 0.0
-        variance = 1e-6
+        variance = 1e-7
         spacecraft_mass = self.spacecraft_state[6]
         return [spacecraft_mass * random.normal(mean, variance),
                 spacecraft_mass * random.normal(mean, variance),

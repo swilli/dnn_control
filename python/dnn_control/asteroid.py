@@ -111,84 +111,81 @@ class Asteroid:
 
         return "\n ".join(result)
 
-    # Ported from "Ellipsoid_Gravity_Field.m" written by Dario Cersosimo,
-    # October 16, 2009.
+    # Implementation of eq. (3.11a-c) from "EVALUATION OF NOVEL HOVERING STRATEGIES
+    # TO IMPROVE GRAVITY-TRACTOR DEFLECTION MERITS" written by Dario Cersosimo,
     def gravity_at_position(self, position):
         from math import asin, sqrt, fabs, copysign
         from numpy import array, roots
         from constants import PI, GRAVITATIONAL_CONSTANT
-        from ellipsoidgravityfield import legendre_elliptic_integral_pf, legendre_elliptic_integral_pe
+        from ellipsoidgravityfield import legendre_elliptic_integral_pe, legendre_elliptic_integral_pf
 
-        acceleration = [0, 0, 0]
-        error_tolerance = 1e-10
+        gravity = [0, 0, 0]
 
-        # since Ellipsoid_Gravity_Field.m assumes Ix > Iy > Iz, we have to "rotate" axis around y by 90 deg
         density = self.density
-        inertia_z = self.inertia_x
-        inertia_y = self.inertia_y
-        inertia_x = self.inertia_z
-        inertia_z_pow2 = self._inertia_x_pow2
-        inertia_y_pow2 = self._inertia_y_pow2
-        inertia_x_pow2 = self._inertia_z_pow2
+        axis_a = self.semi_axis_a
+        axis_b = self.semi_axis_b
+        axis_c = self.semi_axis_c
+        axis_a_pow2 = self.semi_axis_a_pow2
+        axis_b_pow2 = self.semi_axis_b_pow2
+        axis_c_pow2 = self.semi_axis_c_pow2
 
-        pos_z = -position[0]
-        pos_z_pow_2 = pos_z ** 2
-        pos_x_pow_2 = position[2] ** 2
-        pos_y_pow_2 = position[1] ** 2
+        pos_x_pow2 = position[0] * position[0]
+        pos_y_pow2 = position[1] * position[1]
+        pos_z_pow2 = position[2] * position[2]
 
-        coef_2 = -(pos_x_pow_2 + pos_y_pow_2 + pos_z_pow_2 -
-                   inertia_x_pow2 - inertia_y_pow2 - inertia_z_pow2)
-        coef_1 = -inertia_z_pow2 * (pos_x_pow_2 + pos_y_pow_2) \
-                 + inertia_y_pow2 * (inertia_z_pow2 - pos_x_pow_2 - pos_z_pow_2) \
-                 + inertia_x_pow2 * (inertia_y_pow2 + inertia_z_pow2 - pos_y_pow_2 - pos_z_pow_2)
-        coef_0 = -inertia_y_pow2 * inertia_z_pow2 * pos_x_pow_2 + inertia_x_pow2 * \
-            (-inertia_z_pow2 * pos_y_pow_2 + inertia_y_pow2 *
-             (inertia_z - pos_z) * (inertia_z + pos_z))
-        polynomial = array([1.0, coef_2, coef_1, coef_0])
-        maximum_root = max(roots(polynomial))
+        coef_3 = 1.0
+        coef_2 = -(pos_x_pow2 + pos_y_pow2 + pos_z_pow2 - axis_a_pow2 - axis_b_pow2 - axis_c_pow2)
+        coef_1 = -(axis_b_pow2 * pos_x_pow2 + axis_c_pow2 * pos_x_pow2
+                   + axis_a_pow2 * pos_y_pow2 + axis_c_pow2 * pos_y_pow2
+                   + axis_a_pow2 * pos_z_pow2 + axis_b_pow2 * pos_z_pow2
+                   - axis_a_pow2 * axis_c_pow2 - axis_b_pow2 * axis_c_pow2 - axis_a_pow2 * axis_b_pow2)
+        coef_0 = -(axis_b_pow2 * axis_c_pow2 * pos_x_pow2
+                   + axis_a_pow2 * axis_c_pow2 * pos_y_pow2
+                   + axis_a_pow2 * axis_b_pow2 * pos_z_pow2
+                   - axis_a_pow2 * axis_b_pow2 * axis_c_pow2)
 
-        val_sin = (inertia_x_pow2 - inertia_z_pow2) / (maximum_root + inertia_x_pow2)
+        poly_coefs = array([coef_3, coef_2, coef_1, coef_0])
+        kappa = max(roots(poly_coefs))
+
+        val_sin = (axis_a_pow2 - axis_c_pow2) / (kappa + axis_a_pow2)
         if val_sin > 1.0:
             val_sin = 1.0
         elif val_sin < -1.0:
             val_sin = 1.0
         phi = asin(sqrt(val_sin))
-        k = sqrt((inertia_x_pow2 - inertia_y_pow2) /
-                 (inertia_x_pow2 - inertia_z_pow2))
 
-        integral_f1 = legendre_elliptic_integral_pf(phi, k, error_tolerance)
-        integral_e1 = legendre_elliptic_integral_pe(phi, k, error_tolerance)
+        k = sqrt((axis_a_pow2 - axis_b_pow2) / (axis_a_pow2 - axis_c_pow2))
 
-        fac_1 = 4.0 * PI * GRAVITATIONAL_CONSTANT * density * inertia_x * \
-            inertia_y * inertia_z / sqrt(inertia_x_pow2 - inertia_z_pow2)
+        integral_F = legendre_elliptic_integral_pf(phi, k, 1e-10)
+        integral_E = legendre_elliptic_integral_pe(phi, k, 1e-10)
 
-        sum_z = inertia_z_pow2 + maximum_root
-        sum_z = fabs(sum_z)
+        gamma = 4.0 * PI * GRAVITATIONAL_CONSTANT * density * axis_a * axis_b * axis_c \
+                / sqrt(axis_a_pow2 - axis_c_pow2)
 
-        fac_2 = sqrt((inertia_x_pow2 - inertia_z_pow2) / ((inertia_x_pow2 + maximum_root)
-                                                          * (inertia_y_pow2 + maximum_root)
-                                                          * sum_z))
+        delta = sqrt((axis_a_pow2 - axis_c_pow2)
+                     / ((axis_a_pow2 + kappa) * (axis_b_pow2 + kappa) * (axis_c_pow2 + kappa)))
 
-        acceleration[0] = fac_1 / (inertia_x_pow2 - inertia_y_pow2) * (integral_e1 - integral_f1)
-        acceleration[1] = fac_1 * ((inertia_z_pow2 - inertia_x_pow2) * integral_e1 /
-                                   ((inertia_x_pow2 - inertia_y_pow2) * (inertia_y_pow2 - inertia_z_pow2))
-                                   + integral_f1 / (inertia_x_pow2 - inertia_y_pow2) + (inertia_z_pow2 + maximum_root)
-                                   * fac_2 / (inertia_y_pow2 - inertia_z_pow2))
+        gravity[0] = gamma / (axis_a_pow2 - axis_b_pow2) * (integral_E - integral_F)
+        gravity[1] = gamma * ((-axis_a_pow2 + axis_c_pow2) * integral_E
+                                   / ((axis_a_pow2 - axis_b_pow2) * (axis_b_pow2 - axis_c_pow2))
+                                   + integral_F / (axis_a_pow2 - axis_b_pow2)
+                                   + delta * (axis_c_pow2 + kappa) / (axis_b_pow2 - axis_c_pow2))
 
-        acceleration[2] = fac_1 * ((inertia_y_pow2 + maximum_root)
-                                   * fac_2 - integral_e1) / (inertia_z_pow2 - inertia_y_pow2)
+        gravity[2] = gamma / (axis_c_pow2 - axis_b_pow2) * (-integral_E + (axis_b_pow2 + kappa) * delta)
 
-        # rotate back
-        acceleration[0], acceleration[2] = acceleration[2], acceleration[0]
+        for i in range(3):
+            gravity[i] *= position[i]
 
         # for now...
+        '''
         norm_position_pow2 = sum([(val * val) for val in position])
         norm_position = sqrt(norm_position_pow2)
         gravity_coef = self.mass * GRAVITATIONAL_CONSTANT / norm_position_pow2
         gravity_vector = [-val for val in position]
         gravity_vector = [val / norm_position * gravity_coef for val in gravity_vector]
+        '''
 
-        return gravity_vector
+        return gravity
 
     # compute w
     def angular_velocity_at_time(self, time):

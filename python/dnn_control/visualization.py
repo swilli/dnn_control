@@ -21,7 +21,7 @@ def visualize(asteroid, positions, velocities, heights, velocities_vertical, vel
     from visual import ellipsoid, box, rate, color, vector, arrow, text, scene, sphere
     from numpy.linalg import norm
 
-    scaling = 10.0
+    scaling = 1000.0
     scene.up = vector(0, 0, 1)
 
     asteroid_3d = ellipsoid(pos=(0.0, 0.0, 0.0),
