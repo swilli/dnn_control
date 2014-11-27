@@ -251,19 +251,20 @@ def unit_test_angular_acceleration():
     print("Avg error: {}".format(avg_error / trials))
 
 def unit_test_gravity_direction():
-    from numpy import random, array
+    from numpy import random, array, mgrid, sin, cos
     from math import copysign
     from asteroid import Asteroid
     from utility import sample_position_outside_ellipsoid
     from mayavi import mlab
+    from constants import PI
 
     signs = [-1.0, 1.0]
 
     num_samples = 1000
-    band_width = 5000.0
+    band_width = 10000.0
 
     axis = []
-    [axis.append(random.uniform(1000.0, 5000.0)) for i in range(3)]
+    [axis.append(random.uniform(1000.0, 10000.0)) for i in range(3)]
     semi_axis_c, semi_axis_b, semi_axis_a = sorted(axis)
 
     density = random.uniform(1500.0, 2500.0)
@@ -288,10 +289,27 @@ def unit_test_gravity_direction():
                 assert(False)
 
     mlab.figure()
-    mlab.quiver3d(positions[:, 0], positions[:, 1], positions[:, 2],
-             gravities[:, 0], gravities[:, 1], gravities[:, 2], line_width=0.5)
+    '''x,y,z = mgrid[positions[:, 0].min():positions[:, 0].max():100j,
+            positions[:, 1].min():positions[:, 1].max():100j, positions[:, 2].min():positions[:, 2].max():100j]
+    f = (x**2/semi_axis_a**2 + y**2/semi_axis_b**2 + z**2/semi_axis_c**2 - 1.0)
+
+    ellipsoid = mlab.contour3d(f, contours=[0], extent=[-1.0, 1.0, -1.0, 1.0, -1.0, 1.0])
+    '''
+    phi, theta = mgrid[0:PI:100j, 0:2.0*PI:100j]
+    x = semi_axis_a * sin(phi) * cos(theta)
+    y = semi_axis_b * sin(phi) * sin(theta)
+    z = semi_axis_c * cos(phi)
+    mlab.mesh(x, y, z, representation="wireframe", line_width=0.5, color=(153.0/255.0, 76.0/255.0, 0.0))
+    field = mlab.quiver3d(positions[:, 0], positions[:, 1], positions[:, 2],
+                          gravities[:, 0], gravities[:, 1], gravities[:, 2], mode="arrow")
     title_start = "a = {0} b = {1} c = {2} rho = {3}".format(semi_axis_a, semi_axis_b, semi_axis_c, density)
+
     mlab.title(title_start)
+    mlab.axes(color=(.7, .7, .7), ranges=(positions[:, 0].min(), positions[:, 0].max(),
+                                          positions[:, 1].min(), positions[:, 1].max(),
+                                          positions[:, 2].min(), positions[:, 2].max()),
+              xlabel='x', ylabel='y', zlabel='z',
+              x_axis_visibility=True, z_axis_visibility=True, y_axis_visibility=True)
     mlab.show()
 
 

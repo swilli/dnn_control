@@ -1,10 +1,10 @@
 from numpy import random
-
 from pidcontroller import PIDController
 from sensorsimulator import SensorSimulator
 from simulator import Simulator
 from asteroid import Asteroid
 from time import time
+from visualization import visualize
 
 # Video Settings
 VIDEO_SPEED = 100.0
@@ -22,6 +22,8 @@ DENSITY = 2000.0  # random.uniform(2500.0, 3500.0)  # [kg/m^3]
 ANGULAR_VELOCITY = [random.choice(signs) * random.uniform(0.0002, 0.0004),
                     0.0,
                     random.choice(signs) * random.uniform(0.0002, 0.0004)]  # [1/s]
+ANGULAR_VELOCITY = [val * 1e-2 for val in ANGULAR_VELOCITY]
+
 TIME_BIAS = random.uniform(0.0, 60.0 * 60.0 * 6.0)  # [s]
 
 # Spacecraft settings
@@ -54,7 +56,8 @@ duration = end - start
 
 print("Simulation done. {0} seconds took {1} seconds to simulate (x{2}).".format(TIME, duration, TIME / duration))
 # Visualize trajectory
-'''try:
+exit()
+try:
     input("Press enter to continue...")
 except SyntaxError:
     pass
@@ -62,4 +65,3 @@ except SyntaxError:
 visualize(asteroid, positions, velocities, heights, velocities_vertical, velocities_remaining, VIDEO_SPEED * CONTROL_FREQUENCY)
 
 print("done.")
-'''
