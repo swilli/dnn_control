@@ -173,7 +173,7 @@ class Simulator:
         mean = 0.0
         variance = 1e-7
         spacecraft_mass = self.spacecraft_state[6]
-        return [spacecraft_mass * random.normal(mean, variance),
-                spacecraft_mass * random.normal(mean, variance),
-                spacecraft_mass * random.normal(mean, variance)]
+        return [0.0 * spacecraft_mass * random.normal(mean, variance),
+                0.0 * spacecraft_mass * random.normal(mean, variance),
+                0.0 * spacecraft_mass * random.normal(mean, variance)]
 

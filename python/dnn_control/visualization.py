@@ -23,7 +23,7 @@ def visualize(asteroid, positions, velocities, heights, velocities_vertical, vel
     from visual import ellipsoid, box, rate, color, vector, arrow, text, scene, sphere
     from numpy.linalg import norm
 
-    scaling = 1e6
+    scaling = 1e9
     scene.up = vector(0, 0, 1)
 
     asteroid_3d = ellipsoid(pos=(0.0, 0.0, 0.0),
@@ -44,7 +44,7 @@ def visualize(asteroid, positions, velocities, heights, velocities_vertical, vel
     text(text='y', axis=y.axis, pos=y.axis, height=250.0)
     text(text='z', axis=z.axis, pos=z.axis, height=250.0)
 
-    norm_velocity = norm(velocities[0])
+    norm_velocity = 1.0  # norm(velocities[0])
     velocity = arrow(pos=spacecraft.pos, axis=tuple([scaling * var / norm_velocity for var in velocities[0]]), shaftwidth=20.0,
                      color=color.magenta, visible=False)
 
