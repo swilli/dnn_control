@@ -17,11 +17,13 @@ def plot_3d(positions):
     pyplot.show()
 
 
-def visualize(asteroid, positions, velocities, heights, velocities_vertical, velocities_remaining, frequency):
+def visualize(asteroid, positions, velocities, heights, velocities_vertical, velocities_remaining,
+              accelerations_perturbations, accelerations_centrifugal, accelerations_coriolis, accelerations_euler,
+              accelerations_gravity, frequency):
     from visual import ellipsoid, box, rate, color, vector, arrow, text, scene, sphere
     from numpy.linalg import norm
 
-    scaling = 1000.0
+    scaling = 1e6
     scene.up = vector(0, 0, 1)
 
     asteroid_3d = ellipsoid(pos=(0.0, 0.0, 0.0),
@@ -44,19 +46,34 @@ def visualize(asteroid, positions, velocities, heights, velocities_vertical, vel
 
     norm_velocity = norm(velocities[0])
     velocity = arrow(pos=spacecraft.pos, axis=tuple([scaling * var / norm_velocity for var in velocities[0]]), shaftwidth=20.0,
-                     color=color.magenta)
+                     color=color.magenta, visible=False)
 
     height = arrow(pos=spacecraft.pos-heights[0], axis=tuple(heights[0]), shaftwidth=20.0,
-                   color=color.orange)
+                   color=color.orange, visible=False)
 
     ground_position = sphere(pos=height.pos, radius=5.0, make_trail=True, color=(0.0, 0.0, 204.0 / 255.0))
     ground_position.trail_object.color = (25.0 / 255.0, 25.0 / 255.0, 112.0 / 255.0)
 
     velocity_vertical = arrow(pos=spacecraft.pos, axis=tuple(velocities_vertical[0]), shaftwidth=15.0,
-                              color=color.cyan)
+                              color=color.cyan, visible=False)
 
     velocity_remaining = arrow(pos=spacecraft.pos, axis=tuple(velocities_remaining[0]), shaftwidth=15.0,
-                              color=(250.0 / 255.0, 128.0 / 255.0, 114.0 / 255.0))
+                              color=(250.0 / 255.0, 128.0 / 255.0, 114.0 / 255.0), visible=False)
+
+    acceleration_coriolis = arrow(pos=spacecraft.pos, axis=tuple(accelerations_coriolis[0]), shaftwidth=15.0,
+                                  color=color.green)
+
+    acceleration_centrifugal = arrow(pos=spacecraft.pos, axis=tuple(accelerations_centrifugal[0]), shaftwidth=15.0,
+                                  color=color.red)
+
+    acceleration_euler = arrow(pos=spacecraft.pos, axis=tuple(accelerations_euler[0]), shaftwidth=15.0,
+                                  color=color.blue)
+
+    acceleration_perturbations = arrow(pos=spacecraft.pos, axis=tuple(accelerations_perturbations[0]), shaftwidth=15.0,
+                                  color=color.yellow)
+
+    acceleration_gravity = arrow(pos=spacecraft.pos, axis=tuple(accelerations_gravity[0]), shaftwidth=15.0,
+                                  color=color.white)
 
     for i in range(1, len(positions)):
         rate(frequency)
@@ -79,6 +96,22 @@ def visualize(asteroid, positions, velocities, heights, velocities_vertical, vel
         velocity_remaining.pos = spacecraft.pos
         velocity_remaining.axis = tuple([scaling * var / norm_vel_rem for var in velocities_remaining[i]])
 
+        norm_acc_cor = 1.0  # norm(accelerations_coriolis[i])
+        acceleration_coriolis.pos = spacecraft.pos
+        acceleration_coriolis.axis = tuple([scaling * var / norm_acc_cor for var in accelerations_coriolis[i]])
 
+        norm_acc_cen = 1.0  # norm(accelerations_centrifugal[i])
+        acceleration_centrifugal.pos = spacecraft.pos
+        acceleration_centrifugal.axis = tuple([scaling * var / norm_acc_cen for var in accelerations_centrifugal[i]])
 
+        norm_acc_eul = 1.0  # norm(accelerations_euler[i])
+        acceleration_euler.pos = spacecraft.pos
+        acceleration_euler.axis = tuple([scaling * var / norm_acc_eul for var in accelerations_euler[i]])
 
+        norm_acc_per = 1.0  # norm(accelerations_perturbations[i])
+        acceleration_perturbations.pos = spacecraft.pos
+        acceleration_perturbations.axis = tuple([scaling * var / norm_acc_per for var in accelerations_perturbations[i]])
+
+        norm_acc_grav = 1.0  # norm(accelerations_gravity[i])
+        acceleration_gravity.pos = spacecraft.pos
+        acceleration_gravity.axis = tuple([scaling * var / norm_acc_grav for var in accelerations_gravity[i]])

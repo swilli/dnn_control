@@ -50,6 +50,7 @@ class Simulator:
     # Perform the simulation for time seconds
     def run(self, time, collect_data=False):
         from numpy import empty
+        from utility import cross_product
 
         control_interval = self.control_interval
         iterations = int(time / self.control_interval)
@@ -58,6 +59,11 @@ class Simulator:
         heights = []
         velocities_vertical = []
         velocities_remaining = []
+        accelerations_euler = []
+        accelerations_coriolis = []
+        accelerations_centrifugal = []
+        accelerations_perturbations = []
+        accelerations_gravity = []
 
         if collect_data:
             positions = empty([iterations, 3])
@@ -65,6 +71,11 @@ class Simulator:
             heights = empty([iterations, 3])
             velocities_vertical = empty([iterations, 3])
             velocities_remaining = empty([iterations, 3])
+            accelerations_euler = empty([iterations, 3])
+            accelerations_coriolis = empty([iterations, 3])
+            accelerations_centrifugal = empty([iterations, 3])
+            accelerations_perturbations = empty([iterations, 3])
+            accelerations_gravity = empty([iterations, 3])
 
         for i in range(iterations):
             start_time = i * control_interval
@@ -80,16 +91,34 @@ class Simulator:
             thrust = self.spacecraft_controller.get_thrust(sensor_data)
 
             if collect_data:
-                positions[i][:] = self.spacecraft_state[0:3]
-                velocities[i][:] = self.spacecraft_state[3:6]
+                position = self.spacecraft_state[0:3]
+                velocity = self.spacecraft_state[3:6]
+                mass = self.spacecraft_state[6]
+
+                positions[i][:] = position
+                velocities[i][:] = velocity
                 heights[i][:] = height
                 velocities_vertical[i][:] = velocity_vertical
                 velocities_remaining[i][:] = velocity_remaining
 
+                angular_velocity = self.asteroid.angular_velocity_at_time(start_time)
+                angular_velocity_mul2 = [2.0 * val for val in angular_velocity]
+                angular_acceleration = self.asteroid.angular_acceleration_at_time(start_time)
+                euler_acceleration = cross_product(angular_acceleration, position)
+                centrifugal_acceleration = cross_product(angular_velocity, cross_product(angular_velocity, position))
+                coriolis_acceleration = cross_product(angular_velocity_mul2, velocity)
+                accelerations_perturbations[i][:] = perturbations_acceleration
+                accelerations_euler[i][:] = [-val for val in euler_acceleration]
+                accelerations_coriolis[i][:] = [-val for val in coriolis_acceleration]
+                accelerations_centrifugal[i][:] = [-val for val in centrifugal_acceleration]
+                accelerations_gravity[i][:] = [val / mass for val in self.asteroid.gravity_at_position(position)]
+
             # Simulate dynamics with current perturbations and thrust
             self.simulate_dynamics(perturbations_acceleration, thrust, start_time, end_time)
 
-        return positions, velocities, heights, velocities_vertical, velocities_remaining
+        return positions, velocities, heights, velocities_vertical, velocities_remaining, \
+               accelerations_perturbations, accelerations_centrifugal, accelerations_coriolis, \
+               accelerations_euler, accelerations_gravity
 
     # Integrate the system from start_time to end_time
     def simulate_dynamics(self, perturbations_acceleration, thrust, start_time, end_time):
