@@ -186,7 +186,7 @@ def unit_test_angular_velocity():
         result = odeint(w_dot, angular_velocity, [0, test_time], (asteroid.inertia_x, asteroid.inertia_y,
                                                                   asteroid.inertia_z), rtol=1e-12, atol=1e-12)
         omega_numerical = result[1][:]
-        omega_analytical = asteroid.angular_velocity_at_time(test_time)
+        omega_analytical = asteroid.angular_velocity_and_acceleration_at_time(test_time)
         error = norm(omega_numerical - omega_analytical)
 
         avg_error += error
@@ -233,7 +233,7 @@ def unit_test_angular_acceleration():
 
         asteroid = Asteroid(semi_axis_a, semi_axis_b, semi_axis_c, density, angular_velocity, 0.0)
 
-        angular_velocity = asteroid.angular_velocity_at_time(test_time)
+        angular_velocity = asteroid.angular_velocity_and_acceleration_at_time(test_time)
 
         angular_acceleration_correct = array(w_dot(angular_velocity, asteroid.inertia_x, asteroid.inertia_y, asteroid.inertia_z))
         angular_acceleration_class = asteroid.angular_acceleration_at_time(test_time)
@@ -425,6 +425,47 @@ def unit_test_gravity_speed():
     print("avg: {0}".format(avg_time / num_samples))
 
 
+def unit_test_angular_velocity_period():
+    from numpy import random, linspace, array
+    from asteroid import Asteroid
+    from matplotlib.pyplot import plot, xlabel, ylabel, title, gcf, close
+
+    signs = [-1.0, 1.0]
+
+    axis = []
+    test_time = random.uniform(1.0, 100.0)
+    [axis.append(random.uniform(1000.0, 5000.0)) for i in range(3)]
+    semi_axis_c, semi_axis_b, semi_axis_a = sorted(axis)
+
+    density = 2000.0
+    angular_velocity = [random.choice(signs) * random.uniform(0.0002, 0.0004), 0.0,
+                        random.choice(signs) * random.uniform(0.0002, 0.0004)]
+
+    asteroid = Asteroid(semi_axis_a, semi_axis_b, semi_axis_c, density, angular_velocity, 0.0)
+
+    sample_points = linspace(0.0, 24.0 * 60.0 * 60.0, 1000)
+    samples = array([asteroid.angular_velocity_and_acceleration_at_time(time) for time in sample_points])
+
+    title_start = "a = {0} b = {1} c = {2} \nrho = {3} plane = ".format(semi_axis_a, semi_axis_b, semi_axis_c, density)
+
+    for dim in range(3):
+        if dim == 0:
+            plane = "tx"
+            plot(sample_points, samples[:, 0])
+        elif dim == 1:
+            plane = "ty"
+            plot(sample_points, samples[:, 1])
+        else:
+            plane = "tz"
+            plot(sample_points, samples[:, 2])
+
+        xlabel(plane[:1])
+        ylabel(plane[1:])
+        title(title_start + plane)
+        img = gcf()
+        img.savefig("plane_{0}.png".format(plane))
+        close()
+
 
 #unit_test_autoencoder()
 #unit_test_pca()
@@ -432,10 +473,10 @@ def unit_test_gravity_speed():
 #unit_test_height()
 #unit_test_angular_velocity()
 #unit_test_angular_acceleration()
-unit_test_gravity_direction()
+#unit_test_gravity_direction()
 #unit_test_gravity_contour()
 #unit_test_gravity_speed()
-
+unit_test_angular_velocity_period()
 
 
 '''
@@ -457,7 +498,7 @@ iterations = int(TIME*SAMPLING_FREQUENCY)
 angular_velocity = empty([iterations,3])
 for i in range(iterations):
     time = i*1.0/SAMPLING_FREQUENCY
-    omega = asteroid.angular_velocity_at_time(time)
+    omega = asteroid.angular_velocity_and_acceleration_at_time(time)
     angular_velocity[i][:] = omega
 
 # Visualize trajectory

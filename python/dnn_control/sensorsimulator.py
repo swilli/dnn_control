@@ -17,9 +17,8 @@ class SensorSimulator:
         gravity = self.asteroid.gravity_at_position(state[0:3])
         gravity_acceleration = [val / mass for val in gravity]
 
-        angular_velocity = self.asteroid.angular_velocity_at_time(time)
+        angular_velocity, angular_acceleration = self.asteroid.angular_velocity_and_acceleration_at_time(time)
         angular_velocity_mul2 = [2.0 * val for val in angular_velocity]
-        angular_acceleration = self.asteroid.angular_acceleration_at_time(time)
 
         centrifugal_acceleration = cross_product(angular_velocity, cross_product(angular_velocity, position))
         coriolis_acceleration = cross_product(angular_velocity_mul2, velocity)
@@ -27,19 +26,27 @@ class SensorSimulator:
 
         distance, surface_point = self.asteroid.distance_to_surface_at_position(position)
 
-        height = [val_pos - val_surf for val_pos, val_surf in zip(position, surface_point)]
+        height = [position[0] - surface_point[0],
+                  position[1] - surface_point[1],
+                  position[2] - surface_point[2]]
 
         height_norm_pow2 = distance * distance
         norm_height = distance
 
-        velocity_dot_height = sum([val_height * val_velocity for val_height, val_velocity in zip(velocity, height)])
+        velocity_dot_height = velocity[0] * height[0] + velocity[1] * height[1] + velocity[2] * height[2]
         scaling = velocity_dot_height / height_norm_pow2
 
         velocity_vertical = [scaling * val_height for val_height in height]
-        velocity_remaining = [vel_total - vel_vert for vel_total, vel_vert in zip(velocity, velocity_vertical)]
+        velocity_remaining = [velocity[0] - velocity_vertical[0],
+                              velocity[1] - velocity_vertical[1],
+                              velocity[2] - velocity_vertical[2]]
 
-        norm_vel_vertical = sqrt(sum([val * val for val in velocity_vertical]))
-        norm_vel_remaining = sqrt(sum([val * val for val in velocity_remaining]))
+        norm_vel_vertical = sqrt(velocity_vertical[0] * velocity_vertical[0]
+                                 + velocity_vertical[1] * velocity_vertical[1]
+                                 + velocity_vertical[2] * velocity_vertical[2])
+        norm_vel_remaining = sqrt(velocity_remaining[0] * velocity_remaining[0]
+                                  + velocity_remaining[1] * velocity_remaining[1]
+                                  + velocity_remaining[2] * velocity_remaining[2])
 
         sensor_data[0] = norm_vel_vertical / norm_height
         sensor_data[1] = norm_vel_remaining / norm_height

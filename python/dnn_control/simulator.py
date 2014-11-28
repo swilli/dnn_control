@@ -47,89 +47,27 @@ class Simulator:
 
         return "\n ".join(result)
 
-    # Perform the simulation for time seconds
-    def run(self, time, collect_data=False):
-        from numpy import empty
-        from utility import cross_product
+    # External perturbations acceleration
+    def _simulate_perturbations(self):
+        from numpy import random
 
-        control_interval = self.control_interval
-        iterations = int(time / self.control_interval)
-        positions = []
-        velocities = []
-        heights = []
-        velocities_vertical = []
-        velocities_remaining = []
-        accelerations_euler = []
-        accelerations_coriolis = []
-        accelerations_centrifugal = []
-        accelerations_perturbations = []
-        accelerations_gravity = []
-
-        if collect_data:
-            positions = empty([iterations, 3])
-            velocities = empty([iterations, 3])
-            heights = empty([iterations, 3])
-            velocities_vertical = empty([iterations, 3])
-            velocities_remaining = empty([iterations, 3])
-            accelerations_euler = empty([iterations, 3])
-            accelerations_coriolis = empty([iterations, 3])
-            accelerations_centrifugal = empty([iterations, 3])
-            accelerations_perturbations = empty([iterations, 3])
-            accelerations_gravity = empty([iterations, 3])
-
-        for i in range(iterations):
-            start_time = i * control_interval
-            end_time = start_time + control_interval
-
-            # Get new perturbations
-            perturbations_acceleration = self.simulate_perturbations()
-
-            # Simulate sensor data for current spacecraft state
-            sensor_data, height, velocity_vertical, velocity_remaining = self.sensor_simulator.simulate(self.spacecraft_state, perturbations_acceleration, start_time)
-
-            # Get thrust from controller
-            thrust = self.spacecraft_controller.get_thrust(sensor_data)
-
-            if collect_data:
-                position = self.spacecraft_state[0:3]
-                velocity = self.spacecraft_state[3:6]
-                mass = self.spacecraft_state[6]
-
-                positions[i][:] = position
-                velocities[i][:] = velocity
-                heights[i][:] = height
-                velocities_vertical[i][:] = velocity_vertical
-                velocities_remaining[i][:] = velocity_remaining
-
-                angular_velocity = self.asteroid.angular_velocity_at_time(start_time)
-                angular_velocity_mul2 = [2.0 * val for val in angular_velocity]
-                angular_acceleration = self.asteroid.angular_acceleration_at_time(start_time)
-                euler_acceleration = cross_product(angular_acceleration, position)
-                centrifugal_acceleration = cross_product(angular_velocity, cross_product(angular_velocity, position))
-                coriolis_acceleration = cross_product(angular_velocity_mul2, velocity)
-                accelerations_perturbations[i][:] = perturbations_acceleration
-                accelerations_euler[i][:] = [-val for val in euler_acceleration]
-                accelerations_coriolis[i][:] = [-val for val in coriolis_acceleration]
-                accelerations_centrifugal[i][:] = [-val for val in centrifugal_acceleration]
-                accelerations_gravity[i][:] = [val / mass for val in self.asteroid.gravity_at_position(position)]
-
-            # Simulate dynamics with current perturbations and thrust
-            self.simulate_dynamics(perturbations_acceleration, thrust, start_time, end_time)
-
-        return positions, velocities, heights, velocities_vertical, velocities_remaining, \
-               accelerations_perturbations, accelerations_centrifugal, accelerations_coriolis, \
-               accelerations_euler, accelerations_gravity
+        mean = 0.0
+        variance = 1e-7
+        spacecraft_mass = self.spacecraft_state[6]
+        return [0.0 * spacecraft_mass * random.normal(mean, variance),
+                0.0 * spacecraft_mass * random.normal(mean, variance),
+                0.0 * spacecraft_mass * random.normal(mean, variance)]
 
     # Integrate the system from start_time to end_time
-    def simulate_dynamics(self, perturbations_acceleration, thrust, start_time, end_time):
+    def _simulate_dynamics(self, perturbations_acceleration, thrust, start_time, end_time):
         from scipy.integrate import odeint
 
-        result = odeint(self.dynamics, self.spacecraft_state, [start_time, end_time],
+        result = odeint(self._dynamics, self.spacecraft_state, [start_time, end_time],
                         (perturbations_acceleration, thrust))
         self.spacecraft_state = result[1][:]
 
     # Simulator dynamics from eq (1) in paper "Control of Hovering Spacecraft Using Altimetry" by Sawai et al.
-    def dynamics(self, state, time, perturbations_acceleration, thrust):
+    def _dynamics(self, state, time, perturbations_acceleration, thrust):
         from utility import cross_product
         from math import sqrt
 
@@ -141,9 +79,8 @@ class Simulator:
         gravity_acceleration = [val / mass for val in gravity]
         thrust_acceleration = [val / mass for val in thrust]
 
-        angular_velocity = self.asteroid.angular_velocity_at_time(time)
+        angular_velocity, angular_acceleration = self.asteroid.angular_velocity_and_acceleration_at_time(time)
         angular_velocity_mul2 = [2.0 * val for val in angular_velocity]
-        angular_acceleration = self.asteroid.angular_acceleration_at_time(time)
 
         euler_acceleration = cross_product(angular_acceleration, position)
         centrifugal_acceleration = cross_product(angular_velocity, cross_product(angular_velocity, position))
@@ -161,19 +98,89 @@ class Simulator:
                               - centrifugal_acceleration[i]
 
         # derivative of mass
-        d_dt_state[6] = sqrt(sum([val * val for val in thrust]))\
+        d_dt_state[6] = sqrt(thrust[0] * thrust[0] + thrust[1] * thrust[1] + thrust[2] * thrust[2]) \
                         / self._earth_acceleration_mul_spacecraft_specific_impulse
 
         return d_dt_state
 
-    # External perturbations acceleration
-    def simulate_perturbations(self):
-        from numpy import random
+    # Perform the simulation for time seconds
+    def run(self, time, collect_data=False):
+        from numpy import empty
+        from utility import cross_product
 
-        mean = 0.0
-        variance = 1e-7
-        spacecraft_mass = self.spacecraft_state[6]
-        return [0.0 * spacecraft_mass * random.normal(mean, variance),
-                0.0 * spacecraft_mass * random.normal(mean, variance),
-                0.0 * spacecraft_mass * random.normal(mean, variance)]
+        control_interval = self.control_interval
+        iterations = int(time / self.control_interval)
 
+        positions = empty([iterations, 3])
+        velocities = []
+        heights = []
+        velocities_vertical = []
+        velocities_remaining = []
+        accelerations_euler = []
+        accelerations_coriolis = []
+        accelerations_centrifugal = []
+        accelerations_perturbations = []
+        accelerations_gravity = []
+        angular_velocities = []
+        angular_accelerations = []
+
+        if collect_data:
+            velocities = empty([iterations, 3])
+            heights = empty([iterations, 3])
+            velocities_vertical = empty([iterations, 3])
+            velocities_remaining = empty([iterations, 3])
+            accelerations_euler = empty([iterations, 3])
+            accelerations_coriolis = empty([iterations, 3])
+            accelerations_centrifugal = empty([iterations, 3])
+            accelerations_perturbations = empty([iterations, 3])
+            accelerations_gravity = empty([iterations, 3])
+            angular_velocities = empty([iterations, 3])
+            angular_accelerations = empty([iterations, 3])
+
+        for i in range(iterations):
+            start_time = i * control_interval
+            end_time = start_time + control_interval
+
+            # Get new perturbations
+            perturbations_acceleration = self._simulate_perturbations()
+
+            # Simulate sensor data for current spacecraft state
+            sensor_data, height, velocity_vertical, velocity_remaining = self.sensor_simulator.simulate(self.spacecraft_state, perturbations_acceleration, start_time)
+
+            # Get thrust from controller
+            thrust = self.spacecraft_controller.get_thrust(sensor_data)
+
+            position = self.spacecraft_state[0:3]
+            positions[i][:] = position
+
+            if collect_data:
+                velocity = self.spacecraft_state[3:6]
+                mass = self.spacecraft_state[6]
+
+                velocities[i][:] = velocity
+                heights[i][:] = height
+                velocities_vertical[i][:] = velocity_vertical
+                velocities_remaining[i][:] = velocity_remaining
+
+                angular_velocity, angular_acceleration = self.asteroid.angular_velocity_and_acceleration_at_time(start_time)
+                angular_velocity_mul2 = [2.0 * val for val in angular_velocity]
+                euler_acceleration = cross_product(angular_acceleration, position)
+                centrifugal_acceleration = cross_product(angular_velocity, cross_product(angular_velocity, position))
+                coriolis_acceleration = cross_product(angular_velocity_mul2, velocity)
+                accelerations_perturbations[i][:] = perturbations_acceleration
+                accelerations_euler[i][:] = [-val for val in euler_acceleration]
+                accelerations_coriolis[i][:] = [-val for val in coriolis_acceleration]
+                accelerations_centrifugal[i][:] = [-val for val in centrifugal_acceleration]
+                accelerations_gravity[i][:] = [val / mass for val in self.asteroid.gravity_at_position(position)]
+                angular_velocities[i][:] = angular_velocity
+                angular_accelerations[i][:] = angular_acceleration
+
+            # Simulate dynamics with current perturbations and thrust
+            self._simulate_dynamics(perturbations_acceleration, thrust, start_time, end_time)
+
+        if collect_data:
+            return positions, velocities, heights, velocities_vertical, velocities_remaining, \
+                   accelerations_perturbations, accelerations_centrifugal, accelerations_coriolis, \
+                   accelerations_euler, accelerations_gravity, angular_velocities, angular_accelerations
+        else:
+            return positions

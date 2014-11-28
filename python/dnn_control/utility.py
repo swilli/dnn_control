@@ -1,8 +1,7 @@
-def cross_product(vector_a, vector_b):
-    vector_c = [vector_a[1] * vector_b[2] - vector_a[2] * vector_b[1], vector_a[2] *
-                vector_b[0] - vector_a[0] * vector_b[2],
-                vector_a[0] * vector_b[1] - vector_a[1] * vector_b[0]]
-    return vector_c
+def cross_product(u, v):
+    return [u[1] * v[2] - u[2] * v[1],
+            u[2] * v[0] - u[0] * v[2],
+            u[0] * v[1] - u[1] * v[0]]
 
 
 def sample_position_outside_ellipse(semi_axis_a, semi_axis_b, band_width, num_samples):

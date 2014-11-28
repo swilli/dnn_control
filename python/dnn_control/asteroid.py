@@ -99,10 +99,6 @@ class Asteroid:
         self.elliptic_modulus = (inertia_y - inertia_x) * (self.energy_mul2 * inertia_z - self.momentum_pow2) \
                                 / ((inertia_z - inertia_y) * (self.momentum_pow2 - self.energy_mul2 * inertia_x))
 
-        self._cached_angular_velocity_time = -1
-        self._cached_angular_velocity = [0.0, 0.0, 0.0]
-
-
     def __str__(self):
         result = ["Asteroid:"]
         keys = sorted([key for key in self.__dict__])
@@ -118,6 +114,7 @@ class Asteroid:
         from numpy import array, roots
         from constants import PI, GRAVITATIONAL_CONSTANT
         from scipy.special import ellipkinc, ellipeinc
+        from sys import float_info
 
         gravity = [0, 0, 0]
 
@@ -145,7 +142,10 @@ class Asteroid:
                    - axis_a_pow2 * axis_b_pow2 * axis_c_pow2)
 
         poly_coefs = array([coef_3, coef_2, coef_1, coef_0])
-        kappa = max(roots(poly_coefs))
+        kappa = float_info.min
+        for root in roots(poly_coefs):
+            if root > kappa:
+                kappa = root
 
         val_sin = (axis_a_pow2 - axis_c_pow2) / (kappa + axis_a_pow2)
         if val_sin > 1.0:
@@ -179,14 +179,8 @@ class Asteroid:
         return gravity
 
     # compute w
-    def angular_velocity_at_time(self, time):
+    def angular_velocity_and_acceleration_at_time(self, time):
         from scipy.special import ellipj
-
-        # Check if we already computed this before:
-        if time == self._cached_angular_velocity_time:
-            return self._cached_angular_velocity
-
-        self._cached_angular_velocity_time = time
 
         # Add time bias
         time += self.time_bias
@@ -199,26 +193,24 @@ class Asteroid:
 
         # Cache new values
         if self._inversion:
-            self._cached_angular_velocity = [self.elliptic_coef_angular_velocity_z * dn_tau,
-                                             self.elliptic_coef_angular_velocity_y * sn_tau,
-                                             self.elliptic_coef_angular_velocity_x * cn_tau]
+            angular_velocity = [self.elliptic_coef_angular_velocity_z * dn_tau,
+                                self.elliptic_coef_angular_velocity_y * sn_tau,
+                                self.elliptic_coef_angular_velocity_x * cn_tau]
         else:
-            self._cached_angular_velocity = [self.elliptic_coef_angular_velocity_x * cn_tau,
-                                             self.elliptic_coef_angular_velocity_y * sn_tau,
-                                             self.elliptic_coef_angular_velocity_z * dn_tau]
-        return self._cached_angular_velocity
+            angular_velocity = [self.elliptic_coef_angular_velocity_x * cn_tau,
+                                self.elliptic_coef_angular_velocity_y * sn_tau,
+                                self.elliptic_coef_angular_velocity_z * dn_tau]
 
-    # compute d/dt w
-    def angular_acceleration_at_time(self, time):
-        angular_velocity = self.angular_velocity_at_time(time)
         inertia_x = self.inertia_x
         inertia_y = self.inertia_y
         inertia_z = self.inertia_z
 
         # Lifshitz eq (36.5)
-        return [(inertia_y - inertia_z) * angular_velocity[1] * angular_velocity[2] / inertia_x,
-                (inertia_z - inertia_x) * angular_velocity[2] * angular_velocity[0] / inertia_y,
-                (inertia_x - inertia_y) * angular_velocity[0] * angular_velocity[1] / inertia_z]
+        angular_acceleration = [(inertia_y - inertia_z) * angular_velocity[1] * angular_velocity[2] / inertia_x,
+                                (inertia_z - inertia_x) * angular_velocity[2] * angular_velocity[0] / inertia_y,
+                                (inertia_x - inertia_y) * angular_velocity[0] * angular_velocity[1] / inertia_z]
+
+        return angular_velocity, angular_acceleration
 
     def _nearest_point_on_ellipse_first_quadrant(self, semi_axis, position):
         from math import sqrt
@@ -234,16 +226,19 @@ class Asteroid:
         if pos_1 > 0.0:
             if pos_0 > 0.0:
                 semi_axis_pow2 = [val * val for val in semi_axis]
-                semi_axis_mul_pos = [axis * pos for axis, pos in zip(semi_axis, position)]
+                semi_axis_mul_pos = [semi_axis[0] * position[0], semi_axis[1] * position[1]]
                 lower_boundary = 0.0
-                upper_boundary = sqrt(sum([val * val for val in semi_axis_mul_pos]))
+                upper_boundary = sqrt(semi_axis_mul_pos[0] * semi_axis_mul_pos[0]
+                                      + semi_axis_mul_pos[1] * semi_axis_mul_pos[1])
 
                 def fun(time):
-                    cur_position = [axis_pos / (time + axis_pow2) for axis_pos, axis_pow2 in zip(semi_axis_mul_pos, semi_axis_pow2)]
-                    return sum([val * val for val in cur_position]) - 1.0
+                    cur_position = [semi_axis_mul_pos[0] / (time + semi_axis_pow2[0]),
+                                    semi_axis_mul_pos[1] / (time + semi_axis_pow2[1])]
+                    return cur_position[0] * cur_position[0] + cur_position[1] * cur_position[1] - 1.0
 
                 time = bisect(fun, lower_boundary, upper_boundary)
-                solution = [axis * pos / (time + axis) for axis, pos in zip(semi_axis_pow2, position)]
+                solution = [semi_axis_pow2[0] * position[0] / (time + semi_axis_pow2[0]),
+                            semi_axis_pow2[1] * position[1] / (time + semi_axis_pow2[1])]
             else:
                 solution[0] = 0.0
                 solution[1] = semi_axis_1
@@ -259,7 +254,9 @@ class Asteroid:
                 solution[0] = semi_axis_0
                 solution[1] = 0.0
 
-        distance = sqrt(sum([(pos - sol) * (pos - sol) for pos, sol in zip(position, solution)]))
+
+        distance = sqrt((position[0] - solution[0]) * (position[0] - solution[0])
+                        + (position[1] - solution[1]) * (position[1] - solution[1]))
         return distance, solution
 
     def _nearest_point_on_ellipsoid_at_position_first_quadrant(self, semi_axis, position):
@@ -279,16 +276,25 @@ class Asteroid:
             if pos_1 > 0.0:
                 if pos_0 > 0.0:
                     semi_axis_pow2 = [val * val for val in semi_axis]
-                    semi_axis_mul_pos = [val_axis * val_pos for val_axis, val_pos in zip(semi_axis, position)]
+                    semi_axis_mul_pos = [semi_axis[0] * position[0],
+                                         semi_axis[1] * position[1],
+                                         semi_axis[2] * position[2]]
                     lower_boundary = 0.0
-                    upper_boundary = sqrt(sum([val * val for val in semi_axis_mul_pos]))
+                    upper_boundary = sqrt(semi_axis_mul_pos[0] * semi_axis_mul_pos[0]
+                                          + semi_axis_mul_pos[1] * semi_axis_mul_pos[1]
+                                          + semi_axis_mul_pos[2] * semi_axis_mul_pos[2])
 
                     def fun(time):
-                        cur_position = [axis_pos / (time + axis_pow2) for axis_pos, axis_pow2 in zip(semi_axis_mul_pos, semi_axis_pow2)]
-                        return sum([val * val for val in cur_position]) - 1.0
+                        cur_position = [semi_axis_mul_pos[0] / (time + semi_axis_pow2[0]),
+                                        semi_axis_mul_pos[1] / (time + semi_axis_pow2[1]),
+                                        semi_axis_mul_pos[2] / (time + semi_axis_pow2[2])]
+                        return cur_position[0] * cur_position[0] + cur_position[1] * cur_position[1] \
+                               + cur_position[2] * cur_position[2] - 1.0
 
                     time = bisect(fun, lower_boundary, upper_boundary)
-                    solution = [axis * pos / (time + axis) for axis, pos in zip(semi_axis_pow2, position)]
+                    solution = [semi_axis_pow2[0] * position[0] / (time + semi_axis_pow2[0]),
+                                semi_axis_pow2[1] * position[1] / (time + semi_axis_pow2[1]),
+                                semi_axis_pow2[2] * position[2] / (time + semi_axis_pow2[2])]
                 else:
                     solution[0] = 0.0
                     semi_axis_2d = semi_axis[1:3]
@@ -334,7 +340,9 @@ class Asteroid:
                 solution[0] = solution_2d[0]
                 solution[1] = solution_2d[1]
 
-        distance = sqrt(sum([(pos - sol) * (pos - sol) for pos, sol in zip(position, solution)]))
+        distance = sqrt((position[0] - solution[0]) * (position[0] - solution[0])
+                        + (position[1] - solution[1]) * (position[1] - solution[1])
+                        + (position[2] - solution[2]) * (position[2] - solution[2]))
         return distance, solution
 
     def distance_to_surface_at_position(self, position):
@@ -350,6 +358,8 @@ class Asteroid:
 
         distance, surface_position = self._nearest_point_on_ellipsoid_at_position_first_quadrant(semi_axis, abs_position)
 
-        surface_position = [sign * pos for sign, pos in zip(signs, surface_position)]
+        surface_position = [signs[0] * surface_position[0],
+                            signs[1] * surface_position[1],
+                            signs[2] * surface_position[2]]
 
         return distance, surface_position
