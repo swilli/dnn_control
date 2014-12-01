@@ -505,7 +505,7 @@ from math import sqrt
 print(sqrt(sum([(i - f)**2 for i,f in zip(sol_iterative, sol_full)])))
 '''
 
-
+'''
 time = 48.0*60.0*60.0
 state = [0.0, 0.0]
 def d_dt_fun(state, time, acceleration):
@@ -543,6 +543,8 @@ print(sol_iterative)
 from math import sqrt
 print(sqrt(sum([(i - f)**2 for i,f in zip(sol_iterative, sol_full)])))
 '''
+'''
+
 #ASTEROID ANGULAR VELOCITY VISUALIZATION
 
 TIME = 100000.0
@@ -576,3 +578,9 @@ ax.set_ylabel('Omega_y')
 ax.set_zlabel('Omega_z')
 pyplot.show()
 '''
+from asteroid import Asteroid
+asteroid = Asteroid(5000.0, 2567.0, 1235.0, 2000.0, [0.0001, 0.0, 0.0001], 0.0)
+position = [6000.0, 3000.0, 2345.0]
+result = asteroid.angular_velocity_and_acceleration_at_time(0.0)
+print(result)
+
