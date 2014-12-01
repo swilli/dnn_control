@@ -476,9 +476,72 @@ def unit_test_angular_velocity_period():
 #unit_test_gravity_direction()
 #unit_test_gravity_contour()
 #unit_test_gravity_speed()
-unit_test_angular_velocity_period()
+#unit_test_angular_velocity_period()
+
+'''
+acceleration = 1.0
+def d_dt_fun(state, time):
+    d_dt_state = [0.0, 0.0]
+    d_dt_state[0] = state[1]
+    d_dt_state[1] = acceleration
+    return d_dt_state
+
+time = 24.0 * 60.0 * 60.0
+state = [0.0, 0.0]
+from scipy.integrate import odeint
+for i in range(int(time)):
+    result = odeint(d_dt_fun, state, [float(i), float(i) + 1.0])
+    state = result[:][1]
+print(state)
+sol_iterative = state[:]
+
+state = [0.0, 0.0]
+result = odeint(d_dt_fun, state, [0.0, time])
+state = result[:][1]
+print(state)
+sol_full = state[:]
+
+from math import sqrt
+print(sqrt(sum([(i - f)**2 for i,f in zip(sol_iterative, sol_full)])))
+'''
 
 
+time = 48.0*60.0*60.0
+state = [0.0, 0.0]
+def d_dt_fun(state, time, acceleration):
+    d_dt_state = [0.0, 0.0]
+    d_dt_state[0] = state[1]
+    d_dt_state[1] = acceleration
+    return d_dt_state
+from scipy.integrate import odeint
+acceleration = 1.0
+result = odeint(d_dt_fun, state, [0.0, time], tuple([acceleration]))
+state = result[:][1]
+print(state)
+sol_full = state[:]
+
+from scipy.integrate import ode
+from numpy import array
+y0 = [0.0, 0.0]
+t0 = 0.0
+def f(t, y, arg1):
+    dy = [0.0, 0.0]
+    dy[0] = y[1]
+    dy[1] = arg1
+    return dy
+
+r = ode(f)
+r.set_integrator("lsoda")
+r.set_initial_value(y0, t0).set_f_params(acceleration)
+t1 = time
+dt = 0.1
+while r.successful() and r.t < t1:
+    r.integrate(r.t+dt)
+
+sol_iterative = r.y[:]
+print(sol_iterative)
+from math import sqrt
+print(sqrt(sum([(i - f)**2 for i,f in zip(sol_iterative, sol_full)])))
 '''
 #ASTEROID ANGULAR VELOCITY VISUALIZATION
 

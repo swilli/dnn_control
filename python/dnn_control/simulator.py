@@ -20,6 +20,7 @@ class Simulator:
 
         from numpy import array
         from constants import EARTH_ACCELERATION
+        from scipy.integrate import ode
 
         self.sensor_simulator = sensor_simulator
         self.spacecraft_controller = spacecraft_controller
@@ -38,6 +39,10 @@ class Simulator:
 
         self._earth_acceleration_mul_spacecraft_specific_impulse = EARTH_ACCELERATION * \
                                                                    self.spacecraft_specific_impulse
+
+        self._integrator = ode(self._dynamics)
+        self._integrator.set_integrator("lsoda")
+        self._integrator.set_initial_value(self.spacecraft_state, 0.0)
 
     def __str__(self):
         result = ["Simulator:"]
@@ -58,18 +63,12 @@ class Simulator:
                 0.0 * spacecraft_mass * random.normal(mean, variance),
                 0.0 * spacecraft_mass * random.normal(mean, variance)]
 
-    # Integrate the system from start_time to end_time
-    def _simulate_dynamics(self, perturbations_acceleration, thrust, start_time, end_time):
-        from scipy.integrate import odeint
-
-        result = odeint(self._dynamics, self.spacecraft_state, [start_time, end_time],
-                        (perturbations_acceleration, thrust))
-        self.spacecraft_state = result[1][:]
-
     # Simulator dynamics from eq (1) in paper "Control of Hovering Spacecraft Using Altimetry" by Sawai et al.
-    def _dynamics(self, state, time, perturbations_acceleration, thrust):
+    def _dynamics(self, time, state, arguments):
         from utility import cross_product
         from math import sqrt
+
+        perturbations_acceleration, thrust = arguments
 
         position = state[0:3]
         velocity = state[3:6]
@@ -138,14 +137,14 @@ class Simulator:
             angular_accelerations = empty([iterations, 3])
 
         for i in range(iterations):
-            start_time = i * control_interval
-            end_time = start_time + control_interval
+            time = i * control_interval
 
             # Get new perturbations
             perturbations_acceleration = self._simulate_perturbations()
 
             # Simulate sensor data for current spacecraft state
-            sensor_data, height, velocity_vertical, velocity_remaining = self.sensor_simulator.simulate(self.spacecraft_state, perturbations_acceleration, start_time)
+            sensor_data, height, velocity_vertical, velocity_remaining = \
+                self.sensor_simulator.simulate(self.spacecraft_state, perturbations_acceleration, time)
 
             # Get thrust from controller
             thrust = self.spacecraft_controller.get_thrust(sensor_data)
@@ -162,7 +161,7 @@ class Simulator:
                 velocities_vertical[i][:] = velocity_vertical
                 velocities_remaining[i][:] = velocity_remaining
 
-                angular_velocity, angular_acceleration = self.asteroid.angular_velocity_and_acceleration_at_time(start_time)
+                angular_velocity, angular_acceleration = self.asteroid.angular_velocity_and_acceleration_at_time(time)
                 angular_velocity_mul2 = [2.0 * val for val in angular_velocity]
                 euler_acceleration = cross_product(angular_acceleration, position)
                 centrifugal_acceleration = cross_product(angular_velocity, cross_product(angular_velocity, position))
@@ -176,7 +175,11 @@ class Simulator:
                 angular_accelerations[i][:] = angular_acceleration
 
             # Simulate dynamics with current perturbations and thrust
-            self._simulate_dynamics(perturbations_acceleration, thrust, start_time, end_time)
+            self._integrator.set_f_params((perturbations_acceleration, thrust))
+            self._integrator.integrate(self._integrator.t + control_interval)
+            if not self._integrator.successful():
+                exit(1)
+            self.spacecraft_state = self._integrator.y[:]
 
         if collect_data:
             return positions, velocities, heights, velocities_vertical, velocities_remaining, \
