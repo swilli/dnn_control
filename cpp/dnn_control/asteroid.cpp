@@ -11,7 +11,7 @@ Asteroid::Asteroid(const double *semi_axis, const double &density, const double 
 
     density_ = density;
 
-    mass_ = 4.0 / 3.0 * PI * density;
+    mass_ = 4.0 / 3.0 * k_pi * density;
     for (int i = 0; i < 3; ++i) {
         angular_velocity_[i] = angular_velocity[i];
         semi_axis_[i] = semi_axis[i];
@@ -28,7 +28,7 @@ Asteroid::Asteroid(const double *semi_axis, const double &density, const double 
     inertia_[1] = 0.2 * mass_ * (semi_axis_pow2_[0] + semi_axis_pow2_[2]);
     inertia_[2] = 0.2 * mass_ * (semi_axis_pow2_[0] + semi_axis_pow2_[1]);
 
-    gamma_ = 4.0 * PI * GRAVITATIONAL_CONSTANT * density;
+    gamma_ = 4.0 * k_pi * k_gravitational_constant * density;
     energy_mul2_ = 0.0;
     momentum_pow2_ = 0.0;
     double inertia[3];
