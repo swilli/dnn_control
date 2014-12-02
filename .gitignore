@@ -3,3 +3,4 @@ matlab
 .idea
 *.png
 build-dnn*
+*.txt
