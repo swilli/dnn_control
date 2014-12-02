@@ -580,7 +580,7 @@ pyplot.show()
 '''
 from asteroid import Asteroid
 asteroid = Asteroid(5000.0, 2567.0, 1235.0, 2000.0, [0.0001, 0.0, 0.0001], 0.0)
-position = [6000.0, 3000.0, 2345.0]
-result = asteroid.angular_velocity_and_acceleration_at_time(0.0)
+position = [0.0, 106412.121, 0.0]
+result = asteroid.distance_to_surface_at_position(position)
 print(result)
 

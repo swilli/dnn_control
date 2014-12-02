@@ -16,7 +16,7 @@ int main()
     const double time_bias = 0.0;
 
     const Asteroid asteroid(semi_axis, density, angular_velocity, time_bias);
-    const SensorSimulator sensor_simulator;
+    const SensorSimulator sensor_simulator(asteroid);
     const SpacecraftController spacecraft_controller;
 
     std::cout << "running simulation ..." << std::endl;
@@ -26,6 +26,13 @@ int main()
     clock_t end = clock();
     double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
     std::cout << time << " seconds simulation time took " << elapsed_secs << " real time to compute (x" << time/elapsed_secs << ")." << std::endl;
+
+/*
+    const double position[3] = {0.0, 106412.121, 0.0};
+    double surface_point[3];
+    double distance;
+    asteroid.NearestPointOnSurface(position, surface_point, &distance);
+    */
     return 0;
 }
 

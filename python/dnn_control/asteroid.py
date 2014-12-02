@@ -317,7 +317,7 @@ class Asteroid:
             denominator = [semi_axis_0 * semi_axis_0 - semi_axis_2 * semi_axis_2,
                            semi_axis_1 * semi_axis_1 - semi_axis_2 * semi_axis_2]
             semi_axis_mul_pos = [semi_axis[i] * position[i] for i in range(2)]
-            if semi_axis_mul_pos < denominator[0] and semi_axis_mul_pos[1] < denominator[1]:
+            if semi_axis_mul_pos[0] < denominator[0] and semi_axis_mul_pos[1] < denominator[1]:
                 semi_axis_div_denom = [semi_axis_mul_pos[i] / denominator[i] for i in range(2)]
                 semi_axis_div_denom_pow2 = [val*val for val in semi_axis_div_denom]
                 discr = 1.0 - semi_axis_div_denom_pow2[0] - semi_axis_div_denom_pow2[1]

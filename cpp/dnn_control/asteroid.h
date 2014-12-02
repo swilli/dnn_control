@@ -8,8 +8,12 @@ public:
 
     void GravityAtPosition(double *position, double *gravity) const;
     void AngularVelocityAndAccelerationAtTime(const double &time, double *velocity, double *acceleration) const;
+    void NearestPointOnSurface(const double *position, double *point, double *distance) const;
 
 private:
+    void NearestPointOnEllipsoidFirstQuadrant(const double *position, double *point) const;
+    void NearestPointOnEllipseFirstQuadrant(const double *semi_axis, const double *position, double *point) const;
+
     double mass_;
     double density_;
     double angular_velocity_[3];

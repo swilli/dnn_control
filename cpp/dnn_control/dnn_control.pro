@@ -8,19 +8,19 @@ SOURCES += main.cpp \
     asteroid.cpp \
     sensorsimulator.cpp \
     spacecraftcontroller.cpp \
-    utility.cpp \
-    odesystem.cpp
+    odesystem.cpp \
+    utility.cpp
 
 include(deployment.pri)
 qtcAddDeployment()
 
 HEADERS += \
+    utility.h \
     simulator.h \
     asteroid.h \
     sensorsimulator.h \
     spacecraftcontroller.h \
     constants.h \
-    utility.h \
     odesystem.h
 
 LIBS += -lgsl -lgslcblas
