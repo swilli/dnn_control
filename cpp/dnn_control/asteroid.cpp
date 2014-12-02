@@ -191,6 +191,7 @@ void Asteroid::NearestPointOnEllipseFirstQuadrant(const double *semi_axis, const
             };
             EllipseFunctor *function_container = new EllipseFunctor(semi_axis_mul_pos, semi_axis_pow2);
             const double time = Bisection(function_container,lower_boundary, upper_boundary, 10000, (double)1e-15);
+            delete(function_container);
 
             point[0] = semi_axis_pow2[0] * position[0] / (time + semi_axis_pow2[0]);
             point[1] = semi_axis_pow2[1] * position[1] / (time + semi_axis_pow2[1]);
@@ -250,6 +251,7 @@ void Asteroid::NearestPointOnEllipsoidFirstQuadrant(const double *position, doub
                 };
                 EllipsoidFunctor *function_container = new EllipsoidFunctor(semi_axis_mul_pos, semi_axis_pow2_);
                 const double time = Bisection(function_container,lower_boundary, upper_boundary, 10000, (double)1e-15);
+                delete(function_container);
 
                 point[0] = semi_axis_pow2_[0] * position[0] / (time + semi_axis_pow2_[0]);
                 point[1] = semi_axis_pow2_[1] * position[1] / (time + semi_axis_pow2_[1]);
