@@ -153,6 +153,11 @@ void Asteroid::NearestPointOnSurface(const double *position, double *point, doub
     *distance = sqrt(result);
 }
 
+double Asteroid::SemiAxis(const int &dimension) const
+{
+    return semi_axis_[dimension];
+}
+
 void Asteroid::NearestPointOnEllipseFirstQuadrant(const double *semi_axis, const double *position, double *point) const
 {
     point[0] = 0.0; point[1] = 0.0;
