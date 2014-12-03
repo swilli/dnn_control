@@ -10,6 +10,8 @@
 
 int main(int argc, char *argv[])
 {
+    srand(time(NULL));
+
     //UnitTestTrajectory();
     //UnitTestAngularVelocity();
     //return 0;
@@ -27,7 +29,8 @@ int main(int argc, char *argv[])
     const Vector3D angular_velocity = {0.0002, 0.0, 0.0008};
     const double time_bias = 0.0;
 
-    const Vector3D spacecraft_position = {4.0 * semi_axis[0], 4.0 * semi_axis[1], 4.0 * semi_axis[2]};
+    Vector3D spacecraft_position;
+    SamplePointOutSideEllipsoid(semi_axis, 4.0, spacecraft_position);
     Vector3D spacecraft_velocity;
     CrossProduct(angular_velocity, spacecraft_position, spacecraft_velocity);
     spacecraft_velocity[0] *= -1; spacecraft_velocity[1] *= -1; spacecraft_velocity[2] *= -1;
