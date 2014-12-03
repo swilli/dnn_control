@@ -2,20 +2,21 @@
 #define ODESYSTEM_H
 
 #include "asteroid.h"
+#include "vector.h"
 
 typedef double State[7];
 
 class ODESystem
 {
 public:
-    ODESystem(const Asteroid &asteroid_, const double *spacecraft_position, const double *spacecraft_velocity, const double &spacecraft_mass, const double &earth_acceleration_mul_spacecraft_specific_impulse);
+    ODESystem(Asteroid &asteroid);
 
-    void operator()(const State &state_, State &d_state_dt, double time) const;
+    void operator()(const State &state, State &d_state_dt, double time) const;
 
-    const Asteroid &asteroid_;
-    const double coef_earth_acceleration_mul_specific_impulse_;
-    double thrust_[3];
-    double perturbations_acceleration_[3];
+    Asteroid &asteroid_;
+    double coef_earth_acceleration_mul_specific_impulse_;
+    Vector3D thrust_;
+    Vector3D perturbations_acceleration_;
     State state_;
 };
 

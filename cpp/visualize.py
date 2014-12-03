@@ -1,9 +1,14 @@
 import sys
 from visual import ellipsoid, box, rate, color, vector, arrow, scene, sphere, label
+from numpy.linalg import norm
+from time import sleep
 
 speedup = 400
 
 file_name = sys.argv[1]
+if len(sys.argv) > 2:
+    speedup = float(sys.argv[2])
+
 result_file = open(file_name, 'r')
 sim_params = [float(value) for value in result_file.readline().split(',')]
 frequency = sim_params[3]
@@ -42,14 +47,18 @@ z = arrow(pos=(0, 0, 0), axis=(0.0, 0.0, norms[2]), shaftwidth=100.0, color=colo
 label(text='x', pos=x.axis, zoffset=20.0)
 label(text='y', pos=y.axis)
 label(text='z', pos=z.axis, zoffset=20.0)
+height_label = label(text='nan', pos=height.pos/2.0)
 
 for i in range(1, len(states)):
-        rate(speedup * frequency)
-        spacecraft.pos = tuple(states[i][0:3])
+    rate(speedup * frequency)
 
-        height.pos = spacecraft.pos-states[i][3:7]
-        height.axis = tuple(states[i][3:7])
-        ground_position.pos = height.pos
+    spacecraft.pos = tuple(states[i][0:3])
+    height.pos = spacecraft.pos-states[i][3:7]
+    height.axis = tuple(states[i][3:7])
+    ground_position.pos = height.pos
+    height_label.pos = tuple([pos + val / 2.0 for pos, val in zip(ground_position.pos, height.axis)])
+    height_label.text = str(norm(spacecraft.pos))
+
 
 
 print("done.")

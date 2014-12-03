@@ -2,16 +2,15 @@
 #include "utility.h"
 #include <math.h>
 
-ODESystem::ODESystem(const Asteroid &asteroid, const double *spacecraft_position, const double *spacecraft_velocity, const double &spacecraft_mass, const double &earth_acceleration_mul_spacecraft_specific_impulse) :
-    asteroid_(asteroid), coef_earth_acceleration_mul_specific_impulse_(1.0/earth_acceleration_mul_spacecraft_specific_impulse) {
+ODESystem::ODESystem(Asteroid &asteroid) : asteroid_(asteroid) {
+    coef_earth_acceleration_mul_specific_impulse_ = 0.0;
     for (int i = 0; i < 3; ++i) {
         thrust_[i] = 0.0;
         perturbations_acceleration_[i] = 0.0;
-        state_[i] = spacecraft_position[i];
-        state_[3+i] = spacecraft_velocity[i];
+        state_[i] = 0.0;
+        state_[3+i] = 0.0;
     }
-    state_[6] = spacecraft_mass;
-
+    coef_earth_acceleration_mul_specific_impulse_ = 0.0;
 }
 
 void ODESystem::operator()(const State &state, State &d_state_dt, double time) const

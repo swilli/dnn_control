@@ -6,7 +6,7 @@
 #include "constants.h"
 #include "utility.h"
 
-Asteroid::Asteroid(const double *semi_axis, const double &density, const double *angular_velocity, const double &time_bias)
+Asteroid::Asteroid(const Vector3D &semi_axis, const double &density, const Vector3D &angular_velocity, const double &time_bias)
 {
     time_bias_ = time_bias;
 
@@ -20,10 +20,10 @@ Asteroid::Asteroid(const double *semi_axis, const double &density, const double 
         mass_ *= semi_axis_[i];
     }
 
-    double signs[3];
-    signs[0] = (angular_velocity_[0] >= 0 ? 1.0 : -1.0);
-    signs[1] = (angular_velocity_[0] * angular_velocity_[2] >= 0 ? 1.0 : -1.0);
-    signs[2] = (angular_velocity_[2] >= 0 ? 1.0 : -1.0);
+    Vector3D signs;
+    signs[0] = (angular_velocity_[0] > 0 ? 1.0 : -1.0);
+    signs[1] = (angular_velocity_[0] * angular_velocity_[2] > 0 ? 1.0 : -1.0);
+    signs[2] = (angular_velocity_[2] > 0 ? 1.0 : -1.0);
 
     inertia_[0] = 0.2 * mass_ * (semi_axis_pow2_[1] + semi_axis_pow2_[2]);
     inertia_[1] = 0.2 * mass_ * (semi_axis_pow2_[0] + semi_axis_pow2_[2]);
@@ -32,7 +32,7 @@ Asteroid::Asteroid(const double *semi_axis, const double &density, const double 
     gamma_ = 4.0 * k_pi * k_gravitational_constant * density;
     energy_mul2_ = 0.0;
     momentum_pow2_ = 0.0;
-    double inertia[3];
+    Vector3D inertia;
     for (int i = 0; i < 3; ++i) {
         inertia[i] = inertia_[i];
         inertia_pow2_[i] = inertia_[i] * inertia_[i];
@@ -57,10 +57,11 @@ Asteroid::Asteroid(const double *semi_axis, const double &density, const double 
     elliptic_coefficients_[2] = signs[2] * sqrt((momentum_pow2_ - energy_mul2_ * inertia[0]) / (inertia[2] * (inertia[2] - inertia[0])));
 
     elliptic_tau_ = sqrt((inertia[2] - inertia[1]) * (momentum_pow2_ - energy_mul2_ * inertia[0]) / (inertia[0] * inertia[1] * inertia[2]));
+
     elliptic_modulus_ = (inertia[1] - inertia[0]) * (energy_mul2_ * inertia[2] - momentum_pow2_) / ((inertia[2] - inertia[1]) * (momentum_pow2_ - energy_mul2_ * inertia[0]));
 }
 
-void Asteroid::GravityAtPosition(double *position, double *gravity) const
+void Asteroid::GravityAtPosition(const Vector3D &position, Vector3D &gravity) const
 {
     gravity[0] = 0.0;
     gravity[1] = 0.0;
@@ -107,7 +108,7 @@ void Asteroid::GravityAtPosition(double *position, double *gravity) const
     gravity[2] *= position[2];
 }
 
-void Asteroid::AngularVelocityAndAccelerationAtTime(const double &time, double *velocity, double *acceleration) const
+void Asteroid::AngularVelocityAndAccelerationAtTime(const double &time, Vector3D &velocity, Vector3D &acceleration) const
 {
     const double t = (time + time_bias_) * elliptic_tau_;
 
@@ -119,9 +120,9 @@ void Asteroid::AngularVelocityAndAccelerationAtTime(const double &time, double *
         velocity[1] = elliptic_coefficients_[1] * sn_tau;
         velocity[2] = elliptic_coefficients_[0] * cn_tau;
     } else {
-        velocity[2] = elliptic_coefficients_[2] * dn_tau;
-        velocity[1] = elliptic_coefficients_[1] * sn_tau;
         velocity[0] = elliptic_coefficients_[0] * cn_tau;
+        velocity[1] = elliptic_coefficients_[1] * sn_tau;
+        velocity[2] = elliptic_coefficients_[2] * dn_tau;
     }
 
     acceleration[0] = (inertia_[1] - inertia_[2]) * velocity[1] * velocity[2] / inertia_[0];
@@ -129,10 +130,10 @@ void Asteroid::AngularVelocityAndAccelerationAtTime(const double &time, double *
     acceleration[2] = (inertia_[0] - inertia_[1]) * velocity[0] * velocity[1] / inertia_[2];
 }
 
-void Asteroid::NearestPointOnSurface(const double *position, double *point, double *distance) const
+void Asteroid::NearestPointOnSurface(const Vector3D &position, Vector3D &point, double *distance) const
 {
-    double signs[3];
-    double abs_position[3];
+    Vector3D signs;
+    Vector3D abs_position;
     for (int i = 0; i < 3; ++i) {
         point[i] = 0.0;
         signs[i] = (position[i] >= 0.0 ? 1.0 : -1.0);
@@ -158,15 +159,20 @@ double Asteroid::SemiAxis(const int &dimension) const
     return semi_axis_[dimension];
 }
 
-void Asteroid::NearestPointOnEllipseFirstQuadrant(const double *semi_axis, const double *position, double *point) const
+double Asteroid::Inertia(const int &dimension) const
+{
+    return inertia_[dimension];
+}
+
+void Asteroid::NearestPointOnEllipseFirstQuadrant(const Vector2D &semi_axis, const Vector2D &position, Vector2D &point) const
 {
     point[0] = 0.0; point[1] = 0.0;
 
-    const double semi_axis_pow2[2] = {semi_axis[0] * semi_axis[0], semi_axis[1] * semi_axis[1]};
+    const Vector2D semi_axis_pow2 = {semi_axis[0] * semi_axis[0], semi_axis[1] * semi_axis[1]};
 
     if (position[1] > 0.0) {
         if (position[0] > 0.0) {
-            double semi_axis_mul_pos[2];
+            Vector2D semi_axis_mul_pos;
             double lower_boundary = 0.0;
             double upper_boundary = 0.0;
             for (int i = 0; i < 2; ++i) {
@@ -177,8 +183,8 @@ void Asteroid::NearestPointOnEllipseFirstQuadrant(const double *semi_axis, const
 
             class EllipseFunctor : public Functor {
             public:
-                double semi_axis_mul_pos[2];
-                double semi_axis_pow2[2];
+                Vector2D semi_axis_mul_pos;
+                Vector2D semi_axis_pow2;
                 virtual double Evaluate(double time) {
                     double result = 0.0;
                     for (int i = 0; i < 2; ++i) {
@@ -187,7 +193,7 @@ void Asteroid::NearestPointOnEllipseFirstQuadrant(const double *semi_axis, const
                     result -= 1.0;
                     return result;
                 }
-                EllipseFunctor(double *axis_pos, const double *axis_pow2) {
+                EllipseFunctor(const Vector2D &axis_pos, const Vector2D &axis_pow2) {
                     for (int i = 0; i < 2; ++i) {
                         semi_axis_mul_pos[i] = axis_pos[i];
                         semi_axis_pow2[i] = axis_pow2[i];
@@ -219,14 +225,14 @@ void Asteroid::NearestPointOnEllipseFirstQuadrant(const double *semi_axis, const
     }
 }
 
-void Asteroid::NearestPointOnEllipsoidFirstQuadrant(const double *position, double *point) const
+void Asteroid::NearestPointOnEllipsoidFirstQuadrant(const Vector3D &position, Vector3D &point) const
 {
     point[0] = 0.0; point[1] = 0.0; point[2] = 0.0;
 
     if (position[2] > 0.0) {
         if (position[1] > 0.0) {
             if (position[0] > 0.0) {
-                double semi_axis_mul_pos[3];
+                Vector3D semi_axis_mul_pos;
                 double lower_boundary = 0.0;
                 double upper_boundary = 0.0;
                 for (int i = 0; i < 3; ++i) {
@@ -237,8 +243,8 @@ void Asteroid::NearestPointOnEllipsoidFirstQuadrant(const double *position, doub
 
                 class EllipsoidFunctor : public Functor {
                 public:
-                    double semi_axis_mul_pos[3];
-                    double semi_axis_pow2[3];
+                    Vector3D semi_axis_mul_pos;
+                    Vector3D semi_axis_pow2;
                     virtual double Evaluate(double time) {
                         double result = 0.0;
                         for (int i = 0; i < 3; ++i) {
@@ -247,7 +253,7 @@ void Asteroid::NearestPointOnEllipsoidFirstQuadrant(const double *position, doub
                         result -= 1.0;
                         return result;
                     }
-                    EllipsoidFunctor(double *axis_pos, const double *axis_pow2) {
+                    EllipsoidFunctor(const Vector3D &axis_pos, const Vector3D &axis_pow2) {
                         for (int i = 0; i < 3; ++i) {
                             semi_axis_mul_pos[i] = axis_pos[i];
                             semi_axis_pow2[i] = axis_pow2[i];
@@ -263,9 +269,9 @@ void Asteroid::NearestPointOnEllipsoidFirstQuadrant(const double *position, doub
                 point[2] = semi_axis_pow2_[2] * position[2] / (time + semi_axis_pow2_[2]);
             } else {
                 point[0] = 0.0;
-                const double semi_axis_2d[2] = {semi_axis_[1], semi_axis_[2]};
-                const double position_2d[2] = {position[1], position[2]};
-                double point_2d[2];
+                const Vector2D semi_axis_2d = {semi_axis_[1], semi_axis_[2]};
+                const Vector2D position_2d = {position[1], position[2]};
+                Vector2D point_2d;
                 NearestPointOnEllipseFirstQuadrant(semi_axis_2d, position_2d, point_2d);
                 point[1] = point_2d[0];
                 point[2] = point_2d[1];
@@ -273,9 +279,9 @@ void Asteroid::NearestPointOnEllipsoidFirstQuadrant(const double *position, doub
         } else {
             point[1] = 0.0;
             if (position[0] > 0.0) {
-                const double semi_axis_2d[2] = {semi_axis_[0], semi_axis_[2]};
-                const double position_2d[2] = {position[0], position[2]};
-                double point_2d[2];
+                const Vector2D semi_axis_2d = {semi_axis_[0], semi_axis_[2]};
+                const Vector2D position_2d = {position[0], position[2]};
+                Vector2D point_2d;
                 NearestPointOnEllipseFirstQuadrant(semi_axis_2d, position_2d, point_2d);
                 point[0] = point_2d[0];
                 point[2] = point_2d[1];
@@ -285,13 +291,13 @@ void Asteroid::NearestPointOnEllipsoidFirstQuadrant(const double *position, doub
             }
         }
     } else {
-        const double denominator[2] = {semi_axis_pow2_[0] - semi_axis_pow2_[2], semi_axis_pow2_[1] - semi_axis_pow2_[2]};
-        const double semi_axis_mul_pos[2] = {semi_axis_[0] * position[0], semi_axis_[1] * position[1]};
+        const Vector2D denominator = {semi_axis_pow2_[0] - semi_axis_pow2_[2], semi_axis_pow2_[1] - semi_axis_pow2_[2]};
+        const Vector2D semi_axis_mul_pos = {semi_axis_[0] * position[0], semi_axis_[1] * position[1]};
 
         if (semi_axis_mul_pos[0] < denominator[0] && semi_axis_mul_pos[1] < denominator[1]) {
-            const double semi_axis_div_denom[2] = {semi_axis_mul_pos[0] / denominator[0] ,
+            const Vector2D semi_axis_div_denom = {semi_axis_mul_pos[0] / denominator[0] ,
                                                    semi_axis_mul_pos[1] / denominator[1]};
-            const double semi_axis_div_denom_pow2[2] = {semi_axis_div_denom[0] * semi_axis_div_denom[0],
+            const Vector2D semi_axis_div_denom_pow2 = {semi_axis_div_denom[0] * semi_axis_div_denom[0],
                                                         semi_axis_div_denom[1] * semi_axis_div_denom[1]};
             const double discr = 1.0 - semi_axis_div_denom_pow2[0] - semi_axis_div_denom_pow2[1];
             if (discr > 0.0) {
@@ -300,18 +306,18 @@ void Asteroid::NearestPointOnEllipsoidFirstQuadrant(const double *position, doub
                 point[2] = semi_axis_[2] * sqrt(discr);
             } else {
                 point[2] = 0.0;
-                const double semi_axis_2d[2] = {semi_axis_[0], semi_axis_[1]};
-                const double position_2d[2] = {position[0], position[1]};
-                double point_2d[2];
+                const Vector2D semi_axis_2d = {semi_axis_[0], semi_axis_[1]};
+                const Vector2D position_2d = {position[0], position[1]};
+                Vector2D point_2d;
                 NearestPointOnEllipseFirstQuadrant(semi_axis_2d, position_2d, point_2d);
                 point[0] = point_2d[0];
                 point[1] = point_2d[1];
             }
         } else {
             point[2] = 0.0;
-            const double semi_axis_2d[2] = {semi_axis_[0], semi_axis_[1]};
-            const double position_2d[2] = {position[0], position[1]};
-            double point_2d[2];
+            const Vector2D semi_axis_2d = {semi_axis_[0], semi_axis_[1]};
+            const Vector2D position_2d = {position[0], position[1]};
+            Vector2D point_2d;
             NearestPointOnEllipseFirstQuadrant(semi_axis_2d, position_2d, point_2d);
             point[0] = point_2d[0];
             point[1] = point_2d[1];

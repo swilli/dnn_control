@@ -5,6 +5,8 @@
 #include <gsl/gsl_roots.h>
 #include <boost/math/tools/roots.hpp>
 
+#include "constants.h"
+
 static struct TerminationCondition {
   double tolerance = 1e-10;
   bool operator() (double min, double max)  {
@@ -28,36 +30,15 @@ double Bisection(Functor *container, const double &minimum, const double &maximu
 
     const double root = (result.first + result.second) / 2.0;
     return root;
+}
 
-    /*const gsl_root_fsolver_type *solver_type = gsl_root_fsolver_bisection;
-    gsl_root_fsolver *solver = gsl_root_fsolver_alloc (solver_type);
-
-    bisection_function = fun;
-
-    gsl_function function;
-    function.function = &bisection_adapter;
-
-    gsl_root_fsolver_set(solver, &function, minimum, maximum);
-
-    int status = GSL_CONTINUE;
-    double root = 0.0;
-    double root_min = minimum;
-    double root_max = maximum;
-    for (int i = 0; i < max_iterations && status == GSL_CONTINUE; ++i) {
-        status = gsl_root_fsolver_iterate(solver);
-        if (status != GSL_SUCCESS)
-            break;
-
-        root = gsl_root_fsolver_root(solver);
-        root_min = gsl_root_fsolver_x_lower(solver);
-        root_max = gsl_root_fsolver_x_upper(solver);
-
-        status = gsl_root_test_interval(root_min, root_max, 0, tolerance);
-        if (status == GSL_SUCCESS) {
-            break;
-        }
-    }
-    gsl_root_fsolver_free(solver);
-    return root;
-*/
+static std::random_device rd;
+static std::mt19937 generator(rd());
+static std::uniform_real_distribution<double> distribution(0.0, 1.0);
+void SamplePointOutSideEllipsoid(const Vector3D &semi_axis, const double &band_width_scale, Vector3D &point) {
+    const double u = distribution(generator) * 2.0 * k_pi;
+    const double v = distribution(generator) * k_pi;
+    point[0] = (1.0 + distribution(generator) * (band_width_scale - 1.0)) * semi_axis[0] * cos(u) * sin(v);
+    point[1] = (1.0 + distribution(generator) * (band_width_scale - 1.0)) * semi_axis[1] * sin(u) * sin(v);
+    point[2] = (1.0 + distribution(generator) * (band_width_scale - 1.0)) * semi_axis[2] * cos(v);
 }

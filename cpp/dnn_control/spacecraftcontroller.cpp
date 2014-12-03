@@ -4,7 +4,7 @@ SpacecraftController::SpacecraftController()
 {
 }
 
-void SpacecraftController::GetThrustForSensorData(double *sensor_data, double *thrust) const
+void SpacecraftController::GetThrustForSensorData(const SensorData &sensor_data, Vector3D &thrust) const
 {
 
 }

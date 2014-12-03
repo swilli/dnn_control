@@ -3,13 +3,16 @@ CONFIG += console
 CONFIG -= app_bundle
 CONFIG -= qt
 
+QMAKE_CXXFLAGS += -std=c++11
+
 SOURCES += main.cpp \
     simulator.cpp \
     asteroid.cpp \
     sensorsimulator.cpp \
     spacecraftcontroller.cpp \
     odesystem.cpp \
-    utility.cpp
+    utility.cpp \
+    test.cpp
 
 include(deployment.pri)
 qtcAddDeployment()
@@ -21,6 +24,8 @@ HEADERS += \
     sensorsimulator.h \
     spacecraftcontroller.h \
     constants.h \
-    odesystem.h
+    odesystem.h \
+    vector.h
 
 LIBS += -lgsl -lgslcblas
+

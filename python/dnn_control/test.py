@@ -173,20 +173,22 @@ def unit_test_angular_velocity():
         # print("Test run {}".format(i + 1))
 
         axis = []
-        test_time = random.uniform(1.0, 100.0)
+        test_time = 26.257487718094691  # random.uniform(1.0, 100.0)
         [axis.append(random.uniform(1000.0, 5000.0)) for i in range(3)]
-        semi_axis_c, semi_axis_b, semi_axis_a = sorted(axis)
+        semi_axis_a, semi_axis_b, semi_axis_c = [10000.0, 6000.0, 4000.0] #sorted(axis)
 
-        density = 2000.0
-        angular_velocity = [random.choice(signs) * random.uniform(0.0002, 0.0004), 0.0,
-                            random.choice(signs) * random.uniform(0.0002, 0.0004)]
+        density = 2215.0
+        #angular_velocity = [random.choice(signs) * random.uniform(0.0002, 0.0004), 0.0,
+        #                   random.choice(signs) * random.uniform(0.0002, 0.0004)]
+
+        angular_velocity = [0.0002, 0.0, 0.0008]
 
         asteroid = Asteroid(semi_axis_a, semi_axis_b, semi_axis_c, density, angular_velocity, 0.0)
 
         result = odeint(w_dot, angular_velocity, [0, test_time], (asteroid.inertia_x, asteroid.inertia_y,
-                                                                  asteroid.inertia_z), rtol=1e-12, atol=1e-12)
+                                                                  asteroid.inertia_z))
         omega_numerical = result[1][:]
-        omega_analytical = asteroid.angular_velocity_and_acceleration_at_time(test_time)
+        omega_analytical = asteroid.angular_velocity_and_acceleration_at_time(test_time)[0]
         error = norm(omega_numerical - omega_analytical)
 
         avg_error += error
@@ -471,7 +473,7 @@ def unit_test_angular_velocity_period():
 #unit_test_pca()
 #unit_test_linear_regression()
 #unit_test_height()
-#unit_test_angular_velocity()
+unit_test_angular_velocity()
 #unit_test_angular_acceleration()
 #unit_test_gravity_direction()
 #unit_test_gravity_contour()
@@ -578,9 +580,11 @@ ax.set_ylabel('Omega_y')
 ax.set_zlabel('Omega_z')
 pyplot.show()
 '''
+
+'''
 from asteroid import Asteroid
 asteroid = Asteroid(5000.0, 2567.0, 1235.0, 2000.0, [0.0001, 0.0, 0.0001], 0.0)
 position = [0.0, 106412.121, 0.0]
 result = asteroid.distance_to_surface_at_position(position)
 print(result)
-
+'''

@@ -2,50 +2,71 @@
 #include <iostream>
 #include <ctime>
 #include <iomanip>
+#include "test.cpp"
+#include "vector.h"
 
-#define WRITE_TO_FILE   1
-#define PATH_TO_FILE    "./result.txt"
+#define COLLECT_DATA   1
+#define PATH_TO_FILE    "../result.txt"
+
 int main()
 {
-    std::ofstream *result_file = NULL;
-    if (WRITE_TO_FILE) {
-        result_file = new std::ofstream();
-        result_file->open(PATH_TO_FILE);
-        *result_file << std::setprecision(10);
+    UnitTestTrajectory();
+    //UnitTestAngularVelocity();
+    return 0;
+
+    std::ofstream result_file;
+    if (COLLECT_DATA) {
+        result_file.open(PATH_TO_FILE);
+        result_file << std::setprecision(10);
     }
 
-    const double time = 5.0 * 60.0 * 60.0;
-    const double control_frequency = 10.0;
-    const double spacecraft_position[3] = {6000.0, 3000.0, 2345.0};
-    const double spacecraft_velocity[3] = {0.0, 0.0, 0.0};
-    const double spacecraft_specific_impulse = 200.0;
-    const double spacecraft_mass = 1000.0;
-    const double semi_axis[3] = {5000.0, 2567.0, 1235.0};
-    const double density = 2000.0;
-    const double angular_velocity[3] = {0.0001,0.0, 0.0001};
+    const double time = 24.0 * 60.0 * 60.0;
+
+    const Vector3D semi_axis = {10000.0, 6000.0, 4000.0};
+    const double density = 2215.0;
+    const Vector3D angular_velocity = {0.0002, 0.0, 0.0008};
     const double time_bias = 0.0;
 
-    const Asteroid asteroid(semi_axis, density, angular_velocity, time_bias);
-    const SensorSimulator sensor_simulator(asteroid);
-    const SpacecraftController spacecraft_controller;
+    const Vector3D spacecraft_position = {4.0 * semi_axis[0], 4.0 * semi_axis[1], 4.0 * semi_axis[2]};
+    const Vector3D spacecraft_velocity = {-angular_velocity[0] * spacecraft_position[0], 0.0, -angular_velocity[2] * spacecraft_position[2]};
+    const double spacecraft_specific_impulse = 200.0;
+    const double spacecraft_mass = 1000.0;
+
+    const double control_frequency = 10.0;
+
+    const double sensor_noise = 0.05;
+    const double perturbation_noise = 1e-7;
+
+    Asteroid asteroid(semi_axis, density, angular_velocity, time_bias);
+    SensorSimulator sensor_simulator(asteroid, sensor_noise);
+    SpacecraftController spacecraft_controller;
+
+    std::vector<std::vector<double> > *positions = NULL;
+    std::vector<std::vector<double> > *heights = NULL;
 
     std::cout << "running simulation ..." << std::endl;
-    Simulator simulator(asteroid, spacecraft_position, spacecraft_velocity, spacecraft_mass, spacecraft_specific_impulse, sensor_simulator, spacecraft_controller, control_frequency, result_file);
+    Simulator simulator(asteroid, sensor_simulator, spacecraft_controller, control_frequency, perturbation_noise);
+    simulator.InitSpacecraft(spacecraft_position, spacecraft_velocity, spacecraft_mass, spacecraft_specific_impulse);
     clock_t begin = clock();
-    simulator.Run(time);
+    const int iterations = simulator.Run(time, COLLECT_DATA, &positions, &heights);
     clock_t end = clock();
     double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
     std::cout << time << " seconds simulation time took " << elapsed_secs << " real time to compute (x" << time/elapsed_secs << ")." << std::endl;
 
-    result_file->close();
-    delete(result_file);
+    if(COLLECT_DATA) {
+        std::cout << "writing results to file ... ";
+        result_file << asteroid.SemiAxis(0) << "," << asteroid.SemiAxis(1) << "," << asteroid.SemiAxis(2) << "," << control_frequency << std::endl;
+        for (int i = 0; i < iterations; ++i) {
+            std::vector<double> *position = &positions->at(i);
+            std::vector<double> *height = &heights->at(i);
+            result_file << position->at(0) << "," << position->at(1) << "," << position->at(2) << "," << height->at(0) << "," << height->at(1) << "," << height->at(2) << "\n";
+        }
+        delete(heights);
+        delete(positions);
+        result_file.close();
+        std::cout << "done." << std::endl;
+    }
 
-/*
-    const double position[3] = {0.0, 106412.121, 0.0};
-    double surface_point[3];
-    double distance;
-    asteroid.NearestPointOnSurface(position, surface_point, &distance);
-    */
     return 0;
 }
 
