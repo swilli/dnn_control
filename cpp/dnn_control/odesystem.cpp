@@ -15,19 +15,19 @@ ODESystem::ODESystem(Asteroid &asteroid) : asteroid_(asteroid) {
 
 void ODESystem::operator()(const State &state, State &d_state_dt, double time) const
 {
-    double gravity_acceleration[3];
-    double thrust_acceleration[3];
-    double euler_acceleration[3];
-    double centrifugal_acceleration[3];
-    double coriolis_acceleration[3];
-    double angular_velocity[3];
-    double angular_acceleration[3];
-    double tmp[3];
+    Vector3D gravity_acceleration;
+    Vector3D thrust_acceleration;
+    Vector3D euler_acceleration;
+    Vector3D centrifugal_acceleration;
+    Vector3D coriolis_acceleration;
+    Vector3D angular_velocity;
+    Vector3D angular_acceleration;
+    Vector3D tmp;
 
     const double coef_mass = 1.0 / state[6];
 
-    double position[3];
-    double velocity[3];
+    Vector3D position;
+    Vector3D velocity;
     for(int i = 0; i < 3; ++i) {
         position[i] = state[i];
         velocity[i] = state[3+i];

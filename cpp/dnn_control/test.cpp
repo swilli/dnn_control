@@ -104,8 +104,11 @@ void UnitTestTrajectory() {
 
     const int num_test_cases = 1000000;
     for (int i = 0; i < num_test_cases; ++i) {
-        Vector3D position;
-        SamplePointOutSideEllipsoid(semi_axis, band_width_scaling, position);
+        std::cout << i << std::endl;
+        Vector3D position = {0, semi_axis[1], 0};
+        position[1] *= 4.0;
+        //SamplePointOutSideEllipsoid(semi_axis, band_width_scaling, position);
+
         const double spacecraft_velocity[3] = {-angular_velocity[0] * position[0], 0.0, -angular_velocity[2] * position[2]};
         State state;
         for(int i = 0; i < 3; ++i) {
@@ -116,14 +119,9 @@ void UnitTestTrajectory() {
 
         State next_state;
         const Vector3D thrust = {0.0, 0.0, 0.0};
-        for (int i = 0; i < 1; ++i) {
-            simulator.NextState(state, thrust, i * simulator.ControlInterval(), next_state);
-            for (int i = 0; i < 7; i++) {
-                state[i] = next_state[i];
-            }
-        }
+        simulator.NextState(state, thrust, 0.0, next_state);
 
-        const Vector3D next_position = {state[0], state[1], state[2]};
+        const Vector3D next_position = {next_state[0], next_state[1], next_state[2]};
         double norm_pos = 0.0;
         double norm_next_pos = 0.0;
         for (int i = 0; i < 3; ++i) {
@@ -133,6 +131,24 @@ void UnitTestTrajectory() {
         norm_pos = sqrt(norm_pos);
         norm_next_pos = sqrt(norm_next_pos);
         if(norm_pos < norm_next_pos) {
+            Vector3D gravity;
+            asteroid.GravityAtPosition(position, gravity);
+            gravity[0] /= state[6];
+            gravity[1] /= state[6];
+            gravity[2] /= state[6];
+
+            Vector3D angular_velocity;
+            Vector3D angular_acceleration;
+            asteroid.AngularVelocityAndAccelerationAtTime(0.0, angular_velocity, angular_acceleration);
+
+            Vector3D centrifugal_acceleration;
+            Vector3D tmp;
+            CrossProduct(angular_velocity, position, tmp);
+            CrossProduct(angular_velocity, tmp, centrifugal_acceleration);
+
+            std::cout << "gravity at position: (" << gravity[0] << "," << gravity[1] << "," << gravity[2] << ")" << std::endl;
+            std::cout << "centrifugal force at position: (" << centrifugal_acceleration[0] << "," << centrifugal_acceleration[1] << "," << centrifugal_acceleration[2] << ")" << std::endl;
+
             simulator.InitSpacecraft(position, spacecraft_velocity, spacecraft_mass, spacecraft_specific_impulse);
             std::vector<std::vector<double> > *positions = NULL;
             std::vector<std::vector<double> > *heights = NULL;
