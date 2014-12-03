@@ -83,7 +83,7 @@ void UnitTestTrajectory() {
 
     const Vector3D semi_axis = {10000.0, 6000.0, 4000.0};
     const double density = 2215.0;
-    const Vector3D angular_velocity = {0.0002, 0.0, 0.0008};
+    const Vector3D angular_velocity = {-0.0002, 0.0, 0.0008};
     const double time_bias = 0.0;
 
     const double band_width_scaling = 4.0;
@@ -104,16 +104,19 @@ void UnitTestTrajectory() {
 
     const int num_test_cases = 1000000;
     for (int i = 0; i < num_test_cases; ++i) {
-        std::cout << i << std::endl;
-        Vector3D position = {0, semi_axis[1], 0};
-        position[1] *= 4.0;
-        //SamplePointOutSideEllipsoid(semi_axis, band_width_scaling, position);
+        Vector3D position;
+        SamplePointOutSideEllipsoid(semi_axis, band_width_scaling, position);
 
-        const double spacecraft_velocity[3] = {-angular_velocity[0] * position[0], 0.0, -angular_velocity[2] * position[2]};
+        Vector3D velocity;
+        CrossProduct(angular_velocity, position, velocity);
+        velocity[0] *= -1;
+        velocity[1] *= -1;
+        velocity[2] *= -1;
+
         State state;
         for(int i = 0; i < 3; ++i) {
             state[i] = position[i];
-            state[3+i] = spacecraft_velocity[i];
+            state[3+i] = velocity[i];
         }
         state[6] = spacecraft_mass;
 
@@ -149,7 +152,7 @@ void UnitTestTrajectory() {
             std::cout << "gravity at position: (" << gravity[0] << "," << gravity[1] << "," << gravity[2] << ")" << std::endl;
             std::cout << "centrifugal force at position: (" << centrifugal_acceleration[0] << "," << centrifugal_acceleration[1] << "," << centrifugal_acceleration[2] << ")" << std::endl;
 
-            simulator.InitSpacecraft(position, spacecraft_velocity, spacecraft_mass, spacecraft_specific_impulse);
+            simulator.InitSpacecraft(position, velocity, spacecraft_mass, spacecraft_specific_impulse);
             std::vector<std::vector<double> > *positions = NULL;
             std::vector<std::vector<double> > *heights = NULL;
             const int iterations = simulator.Run(time, true, &positions, &heights);

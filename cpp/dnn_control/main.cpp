@@ -8,11 +8,11 @@
 #define COLLECT_DATA   1
 #define PATH_TO_FILE    "../result.txt"
 
-int main()
+int main(int argc, char *argv[])
 {
-    UnitTestTrajectory();
+    //UnitTestTrajectory();
     //UnitTestAngularVelocity();
-    return 0;
+    //return 0;
 
     std::ofstream result_file;
     if (COLLECT_DATA) {
@@ -28,7 +28,9 @@ int main()
     const double time_bias = 0.0;
 
     const Vector3D spacecraft_position = {4.0 * semi_axis[0], 4.0 * semi_axis[1], 4.0 * semi_axis[2]};
-    const Vector3D spacecraft_velocity = {-angular_velocity[0] * spacecraft_position[0], 0.0, -angular_velocity[2] * spacecraft_position[2]};
+    Vector3D spacecraft_velocity;
+    CrossProduct(angular_velocity, spacecraft_position, spacecraft_velocity);
+    spacecraft_velocity[0] *= -1; spacecraft_velocity[1] *= -1; spacecraft_velocity[2] *= -1;
     const double spacecraft_specific_impulse = 200.0;
     const double spacecraft_mass = 1000.0;
 
