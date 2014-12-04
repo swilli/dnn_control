@@ -12,6 +12,7 @@ inline void CrossProduct(const Vector3D &vector_u, const Vector3D &vector_v, Vec
 double BisectEllipsoid(const Vector3D &semi_axis_mul_pos, const Vector3D &semi_axis_pow2, const double &tolerance);
 double BisectEllipse(const Vector2D &semi_axis_mul_pos, const Vector2D &semi_axis_pow2, const double &tolerance);
 
+double SampleUniform(const double &minimum, const double &maximum);
 void SamplePointOutSideEllipsoid(const Vector3D &semi_axis, const double &band_width_scale, Vector3D &point);
 
 #endif // UTILITY_H

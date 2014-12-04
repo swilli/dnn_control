@@ -19,9 +19,9 @@ int main(int argc, char *argv[])
 
     const double time = 24.0 * 60.0 * 60.0;
 
-    const Vector3D semi_axis = {10000.0, 6000.0, 4000.0};
-    const double density = 2215.0;
-    const Vector3D angular_velocity = {0.0002, 0.0, 0.0008};
+    const Vector3D semi_axis = {SampleUniform(8000.0,12000.0), SampleUniform(4000.0, 7500.0), SampleUniform(1000.0, 3500.0)};
+    const double density = SampleUniform(1500.0,3000.0);
+    const Vector3D angular_velocity = {SampleUniform(-0.0008, 0.0008), 0.0, SampleUniform(-0.0008, 0.0008)};
     const double time_bias = 0.0;
 
     Vector3D spacecraft_position;

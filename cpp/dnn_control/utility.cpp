@@ -12,9 +12,14 @@ using boost::math::tools::bisect;
 static std::random_device rd;
 static std::mt19937 generator(rd());
 static std::uniform_real_distribution<double> distribution(0.0, 1.0);
+
+double SampleUniform(const double &minimum, const double &maximum) {
+    return minimum + (maximum - minimum) * distribution(generator);
+}
+
 void SamplePointOutSideEllipsoid(const Vector3D &semi_axis, const double &band_width_scale, Vector3D &point) {
-    const double u = distribution(generator) * 2.0 * k_pi;
-    const double v = distribution(generator) * k_pi;
+    const double u = SampleUniform(0.0, 2.0 * k_pi);
+    const double v = SampleUniform(0.0, k_pi);
     point[0] = (1.0 + distribution(generator) * (band_width_scale - 1.0)) * semi_axis[0] * cos(u) * sin(v);
     point[1] = (1.0 + distribution(generator) * (band_width_scale - 1.0)) * semi_axis[1] * sin(u) * sin(v);
     point[2] = (1.0 + distribution(generator) * (band_width_scale - 1.0)) * semi_axis[2] * cos(v);
