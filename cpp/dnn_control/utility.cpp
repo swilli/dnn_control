@@ -17,6 +17,11 @@ double SampleUniform(const double &minimum, const double &maximum) {
     return minimum + (maximum - minimum) * distribution(generator);
 }
 
+double SampleSign() {
+    const double value = SampleUniform(-1.0, 1.0);
+    return value >= 0 ? 1.0 : -1.0;
+}
+
 void SamplePointOutSideEllipsoid(const Vector3D &semi_axis, const double &band_width_scale, Vector3D &point) {
     const double u = SampleUniform(0.0, 2.0 * k_pi);
     const double v = SampleUniform(0.0, k_pi);
