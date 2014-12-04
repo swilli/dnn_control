@@ -1,7 +1,8 @@
 class SensorSimulator:
 
-    def __init__(self, asteroid):
-        self.asteroid = asteroid
+    def __init__(self, asteroid, sensor_noise):
+        self._asteroid = asteroid
+        self._sensor_noise = sensor_noise
 
     def simulate(self, state, perturbations_acceleration, time):
         from utility import cross_product
@@ -14,17 +15,17 @@ class SensorSimulator:
         velocity = state[3:6]
         mass = state[6]
 
-        gravity = self.asteroid.gravity_at_position(state[0:3])
+        gravity = self._asteroid.gravity_at_position(state[0:3])
         gravity_acceleration = [val / mass for val in gravity]
 
-        angular_velocity, angular_acceleration = self.asteroid.angular_velocity_and_acceleration_at_time(time)
+        angular_velocity, angular_acceleration = self._asteroid.angular_velocity_and_acceleration_at_time(time)
         angular_velocity_mul2 = [2.0 * val for val in angular_velocity]
 
         centrifugal_acceleration = cross_product(angular_velocity, cross_product(angular_velocity, position))
         coriolis_acceleration = cross_product(angular_velocity_mul2, velocity)
         euler_acceleration = cross_product(angular_acceleration, position)
 
-        distance, surface_point = self.asteroid.distance_to_surface_at_position(position)
+        surface_point, distance = self._asteroid.nearest_point_on_surface_to_position(position)
 
         height = [position[0] - surface_point[0],
                   position[1] - surface_point[1],
@@ -50,14 +51,14 @@ class SensorSimulator:
 
         sensor_data[0] = norm_vel_vertical / norm_height
         sensor_data[1] = norm_vel_remaining / norm_height
-        for i in range(3):
+        for i in xrange(3):
             sensor_data[2 + i] = perturbations_acceleration[i] \
                                  + gravity_acceleration[i] \
                                  - coriolis_acceleration[i]\
                                  - euler_acceleration[i]\
                                  - centrifugal_acceleration[i]
 
-        variances = [0.05] * 5
-        for i in range(5):
-            sensor_data[i] += sensor_data[i] * random.normal(0, variances[i])
-        return sensor_data, height, velocity_vertical, velocity_remaining
+        for i in xrange(5):
+            sensor_data[i] += sensor_data[i] * random.normal(0, self._sensor_noise)
+
+        return sensor_data

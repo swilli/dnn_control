@@ -7,7 +7,7 @@
 #include <ctime>
 
 #define COLLECT_DATA   1
-#define PATH_TO_FILE    "../result.txt"
+#define PATH_TO_FILE    "../../../results/states.txt"
 
 int main(int argc, char *argv[])
 {
@@ -15,6 +15,7 @@ int main(int argc, char *argv[])
 
     //UnitTestTrajectory();
     //UnitTestAngularVelocity();
+    //UnitTestAny();
     //return 0;
 
     const double time = 24.0 * 60.0 * 60.0;
@@ -26,10 +27,11 @@ int main(int argc, char *argv[])
 
     Vector3D spacecraft_position;
     SamplePointOutSideEllipsoid(semi_axis, 4.0, spacecraft_position);
-    Vector3D spacecraft_velocity;
 
+    Vector3D spacecraft_velocity;
     CrossProduct(angular_velocity, spacecraft_position, spacecraft_velocity);
     spacecraft_velocity[0] *= -1; spacecraft_velocity[1] *= -1; spacecraft_velocity[2] *= -1;
+
     const double spacecraft_specific_impulse = 200.0;
     const double spacecraft_mass = 1000.0;
 

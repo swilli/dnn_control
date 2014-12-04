@@ -256,7 +256,7 @@ def unit_test_gravity_direction():
     from numpy import random, array, mgrid, sin, cos
     from math import copysign
     from asteroid import Asteroid
-    from utility import sample_position_outside_ellipsoid
+    from utility import sample_positions_outside_ellipsoid
     from mayavi import mlab
     from constants import PI
 
@@ -275,7 +275,7 @@ def unit_test_gravity_direction():
 
     asteroid = Asteroid(semi_axis_a, semi_axis_b, semi_axis_c, density, angular_velocity, 0.0)
 
-    positions = sample_position_outside_ellipsoid(semi_axis_a, semi_axis_b, semi_axis_c, band_width, num_samples)
+    positions = sample_positions_outside_ellipsoid(semi_axis_a, semi_axis_b, semi_axis_c, band_width, num_samples)
     gravities = [asteroid.gravity_at_position(pos) for pos in positions]
 
     positions = array(positions)
@@ -319,7 +319,7 @@ def unit_test_gravity_direction():
 def unit_test_gravity_contour():
     from numpy import random, linspace, meshgrid, array
     from numpy.linalg import norm
-    from utility import sample_position_outside_ellipse
+    from utility import sample_positions_outside_ellipse
     from asteroid import Asteroid
     from matplotlib.pyplot import imshow, scatter, colorbar, title, close, gcf, xlabel, ylabel
     from scipy.interpolate import Rbf
@@ -342,21 +342,21 @@ def unit_test_gravity_contour():
     for dim in range(3):
         if dim == 0:
             plane = "yz"
-            samples = sample_position_outside_ellipse(semi_axis_b, semi_axis_c, band_width, num_samples)
+            samples = sample_positions_outside_ellipse(semi_axis_b, semi_axis_c, band_width, num_samples)
             samples = [[0.0] + pos for pos in samples]
             samples = array(samples)
             x = samples[:, 1]
             y = samples[:, 2]
         elif dim == 1:
             plane = "xz"
-            samples = sample_position_outside_ellipse(semi_axis_a, semi_axis_c, band_width, num_samples)
+            samples = sample_positions_outside_ellipse(semi_axis_a, semi_axis_c, band_width, num_samples)
             samples = [[pos[0]] + [0.0] + [pos[1]] for pos in samples]
             samples = array(samples)
             x = samples[:, 0]
             y = samples[:, 2]
         else:
             plane = "xy"
-            samples = sample_position_outside_ellipse(semi_axis_a, semi_axis_b, band_width, num_samples)
+            samples = sample_positions_outside_ellipse(semi_axis_a, semi_axis_b, band_width, num_samples)
             samples = [pos + [0.0] for pos in samples]
             samples = array(samples)
             x = samples[:, 0]
@@ -389,7 +389,7 @@ def unit_test_gravity_speed():
     from asteroid import Asteroid
     from sys import float_info
     from time import time
-    from utility import sample_position_outside_ellipsoid
+    from utility import sample_positions_outside_ellipsoid
 
     signs = [-1.0, 1.0]
 
@@ -409,7 +409,7 @@ def unit_test_gravity_speed():
 
     num_samples = 20000
     band_width = 2000.0
-    samples = sample_position_outside_ellipsoid(semi_axis_a, semi_axis_b, semi_axis_c, band_width, num_samples)
+    samples = sample_positions_outside_ellipsoid(semi_axis_a, semi_axis_b, semi_axis_c, band_width, num_samples)
     for i in xrange(num_samples):
         start = time()
         gravity = asteroid.gravity_at_position(samples[i])
@@ -473,80 +473,16 @@ def unit_test_angular_velocity_period():
 #unit_test_pca()
 #unit_test_linear_regression()
 #unit_test_height()
-unit_test_angular_velocity()
+#unit_test_angular_velocity()
 #unit_test_angular_acceleration()
 #unit_test_gravity_direction()
 #unit_test_gravity_contour()
 #unit_test_gravity_speed()
 #unit_test_angular_velocity_period()
 
-'''
-acceleration = 1.0
-def d_dt_fun(state, time):
-    d_dt_state = [0.0, 0.0]
-    d_dt_state[0] = state[1]
-    d_dt_state[1] = acceleration
-    return d_dt_state
 
-time = 24.0 * 60.0 * 60.0
-state = [0.0, 0.0]
-from scipy.integrate import odeint
-for i in range(int(time)):
-    result = odeint(d_dt_fun, state, [float(i), float(i) + 1.0])
-    state = result[:][1]
-print(state)
-sol_iterative = state[:]
-
-state = [0.0, 0.0]
-result = odeint(d_dt_fun, state, [0.0, time])
-state = result[:][1]
-print(state)
-sol_full = state[:]
-
-from math import sqrt
-print(sqrt(sum([(i - f)**2 for i,f in zip(sol_iterative, sol_full)])))
-'''
 
 '''
-time = 48.0*60.0*60.0
-state = [0.0, 0.0]
-def d_dt_fun(state, time, acceleration):
-    d_dt_state = [0.0, 0.0]
-    d_dt_state[0] = state[1]
-    d_dt_state[1] = acceleration
-    return d_dt_state
-from scipy.integrate import odeint
-acceleration = 1.0
-result = odeint(d_dt_fun, state, [0.0, time], tuple([acceleration]))
-state = result[:][1]
-print(state)
-sol_full = state[:]
-
-from scipy.integrate import ode
-from numpy import array
-y0 = [0.0, 0.0]
-t0 = 0.0
-def f(t, y, arg1):
-    dy = [0.0, 0.0]
-    dy[0] = y[1]
-    dy[1] = arg1
-    return dy
-
-r = ode(f)
-r.set_integrator("lsoda")
-r.set_initial_value(y0, t0).set_f_params(acceleration)
-t1 = time
-dt = 0.1
-while r.successful() and r.t < t1:
-    r.integrate(r.t+dt)
-
-sol_iterative = r.y[:]
-print(sol_iterative)
-from math import sqrt
-print(sqrt(sum([(i - f)**2 for i,f in zip(sol_iterative, sol_full)])))
-'''
-'''
-
 #ASTEROID ANGULAR VELOCITY VISUALIZATION
 
 TIME = 100000.0
@@ -581,10 +517,11 @@ ax.set_zlabel('Omega_z')
 pyplot.show()
 '''
 
-'''
+
 from asteroid import Asteroid
-asteroid = Asteroid(5000.0, 2567.0, 1235.0, 2000.0, [0.0001, 0.0, 0.0001], 0.0)
-position = [0.0, 106412.121, 0.0]
-result = asteroid.distance_to_surface_at_position(position)
+asteroid = Asteroid([5000.0, 2567.0, 1235.0], 2215.0, [-0.0002, 0.0, 0.0008], 0.0)
+position = [6789.123, 3456.123, 2345.987]
+time = 13.15
+result = asteroid.angular_velocity_and_acceleration_at_time(time)
 print(result)
-'''
+

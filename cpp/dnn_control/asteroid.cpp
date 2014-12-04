@@ -14,16 +14,15 @@ Asteroid::Asteroid(const Vector3D &semi_axis, const double &density, const Vecto
 
     mass_ = 4.0 / 3.0 * k_pi * density;
     for (int i = 0; i < 3; ++i) {
-        angular_velocity_[i] = angular_velocity[i];
         semi_axis_[i] = semi_axis[i];
         semi_axis_pow2_[i] = semi_axis_[i] * semi_axis_[i];
         mass_ *= semi_axis_[i];
     }
 
     Vector3D signs;
-    signs[0] = (angular_velocity_[0] > 0 ? 1.0 : -1.0);
-    signs[1] = (angular_velocity_[0] * angular_velocity_[2] > 0 ? 1.0 : -1.0);
-    signs[2] = (angular_velocity_[2] > 0 ? 1.0 : -1.0);
+    signs[0] = (angular_velocity[0] > 0 ? 1.0 : -1.0);
+    signs[1] = (angular_velocity[0] * angular_velocity[2] > 0 ? 1.0 : -1.0);
+    signs[2] = (angular_velocity[2] > 0 ? 1.0 : -1.0);
 
     inertia_[0] = 0.2 * mass_ * (semi_axis_pow2_[1] + semi_axis_pow2_[2]);
     inertia_[1] = 0.2 * mass_ * (semi_axis_pow2_[0] + semi_axis_pow2_[2]);
@@ -37,9 +36,10 @@ Asteroid::Asteroid(const Vector3D &semi_axis, const double &density, const Vecto
         inertia[i] = inertia_[i];
         inertia_pow2_[i] = inertia_[i] * inertia_[i];
         gamma_ *= semi_axis_[i];
-        energy_mul2_ += inertia_[i] * angular_velocity_[i] * angular_velocity_[i];
-        momentum_pow2_ += inertia_[i] * inertia_[i] * angular_velocity_[i] * angular_velocity_[i];
+        energy_mul2_ += inertia_[i] * angular_velocity[i] * angular_velocity[i];
+        momentum_pow2_ += inertia_[i] * inertia_[i] * angular_velocity[i] * angular_velocity[i];
     }
+    // Cersosimo eq (3.12)
     gamma_ /= sqrt(semi_axis_pow2_[0] - semi_axis_pow2_[2]);
 
     inversion_ = false;
@@ -52,12 +52,15 @@ Asteroid::Asteroid(const Vector3D &semi_axis, const double &density, const Vecto
         signs[2] = tmp;
     }
 
+    // Lifshitz eq (37.10)
     elliptic_coefficients_[0] = signs[0] * sqrt((energy_mul2_ * inertia[2] - momentum_pow2_) / (inertia[0] * (inertia[2] - inertia[0])));
     elliptic_coefficients_[1] = signs[1] * sqrt((energy_mul2_ * inertia[2] - momentum_pow2_) / (inertia[1] * (inertia[2] - inertia[1])));
     elliptic_coefficients_[2] = signs[2] * sqrt((momentum_pow2_ - energy_mul2_ * inertia[0]) / (inertia[2] * (inertia[2] - inertia[0])));
 
+    // Lifshitz eq (37.8)
     elliptic_tau_ = sqrt((inertia[2] - inertia[1]) * (momentum_pow2_ - energy_mul2_ * inertia[0]) / (inertia[0] * inertia[1] * inertia[2]));
 
+    // Lifshitz eq (37.9)
     elliptic_modulus_ = (inertia[1] - inertia[0]) * (energy_mul2_ * inertia[2] - momentum_pow2_) / ((inertia[2] - inertia[1]) * (momentum_pow2_ - energy_mul2_ * inertia[0]));
 }
 
@@ -81,6 +84,7 @@ void Asteroid::GravityAtPosition(const Vector3D &position, Vector3D &gravity) co
     const double pos_y_pow2 = position[1] * position[1];
     const double pos_z_pow2 = position[2] * position[2];
 
+    // Cersosimo eq (3.7)
     const double coef_2 = -(pos_x_pow2 + pos_y_pow2 + pos_z_pow2 - semi_axis_pow2_[0] - semi_axis_pow2_[1] - semi_axis_pow2_[2]);
     const double coef_1 = -(semi_axis_pow2_[1] * pos_x_pow2 + semi_axis_pow2_[2] * pos_x_pow2
             + semi_axis_pow2_[0] * pos_y_pow2 + semi_axis_pow2_[2] * pos_y_pow2
@@ -106,8 +110,10 @@ void Asteroid::GravityAtPosition(const Vector3D &position, Vector3D &gravity) co
     const double integral_F = gsl_sf_ellint_F(phi,k,0);
     const double integral_E = gsl_sf_ellint_E(phi,k,0);
 
+    // Cersosimo eq (3.13)
     const double delta = sqrt((semi_axis_pow2_[0] - semi_axis_pow2_[2]) / ((semi_axis_pow2_[0] + kappa) * (semi_axis_pow2_[1] + kappa) * (semi_axis_pow2_[2] + kappa)));
 
+    // Cersosimo eq (3.11a-c)
     gravity[0] = gamma_ / (semi_axis_pow2_[0] - semi_axis_pow2_[1]) * (integral_E - integral_F);
     gravity[1] = gamma_ * ((-semi_axis_pow2_[0] + semi_axis_pow2_[2]) * integral_E / ((semi_axis_pow2_[0] - semi_axis_pow2_[1]) * (semi_axis_pow2_[1] - semi_axis_pow2_[2]))
             + integral_F / (semi_axis_pow2_[0] - semi_axis_pow2_[1]) + delta * (semi_axis_pow2_[2] + kappa) / (semi_axis_pow2_[1] - semi_axis_pow2_[2]));
@@ -120,11 +126,13 @@ void Asteroid::GravityAtPosition(const Vector3D &position, Vector3D &gravity) co
 
 void Asteroid::AngularVelocityAndAccelerationAtTime(const double &time, Vector3D &velocity, Vector3D &acceleration) const
 {
+    // Lifshitz eq (37.8)
     const double t = (time + time_bias_) * elliptic_tau_;
 
     double sn_tau = 0.0, cn_tau = 0.0, dn_tau = 0.0;
     gsl_sf_elljac_e(t,elliptic_modulus_,&sn_tau, &cn_tau, & dn_tau);
 
+    // Lifshitz eq (37.10)
     if (inversion_) {
         velocity[0] = elliptic_coefficients_[2] * dn_tau;
         velocity[1] = elliptic_coefficients_[1] * sn_tau;
@@ -135,12 +143,13 @@ void Asteroid::AngularVelocityAndAccelerationAtTime(const double &time, Vector3D
         velocity[2] = elliptic_coefficients_[2] * dn_tau;
     }
 
+    // Lifshitz eq (36.5)
     acceleration[0] = (inertia_[1] - inertia_[2]) * velocity[1] * velocity[2] / inertia_[0];
     acceleration[1] = (inertia_[2] - inertia_[0]) * velocity[2] * velocity[0] / inertia_[1];
     acceleration[2] = (inertia_[0] - inertia_[1]) * velocity[0] * velocity[1] / inertia_[2];
 }
 
-void Asteroid::NearestPointOnSurface(const Vector3D &position, Vector3D &point, double *distance) const
+void Asteroid::NearestPointOnSurfaceToPosition(const Vector3D &position, Vector3D &point, double *distance) const
 {
     Vector3D signs;
     Vector3D abs_position;

@@ -163,3 +163,18 @@ void UnitTestTrajectory() {
     }
     std::cout << "done." << std::endl;
 }
+
+
+void UnitTestAny()
+{
+    const Vector3D semi_axis = {5000.0, 2567.0, 1235.0};
+    const double density = 2215.0;
+    const Vector3D angular_velocity = {-0.0002, 0.0, 0.0008};
+    const double time_bias = 0.0;
+
+    Asteroid asteroid(semi_axis,density, angular_velocity, time_bias);
+    Vector3D result1, result2;
+    const Vector3D position = {6789.123, 3456.123, 2345.987};
+    const double time = 13.15;
+    asteroid.AngularVelocityAndAccelerationAtTime(time, result1, result2);
+}

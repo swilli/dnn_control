@@ -4,6 +4,7 @@
 
 SensorSimulator::SensorSimulator(const Asteroid &asteroid, const double &sensor_noise) : asteroid_(asteroid), normal_distribution_(boost::mt19937(time(0)),boost::normal_distribution<>(0.0, sensor_noise))
 {
+
 }
 
 void SensorSimulator::Simulate(const State &state, const Vector3D &perturbations_acceleration, const double &time, SensorData &sensor_data)
@@ -16,7 +17,7 @@ void SensorSimulator::Simulate(const State &state, const Vector3D &perturbations
 
     Vector3D surface_point;
     double norm_height = 0.0;
-    asteroid_.NearestPointOnSurface(position, surface_point, &norm_height);
+    asteroid_.NearestPointOnSurfaceToPosition(position, surface_point, &norm_height);
 
     const Vector3D height = {position[0] - surface_point[0],
                               position[1] - surface_point[1],

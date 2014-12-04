@@ -25,11 +25,6 @@ void Simulator::InitSpacecraftSpecificImpulse(const double &specific_impulse)
     system_.coef_earth_acceleration_mul_specific_impulse_ = specific_impulse * k_earth_acceleration;
 }
 
-double Simulator::ControlInterval() const
-{
-    return control_interval_;
-}
-
 void Simulator::NextState(const State &state, const double *thrust, const double &time, State &next_state)
 {
     for (int i = 0; i < 3; ++i) {
@@ -52,7 +47,9 @@ int Simulator::Run(const double &time, const bool &log_data) {
     const double dt = control_interval_;
     const int iterations = time / dt;
 
-    log_states_ = std::vector<LogState>(iterations);
+    if (log_data) {
+        log_states_ = std::vector<LogState>(iterations);
+    }
 
     odeint::runge_kutta4<State> integrator;
     double current_time = 0.0;
@@ -62,7 +59,7 @@ int Simulator::Run(const double &time, const bool &log_data) {
             const Vector3D position = {system_.state_[0], system_.state_[1], system_.state_[2]};
             double distance;
             Vector3D surface_point;
-            system_.asteroid_.NearestPointOnSurface(position, surface_point, &distance);
+            system_.asteroid_.NearestPointOnSurfaceToPosition(position, surface_point, &distance);
             LogState state;
             for (int i = 0; i < 3; ++i) {
                 state.trajectory_position[i] = position[i];
@@ -92,10 +89,10 @@ void Simulator::FlushLogToFile(const std::string &path_to_file)
 {
     log_file_.open(path_to_file);
     log_file_ << std::setprecision(10);
-    log_file_ << system_.asteroid_.SemiAxis(0) << "," << system_.asteroid_.SemiAxis(1) << "," << system_.asteroid_.SemiAxis(2) << "," << control_frequency_ << std::endl;
+    log_file_ << system_.asteroid_.SemiAxis(0) << ",\t" << system_.asteroid_.SemiAxis(1) << ",\t" << system_.asteroid_.SemiAxis(2) << ",\t" << control_frequency_ << std::endl;
     for (int i = 0; i < log_states_.size(); ++i) {
         LogState state = log_states_.at(i);
-        log_file_ << state.trajectory_position[0] << "," << state.trajectory_position[1] << "," << state.trajectory_position[2] << "," << state.height[0] << "," << state.height[1] << "," << state.height[2] << "\n";
+        log_file_ << state.trajectory_position[0] << ",\t" << state.trajectory_position[1] << ",\t" << state.trajectory_position[2] << ",\t" << state.height[0] << ",\t" << state.height[1] << ",\t" << state.height[2] << "\n";
     }
     log_states_.clear();
     log_file_.close();

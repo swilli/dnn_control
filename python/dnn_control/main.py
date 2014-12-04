@@ -7,86 +7,62 @@ from time import time
 from visualization import visualize, visualize_full
 from constants import PI
 from math import cos, sin
-from utility import cross_product
+from utility import cross_product, sample_position_outside_ellipsoid
+
+path_to_file = "../../../results/states.txt"
+
+signs = [-1.0, 1.0]
 
 # Video Settings
-VIDEO_SPEED = 100  # VIDEO_SPEED times real time
-ALL_DATA = True
+video_speed = 100  # VIDEO_SPEED times real time
+all_data = True
 
 # Simulation settings
-TIME = 6.0 * 60.0 * 60.0  # [s]
-TARGET_POSITION = [1000.0, 1000.0, 1000.0]  # [m]
+time_to_run = 24.0 * 60.0 * 60.0  # [s]
+target_position = [1000.0, 1000.0, 1000.0]  # [m]
 
 # Asteroid settings
-signs = [-1.0, 1.0]
 c_axis_n = 1.0
 b_axis_n = random.uniform(1.1, 2.0)
 a_axis_n = random.uniform(1.1 * b_axis_n, 4.0)
 distance = random.uniform(100.0, 8000.0)
-AXIS = [a_axis_n * distance,
-        b_axis_n * distance,
-        c_axis_n * distance]  # [m]
-AXIS_A, AXIS_B, AXIS_C = AXIS
-
-DENSITY = random.uniform(1500.0, 3000.0)  # [kg/m^3]
-ANGULAR_VELOCITY = [random.choice(signs) * random.uniform(0.0002, 0.0008),
+semi_axis = [a_axis_n * distance, b_axis_n * distance, c_axis_n * distance]  # [m]
+density = random.uniform(1500.0, 3000.0)  # [kg/m^3]
+angular_velocity = [random.choice(signs) * random.uniform(0.0002, 0.0008),
                     0.0,
                     random.choice(signs) * random.uniform(0.0002, 0.0008)]  # [1/s]
 
-TIME_BIAS = random.uniform(0.0, 60.0 * 60.0 * 6.0)  # [s]
+time_bias = 0.0  # random.uniform(0.0, 60.0 * 60.0 * 6.0)  # [s]
 
 # Spacecraft settings
-u = random.uniform(0.0, 2.0 * PI)
-v = random.uniform(0.0, PI)
-POSITION = [(1.1 + random.rand() * 3.0) * AXIS_A * cos(u) * sin(v),
-            (1.1 + random.rand() * 3.0) * AXIS_B * sin(u) * sin(v),
-            (1.1 + random.rand() * 3.0) * AXIS_C * cos(v)]  # [m]
-POSITION = [val * random.choice(signs) for val in POSITION]
-VELOCITY = [-val for val in cross_product(ANGULAR_VELOCITY, POSITION)]  # [m/s]
-MASS = 1000.0  # [kg]
-SPECIFIC_IMPULSE = 200.0  # [s]
+spacecraft_position = sample_position_outside_ellipsoid(semi_axis, 4.0)
+spacecraft_velocity = [-val for val in cross_product(angular_velocity, spacecraft_position)]  # [m/s]
+spacecraft_mass = 1000.0  # [kg]
+spacecraft_specific_impulse = 200.0  # [s]
 
 # Controller settings
-CONTROL_FREQUENCY = 10.0  # [Hz]
+control_frequency = 10.0  # [Hz]
+
+sensor_noise = 0.05
+perturbation_noise = 1e-7
 
 # Instantiate asteroid
-asteroid = Asteroid(AXIS_A, AXIS_B, AXIS_C, DENSITY, ANGULAR_VELOCITY, TIME_BIAS)
+asteroid = Asteroid(semi_axis, density, angular_velocity, time_bias)
 
 # Instantiate sensor simulator
-sensor_simulator = SensorSimulator(asteroid)
+sensor_simulator = SensorSimulator(asteroid, sensor_noise)
 # Instantiate controller
-controller = PIDController(TARGET_POSITION, 1.0 / CONTROL_FREQUENCY)
+controller = PIDController(target_position, 1.0 / control_frequency)
 # Instantiate simulator
-simulator = Simulator(asteroid, POSITION, VELOCITY, MASS, SPECIFIC_IMPULSE,
-                      sensor_simulator, controller, CONTROL_FREQUENCY)
+simulator = Simulator(asteroid, sensor_simulator, controller, control_frequency, perturbation_noise)
 
-# Run simulator
+simulator.init_spacecraft(spacecraft_position, spacecraft_velocity, spacecraft_mass, spacecraft_specific_impulse)
+
+print("running simulation ...")
 start = time()
-if ALL_DATA:
-    positions, velocities, heights, velocities_vertical, velocities_remaining, accelerations_perturbations, \
-    accelerations_centrifugal, accelerations_coriolis,\
-    accelerations_euler, accelerations_gravity, angular_velocities, angular_accelerations = simulator.run(TIME, True)
-else:
-    positions = simulator.run(TIME, False)
+simulator.run(time_to_run, True)
 end = time()
-
-duration = end - start
-
-print("ALL_DATA={0} simulation done. {1} seconds took {2} seconds to simulate (x{3}).".format(ALL_DATA,
-                                                                                              TIME, duration, TIME / duration))
-
-# Visualize trajectory
-'''try:
-    input("Press enter to continue...")
-except SyntaxError:
-    pass
-'''
-
-if ALL_DATA:
-    visualize_full(asteroid, positions, velocities, heights, velocities_vertical, velocities_remaining,
-          accelerations_perturbations, accelerations_centrifugal, accelerations_coriolis, accelerations_euler,
-          accelerations_gravity, angular_velocities, angular_accelerations, VIDEO_SPEED * CONTROL_FREQUENCY)
-else:
-    visualize(asteroid, positions, VIDEO_SPEED * CONTROL_FREQUENCY)
-
+print("{0} seconds simulation time took {1} real time to compute (x{2}).".format(time_to_run, end - start, time_to_run / (end - start)))
+print("writing results to file ...")
+simulator.flush_log_to_file(path_to_file)
 print("done.")

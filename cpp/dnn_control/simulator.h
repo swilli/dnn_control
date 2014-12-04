@@ -25,7 +25,6 @@ public:
 
     void FlushLogToFile(const std::string &path_to_file);
 
-    double ControlInterval() const;
 
 private:
     void SimulatePerturbations(double *perturbations);

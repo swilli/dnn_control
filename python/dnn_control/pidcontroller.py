@@ -9,7 +9,7 @@ class PIDController:
         self.coef_integral = [0.0, 0.0, 0.0]
         self.coef_derivative = [30.0, 30.0, 30.0]
 
-    def get_thrust(self, sensor_data):
+    def get_thrust_for_sensor_data(self, sensor_data):
         '''
 
         target_position = self.target_position
