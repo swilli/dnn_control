@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
     Simulator simulator(asteroid, sensor_simulator, spacecraft_controller, control_frequency, perturbation_noise);
     simulator.InitSpacecraft(spacecraft_position, spacecraft_velocity, spacecraft_mass, spacecraft_specific_impulse);
     clock_t begin = clock();
-    const int iterations = simulator.Run(time, COLLECT_DATA);
+    simulator.Run(time, COLLECT_DATA);
     clock_t end = clock();
     double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
     std::cout << time << " seconds simulation time took " << elapsed_secs << " real time to compute (x" << time/elapsed_secs << ")." << std::endl;

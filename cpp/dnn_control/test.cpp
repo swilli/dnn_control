@@ -154,7 +154,7 @@ void UnitTestTrajectory() {
             std::cout << "centrifugal force at position: (" << centrifugal_acceleration[0] << "," << centrifugal_acceleration[1] << "," << centrifugal_acceleration[2] << ")" << std::endl;
 
             simulator.InitSpacecraft(position, velocity, spacecraft_mass, spacecraft_specific_impulse);
-            const int iterations = simulator.Run(time, true);
+            simulator.Run(time, true);
             simulator.FlushLogToFile(PATH_TO_FILE);
 
             std::cout << "-> check the result.txt file..." << std::endl;
