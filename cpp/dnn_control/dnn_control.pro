@@ -25,7 +25,8 @@ HEADERS += \
     spacecraftcontroller.h \
     constants.h \
     odesystem.h \
-    vector.h
+    vector.h \
+    test.h
 
 LIBS += -lgsl -lgslcblas
 

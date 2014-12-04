@@ -1,3 +1,4 @@
+#include "test.h"
 #include "asteroid.h"
 #include "utility.h"
 #include "odesystem.h"

@@ -3,4 +3,5 @@ matlab
 .idea
 *.png
 build-dnn*
-*.txt
+result.txt
+CMakeFiles

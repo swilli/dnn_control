@@ -21,7 +21,7 @@ static struct FunctionToApproximate {
   }
 } function_to_approximate;
 
-double Bisection(Functor *container, const double &minimum, const double &maximum, const int &max_iterations, const double &tolerance)
+double Bisection(Functor *container, const double &minimum, const double &maximum, const double &tolerance)
 {
     using boost::math::tools::bisect;
     termination_condition.tolerance = tolerance;

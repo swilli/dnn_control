@@ -7,6 +7,7 @@ from time import time
 from visualization import visualize, visualize_full
 from constants import PI
 from math import cos, sin
+from utility import cross_product
 
 # Video Settings
 VIDEO_SPEED = 100  # VIDEO_SPEED times real time
@@ -28,11 +29,9 @@ AXIS = [a_axis_n * distance,
 AXIS_A, AXIS_B, AXIS_C = AXIS
 
 DENSITY = random.uniform(1500.0, 3000.0)  # [kg/m^3]
-ANGULAR_VELOCITY = [random.choice(signs) * random.uniform(0.0002, 0.0004),
+ANGULAR_VELOCITY = [random.choice(signs) * random.uniform(0.0002, 0.0008),
                     0.0,
-                    random.choice(signs) * random.uniform(0.0002, 0.0004)]  # [1/s]
-ANGULAR_VELOCITY = [val * 1e-2 for val in ANGULAR_VELOCITY]
-print(ANGULAR_VELOCITY)
+                    random.choice(signs) * random.uniform(0.0002, 0.0008)]  # [1/s]
 
 TIME_BIAS = random.uniform(0.0, 60.0 * 60.0 * 6.0)  # [s]
 
@@ -43,8 +42,7 @@ POSITION = [(1.1 + random.rand() * 3.0) * AXIS_A * cos(u) * sin(v),
             (1.1 + random.rand() * 3.0) * AXIS_B * sin(u) * sin(v),
             (1.1 + random.rand() * 3.0) * AXIS_C * cos(v)]  # [m]
 POSITION = [val * random.choice(signs) for val in POSITION]
-VELOCITY = [omega * pos for omega, pos in zip(ANGULAR_VELOCITY, POSITION)]  # [m/s]
-VELOCITY = [0.0] * 3
+VELOCITY = [-val for val in cross_product(ANGULAR_VELOCITY, POSITION)]  # [m/s]
 MASS = 1000.0  # [kg]
 SPECIFIC_IMPULSE = 200.0  # [s]
 
