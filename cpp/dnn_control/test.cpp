@@ -154,23 +154,9 @@ void UnitTestTrajectory() {
             std::cout << "centrifugal force at position: (" << centrifugal_acceleration[0] << "," << centrifugal_acceleration[1] << "," << centrifugal_acceleration[2] << ")" << std::endl;
 
             simulator.InitSpacecraft(position, velocity, spacecraft_mass, spacecraft_specific_impulse);
-            std::vector<std::vector<double> > *positions = NULL;
-            std::vector<std::vector<double> > *heights = NULL;
-            const int iterations = simulator.Run(time, true, &positions, &heights);
+            const int iterations = simulator.Run(time, true);
+            simulator.FlushLogToFile(PATH_TO_FILE);
 
-            std::ofstream result_file;
-            result_file.open(PATH_TO_FILE);
-            result_file << std::setprecision(10);
-            result_file << asteroid.SemiAxis(0) << "," << asteroid.SemiAxis(1) << "," << asteroid.SemiAxis(2) << "," << control_frequency << std::endl;
-
-            for (int j = 0; j < iterations; ++j) {
-                std::vector<double> *position = &positions->at(j);
-                std::vector<double> *height = &heights->at(j);
-                result_file << position->at(0) << "," << position->at(1) << "," << position->at(2) << "," << height->at(0) << "," << height->at(1) << "," << height->at(2) << "\n";
-            }
-            delete(heights);
-            delete(positions);
-            result_file.close();
             std::cout << "-> check the result.txt file..." << std::endl;
             break;
         }

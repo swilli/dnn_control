@@ -61,6 +61,16 @@ Asteroid::Asteroid(const Vector3D &semi_axis, const double &density, const Vecto
     elliptic_modulus_ = (inertia[1] - inertia[0]) * (energy_mul2_ * inertia[2] - momentum_pow2_) / ((inertia[2] - inertia[1]) * (momentum_pow2_ - energy_mul2_ * inertia[0]));
 }
 
+double Asteroid::SemiAxis(const int &dimension) const
+{
+    return semi_axis_[dimension];
+}
+
+double Asteroid::Inertia(const int &dimension) const
+{
+    return inertia_[dimension];
+}
+
 void Asteroid::GravityAtPosition(const Vector3D &position, Vector3D &gravity) const
 {
     gravity[0] = 0.0;
@@ -152,77 +162,6 @@ void Asteroid::NearestPointOnSurface(const Vector3D &position, Vector3D &point, 
     }
 
     *distance = sqrt(result);
-}
-
-double Asteroid::SemiAxis(const int &dimension) const
-{
-    return semi_axis_[dimension];
-}
-
-double Asteroid::Inertia(const int &dimension) const
-{
-    return inertia_[dimension];
-}
-
-void Asteroid::NearestPointOnEllipseFirstQuadrant(const Vector2D &semi_axis, const Vector2D &position, Vector2D &point) const
-{
-    point[0] = 0.0; point[1] = 0.0;
-
-    const Vector2D semi_axis_pow2 = {semi_axis[0] * semi_axis[0], semi_axis[1] * semi_axis[1]};
-
-    if (position[1] > 0.0) {
-        if (position[0] > 0.0) {
-            Vector2D semi_axis_mul_pos;
-            double lower_boundary = 0.0;
-            double upper_boundary = 0.0;
-            for (int i = 0; i < 2; ++i) {
-                semi_axis_mul_pos[i] = semi_axis[i] * position[i];
-                upper_boundary += semi_axis_mul_pos[i] * semi_axis_mul_pos[i];
-            }
-            upper_boundary = sqrt(upper_boundary);
-
-            class EllipseFunctor : public Functor {
-            public:
-                Vector2D semi_axis_mul_pos;
-                Vector2D semi_axis_pow2;
-                virtual double Evaluate(double time) {
-                    double result = 0.0;
-                    for (int i = 0; i < 2; ++i) {
-                        result += (semi_axis_mul_pos[i] / (time + semi_axis_pow2[i])) * (semi_axis_mul_pos[i] / (time + semi_axis_pow2[i]));
-                    }
-                    result -= 1.0;
-                    return result;
-                }
-                EllipseFunctor(const Vector2D &axis_pos, const Vector2D &axis_pow2) {
-                    for (int i = 0; i < 2; ++i) {
-                        semi_axis_mul_pos[i] = axis_pos[i];
-                        semi_axis_pow2[i] = axis_pow2[i];
-                    }
-                }
-            };
-            EllipseFunctor *function_container = new EllipseFunctor(semi_axis_mul_pos, semi_axis_pow2);
-            const double time = Bisection(function_container,lower_boundary, upper_boundary, (double)1e-15);
-            delete(function_container);
-
-            point[0] = semi_axis_pow2[0] * position[0] / (time + semi_axis_pow2[0]);
-            point[1] = semi_axis_pow2[1] * position[1] / (time + semi_axis_pow2[1]);
-        } else {
-            point[0] = 0.0;
-            point[1] = semi_axis[1];
-        }
-    } else {
-        const double denominator = semi_axis_pow2[0] - semi_axis_pow2[1];
-        const double semi_axis_mul_pos = semi_axis[0] * position[0];
-        if (semi_axis_mul_pos < denominator) {
-            const double semi_axis_div_denom = semi_axis_mul_pos / denominator;
-            const double semi_axis_div_denom_pow2 = semi_axis_div_denom * semi_axis_div_denom;
-            point[0] = semi_axis[0] * semi_axis_div_denom;
-            point[1] = semi_axis[1] * sqrt(abs(1.0 - semi_axis_div_denom_pow2));
-        } else {
-            point[0] = semi_axis[0];
-            point[1] = 0.0;
-        }
-    }
 }
 
 void Asteroid::NearestPointOnEllipsoidFirstQuadrant(const Vector3D &position, Vector3D &point) const
@@ -321,6 +260,67 @@ void Asteroid::NearestPointOnEllipsoidFirstQuadrant(const Vector3D &position, Ve
             NearestPointOnEllipseFirstQuadrant(semi_axis_2d, position_2d, point_2d);
             point[0] = point_2d[0];
             point[1] = point_2d[1];
+        }
+    }
+}
+
+void Asteroid::NearestPointOnEllipseFirstQuadrant(const Vector2D &semi_axis, const Vector2D &position, Vector2D &point) const
+{
+    point[0] = 0.0; point[1] = 0.0;
+
+    const Vector2D semi_axis_pow2 = {semi_axis[0] * semi_axis[0], semi_axis[1] * semi_axis[1]};
+
+    if (position[1] > 0.0) {
+        if (position[0] > 0.0) {
+            Vector2D semi_axis_mul_pos;
+            double lower_boundary = 0.0;
+            double upper_boundary = 0.0;
+            for (int i = 0; i < 2; ++i) {
+                semi_axis_mul_pos[i] = semi_axis[i] * position[i];
+                upper_boundary += semi_axis_mul_pos[i] * semi_axis_mul_pos[i];
+            }
+            upper_boundary = sqrt(upper_boundary);
+
+            class EllipseFunctor : public Functor {
+            public:
+                Vector2D semi_axis_mul_pos;
+                Vector2D semi_axis_pow2;
+                virtual double Evaluate(double time) {
+                    double result = 0.0;
+                    for (int i = 0; i < 2; ++i) {
+                        result += (semi_axis_mul_pos[i] / (time + semi_axis_pow2[i])) * (semi_axis_mul_pos[i] / (time + semi_axis_pow2[i]));
+                    }
+                    result -= 1.0;
+                    return result;
+                }
+                EllipseFunctor(const Vector2D &axis_pos, const Vector2D &axis_pow2) {
+                    for (int i = 0; i < 2; ++i) {
+                        semi_axis_mul_pos[i] = axis_pos[i];
+                        semi_axis_pow2[i] = axis_pow2[i];
+                    }
+                }
+            };
+            EllipseFunctor *function_container = new EllipseFunctor(semi_axis_mul_pos, semi_axis_pow2);
+            const double time = Bisection(function_container,lower_boundary, upper_boundary, (double)1e-15);
+            delete(function_container);
+
+            point[0] = semi_axis_pow2[0] * position[0] / (time + semi_axis_pow2[0]);
+            point[1] = semi_axis_pow2[1] * position[1] / (time + semi_axis_pow2[1]);
+        } else {
+            point[0] = 0.0;
+            point[1] = semi_axis[1];
+        }
+    } else {
+        const double denominator = semi_axis_pow2[0] - semi_axis_pow2[1];
+        const double semi_axis_mul_pos = semi_axis[0] * position[0];
+        if (semi_axis_mul_pos < denominator) {
+            const double semi_axis_div_denom = semi_axis_mul_pos / denominator;
+            const double semi_axis_div_denom_pow2 = semi_axis_div_denom * semi_axis_div_denom;
+            point[0] = semi_axis[0] * semi_axis_div_denom;
+            point[1] = semi_axis[1] * sqrt(abs(1.0 - semi_axis_div_denom_pow2));
+        } else {
+            point[0] = semi_axis[0];
+            point[1] = 0.0;
         }
     }
 }

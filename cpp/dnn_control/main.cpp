@@ -1,4 +1,3 @@
-
 #include "simulator.h"
 #include "test.h"
 #include "vector.h"
@@ -6,7 +5,6 @@
 
 #include <iostream>
 #include <ctime>
-#include <iomanip>
 
 #define COLLECT_DATA   1
 #define PATH_TO_FILE    "../result.txt"
@@ -18,12 +16,6 @@ int main(int argc, char *argv[])
     //UnitTestTrajectory();
     //UnitTestAngularVelocity();
     //return 0;
-
-    std::ofstream result_file;
-    if (COLLECT_DATA) {
-        result_file.open(PATH_TO_FILE);
-        result_file << std::setprecision(10);
-    }
 
     const double time = 24.0 * 60.0 * 60.0;
 
@@ -50,29 +42,19 @@ int main(int argc, char *argv[])
     SensorSimulator sensor_simulator(asteroid, sensor_noise);
     SpacecraftController spacecraft_controller;
 
-    std::vector<std::vector<double> > *positions = NULL;
-    std::vector<std::vector<double> > *heights = NULL;
 
     std::cout << "running simulation ..." << std::endl;
     Simulator simulator(asteroid, sensor_simulator, spacecraft_controller, control_frequency, perturbation_noise);
     simulator.InitSpacecraft(spacecraft_position, spacecraft_velocity, spacecraft_mass, spacecraft_specific_impulse);
     clock_t begin = clock();
-    const int iterations = simulator.Run(time, COLLECT_DATA, &positions, &heights);
+    const int iterations = simulator.Run(time, COLLECT_DATA);
     clock_t end = clock();
     double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
     std::cout << time << " seconds simulation time took " << elapsed_secs << " real time to compute (x" << time/elapsed_secs << ")." << std::endl;
 
     if(COLLECT_DATA) {
         std::cout << "writing results to file ... ";
-        result_file << asteroid.SemiAxis(0) << "," << asteroid.SemiAxis(1) << "," << asteroid.SemiAxis(2) << "," << control_frequency << std::endl;
-        for (int i = 0; i < iterations; ++i) {
-            std::vector<double> *position = &positions->at(i);
-            std::vector<double> *height = &heights->at(i);
-            result_file << position->at(0) << "," << position->at(1) << "," << position->at(2) << "," << height->at(0) << "," << height->at(1) << "," << height->at(2) << "\n";
-        }
-        delete(heights);
-        delete(positions);
-        result_file.close();
+        simulator.FlushLogToFile(PATH_TO_FILE);
         std::cout << "done." << std::endl;
     }
 

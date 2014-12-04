@@ -14,7 +14,7 @@ VIDEO_SPEED = 100  # VIDEO_SPEED times real time
 ALL_DATA = True
 
 # Simulation settings
-TIME = 24.0 * 60.0 * 60.0  # [s]
+TIME = 6.0 * 60.0 * 60.0  # [s]
 TARGET_POSITION = [1000.0, 1000.0, 1000.0]  # [m]
 
 # Asteroid settings
