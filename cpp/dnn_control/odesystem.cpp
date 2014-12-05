@@ -15,6 +15,9 @@ ODESystem::ODESystem(Asteroid &asteroid) : asteroid_(asteroid) {
 
 void ODESystem::operator()(const State &state, State &d_state_dt, double time) const
 {
+    // This operator implements eq(1) of "Control of Hovering Spacecraft Using Altimetry" by S. Sawai et. al.
+    // r'' + 2w x r' + w' x r + w x (w x r) = Fc + Fg, whereas Fc = control acceleration and Fg = gravity acceleration
+
     Vector3D gravity_acceleration;
     Vector3D thrust_acceleration;
     Vector3D euler_acceleration;
@@ -24,6 +27,7 @@ void ODESystem::operator()(const State &state, State &d_state_dt, double time) c
     Vector3D angular_acceleration;
     Vector3D tmp;
 
+    // 1/m
     const double coef_mass = 1.0 / state[6];
 
     Vector3D position;
@@ -33,16 +37,22 @@ void ODESystem::operator()(const State &state, State &d_state_dt, double time) c
         velocity[i] = state[3+i];
     }
 
+    // g
     asteroid_.GravityAtPosition(position,gravity_acceleration);
+
+    // w, w'
     asteroid_.AngularVelocityAndAccelerationAtTime(time, angular_velocity, angular_acceleration);
 
+    // Fg, Fc
     for(int i = 0; i < 3; ++i) {
         gravity_acceleration[i] *= coef_mass;
         thrust_acceleration[i] = thrust_[i] * coef_mass;
     }
 
-
+    // w' x r
     CrossProduct(angular_acceleration, position, euler_acceleration);
+
+    // w x (w x r)
     CrossProduct(angular_velocity, position, tmp);
     CrossProduct(angular_velocity, tmp, centrifugal_acceleration);
 
@@ -50,6 +60,7 @@ void ODESystem::operator()(const State &state, State &d_state_dt, double time) c
         tmp[i] = angular_velocity[i] * 2.0;
     }
 
+    // 2w x r'
     CrossProduct(tmp, velocity, coriolis_acceleration);
 
     for (int i = 0; i < 3 ;++i) {

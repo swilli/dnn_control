@@ -1,17 +1,19 @@
 class Asteroid:
 
     """
-    This class represents the dynamics and gravity of an asteroid shaped as a rigid ellipsoid having different
-    rotational properties along its three principal inertia axis (Ix, Iy, Iz).
+        This class represents the dynamics and gravity of an asteroid shaped as a rigid ellipsoid having different
+        rotational properties along its three principal inertia axis (Ix, Iy, Iz).
 
-    For the angular velocity dynamics the analytical solution in terms of Jacobi elliptic functions is used (Implementation
-    largely inspired from Landau Lifshitz Mechanics paragrpah 37). We thus assume w_y(-t_bias) = 0. So we only are free to specify two
-    more initial conditions and we do so by assigning kinetic energy and angular momentum. As a result the user is not free to specify
-    the initial angular velocity, but only the values of the two prime integrals. He does so by defining an angular velocity vector in
-    the constructor, this is used only to compute kinetic energy and rotational momentum, the second of its components (w_y) will thus be disregarded
-    as 0 will instead be used.
+        For the angular velocity dynamics the analytical solution in terms of Jacobi elliptic functions is used (Implementation
+        largely inspired from Landau Lifshitz Mechanics paragraph 37). We thus assume w_y(-t_bias) = 0. So we only are free to specify two
+        more initial conditions and we do so by assigning kinetic energy and angular momentum. As a result the user is not free to specify
+        the initial angular velocity, but only the values of the two prime integrals. He does so by defining an angular velocity vector in
+        the constructor, this is used only to compute kinetic energy and rotational momentum, the second of its components (w_y) will thus be disregarded
+        as 0 will instead be used.
 
-    For the asteroid gravity, we use the implementation of Dario Cersosimo whi kindly sent us his matlab files.
+        Implementation for the gravity is largely inspired from Dario Cersosimo EVALUATION OF NOVEL HOVERING STRATEGIES TO IMPROVE GRAVITY-TRACTOR DEFLECTION MERITS paragraph 3.2.2.
+
+        Implementation for the nearest point on the surface is largely ported from David Eberly "Distance from a Point to an Ellipse, an Ellipsoid, or a Hyperellipsoid".
     """
 
     def __init__(self, semi_axis, density, angular_velocity, time_bias):
@@ -19,10 +21,10 @@ class Asteroid:
         """
         This constructs the asteroid object from its inertia properties and its prime integrals value
 
-        USAGE: ast = Asteroid(0.1,0.2,0.3,2.3,[0.23,0.1,0.56],234)
+        USAGE: ast = Asteroid([8000, 4000, 1000], 2000.0, [0.23, 0.0, 0.56], 234)
 
-        * semi_axis:        Semi Axis a,b,c  where a < b < c (UNITS)
-        * density:                                      Asteroid density (UNITS)
+        * semi_axis:                                    Semi Axis a,b,c  where a > b > c (m)
+        * density:                                      Asteroid density (kg/m^3)
         * angular_velocity:                             Asteroid hypothetical angular velocity (used to define prime integrals only)
         * time_bias:                                    A time bias applied so that w_y(-t_bias) = 0
 
@@ -95,11 +97,12 @@ class Asteroid:
                       * self._semi_axis[0] * self._semi_axis[1] * self._semi_axis[2] \
                       / sqrt(self._semi_axis_pow2[0] - self._semi_axis_pow2[2])
 
+    # Returns the semi axis for a given dimension "dimension" [0-2]
     def get_semi_axis(self, dimension):
         return self._semi_axis[dimension]
 
-    # Implementation of eq. (3.11a-c) from "EVALUATION OF NOVEL HOVERING STRATEGIES
-    # TO IMPROVE GRAVITY-TRACTOR DEFLECTION MERITS" written by Dario Cersosimo,
+    # Computes the gravity components in asteroid centered RF at an outside point "position"
+    # which is also in asteroid centered RF
     def gravity_at_position(self, position):
         from math import asin, sqrt
         from numpy import array, roots
@@ -134,9 +137,13 @@ class Asteroid:
             if root > kappa:
                 kappa = root
 
+        # Cersosimo eq (3.8)
         phi = asin(sqrt((self._semi_axis_pow2[0] - self._semi_axis_pow2[2]) / (kappa + self._semi_axis_pow2[0])))
+
+        # Cersosimo eq (3.9)
         k = (self._semi_axis_pow2[0] - self._semi_axis_pow2[1]) / (self._semi_axis_pow2[0] - self._semi_axis_pow2[2])
 
+        # Cersosimo eq (3.10)
         integral_F = ellipkinc(phi, k)
         integral_E = ellipeinc(phi, k)
 
@@ -146,6 +153,7 @@ class Asteroid:
                         * (self._semi_axis_pow2[1] + kappa)
                         * (self._semi_axis_pow2[2] + kappa)))
 
+        # Cersosimo eq (3.11a-c)
         gravity[0] = self._gamma / (self._semi_axis_pow2[0] - self._semi_axis_pow2[1]) * (integral_E - integral_F)
         gravity[1] = self._gamma * ((-self._semi_axis_pow2[0] + self._semi_axis_pow2[2]) * integral_E
                                    / ((self._semi_axis_pow2[0] - self._semi_axis_pow2[1])
@@ -162,7 +170,7 @@ class Asteroid:
 
         return gravity
 
-    # compute w
+    # Computes w ("angular_velocity") and d/dt ("angular_acceleration") w of the asteroid rotating RF at time "time"
     def angular_velocity_and_acceleration_at_time(self, time):
         from scipy.special import ellipj
 
@@ -192,48 +200,24 @@ class Asteroid:
 
         return angular_velocity, angular_acceleration
 
-    def _nearest_point_on_ellipse_first_quadrant(self, semi_axis, position):
-        from math import sqrt
-        from scipy.optimize import bisect
+    # Computes the distance "distance" and orthogonal projection of a position "position" outside the asteroid
+    # onto the asteroid's surface "surface_position" in asteroid centered RF
+    def nearest_point_on_surface_to_position(self, position):
+        from math import copysign
 
-        solution = [0.0, 0.0]
+        # Project point to first quadrant, keep in mind the original point signs
+        signs = [copysign(1.0, val) for val in position]
+        abs_position = [abs(var) for var in position]
 
-        semi_axis_pow2 = [semi_axis[0] * semi_axis[0], semi_axis[1] * semi_axis[1]]
+        # Look for the closest point in the first quadrant
+        surface_position, distance = self._nearest_point_on_ellipsoid_at_position_first_quadrant(abs_position)
 
-        if position[1] > 0.0:
-            if position[0] > 0.0:
-                semi_axis_mul_pos = [semi_axis[0] * position[0], semi_axis[1] * position[1]]
-                lower_boundary = 0.0
-                upper_boundary = sqrt(semi_axis_mul_pos[0] * semi_axis_mul_pos[0]
-                                      + semi_axis_mul_pos[1] * semi_axis_mul_pos[1])
+        # Project point from first quadrant back to original quadrant
+        surface_position = [signs[0] * surface_position[0],
+                            signs[1] * surface_position[1],
+                            signs[2] * surface_position[2]]
 
-                def fun(time):
-                    cur_position = [semi_axis_mul_pos[0] / (time + semi_axis_pow2[0]),
-                                    semi_axis_mul_pos[1] / (time + semi_axis_pow2[1])]
-                    return cur_position[0] * cur_position[0] + cur_position[1] * cur_position[1] - 1.0
-
-                time = bisect(fun, lower_boundary, upper_boundary)
-                solution = [semi_axis_pow2[0] * position[0] / (time + semi_axis_pow2[0]),
-                            semi_axis_pow2[1] * position[1] / (time + semi_axis_pow2[1])]
-            else:
-                solution[0] = 0.0
-                solution[1] = semi_axis[1]
-        else:
-            denominator = semi_axis_pow2[0] - semi_axis_pow2[1]
-            semi_axis_mul_pos = semi_axis[0] * position[0]
-            if semi_axis_mul_pos < denominator:
-                semi_axis_div_denom = semi_axis_mul_pos / denominator
-                semi_axis_div_denom_pow2 = semi_axis_div_denom * semi_axis_div_denom
-                solution[0] = semi_axis[0] * semi_axis_div_denom
-                solution[1] = semi_axis[1] * sqrt(abs(1.0 - semi_axis_div_denom_pow2))
-            else:
-                solution[0] = semi_axis[0]
-                solution[1] = 0.0
-
-        distance = sqrt((position[0] - solution[0]) * (position[0] - solution[0])
-                        + (position[1] - solution[1]) * (position[1] - solution[1]))
-
-        return solution, distance
+        return surface_position, distance
 
     def _nearest_point_on_ellipsoid_at_position_first_quadrant(self, position):
         from math import sqrt
@@ -241,9 +225,11 @@ class Asteroid:
 
         solution = [0.0, 0.0, 0.0]
 
+        # Check if all dimensions are non zero
         if position[2] > 0.0:
             if position[1] > 0.0:
                 if position[0] > 0.0:
+                    # Perform bisection to find the root (David Eberly eq (26))
                     semi_axis_mul_pos = [self._semi_axis[0] * position[0],
                                          self._semi_axis[1] * position[1],
                                          self._semi_axis[2] * position[2]]
@@ -264,6 +250,7 @@ class Asteroid:
                                 self._semi_axis_pow2[1] * position[1] / (time + self._semi_axis_pow2[1]),
                                 self._semi_axis_pow2[2] * position[2] / (time + self._semi_axis_pow2[2])]
                 else:
+                    # One Dimension is zero: 2D case
                     solution[0] = 0.0
                     semi_axis_2d = self._semi_axis[1:3]
                     position_2d = position[1:3]
@@ -273,12 +260,15 @@ class Asteroid:
             else:
                 solution[1] = 0.0
                 if position[0] > 0.0:
+                    # One Dimension is zero: 2D case
                     semi_axis_2d = [self._semi_axis[0], self._semi_axis[2]]
                     position_2d = [position[0], position[2]]
                     solution_2d, _ = self._nearest_point_on_ellipse_first_quadrant(semi_axis_2d, position_2d)
                     solution[0] = solution_2d[0]
                     solution[2] = solution_2d[1]
                 else:
+                    # Simple: only one non-zero dimension:
+                    # closest point to that is the semi axis length in that dimension
                     solution[0] = 0.0
                     solution[2] = self._semi_axis[2]
         else:
@@ -316,20 +306,52 @@ class Asteroid:
 
         return solution, distance
 
-    def nearest_point_on_surface_to_position(self, position):
-        '''
-            Port of Implementation from "Distance from a Point to an Ellipse, an Ellipsoid, or a Hyperellipsoid" by David Eberly, 2013.
-        '''
-        from math import copysign
+    def _nearest_point_on_ellipse_first_quadrant(self, semi_axis, position):
+        from math import sqrt
+        from scipy.optimize import bisect
 
-        signs = [copysign(1.0, val) for val in position]
+        solution = [0.0, 0.0]
 
-        abs_position = [abs(var) for var in position]
+        semi_axis_pow2 = [semi_axis[0] * semi_axis[0], semi_axis[1] * semi_axis[1]]
 
-        surface_position, distance = self._nearest_point_on_ellipsoid_at_position_first_quadrant(abs_position)
+        # Check if all dimensions are non zero
+        if position[1] > 0.0:
+            if position[0] > 0.0:
+                # Perform bisection to find the root (David Eberly eq (11))
+                semi_axis_mul_pos = [semi_axis[0] * position[0], semi_axis[1] * position[1]]
+                lower_boundary = 0.0
+                upper_boundary = sqrt(semi_axis_mul_pos[0] * semi_axis_mul_pos[0]
+                                      + semi_axis_mul_pos[1] * semi_axis_mul_pos[1])
 
-        surface_position = [signs[0] * surface_position[0],
-                            signs[1] * surface_position[1],
-                            signs[2] * surface_position[2]]
+                def fun(time):
+                    cur_position = [semi_axis_mul_pos[0] / (time + semi_axis_pow2[0]),
+                                    semi_axis_mul_pos[1] / (time + semi_axis_pow2[1])]
+                    return cur_position[0] * cur_position[0] + cur_position[1] * cur_position[1] - 1.0
 
-        return surface_position, distance
+                time = bisect(fun, lower_boundary, upper_boundary)
+                solution = [semi_axis_pow2[0] * position[0] / (time + semi_axis_pow2[0]),
+                            semi_axis_pow2[1] * position[1] / (time + semi_axis_pow2[1])]
+            else:
+                # Simple: only one non-zero dimension:
+                # closest point to that is the semi axis length in that dimension
+                solution[0] = 0.0
+                solution[1] = semi_axis[1]
+        else:
+            denominator = semi_axis_pow2[0] - semi_axis_pow2[1]
+            semi_axis_mul_pos = semi_axis[0] * position[0]
+            if semi_axis_mul_pos < denominator:
+                semi_axis_div_denom = semi_axis_mul_pos / denominator
+                semi_axis_div_denom_pow2 = semi_axis_div_denom * semi_axis_div_denom
+                solution[0] = semi_axis[0] * semi_axis_div_denom
+                solution[1] = semi_axis[1] * sqrt(abs(1.0 - semi_axis_div_denom_pow2))
+            else:
+                # Simple: only one non-zero dimension:
+                # closest point to that is the semi axis length in that dimension
+                solution[0] = semi_axis[0]
+                solution[1] = 0.0
+
+        distance = sqrt((position[0] - solution[0]) * (position[0] - solution[0])
+                        + (position[1] - solution[1]) * (position[1] - solution[1]))
+
+        return solution, distance
+

@@ -9,13 +9,11 @@ from constants import PI
 from math import cos, sin
 from utility import cross_product, sample_position_outside_ellipsoid
 
+WRITE_TO_FILE = False
+
 path_to_file = "../../../results/states.txt"
 
 signs = [-1.0, 1.0]
-
-# Video Settings
-video_speed = 100  # VIDEO_SPEED times real time
-all_data = True
 
 # Simulation settings
 time_to_run = 24.0 * 60.0 * 60.0  # [s]
@@ -60,9 +58,12 @@ simulator.init_spacecraft(spacecraft_position, spacecraft_velocity, spacecraft_m
 
 print("running simulation ...")
 start = time()
-simulator.run(time_to_run, True)
+simulator.run(time_to_run, WRITE_TO_FILE)
 end = time()
 print("{0} seconds simulation time took {1} real time to compute (x{2}).".format(time_to_run, end - start, time_to_run / (end - start)))
-print("writing results to file ...")
-simulator.flush_log_to_file(path_to_file)
-print("done.")
+
+if WRITE_TO_FILE:
+    print("writing results to file ...")
+    simulator.flush_log_to_file(path_to_file)
+    print("done.")
+

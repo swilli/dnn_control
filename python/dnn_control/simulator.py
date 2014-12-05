@@ -1,5 +1,10 @@
 class Simulator:
 
+    '''
+        This class implements the interaction between stepwise integration of the ode system,
+        artificial sensor data generation, control polling, and result logging.
+    '''
+
     def __init__(self, asteroid, sensor_simulator, spacecraft_controller, control_frequency, perturbation_noise):
         """
         Constructor. The spacecraft state is defined as follows:
@@ -31,7 +36,7 @@ class Simulator:
         self._integrator.set_integrator("lsoda")
         self._log_states = []
 
-    # External perturbations acceleration
+    # Simulates random noise in the dynamical system (which is fed into the ODE system "system_")
     def _simulate_perturbations(self):
         from numpy import random
 
@@ -40,28 +45,40 @@ class Simulator:
                 mass * random.normal(0.0, self._perturbation_noise),
                 mass * random.normal(0.0, self._perturbation_noise)]
 
+    # Before running the simulator, it has to be initialized with a spacecraft configuration
     def init_spacecraft(self, position, velocity, mass, specific_impulse):
         from constants import EARTH_ACCELERATION
 
+        # Transform position, velocity and mass to state
         self._integrator.set_initial_value(position + velocity + [mass], 0.0)
+
+        # Cache g * Isp
         self._system.coef_earth_acceleration_mul_specific_impulse = specific_impulse * EARTH_ACCELERATION
 
+    # Initialize spacecraft only by specifying the spacecraft's specific impulse (useful for the function next_state)
     def init_spacecraft_specific_impulse(self, specific_impulse):
         from constants import EARTH_ACCELERATION
 
+        # Cache g * Isp
         self._system.coef_earth_acceleration_mul_specific_impulse = specific_impulse * EARTH_ACCELERATION
 
+    # Implements F: S x A x T -> S : F(s,a,t) = s' (Useful for RL?)
     def next_state(self, state, thrust, time):
+        # Assign state
         self._integrator.set_initial_value(state, time)
         self._system.thrust = thrust
+
+        # Simulate perturbations, directly write it to the ode system
         self._system.perturbations_acceleration = self._simulate_perturbations()
 
+        # Integrate for one time step _control_interval
         self._integrator.integrate(time + self._control_interval)
 
+        # Extract new state out of system
         return self._integrator.y[:]
 
-
-    # Perform the simulation for time seconds
+    # Simulates the system for time "time". Logs the states if "log_data" is enabled,
+    # Returns the number of iterations the simulator made to get to the specified time.
     def run(self, time, log_data=False):
         from numpy import zeros
 
@@ -72,25 +89,28 @@ class Simulator:
             self._log_states = zeros([iterations, 2, 3])
 
         current_time = 0.0
+        # Stepwise integration for "iterations" iterations
         for iteration in xrange(iterations):
             if log_data:
+                # Log position and height, if enabled
                 position = self._integrator.y[0:3]
                 surface_position = self._system.asteroid.nearest_point_on_surface_to_position(position)[0]
                 for i in xrange(3):
                     self._log_states[iteration][0][i] = position[i]
                     self._log_states[iteration][1][i] = position[i] - surface_position[i]
 
-            # Get new perturbations
+            # Simulate perturbations, directly write it to the ode system
             self._system.perturbations_acceleration = self._simulate_perturbations()
 
-            # Simulate sensor data for current spacecraft state
+            # Simulate sensor data
             sensor_data = self._sensor_simulator.simulate(self._integrator.y,
                                                          self._system.perturbations_acceleration,
                                                          current_time)
 
-            # Get thrust from controller
+            # Poll controller for control thrust, write it to the ode system
             self._system.thrust = self._spacecraft_controller.get_thrust_for_sensor_data(sensor_data)
 
+            # Integrate the system for _control_interval time
             self._integrator.integrate(current_time + dt)
             if not self._integrator.successful():
                 print("Something BAD happened...")
@@ -98,6 +118,9 @@ class Simulator:
 
             current_time += dt
 
+        return iterations
+
+    # Writes the logged data from Run to the file given by "path_to_file"
     def flush_log_to_file(self, path_to_file):
         from os import remove
 

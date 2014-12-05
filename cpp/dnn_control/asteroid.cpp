@@ -104,9 +104,13 @@ void Asteroid::GravityAtPosition(const Vector3D &position, Vector3D &gravity) co
         kappa = root_3;
     }
 
+    // Cersosimo eq (3.8)
     const double phi = asin(sqrt((semi_axis_pow2_[0] - semi_axis_pow2_[2]) / (kappa + semi_axis_pow2_[0])));
+
+    // Cersosimo eq (3.9)
     const double k = sqrt((semi_axis_pow2_[0] - semi_axis_pow2_[1]) / (semi_axis_pow2_[0] - semi_axis_pow2_[2]));
 
+    // Cersosimo eq (3.10)
     const double integral_F = gsl_sf_ellint_F(phi,k,0);
     const double integral_E = gsl_sf_ellint_E(phi,k,0);
 
@@ -129,6 +133,7 @@ void Asteroid::AngularVelocityAndAccelerationAtTime(const double &time, Vector3D
     // Lifshitz eq (37.8)
     const double t = (time + time_bias_) * elliptic_tau_;
 
+    // Get analytical solution
     double sn_tau = 0.0, cn_tau = 0.0, dn_tau = 0.0;
     gsl_sf_elljac_e(t,elliptic_modulus_,&sn_tau, &cn_tau, & dn_tau);
 
@@ -153,14 +158,18 @@ void Asteroid::NearestPointOnSurfaceToPosition(const Vector3D &position, Vector3
 {
     Vector3D signs;
     Vector3D abs_position;
+
+    // Project point to first quadrant, keep in mind the original point signs
     for (int i = 0; i < 3; ++i) {
         point[i] = 0.0;
         signs[i] = (position[i] >= 0.0 ? 1.0 : -1.0);
         abs_position[i] = abs(position[i]);
     }
 
+    // Look for the closest point in the first quadrant
     NearestPointOnEllipsoidFirstQuadrant(abs_position, point);
 
+    // Project point from first quadrant back to original quadrant
     point[0] *= signs[0];
     point[1] *= signs[1];
     point[2] *= signs[2];
@@ -177,15 +186,18 @@ void Asteroid::NearestPointOnEllipsoidFirstQuadrant(const Vector3D &position, Ve
 {
     point[0] = 0.0; point[1] = 0.0; point[2] = 0.0;
 
+    // Check if all dimensions are non zero
     if (position[2] > 0.0) {
         if (position[1] > 0.0) {
             if (position[0] > 0.0) {
+                // Perform bisection to find the root (David Eberly eq (26))
                 Vector3D semi_axis_mul_pos = {semi_axis_[0] * position[0], semi_axis_[1] * position[1], semi_axis_[2] * position[2]};
                 const double time = BisectEllipsoid(semi_axis_mul_pos, semi_axis_pow2_, 1e-15);
                 point[0] = semi_axis_pow2_[0] * position[0] / (time + semi_axis_pow2_[0]);
                 point[1] = semi_axis_pow2_[1] * position[1] / (time + semi_axis_pow2_[1]);
                 point[2] = semi_axis_pow2_[2] * position[2] / (time + semi_axis_pow2_[2]);
             } else {
+                // One Dimension is zero: 2D case
                 point[0] = 0.0;
                 const Vector2D semi_axis_2d = {semi_axis_[1], semi_axis_[2]};
                 const Vector2D position_2d = {position[1], position[2]};
@@ -197,6 +209,7 @@ void Asteroid::NearestPointOnEllipsoidFirstQuadrant(const Vector3D &position, Ve
         } else {
             point[1] = 0.0;
             if (position[0] > 0.0) {
+                // One Dimension is zero: 2D case
                 const Vector2D semi_axis_2d = {semi_axis_[0], semi_axis_[2]};
                 const Vector2D position_2d = {position[0], position[2]};
                 Vector2D point_2d;
@@ -204,6 +217,7 @@ void Asteroid::NearestPointOnEllipsoidFirstQuadrant(const Vector3D &position, Ve
                 point[0] = point_2d[0];
                 point[2] = point_2d[1];
             } else {
+                // Simple: only one non-zero dimension: closest point to that is the semi axis length in that dimension
                 point[0] = 0.0;
                 point[2] = semi_axis_[2];
             }
@@ -249,13 +263,16 @@ void Asteroid::NearestPointOnEllipseFirstQuadrant(const Vector2D &semi_axis, con
 
     const Vector2D semi_axis_pow2 = {semi_axis[0] * semi_axis[0], semi_axis[1] * semi_axis[1]};
 
+    // Check if all dimensions are non zero
     if (position[1] > 0.0) {
         if (position[0] > 0.0) {
+            // Perform bisection to find the root (David Eberly eq (11))
             Vector2D semi_axis_mul_pos = {semi_axis_[0] * position[0], semi_axis_[1] * position[1]};
             const double time = BisectEllipse(semi_axis_mul_pos, semi_axis_pow2, 1e-15);
             point[0] = semi_axis_pow2[0] * position[0] / (time + semi_axis_pow2[0]);
             point[1] = semi_axis_pow2[1] * position[1] / (time + semi_axis_pow2[1]);
         } else {
+            // Simple: only one non-zero dimension: closest point to that is the semi axis length in that dimension
             point[0] = 0.0;
             point[1] = semi_axis[1];
         }
@@ -268,6 +285,7 @@ void Asteroid::NearestPointOnEllipseFirstQuadrant(const Vector2D &semi_axis, con
             point[0] = semi_axis[0] * semi_axis_div_denom;
             point[1] = semi_axis[1] * sqrt(abs(1.0 - semi_axis_div_denom_pow2));
         } else {
+            // Simple: only one non-zero dimension: closest point to that is the semi axis length in that dimension
             point[0] = semi_axis[0];
             point[1] = 0.0;
         }

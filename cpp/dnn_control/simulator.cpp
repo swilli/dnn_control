@@ -12,21 +12,26 @@ Simulator::Simulator(Asteroid &asteroid, SensorSimulator &sensor_simulator, Spac
 
 void Simulator::InitSpacecraft(const double *position, const double *velocity, const double &mass, const double &specific_impulse)
 {
+    // Transform position, velocity and mass to state
     for (int i = 0; i < 3; ++i) {
         system_.state_[i] = position[i];
         system_.state_[3+i] = velocity[i];
     }
     system_.state_[6] = mass;
+
+    // Cache g * Isp
     system_.coef_earth_acceleration_mul_specific_impulse_ = specific_impulse * k_earth_acceleration;
 }
 
 void Simulator::InitSpacecraftSpecificImpulse(const double &specific_impulse)
 {
+    // Cache g * Isp
     system_.coef_earth_acceleration_mul_specific_impulse_ = specific_impulse * k_earth_acceleration;
 }
 
 void Simulator::NextState(const State &state, const double *thrust, const double &time, State &next_state)
 {
+    // Assign state
     for (int i = 0; i < 3; ++i) {
         system_.state_[i] = state[i];
         system_.state_[3+i] = state[3+i];
@@ -34,10 +39,14 @@ void Simulator::NextState(const State &state, const double *thrust, const double
     }
     system_.state_[6] = state[6];
 
-    odeint::runge_kutta4<State> integrator;
+    // Simulate perturbations, directly write it to the ode system
     SimulatePerturbations(system_.perturbations_acceleration_);
+
+    // Integrate for one time step control_interval_
+    odeint::runge_kutta4<State> integrator;
     integrator.do_step(system_, system_.state_, time, control_interval_);
 
+    // Extract new state out of system
     for (int i = 0; i < 7; ++i) {
         next_state[i] = system_.state_[i];
     }
@@ -54,8 +63,11 @@ int Simulator::Run(const double &time, const bool &log_data) {
     odeint::runge_kutta4<State> integrator;
     double current_time = 0.0;
     double sensor_data[5];
+
+    // Stepwise integration for "iterations" iterations
     for(int iteration = 0; iteration < iterations; ++iteration) {
         if (log_data) {
+            // Log position and height, if enabled
             const Vector3D position = {system_.state_[0], system_.state_[1], system_.state_[2]};
             double distance;
             Vector3D surface_point;
@@ -67,9 +79,17 @@ int Simulator::Run(const double &time, const bool &log_data) {
             }
             log_states_.at(iteration) = state;
         }
+
+        // Simulate perturbations, directly write it to the ode system
         SimulatePerturbations(system_.perturbations_acceleration_);
+
+        // Simulate sensor data
         sensor_simulator_.Simulate(system_.state_, system_.perturbations_acceleration_, current_time, sensor_data);
+
+        // Poll controller for control thrust, write it to the ode system
         spacecraft_controller_.GetThrustForSensorData(sensor_data, system_.thrust_);
+
+        // Integrate the system for control_interval_ time
         integrator.do_step(system_, system_.state_, current_time, dt);
         current_time += dt;
     }
