@@ -49,7 +49,7 @@ void Simulator::NextState(const State &state, const double *thrust, const double
     }
 }
 
-int Simulator::Run(const double &time, const bool &log_data) {
+double Simulator::Run(const double &time, const bool &log_data) {
     using namespace boost::numeric::odeint;
 
     const double dt = control_interval_;
@@ -64,36 +64,41 @@ int Simulator::Run(const double &time, const bool &log_data) {
     double sensor_data[5];
 
     // Stepwise integration for "iterations" iterations
-    for(int iteration = 0; iteration < iterations; ++iteration) {
-        if (log_data) {
-            // Log position and height, if enabled
-            const Vector3D position = {system_.state_[0], system_.state_[1], system_.state_[2]};
-            double distance;
-            Vector3D surface_point;
-            system_.asteroid_.NearestPointOnSurfaceToPosition(position, surface_point, &distance);
-            LogState state;
-            for (int i = 0; i < 3; ++i) {
-                state.trajectory_position[i] = position[i];
-                state.height[i] = position[i] - surface_point[i];
+    int iteration = 0;
+    try {
+        for(; iteration < iterations; ++iteration) {
+            if (log_data) {
+                // Log position and height, if enabled
+                const Vector3D position = {system_.state_[0], system_.state_[1], system_.state_[2]};
+                double distance;
+                Vector3D surface_point;
+                system_.asteroid_.NearestPointOnSurfaceToPosition(position, surface_point, &distance);
+                LogState state;
+                for (int i = 0; i < 3; ++i) {
+                    state.trajectory_position[i] = position[i];
+                    state.height[i] = position[i] - surface_point[i];
+                }
+                log_states_.at(iteration) = state;
             }
-            log_states_.at(iteration) = state;
+
+            // Simulate perturbations, directly write it to the ode system
+            SimulatePerturbations(system_.perturbations_acceleration_);
+
+            // Simulate sensor data
+            sensor_simulator_.Simulate(system_.state_, system_.perturbations_acceleration_, current_time, sensor_data);
+
+            // Poll controller for control thrust, write it to the ode system
+            spacecraft_controller_.GetThrustForSensorData(sensor_data, system_.thrust_);
+
+            // Integrate the system for control_interval_ time
+            integrator.do_step(system_, system_.state_, current_time, dt);
+            current_time += dt;
         }
-
-        // Simulate perturbations, directly write it to the ode system
-        SimulatePerturbations(system_.perturbations_acceleration_);
-
-        // Simulate sensor data
-        sensor_simulator_.Simulate(system_.state_, system_.perturbations_acceleration_, current_time, sensor_data);
-
-        // Poll controller for control thrust, write it to the ode system
-        spacecraft_controller_.GetThrustForSensorData(sensor_data, system_.thrust_);
-
-        // Integrate the system for control_interval_ time
-        integrator.do_step(system_, system_.state_, current_time, dt);
-        current_time += dt;
+    } catch (boost::exception const &exception) {
+        std::cout << "The spacecraft crashed into the asteroid's surface." << std::endl;
     }
 
-    return iterations;
+    return iteration * dt;
 }
 
 void Simulator::SimulatePerturbations(double *perturbations) {

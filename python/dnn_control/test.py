@@ -496,7 +496,7 @@ def unit_test_boost_asteroid():
     avg_omg = 0.0
     avg_domg = 0.0
     avg_srf = 0.0
-    num_tests = 10000
+    num_tests = 100000
     for i in xrange(num_tests):
         b_axis_n = random.uniform(1.1, 2.0)
         a_axis_n = random.uniform(1.1 * b_axis_n, 4.0)

@@ -28,7 +28,7 @@ public:
     void NextState(const State &state, const double *thrust, const double &time, State &next_state);
 
     // Simulates the system for time "time". Logs the states if "log_data" is enabled, Returns the number of iterations the simulator made to get to the specified time.
-    int Run(const double &time, const bool &log_data);
+    double Run(const double &time, const bool &log_data);
 
     // Writes the logged data from Run to the file given by "path_to_file"
     void FlushLogToFile(const std::string &path_to_file);
