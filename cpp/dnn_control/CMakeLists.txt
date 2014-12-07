@@ -1,5 +1,28 @@
 cmake_minimum_required (VERSION 2.8.11)
 project (dnn_control)
 
+MESSAGE(STATUS "OS detected: ${CMAKE_SYSTEM_NAME}")
+MESSAGE(STATUS "CXX Compiler detected: ${CMAKE_CXX_COMPILER_ID}")
+
+# GSL Libraries
+FIND_LIBRARY(GSL_GSL_LIBRARY NAMES gsl)
+FIND_LIBRARY(GSL_GSLCBLAS_LIBRARY NAMES gslcblas)
+FIND_PATH(GSL_INCLUDE_DIR NAMES gsl/gsl_version.h)
+MESSAGE(STATUS "GSL library: ${GSL_GSL_LIBRARY}")
+MESSAGE(STATUS "GSL CBLAS library: ${GSL_GSLCBLAS_LIBRARY}")
+MESSAGE(STATUS "GSL include dir: ${GSL_INCLUDE_DIR}")
+IF(NOT GSL_GSL_LIBRARY OR NOT GSL_INCLUDE_DIR)
+	MESSAGE(FATAL_ERROR "GSL support was requested, but either the library or the include files could not be located.")
+ENDIF(NOT GSL_GSL_LIBRARY OR NOT GSL_INCLUDE_DIR)
+IF(NOT GSL_GSLCBLAS_LIBRARY)
+	MESSAGE(STATUS "GSL BLAS library not found")
+ENDIF(NOT GSL_GSLCBLAS_LIBRARY)
+
+SET(MANDATORY_LIBRARIES ${MANDATORY_LIBRARIES} ${GSL_GSL_LIBRARY})
+SET(MANDATORY_LIBRARIES ${MANDATORY_LIBRARIES} ${GSL_GSLCBLAS_LIBRARY})
+
+INCLUDE_DIRECTORIES("${GSL_INCLUDE_DIR}")
+
 add_executable(main asteroid.cpp main.cpp odesystem.cpp sensorsimulator.cpp simulator.cpp spacecraftcontroller.cpp test.cpp utility.cpp) 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -lgsl -lgslcblas -O2")
+TARGET_LINK_LIBRARIES(main ${MANDATORY_LIBRARIES})
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O2")
