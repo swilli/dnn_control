@@ -11,8 +11,7 @@
 #include <vector>
 #include <fstream>
 
-class Simulator
-{
+class Simulator {
     /*
      * This class implements the interaction between stepwise integration of the ode system, artificial sensor data generation, control polling, and result logging.
      */

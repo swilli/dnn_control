@@ -1,0 +1,2 @@
+#/bin/bash
+g++ -fPIC -I /usr/include/python2.7/ -shared -o boost_asteroid.so asteroid.cpp utility.cpp -lgsl -lgslcblas -lboost_python -lboost_system

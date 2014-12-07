@@ -2,13 +2,11 @@
 #include "utility.h"
 #include <math.h>
 
-SensorSimulator::SensorSimulator(const Asteroid &asteroid, const double &sensor_noise) : asteroid_(asteroid), normal_distribution_(boost::mt19937(time(0)),boost::normal_distribution<>(0.0, sensor_noise))
-{
+SensorSimulator::SensorSimulator(const Asteroid &asteroid, const double &sensor_noise) : asteroid_(asteroid), normal_distribution_(boost::mt19937(time(0)),boost::normal_distribution<>(0.0, sensor_noise)) {
 
 }
 
-void SensorSimulator::Simulate(const State &state, const Vector3D &perturbations_acceleration, const double &time, SensorData &sensor_data)
-{
+void SensorSimulator::Simulate(const State &state, const Vector3D &perturbations_acceleration, const double &time, SensorData &sensor_data) {
     sensor_data[0] = 0.0; sensor_data[1] = 0.0; sensor_data[2] = 0.0; sensor_data[3] = 0.0; sensor_data[4] = 0.0;
 
     const Vector3D position = {state[0], state[1], state[2]};

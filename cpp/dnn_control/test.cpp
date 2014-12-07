@@ -3,17 +3,31 @@
 #include "utility.h"
 #include "odesystem.h"
 #include "simulator.h"
+#include "odeint.h"
 
-#include <random>
-#include <boost/numeric/odeint.hpp>
 #include <iostream>
 #include <iomanip>
 
 #define PATH_TO_FILE    "../result.txt"
 
-namespace odeint = boost::numeric::odeint;
+typedef double AngularVelocityState[3];
+struct AngularVelocitySystem {
+    Vector3D inertia;
+    void operator()(const AngularVelocityState &state, AngularVelocityState &d_state_dt, double time) const {
+        d_state_dt[0] = (inertia[1] - inertia[2]) * state[1] * state[2] / inertia[0];
+        d_state_dt[1] = (inertia[2] - inertia[0]) * state[2] * state[0] / inertia[1];
+        d_state_dt[2] = (inertia[0] - inertia[1]) * state[0] * state[1] / inertia[2];
+    };
+    AngularVelocitySystem(const double *para_inertia) {
+        for (int i = 0; i < 3; ++i) {
+            inertia[i] = para_inertia[i];
+        }
+    };
+};
 
 void UnitTestAngularVelocity() {
+    using namespace boost::numeric::odeint;
+
     const Vector3D semi_axis = {10000.0, 6000.0, 4000.0};
     const double density = 2215.0;
     const Vector3D angular_velocity = {-0.0002, 0.0, -0.0008};
@@ -21,28 +35,8 @@ void UnitTestAngularVelocity() {
 
     Asteroid asteroid(semi_axis, density, angular_velocity, time_bias);
 
-    std::random_device rd;
-    std::mt19937 generator(rd());
-    std::uniform_real_distribution<double> distribution(0.0, 100.0);
-
-    typedef double State[3];
-
-    struct System {
-        Vector3D inertia;
-        void operator()(const State &state, State &d_state_dt, double time) const {
-            d_state_dt[0] = (inertia[1] - inertia[2]) * state[1] * state[2] / inertia[0];
-            d_state_dt[1] = (inertia[2] - inertia[0]) * state[2] * state[0] / inertia[1];
-            d_state_dt[2] = (inertia[0] - inertia[1]) * state[0] * state[1] / inertia[2];
-        };
-        System(const double *para_inertia) {
-            for (int i = 0; i < 3; ++i) {
-                inertia[i] = para_inertia[i];
-            }
-        };
-    };
-
     const Vector3D inertia = {asteroid.Inertia(0), asteroid.Inertia(1), asteroid.Inertia(2)};
-    System sys(inertia);
+    AngularVelocitySystem sys(inertia);
 
     const int num_test_cases = 10000;
     double min_error = 1e20;
@@ -51,12 +45,12 @@ void UnitTestAngularVelocity() {
     for (int i = 0; i < num_test_cases; ++i) {
         Vector3D omega_analytical;
         Vector3D d_omega_dt_analytical;
-        const double time = distribution(generator);
+        const double time = SampleUniform(0.0, 24.0*60.0*60.0);
         asteroid.AngularVelocityAndAccelerationAtTime(time, omega_analytical, d_omega_dt_analytical);
 
-        State omega_numerical = {angular_velocity[0], 0.0, angular_velocity[2]};
+        AngularVelocityState omega_numerical = {angular_velocity[0], 0.0, angular_velocity[2]};
 
-        odeint::runge_kutta4<State> integrator;
+        runge_kutta4<AngularVelocityState> integrator;
         const double dt = 0.1;
         integrate_const(integrator, sys, omega_numerical, 0.0, time, dt);
 
@@ -165,16 +159,16 @@ void UnitTestTrajectory() {
 }
 
 
-void UnitTestAny()
-{
-    const Vector3D semi_axis = {5000.0, 2567.0, 1235.0};
+void UnitTestAny() {
+    const Vector3D semi_axis = {1103.1670527778024, 466.18400577010857, 293.35148306268576};
     const double density = 2215.0;
     const Vector3D angular_velocity = {-0.0002, 0.0, 0.0008};
     const double time_bias = 0.0;
 
     Asteroid asteroid(semi_axis,density, angular_velocity, time_bias);
-    Vector3D result1, result2;
-    const Vector3D position = {6789.123, 3456.123, 2345.987};
-    const double time = 13.15;
-    asteroid.AngularVelocityAndAccelerationAtTime(time, result1, result2);
+    const Vector3D position = {816.5726055517212, 0.9933720217425616, -716.1995078171824};
+    Vector3D surface_position;
+    double distance;
+    asteroid.NearestPointOnSurfaceToPosition(position, surface_position, &distance);
+    std::cout << distance << std::endl;
 }

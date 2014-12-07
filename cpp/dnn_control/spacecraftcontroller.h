@@ -4,8 +4,7 @@
 #include "sensorsimulator.h"
 #include "vector.h"
 
-class SpacecraftController
-{
+class SpacecraftController {
         /*
          * This class generates the thrust for a given sensor_data input (which will hopefully result in hovering at some point).
         */

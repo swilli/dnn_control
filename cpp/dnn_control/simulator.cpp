@@ -1,8 +1,6 @@
 #include "simulator.h"
 #include "constants.h"
-
-#include <boost/numeric/odeint.hpp>
-namespace odeint = boost::numeric::odeint;
+#include "odeint.h"
 
 Simulator::Simulator(Asteroid &asteroid, SensorSimulator &sensor_simulator, SpacecraftController &spacecraft_controller, const double &control_frequency, const double &perturbation_noise) :
     sensor_simulator_(sensor_simulator), spacecraft_controller_(spacecraft_controller), system_(ODESystem(asteroid)), normal_distribution_(boost::mt19937(time(0)),boost::normal_distribution<>(0.0, perturbation_noise)) {
@@ -10,8 +8,7 @@ Simulator::Simulator(Asteroid &asteroid, SensorSimulator &sensor_simulator, Spac
     control_interval_ = 1.0 / control_frequency;
 }
 
-void Simulator::InitSpacecraft(const double *position, const double *velocity, const double &mass, const double &specific_impulse)
-{
+void Simulator::InitSpacecraft(const double *position, const double *velocity, const double &mass, const double &specific_impulse) {
     // Transform position, velocity and mass to state
     for (int i = 0; i < 3; ++i) {
         system_.state_[i] = position[i];
@@ -23,14 +20,14 @@ void Simulator::InitSpacecraft(const double *position, const double *velocity, c
     system_.coef_earth_acceleration_mul_specific_impulse_ = specific_impulse * k_earth_acceleration;
 }
 
-void Simulator::InitSpacecraftSpecificImpulse(const double &specific_impulse)
-{
+void Simulator::InitSpacecraftSpecificImpulse(const double &specific_impulse) {
     // Cache g * Isp
     system_.coef_earth_acceleration_mul_specific_impulse_ = specific_impulse * k_earth_acceleration;
 }
 
-void Simulator::NextState(const State &state, const double *thrust, const double &time, State &next_state)
-{
+void Simulator::NextState(const State &state, const double *thrust, const double &time, State &next_state) {
+    using namespace boost::numeric::odeint;
+
     // Assign state
     for (int i = 0; i < 3; ++i) {
         system_.state_[i] = state[i];
@@ -43,7 +40,7 @@ void Simulator::NextState(const State &state, const double *thrust, const double
     SimulatePerturbations(system_.perturbations_acceleration_);
 
     // Integrate for one time step control_interval_
-    odeint::runge_kutta4<State> integrator;
+    runge_kutta4<State> integrator;
     integrator.do_step(system_, system_.state_, time, control_interval_);
 
     // Extract new state out of system
@@ -53,6 +50,8 @@ void Simulator::NextState(const State &state, const double *thrust, const double
 }
 
 int Simulator::Run(const double &time, const bool &log_data) {
+    using namespace boost::numeric::odeint;
+
     const double dt = control_interval_;
     const int iterations = time / dt;
 
@@ -60,7 +59,7 @@ int Simulator::Run(const double &time, const bool &log_data) {
         log_states_ = std::vector<LogState>(iterations);
     }
 
-    odeint::runge_kutta4<State> integrator;
+    runge_kutta4<State> integrator;
     double current_time = 0.0;
     double sensor_data[5];
 
@@ -97,17 +96,15 @@ int Simulator::Run(const double &time, const bool &log_data) {
     return iterations;
 }
 
-void Simulator::SimulatePerturbations(double *perturbations)
-{
+void Simulator::SimulatePerturbations(double *perturbations) {
     double mass = system_.state_[6];
     for(int i = 0; i < 3; ++i) {
         perturbations[i] = mass * normal_distribution_();
     }
 }
 
-void Simulator::FlushLogToFile(const std::string &path_to_file)
-{
-    log_file_.open(path_to_file);
+void Simulator::FlushLogToFile(const std::string &path_to_file) {
+    log_file_.open(path_to_file.c_str());
     log_file_ << std::setprecision(10);
     log_file_ << system_.asteroid_.SemiAxis(0) << ",\t" << system_.asteroid_.SemiAxis(1) << ",\t" << system_.asteroid_.SemiAxis(2) << ",\t" << control_frequency_ << std::endl;
     for (int i = 0; i < log_states_.size(); ++i) {

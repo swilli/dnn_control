@@ -38,7 +38,7 @@ static struct TerminationCondition  {
         return discr <= tolerance;
     };
     TerminationCondition(const double &tolerance) : tolerance(tolerance) {};
-} termination_condition(1e-15);
+} termination_condition(1e-20);
 
 static struct BisectEllipsoidApproximator  {
     Vector3D semi_axis_mul_pos;

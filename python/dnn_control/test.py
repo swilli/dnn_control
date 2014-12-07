@@ -468,6 +468,77 @@ def unit_test_angular_velocity_period():
         img.savefig("plane_{0}.png".format(plane))
         close()
 
+def unit_test_boost_asteroid():
+    from math import sqrt
+    from boost_asteroid import boost_asteroid
+    from utility import sample_position_outside_ellipsoid
+
+    from asteroid import Asteroid as PythonAsteroid
+    from numpy import random
+
+    signs = [-1.0, 1.0]
+
+    c_axis_n = 1.0
+    band_width_scale = 100.0
+
+    def check(surface_point, position, semi_axis):
+        from math import copysign
+
+        value = surface_point[0] ** 2 / semi_axis[0] ** 2 + surface_point[1] ** 2 / semi_axis[1] ** 2 \
+                + surface_point[2] ** 2 / semi_axis[2] ** 2 - 1.0
+        for i in range(3):
+            sign_surf = copysign(1, surface_point[i])
+            sign_pos = copysign(1, position[i])
+            assert(sign_pos == sign_surf)
+        assert(abs(value) < 1e-10)
+
+    avg_grav = 0.0
+    avg_omg = 0.0
+    avg_domg = 0.0
+    avg_srf = 0.0
+    num_tests = 10000
+    for i in xrange(num_tests):
+        b_axis_n = random.uniform(1.1, 2.0)
+        a_axis_n = random.uniform(1.1 * b_axis_n, 4.0)
+        distance = random.uniform(100.0, 8000.0)
+        semi_axis = [a_axis_n * distance, b_axis_n * distance, c_axis_n * distance]  # [m]
+        density = random.uniform(1500.0, 3000.0)  # [kg/m^3]
+        angular_velocity = [random.choice(signs) * random.uniform(0.0002, 0.0008),
+                            0.0,
+                            random.choice(signs) * random.uniform(0.0002, 0.0008)]  # [1/s]
+
+        time_bias = 0.0  # random.uniform(0.0, 60.0 * 60.0 * 6.0)  # [s]
+        time = random.uniform(0.0, 1000.0)
+
+        boost_ast = boost_asteroid.Asteroid(semi_axis, density, angular_velocity, time_bias)
+        python_asteroid = PythonAsteroid(semi_axis, density, angular_velocity, time_bias)
+        position = sample_position_outside_ellipsoid(semi_axis, band_width_scale)
+
+        grav_boost = boost_ast.gravity_at_position(position)
+        grav_python = python_asteroid.gravity_at_position(position)
+        omg_boost, domg_boost = boost_ast.angular_velocity_and_acceleration_at_time(time)
+        omg_python, domg_python = python_asteroid.angular_velocity_and_acceleration_at_time(time)
+        srf_boost = boost_ast.nearest_point_on_surface_to_position(position)[0]
+        srf_python = python_asteroid.nearest_point_on_surface_to_position(position)[0]
+        check(srf_python, position, semi_axis)
+        check(srf_boost, position, semi_axis)
+        avg_grav += sqrt(sum([(b-p)*(b-p) for b,p in zip(grav_boost, grav_python)]))
+        avg_srf += sqrt(sum([(b-p)*(b-p) for b,p in zip(srf_boost, srf_python)]))
+        avg_omg += sqrt(sum([(b-p)*(b-p) for b,p in zip(omg_boost, omg_python)]))
+        avg_domg += sqrt(sum([(b-p)*(b-p) for b,p in zip(domg_boost, domg_python)]))
+
+    avg_grav /= num_tests
+    avg_srf /= num_tests
+    avg_omg /= num_tests
+    avg_domg /= num_tests
+    print("gravity : {0}".format(avg_grav))
+    print("surface : {0}".format(avg_srf))
+    print("omega : {0}".format(avg_omg))
+    print("domega : {0}".format(avg_domg))
+
+
+
+
 
 #unit_test_autoencoder()
 #unit_test_pca()
@@ -479,49 +550,16 @@ def unit_test_angular_velocity_period():
 #unit_test_gravity_contour()
 #unit_test_gravity_speed()
 #unit_test_angular_velocity_period()
+unit_test_boost_asteroid()
 
+'''from asteroid import Asteroid
+semi_axis = [5000.0, 2567.0, 1235.0]
+density = 2215.0
+angular_velocity = [-0.0002, 0.0, 0.0008]
+time_bias = 0.0
+ast = Asteroid(semi_axis, density, angular_velocity, time_bias)
 
-
+position = [6789000.123, 3456000.123, 2345000.987]
+surface_position, distance = ast.nearest_point_on_surface_to_position(position)
+print(surface_position)
 '''
-#ASTEROID ANGULAR VELOCITY VISUALIZATION
-
-TIME = 100000.0
-SAMPLING_FREQUENCY = 10.0
-INERTIA_X = 4567.123  # [kg*m^2]
-INERTIA_Y = 2345.3456  # [kg*m^2]
-INERTIA_Z = 1234.12  # [kg*m^2]
-DENSITY = 2000.0  # [kg/m^3]
-ANGULAR_VELOCITY = [0.0005, 0.0007, -0.0003]  # [1/s]
-TIME_BIAS = 0.0  # [s]
-
-asteroid = Asteroid(INERTIA_X, INERTIA_Y, INERTIA_Z, DENSITY, ANGULAR_VELOCITY, TIME_BIAS)
-
-iterations = int(TIME*SAMPLING_FREQUENCY)
-
-angular_velocity = empty([iterations,3])
-for i in range(iterations):
-    time = i*1.0/SAMPLING_FREQUENCY
-    omega = asteroid.angular_velocity_and_acceleration_at_time(time)
-    angular_velocity[i][:] = omega
-
-# Visualize trajectory
-fig = pyplot.figure()
-ax = fig.gca(projection="3d")
-ax.plot(angular_velocity[:,0],angular_velocity[:,1],angular_velocity[:,2], label="angular velocity")
-pyplot.plot([angular_velocity[0][0]],[angular_velocity[0][1]],[angular_velocity[0][2]], 'rD', label="start")
-pyplot.plot([angular_velocity[-1][0]],[angular_velocity[-1][1]],[angular_velocity[-1][2]], 'bD', label="end")
-ax.legend()
-ax.set_xlabel('Omega_x')
-ax.set_ylabel('Omega_y')
-ax.set_zlabel('Omega_z')
-pyplot.show()
-'''
-
-
-from asteroid import Asteroid
-asteroid = Asteroid([5000.0, 2567.0, 1235.0], 2215.0, [-0.0002, 0.0, 0.0008], 0.0)
-position = [6789.123, 3456.123, 2345.987]
-time = 13.15
-result = asteroid.angular_velocity_and_acceleration_at_time(time)
-print(result)
-

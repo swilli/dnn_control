@@ -9,8 +9,7 @@
 
 typedef double SensorData[5];
 
-class SensorSimulator
-{
+class SensorSimulator {
     /*
      * This class generates the artificial the sensor data required for a controller.
      */

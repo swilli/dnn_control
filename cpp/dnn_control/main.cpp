@@ -9,8 +9,7 @@
 #define COLLECT_DATA   1
 #define PATH_TO_FILE    "../../../results/states.txt"
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     srand(time(NULL));
 
     //UnitTestTrajectory();

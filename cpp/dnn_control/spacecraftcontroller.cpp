@@ -1,10 +1,9 @@
 #include "spacecraftcontroller.h"
 
-SpacecraftController::SpacecraftController()
-{
+SpacecraftController::SpacecraftController() {
+
 }
 
-void SpacecraftController::GetThrustForSensorData(const SensorData &sensor_data, Vector3D &thrust) const
-{
+void SpacecraftController::GetThrustForSensorData(const SensorData &sensor_data, Vector3D &thrust) const {
 
 }

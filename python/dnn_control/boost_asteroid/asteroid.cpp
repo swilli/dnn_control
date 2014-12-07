@@ -6,6 +6,70 @@
 #include "constants.h"
 #include "utility.h"
 
+Asteroid::Asteroid(const list &param_semi_axis, const double &density, const list &param_angular_velocity, const double &time_bias) {
+    const Vector3D semi_axis = {boost::python::extract<double>(param_semi_axis[0]),
+        boost::python::extract<double>(param_semi_axis[1]),
+        boost::python::extract<double>(param_semi_axis[2])};
+    const Vector3D angular_velocity = {boost::python::extract<double>(param_angular_velocity[0]),
+        boost::python::extract<double>(param_angular_velocity[1]),
+        boost::python::extract<double>(param_angular_velocity[2])};
+
+    time_bias_ = time_bias;
+
+    density_ = density;
+
+    mass_ = 4.0 / 3.0 * k_pi * density;
+    for (int i = 0; i < 3; ++i) {
+        semi_axis_[i] = semi_axis[i];
+        semi_axis_pow2_[i] = semi_axis_[i] * semi_axis_[i];
+        mass_ *= semi_axis_[i];
+    }
+
+    Vector3D signs;
+    signs[0] = (angular_velocity[0] > 0 ? 1.0 : -1.0);
+    signs[1] = (angular_velocity[0] * angular_velocity[2] > 0 ? 1.0 : -1.0);
+    signs[2] = (angular_velocity[2] > 0 ? 1.0 : -1.0);
+
+    inertia_[0] = 0.2 * mass_ * (semi_axis_pow2_[1] + semi_axis_pow2_[2]);
+    inertia_[1] = 0.2 * mass_ * (semi_axis_pow2_[0] + semi_axis_pow2_[2]);
+    inertia_[2] = 0.2 * mass_ * (semi_axis_pow2_[0] + semi_axis_pow2_[1]);
+
+    gamma_ = 4.0 * k_pi * k_gravitational_constant * density;
+    energy_mul2_ = 0.0;
+    momentum_pow2_ = 0.0;
+    Vector3D inertia;
+    for (int i = 0; i < 3; ++i) {
+        inertia[i] = inertia_[i];
+        inertia_pow2_[i] = inertia_[i] * inertia_[i];
+        gamma_ *= semi_axis_[i];
+        energy_mul2_ += inertia_[i] * angular_velocity[i] * angular_velocity[i];
+        momentum_pow2_ += inertia_[i] * inertia_[i] * angular_velocity[i] * angular_velocity[i];
+    }
+    // Cersosimo eq (3.12)
+    gamma_ /= sqrt(semi_axis_pow2_[0] - semi_axis_pow2_[2]);
+
+    inversion_ = false;
+    if (momentum_pow2_ < energy_mul2_ * inertia_[1]) {
+        inversion_ = true;
+        inertia[2] = inertia_[0];
+        inertia[0] = inertia_[2];
+        const double tmp = signs[0];
+        signs[0] = signs[2];
+        signs[2] = tmp;
+    }
+
+    // Lifshitz eq (37.10)
+    elliptic_coefficients_[0] = signs[0] * sqrt((energy_mul2_ * inertia[2] - momentum_pow2_) / (inertia[0] * (inertia[2] - inertia[0])));
+    elliptic_coefficients_[1] = signs[1] * sqrt((energy_mul2_ * inertia[2] - momentum_pow2_) / (inertia[1] * (inertia[2] - inertia[1])));
+    elliptic_coefficients_[2] = signs[2] * sqrt((momentum_pow2_ - energy_mul2_ * inertia[0]) / (inertia[2] * (inertia[2] - inertia[0])));
+
+    // Lifshitz eq (37.8)
+    elliptic_tau_ = sqrt((inertia[2] - inertia[1]) * (momentum_pow2_ - energy_mul2_ * inertia[0]) / (inertia[0] * inertia[1] * inertia[2]));
+
+    // Lifshitz eq (37.9)
+    elliptic_modulus_ = (inertia[1] - inertia[0]) * (energy_mul2_ * inertia[2] - momentum_pow2_) / ((inertia[2] - inertia[1]) * (momentum_pow2_ - energy_mul2_ * inertia[0]));
+}
+
 Asteroid::Asteroid(const Vector3D &semi_axis, const double &density, const Vector3D &angular_velocity, const double &time_bias) {
     time_bias_ = time_bias;
 
@@ -286,4 +350,59 @@ void Asteroid::NearestPointOnEllipseFirstQuadrant(const Vector2D &semi_axis, con
             point[1] = 0.0;
         }
     }
+}
+
+list Asteroid::GravityAtPositionWrapper(const list &param_position) const {
+    const Vector3D position = {boost::python::extract<double>(param_position[0]),
+        boost::python::extract<double>(param_position[1]),
+        boost::python::extract<double>(param_position[2])};
+
+    Vector3D gravity;
+    GravityAtPosition(position, gravity);
+
+    list result;
+    result.append(gravity[0]);
+    result.append(gravity[1]);
+    result.append(gravity[2]);
+    return result;
+}
+
+tuple Asteroid::AngularVelocityAndAccelerationAtTimeWrapper(const double &time) const {
+    Vector3D velocity, acceleration;
+    AngularVelocityAndAccelerationAtTime(time, velocity, acceleration);
+
+    list vel, acc;
+    for (int i = 0; i < 3; ++i) {
+        vel.append(velocity[i]);
+        acc.append(acceleration[i]);
+    }
+    return make_tuple(vel, acc);
+}
+
+tuple Asteroid::NearestPointOnSurfaceToPositionWrapper(const list &param_position) const {
+    const Vector3D position = {boost::python::extract<double>(param_position[0]),
+        boost::python::extract<double>(param_position[1]),
+        boost::python::extract<double>(param_position[2])};
+
+    Vector3D surface_position;
+    double distance;
+    NearestPointOnSurfaceToPosition(position, surface_position, &distance);
+
+    list result;
+    result.append(surface_position[0]);
+    result.append(surface_position[1]);
+    result.append(surface_position[2]);
+
+    return make_tuple(result, distance);
+}
+
+BOOST_PYTHON_MODULE(boost_asteroid)
+{
+    class_<Asteroid>("Asteroid", init<const list&, const double&, const list&, const double&>())
+        .def("semi_axis", &Asteroid::SemiAxis)
+        .def("inertia", &Asteroid::Inertia)
+        .def("gravity_at_position", &Asteroid::GravityAtPositionWrapper)
+        .def("angular_velocity_and_acceleration_at_time", &Asteroid::AngularVelocityAndAccelerationAtTimeWrapper)
+        .def("nearest_point_on_surface_to_position", &Asteroid::NearestPointOnSurfaceToPositionWrapper)
+    ;
 }

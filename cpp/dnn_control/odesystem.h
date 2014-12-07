@@ -6,8 +6,7 @@
 
 typedef double State[7];
 
-class ODESystem
-{
+class ODESystem {
     /*
      * This class represents the dynamics in a rotating reference frame (which we have around an asteroid) using ordinary differential equations.
      * Implementation is inspired from "Control of Hovering Spacecraft Using Altimetry" by S. Sawai et. al.
