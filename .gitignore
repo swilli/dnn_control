@@ -5,3 +5,6 @@ matlab
 build-dnn*
 result.txt
 CMakeFiles
+*.o
+build*
+*.save
