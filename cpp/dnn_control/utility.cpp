@@ -1,11 +1,13 @@
 #include "utility.h"
+#include "constants.h"
 
+#include <random>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_roots.h>
 #include <boost/math/tools/roots.hpp>
 
-#include "constants.h"
+
 
 using boost::math::tools::bisect;
 
