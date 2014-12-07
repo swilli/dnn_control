@@ -1,10 +1,15 @@
 cmake_minimum_required (VERSION 2.8.11)
 project (dnn_control)
 
+# 1 - Preliminary checks and messages
 MESSAGE(STATUS "OS detected: ${CMAKE_SYSTEM_NAME}")
 MESSAGE(STATUS "CXX Compiler detected: ${CMAKE_CXX_COMPILER_ID}")
 
-# GSL Libraries
+# 2 - Setting compiler flags
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O2")
+
+# 3 - Find Third-party Libraries
+# GSL
 FIND_LIBRARY(GSL_GSL_LIBRARY NAMES gsl)
 FIND_LIBRARY(GSL_GSLCBLAS_LIBRARY NAMES gslcblas)
 FIND_PATH(GSL_INCLUDE_DIR NAMES gsl/gsl_version.h)
@@ -18,11 +23,11 @@ IF(NOT GSL_GSLCBLAS_LIBRARY)
 	MESSAGE(STATUS "GSL BLAS library not found")
 ENDIF(NOT GSL_GSLCBLAS_LIBRARY)
 
-SET(MANDATORY_LIBRARIES ${MANDATORY_LIBRARIES} ${GSL_GSL_LIBRARY})
-SET(MANDATORY_LIBRARIES ${MANDATORY_LIBRARIES} ${GSL_GSLCBLAS_LIBRARY})
-
+# 4 - Define mandatory libraries and include directories
+SET(MANDATORY_LIBRARIES ${MANDATORY_LIBRARIES} ${GSL_GSL_LIBRARY} ${GSL_GSLCBLAS_LIBRARY})
 INCLUDE_DIRECTORIES("${GSL_INCLUDE_DIR}")
 
+# 5 - Define the target and linked libraries
 add_executable(main asteroid.cpp main.cpp odesystem.cpp sensorsimulator.cpp simulator.cpp spacecraftcontroller.cpp test.cpp utility.cpp) 
 TARGET_LINK_LIBRARIES(main ${MANDATORY_LIBRARIES})
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O2")
+
