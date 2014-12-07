@@ -3,6 +3,8 @@ CONFIG += console
 CONFIG -= app_bundle
 CONFIG -= qt
 
+QMAKE_CXXFLAGS += -std=c++11
+
 SOURCES += main.cpp \
     simulator.cpp \
     asteroid.cpp \
@@ -24,7 +26,8 @@ HEADERS += \
     constants.h \
     odesystem.h \
     vector.h \
-    test.h
+    test.h \
+    odeint.h
 
 LIBS += -lgsl -lgslcblas
 

@@ -168,6 +168,15 @@ CMAKE_USE_RELATIVE_PATHS:BOOL=OFF
 // Studio IDE projects all commands are done without /nologo.
 CMAKE_VERBOSE_MAKEFILE:BOOL=FALSE
 
+//Path to a library.
+GSL_GSLCBLAS_LIBRARY:FILEPATH=/usr/lib64/libgslcblas.so
+
+//Path to a library.
+GSL_GSL_LIBRARY:FILEPATH=/usr/lib64/libgsl.so
+
+//Path to a file.
+GSL_INCLUDE_DIR:PATH=/usr/include
+
 //Value Computed by CMake
 dnn_control_BINARY_DIR:STATIC=/home/willist/GoogleDrive/ETHZ/Master/Stefan's Thesis/src/cpp/dnn_control
 

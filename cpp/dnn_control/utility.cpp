@@ -1,4 +1,5 @@
 #include "utility.h"
+#include "constants.h"
 
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_math.h>
@@ -6,7 +7,7 @@
 #include <boost/math/tools/roots.hpp>
 #include <boost/random.hpp>
 
-#include "constants.h"
+
 
 static boost::mt19937 rand_generator(std::time(0));
 static boost::random::uniform_real_distribution<> distribution(0.0, 1.0);
