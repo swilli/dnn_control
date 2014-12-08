@@ -2,7 +2,9 @@ from numpy import random
 from pidcontroller import PIDController
 from sensorsimulator import SensorSimulator
 from simulator import Simulator
-from asteroid import Asteroid
+from boost_asteroid import boost_asteroid
+Asteroid = boost_asteroid.Asteroid
+
 from time import time
 from visualization import visualize, visualize_full
 from constants import PI
@@ -58,9 +60,10 @@ simulator.init_spacecraft(spacecraft_position, spacecraft_velocity, spacecraft_m
 
 print("running simulation ...")
 start = time()
-simulator.run(time_to_run, WRITE_TO_FILE)
+simulated_time = simulator.run(time_to_run, WRITE_TO_FILE)
 end = time()
-print("{0} seconds simulation time took {1} real time to compute (x{2}).".format(time_to_run, end - start, time_to_run / (end - start)))
+print("{0} seconds simulation time took {1} real time to compute (x{2}).".format(simulated_time, end - start,
+                                                                                 simulated_time / (end - start)))
 
 if WRITE_TO_FILE:
     print("writing results to file ...")

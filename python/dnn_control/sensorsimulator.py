@@ -16,11 +16,11 @@ class SensorSimulator:
 
         sensor_data = [0.0, 0.0, 0.0, 0.0, 0.0]
 
-        position = state[0:3]
-        velocity = state[3:6]
+        position = list(state[0:3])
+        velocity = list(state[3:6])
         mass = state[6]
 
-        gravity = self._asteroid.gravity_at_position(state[0:3])
+        gravity = self._asteroid.gravity_at_position(position)
         gravity_acceleration = [val / mass for val in gravity]
 
         angular_velocity, angular_acceleration = self._asteroid.angular_velocity_and_acceleration_at_time(time)

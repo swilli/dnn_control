@@ -399,8 +399,8 @@ tuple Asteroid::NearestPointOnSurfaceToPositionWrapper(const list &param_positio
 BOOST_PYTHON_MODULE(boost_asteroid)
 {
     class_<Asteroid>("Asteroid", init<const list&, const double&, const list&, const double&>())
-        .def("semi_axis", &Asteroid::SemiAxis)
-        .def("inertia", &Asteroid::Inertia)
+        .def("get_semi_axis", &Asteroid::SemiAxis)
+        .def("get_inertia", &Asteroid::Inertia)
         .def("gravity_at_position", &Asteroid::GravityAtPositionWrapper)
         .def("angular_velocity_and_acceleration_at_time", &Asteroid::AngularVelocityAndAccelerationAtTimeWrapper)
         .def("nearest_point_on_surface_to_position", &Asteroid::NearestPointOnSurfaceToPositionWrapper)

@@ -23,8 +23,8 @@ class ODESystem:
 
         d_state_dt = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
-        position = state[0:3]
-        velocity = state[3:6]
+        position = list(state[0:3])
+        velocity = list(state[3:6])
         mass = state[6]
 
         # 1/m

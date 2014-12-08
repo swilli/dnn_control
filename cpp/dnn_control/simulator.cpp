@@ -64,9 +64,8 @@ double Simulator::Run(const double &time, const bool &log_data) {
     double sensor_data[5];
 
     // Stepwise integration for "iterations" iterations
-    int iteration = 0;
     try {
-        for(; iteration < iterations; ++iteration) {
+        for(int iteration = 0; iteration < iterations; ++iteration) {
             if (log_data) {
                 // Log position and height, if enabled
                 const Vector3D position = {system_.state_[0], system_.state_[1], system_.state_[2]};
@@ -98,7 +97,7 @@ double Simulator::Run(const double &time, const bool &log_data) {
         std::cout << "The spacecraft crashed into the asteroid's surface." << std::endl;
     }
 
-    return iteration * dt;
+    return current_time;
 }
 
 void Simulator::SimulatePerturbations(double *perturbations) {

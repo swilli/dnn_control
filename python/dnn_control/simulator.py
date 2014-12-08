@@ -90,35 +90,39 @@ class Simulator:
 
         current_time = 0.0
         # Stepwise integration for "iterations" iterations
-        for iteration in xrange(iterations):
-            if log_data:
-                # Log position and height, if enabled
-                position = self._integrator.y[0:3]
-                surface_position = self._system.asteroid.nearest_point_on_surface_to_position(position)[0]
-                for i in xrange(3):
-                    self._log_states[iteration][0][i] = position[i]
-                    self._log_states[iteration][1][i] = position[i] - surface_position[i]
+        try:
+            for iteration in xrange(iterations):
+                if log_data:
+                    # Log position and height, if enabled
+                    position = list(self._integrator.y[0:3])
+                    surface_position = self._system.asteroid.nearest_point_on_surface_to_position(position)[0]
+                    for i in xrange(3):
+                        self._log_states[iteration][0][i] = position[i]
+                        self._log_states[iteration][1][i] = position[i] - surface_position[i]
 
-            # Simulate perturbations, directly write it to the ode system
-            self._system.perturbations_acceleration = self._simulate_perturbations()
+                # Simulate perturbations, directly write it to the ode system
+                self._system.perturbations_acceleration = self._simulate_perturbations()
 
-            # Simulate sensor data
-            sensor_data = self._sensor_simulator.simulate(self._integrator.y,
-                                                         self._system.perturbations_acceleration,
-                                                         current_time)
+                # Simulate sensor data
+                sensor_data = self._sensor_simulator.simulate(self._integrator.y,
+                                                             self._system.perturbations_acceleration,
+                                                             current_time)
 
-            # Poll controller for control thrust, write it to the ode system
-            self._system.thrust = self._spacecraft_controller.get_thrust_for_sensor_data(sensor_data)
+                # Poll controller for control thrust, write it to the ode system
+                self._system.thrust = self._spacecraft_controller.get_thrust_for_sensor_data(sensor_data)
 
-            # Integrate the system for _control_interval time
-            self._integrator.integrate(current_time + dt)
-            if not self._integrator.successful():
-                print("Something BAD happened...")
-                exit(1)
+                # Integrate the system for _control_interval time
+                self._integrator.integrate(current_time + dt)
+                if not self._integrator.successful():
+                    print("Something BAD happened...")
+                    exit(1)
 
-            current_time += dt
+                current_time += dt
 
-        return iterations
+        except:
+            print("The spacecraft crashed into the asteroid's surface.")
+
+        return current_time
 
     # Writes the logged data from Run to the file given by "path_to_file"
     def flush_log_to_file(self, path_to_file):

@@ -1,10 +1,9 @@
 *.pyc
 matlab
 .idea
-*.png
 build-dnn*
-result.txt
 CMakeFiles
 *.o
 build*
 *.save
+*.so
