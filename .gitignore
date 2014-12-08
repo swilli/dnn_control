@@ -5,7 +5,7 @@ build-dnn*
 CMakeFiles
 CMakeCache.txt
 cmake_install.cmake
-MakeFile
+Makefile
 *.o
 build*
 *.save

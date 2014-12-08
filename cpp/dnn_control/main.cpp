@@ -6,7 +6,7 @@
 #include <iostream>
 #include <ctime>
 
-#define COLLECT_DATA   1
+#define WRITE_TO_FILE   1
 #define PATH_TO_FILE    "../../../results/states.txt"
 
 int main(int argc, char *argv[]) {
@@ -48,12 +48,12 @@ int main(int argc, char *argv[]) {
     Simulator simulator(asteroid, sensor_simulator, spacecraft_controller, control_frequency, perturbation_noise);
     simulator.InitSpacecraft(spacecraft_position, spacecraft_velocity, spacecraft_mass, spacecraft_specific_impulse);
     clock_t begin = clock();
-    const double simulated_time = simulator.Run(time, COLLECT_DATA);
+    const double simulated_time = simulator.Run(time, WRITE_TO_FILE);
     clock_t end = clock();
     double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
     std::cout << simulated_time << " seconds simulation time took " << elapsed_secs << " real time to compute (x" << simulated_time/elapsed_secs << ")." << std::endl;
 
-    if(COLLECT_DATA) {
+    if(WRITE_TO_FILE) {
         std::cout << "writing results to file ... ";
         simulator.FlushLogToFile(PATH_TO_FILE);
         std::cout << "done." << std::endl;

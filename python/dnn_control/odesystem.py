@@ -23,8 +23,8 @@ class ODESystem:
 
         d_state_dt = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
-        position = list(state[0:3])
-        velocity = list(state[3:6])
+        position = [state[0], state[1], state[2]]
+        velocity = [state[3], state[4], state[5]]
         mass = state[6]
 
         # 1/m
@@ -38,23 +38,37 @@ class ODESystem:
 
         # Fg, Fc
         thrust_acceleration = [0.0, 0.0, 0.0]
-        for i in xrange(3):
+        for i in [0, 1, 2]:
             gravity_acceleration[i] *= coef_mass
             thrust_acceleration[i] = self.thrust[i] * coef_mass
 
-        # w' x r
-        euler_acceleration = cross_product(angular_acceleration, position)
+        d_state_dt[0] = state[3]
+        d_state_dt[1] = state[4]
+        d_state_dt[2] = state[5]
 
-        # w x (w x r)
-        centrifugal_acceleration = cross_product(angular_velocity, cross_product(angular_velocity, position))
+        d_state_dt[3] = self.perturbations_acceleration[0] + gravity_acceleration[0] + thrust_acceleration[0] \
+                        - 2.0 * angular_velocity[1] * velocity[2] + 2.0 * angular_velocity[2] * velocity[1] \
+                        - angular_acceleration[1] * position[2] + angular_acceleration[2] * position[1]\
+                        - angular_velocity[0] * angular_velocity[1] * position[1] \
+                        + angular_velocity[1] * angular_velocity[1] * position[0] \
+                        + angular_velocity[2] * angular_velocity[2] * position[0]\
+                        - angular_velocity[0] * angular_velocity[2] * position[2]
 
-        # 2w x r'
-        coriolis_acceleration = cross_product([2.0 * val for val in angular_velocity], velocity)
+        d_state_dt[4] = self.perturbations_acceleration[1] + gravity_acceleration[1] + thrust_acceleration[1] \
+                        - 2.0 * angular_velocity[2] * velocity[0] + 2.0 * angular_velocity[0] * velocity[2] \
+                        - angular_acceleration[2] * position[0] + angular_acceleration[0] * position[2] \
+                        - angular_velocity[1] * angular_velocity[2] * position[2] \
+                        + angular_velocity[2] * angular_velocity[2] * position[1] \
+                        + angular_velocity[0] * angular_velocity[0] * position[1]\
+                        - angular_velocity[0] * angular_velocity[1] * position[0]
 
-        for i in xrange(3):
-            d_state_dt[i] = state[3+i]
-            d_state_dt[3+i] = self.perturbations_acceleration[i] + gravity_acceleration[i] + thrust_acceleration[i]\
-                              - coriolis_acceleration[i] - euler_acceleration[i] - centrifugal_acceleration[i]
+        d_state_dt[5] = self.perturbations_acceleration[2] + gravity_acceleration[2] + thrust_acceleration[2] \
+                        - 2.0 * angular_velocity[0] * velocity[1] + 2.0 * angular_velocity[1] * velocity[0] \
+                        - angular_acceleration[0] * position[1] + angular_acceleration[1] * position[0] \
+                        - angular_velocity[0] * angular_velocity[2] * position[0] \
+                        + angular_velocity[0] * angular_velocity[0] * position[2] \
+                        + angular_velocity[1] * angular_velocity[1] * position[2] \
+                        - angular_velocity[1] * angular_velocity[2] * position[1]
 
         d_state_dt[6] = sqrt(self.thrust[0] * self.thrust[0]
                              + self.thrust[1] * self.thrust[1]

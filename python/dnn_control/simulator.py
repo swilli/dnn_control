@@ -96,7 +96,7 @@ class Simulator:
                     # Log position and height, if enabled
                     position = list(self._integrator.y[0:3])
                     surface_position = self._system.asteroid.nearest_point_on_surface_to_position(position)[0]
-                    for i in xrange(3):
+                    for i in [0, 1, 2]:
                         self._log_states[iteration][0][i] = position[i]
                         self._log_states[iteration][1][i] = position[i] - surface_position[i]
 
@@ -119,7 +119,7 @@ class Simulator:
 
                 current_time += dt
 
-        except:
+        except RuntimeError as error:
             print("The spacecraft crashed into the asteroid's surface.")
 
         return current_time
