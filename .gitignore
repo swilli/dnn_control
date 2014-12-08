@@ -3,7 +3,13 @@ matlab
 .idea
 build-dnn*
 CMakeFiles
+CMakeCache.txt
+cmake_install.cmake
+MakeFile
 *.o
 build*
 *.save
 *.so
+*.pro*
+*.pri
+main
