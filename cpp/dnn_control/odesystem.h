@@ -3,8 +3,9 @@
 
 #include "asteroid.h"
 #include "vector.h"
+#include <boost/array.hpp>
 
-typedef double State[7];
+typedef boost::array<double,7> State;
 
 class ODESystem {
     /*
@@ -16,7 +17,7 @@ public:
 
     // This operator gets called by the boost stepper to integrate the system.
     // The function computes d/dt x = f(x, t). Or in our case: "d_state_dt" = this(state, time)
-    void operator()(const State &state, State &d_state_dt, double time) const;
+    void operator()(const State &state, State &d_state_dt, const double &time) const;
 
     // The asteroid which is at the center of the system
     Asteroid &asteroid_;

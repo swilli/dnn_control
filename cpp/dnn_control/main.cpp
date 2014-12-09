@@ -1,4 +1,6 @@
 #include "simulator.h"
+#include "fullstatesensorsimulator.h"
+#include "fullstatecontroller.h"
 #include "test.h"
 #include "vector.h"
 #include "utility.h"
@@ -35,14 +37,15 @@ int main(int argc, char *argv[]) {
     const double spacecraft_mass = 1000.0;
 
     const double control_frequency = 10.0;
+    Vector3D target_position;
+    SamplePointOutSideEllipsoid(semi_axis, 4.0, target_position);
 
     const double sensor_noise = 0.05;
     const double perturbation_noise = 1e-7;
 
     Asteroid asteroid(semi_axis, density, angular_velocity, time_bias);
-    SensorSimulator sensor_simulator(asteroid, sensor_noise);
-    SpacecraftController spacecraft_controller;
-
+    FullStateSensorSimulator *sensor_simulator = new FullStateSensorSimulator(asteroid, sensor_noise);
+    FullStateController *spacecraft_controller = new FullStateController(target_position);
 
     std::cout << "running simulation ..." << std::endl;
     Simulator simulator(asteroid, sensor_simulator, spacecraft_controller, control_frequency, perturbation_noise);

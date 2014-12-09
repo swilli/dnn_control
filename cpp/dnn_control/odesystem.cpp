@@ -13,7 +13,7 @@ ODESystem::ODESystem(Asteroid &asteroid) : asteroid_(asteroid) {
     coef_earth_acceleration_mul_specific_impulse_ = 0.0;
 }
 
-void ODESystem::operator()(const State &state, State &d_state_dt, double time) const {
+void ODESystem::operator()(const State &state, State &d_state_dt, const double &time) const {
     // This operator implements eq(1) of "Control of Hovering Spacecraft Using Altimetry" by S. Sawai et. al.
     // r'' + 2w x r' + w' x r + w x (w x r) = Fc + Fg, whereas Fc = control acceleration and Fg = gravity acceleration
 

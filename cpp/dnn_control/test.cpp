@@ -3,6 +3,8 @@
 #include "utility.h"
 #include "odesystem.h"
 #include "simulator.h"
+#include "sensorsimulator5d.h"
+#include "controller5d.h"
 #include "odeint.h"
 
 #include <iostream>
@@ -18,7 +20,7 @@ struct AngularVelocitySystem {
         d_state_dt[1] = (inertia[2] - inertia[0]) * state[2] * state[0] / inertia[1];
         d_state_dt[2] = (inertia[0] - inertia[1]) * state[0] * state[1] / inertia[2];
     };
-    AngularVelocitySystem(const double *para_inertia) {
+    AngularVelocitySystem(const Vector3D &para_inertia) {
         for (int i = 0; i < 3; ++i) {
             inertia[i] = para_inertia[i];
         }
@@ -92,8 +94,8 @@ void UnitTestTrajectory() {
     const double perturbation_noise = 0.0;
 
     Asteroid asteroid(semi_axis,density, angular_velocity, time_bias);
-    SensorSimulator sensor_simulator(asteroid, sensor_noise);
-    SpacecraftController spacecraft_controller;
+    SensorSimulator5D *sensor_simulator = new SensorSimulator5D(asteroid, sensor_noise);
+    Controller5D *spacecraft_controller = new Controller5D();
     Simulator simulator(asteroid, sensor_simulator, spacecraft_controller, control_frequency, perturbation_noise);
     simulator.InitSpacecraftSpecificImpulse(spacecraft_specific_impulse);
 
@@ -155,6 +157,7 @@ void UnitTestTrajectory() {
             break;
         }
     }
+    delete sensor_simulator;
     std::cout << "done." << std::endl;
 }
 

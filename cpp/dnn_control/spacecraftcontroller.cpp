@@ -1,9 +1,15 @@
 #include "spacecraftcontroller.h"
 
-SpacecraftController::SpacecraftController() {
+SpacecraftController::SpacecraftController(const int &dimensions) : dimensions_(dimensions) {
 
 }
 
-void SpacecraftController::GetThrustForSensorData(const SensorData &sensor_data, Vector3D &thrust) const {
+SpacecraftController::~SpacecraftController()
+{
 
+}
+
+int SpacecraftController::Dimensions() const
+{
+    return dimensions_;
 }
