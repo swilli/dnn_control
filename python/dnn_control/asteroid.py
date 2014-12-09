@@ -170,6 +170,54 @@ class Asteroid:
 
         return gravity
 
+    def gravity_at_position2(self, position):
+        from constants import PI, GRAVITATIONAL_CONSTANT
+        from math import asin, sqrt
+        from numpy import array, roots
+        from ellipsoidgravityfield import carlson_elliptic_integral_rd
+        from sys import float_info
+
+        gravity = [0.0, 0.0, 0.0]
+
+        tol = 1e-12
+
+        pos_x_pow2 = position[0] * position[0]
+        pos_y_pow2 = position[1] * position[1]
+        pos_z_pow2 = position[2] * position[2]
+
+        # Cersosimo eq (3.7)
+        coef_3 = 1.0
+        coef_2 = -(pos_x_pow2 + pos_y_pow2 + pos_z_pow2
+                   - self._semi_axis_pow2[0] - self._semi_axis_pow2[1] - self._semi_axis_pow2[2])
+        coef_1 = -(self._semi_axis_pow2[1] * pos_x_pow2 + self._semi_axis_pow2[2] * pos_x_pow2
+                   + self._semi_axis_pow2[0] * pos_y_pow2 + self._semi_axis_pow2[2] * pos_y_pow2
+                   + self._semi_axis_pow2[0] * pos_z_pow2 + self._semi_axis_pow2[1] * pos_z_pow2
+                   - self._semi_axis_pow2[0] * self._semi_axis_pow2[2]
+                   - self._semi_axis_pow2[1] * self._semi_axis_pow2[2]
+                   - self._semi_axis_pow2[0] * self._semi_axis_pow2[1])
+        coef_0 = -(self._semi_axis_pow2[1] * self._semi_axis_pow2[2] * pos_x_pow2
+                   + self._semi_axis_pow2[0] * self._semi_axis_pow2[2] * pos_y_pow2
+                   + self._semi_axis_pow2[0] * self._semi_axis_pow2[1] * pos_z_pow2
+                   - self._semi_axis_pow2[0] * self._semi_axis_pow2[1] * self._semi_axis_pow2[2])
+
+        poly_coefs = array([coef_3, coef_2, coef_1, coef_0])
+        kappa = float_info.min
+        for root in roots(poly_coefs):
+            if root > kappa:
+                kappa = root
+
+        mu = 4.0 * PI / 3.0 * GRAVITATIONAL_CONSTANT * self._density * self._semi_axis[0] * self._semi_axis[1] * self._semi_axis[2]
+
+        gravity[0] = - mu * carlson_elliptic_integral_rd(self._semi_axis_pow2[2] + kappa, self._semi_axis_pow2[1] + kappa, self._semi_axis_pow2[0] + kappa, tol)
+        gravity[1] = - mu * carlson_elliptic_integral_rd(self._semi_axis_pow2[0] + kappa, self._semi_axis_pow2[2] + kappa, self._semi_axis_pow2[1] + kappa, tol)
+        gravity[2] = - mu * carlson_elliptic_integral_rd(self._semi_axis_pow2[1] + kappa, self._semi_axis_pow2[0] + kappa, self._semi_axis_pow2[2] + kappa, tol)
+    
+        gravity[0] *= position[0]
+        gravity[1] *= position[1]
+        gravity[2] *= position[2]
+
+        return gravity
+
     # Computes w ("angular_velocity") and d/dt ("angular_acceleration") w of the asteroid rotating RF at time "time"
     def angular_velocity_and_acceleration_at_time(self, time):
         from scipy.special import ellipj
