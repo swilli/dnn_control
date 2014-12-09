@@ -1,8 +1,10 @@
 #ifndef VECTOR_H
 #define VECTOR_H
 
-typedef double Vector3D[3];
-typedef double Vector2D[2];
+#include <boost/array.hpp>
+
+typedef boost::array<double,3> Vector3D;
+typedef boost::array<double,2> Vector2D;
 
 inline void VectorCopy3D(const Vector3D &from, Vector3D &to) {
     to[0] = from[0];

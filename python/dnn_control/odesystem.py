@@ -70,7 +70,7 @@ class ODESystem:
                         + angular_velocity[1] * angular_velocity[1] * position[2] \
                         - angular_velocity[1] * angular_velocity[2] * position[1]
 
-        d_state_dt[6] = sqrt(self.thrust[0] * self.thrust[0]
+        d_state_dt[6] = -sqrt(self.thrust[0] * self.thrust[0]
                              + self.thrust[1] * self.thrust[1]
                              + self.thrust[2] * self.thrust[2]) * self.coef_earth_acceleration_mul_specific_impulse
 

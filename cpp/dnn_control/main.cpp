@@ -19,15 +19,14 @@ int main(int argc, char *argv[]) {
     //UnitTestAny();
     //return 0;
 
-    const double time = 2.0 * 60.0 * 60.0;
+    const double time = 24.0 * 60.0 * 60.0;
 
     const Vector3D semi_axis = {SampleUniform(8000.0,12000.0), SampleUniform(4000.0, 7500.0), SampleUniform(1000.0, 3500.0)};
     const double density = SampleUniform(1500.0,3000.0);
     const Vector3D angular_velocity = {SampleSign() * SampleUniform(0.0002, 0.0008), 0.0, SampleSign() * SampleUniform(0.0002, 0.0008)};
     const double time_bias = 0.0;
 
-    Vector3D spacecraft_position;
-    SamplePointOutSideEllipsoid(semi_axis, 4.0, spacecraft_position);
+    const Vector3D spacecraft_position = SamplePointOutSideEllipsoid(semi_axis, 4.0);
 
     Vector3D spacecraft_velocity = CrossProduct(angular_velocity, spacecraft_position);
     spacecraft_velocity[0] *= -1; spacecraft_velocity[1] *= -1; spacecraft_velocity[2] *= -1;

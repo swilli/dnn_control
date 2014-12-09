@@ -1,6 +1,6 @@
 from numpy import random
-from pidcontroller import PIDController
-from sensorsimulator import SensorSimulator
+from fullstatecontroller import FullStateController
+from fullstatesensorsimulator import FullStateSensorSimulator
 from simulator import Simulator
 
 from boost_asteroid import boost_asteroid
@@ -40,6 +40,7 @@ spacecraft_specific_impulse = 200.0  # [s]
 
 # Controller settings
 control_frequency = 10.0  # [Hz]
+target_position = [random.uniform(-500.0, 500.0) + pos for pos in spacecraft_position]
 
 sensor_noise = 0.05
 perturbation_noise = 1e-7
@@ -48,9 +49,9 @@ perturbation_noise = 1e-7
 asteroid = Asteroid(semi_axis, density, angular_velocity, time_bias)
 
 # Instantiate sensor simulator
-sensor_simulator = SensorSimulator(asteroid, sensor_noise)
+sensor_simulator = FullStateSensorSimulator(asteroid, sensor_noise)
 # Instantiate controller
-controller = PIDController(target_position, 1.0 / control_frequency)
+controller = FullStateController(target_position, 1.0 / control_frequency)
 # Instantiate simulator
 simulator = Simulator(asteroid, sensor_simulator, controller, control_frequency, perturbation_noise)
 

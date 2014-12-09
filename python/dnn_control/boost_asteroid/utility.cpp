@@ -20,12 +20,16 @@ double SampleSign() {
     return value >= 0 ? 1.0 : -1.0;
 }
 
-void SamplePointOutSideEllipsoid(const Vector3D &semi_axis, const double &band_width_scale, Vector3D &point) {
+Vector3D SamplePointOutSideEllipsoid(const Vector3D &semi_axis, const double &band_width_scale) {
+    Vector3D point;
+
     const double u = SampleUniform(0.0, 2.0 * k_pi);
     const double v = SampleUniform(0.0, k_pi);
     point[0] = SampleUniform(1.0, band_width_scale) * semi_axis[0] * cos(u) * sin(v);
     point[1] = SampleUniform(1.0, band_width_scale) * semi_axis[1] * sin(u) * sin(v);
     point[2] = SampleUniform(1.0, band_width_scale) * semi_axis[2] * cos(v);
+
+    return point;
 }
 
 static struct TerminationCondition  {

@@ -100,8 +100,7 @@ void UnitTestTrajectory() {
 
     const int num_test_cases = 1000000;
     for (int i = 0; i < num_test_cases; ++i) {
-        Vector3D position;
-        SamplePointOutSideEllipsoid(semi_axis, band_width_scaling, position);
+        const Vector3D position = SamplePointOutSideEllipsoid(semi_axis, band_width_scaling);
 
         Vector3D velocity = CrossProduct(angular_velocity, position);
         velocity[0] *= -1;

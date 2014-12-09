@@ -53,14 +53,14 @@ class Simulator:
         self._integrator.set_initial_value(position + velocity + [mass], 0.0)
 
         # Cache g * Isp
-        self._system.coef_earth_acceleration_mul_specific_impulse = specific_impulse * EARTH_ACCELERATION
+        self._system.coef_earth_acceleration_mul_specific_impulse = 1.0 / (specific_impulse * EARTH_ACCELERATION)
 
     # Initialize spacecraft only by specifying the spacecraft's specific impulse (useful for the function next_state)
     def init_spacecraft_specific_impulse(self, specific_impulse):
         from constants import EARTH_ACCELERATION
 
         # Cache g * Isp
-        self._system.coef_earth_acceleration_mul_specific_impulse = specific_impulse * EARTH_ACCELERATION
+        self._system.coef_earth_acceleration_mul_specific_impulse = 1.0 / (specific_impulse * EARTH_ACCELERATION)
 
     # Implements F: S x A x T -> S : F(s,a,t) = s' (Useful for RL?)
     def next_state(self, state, thrust, time):
@@ -118,6 +118,11 @@ class Simulator:
                     exit(1)
 
                 current_time += dt
+
+                # Check if spacecraft is out of fuel
+                if self._integrator.y[6] <= 0.0:
+                    print("The spacecraft is out of fuel.")
+                    break
 
         except RuntimeError as error:
             print("The spacecraft crashed into the asteroid's surface.")

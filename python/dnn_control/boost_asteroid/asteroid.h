@@ -2,9 +2,11 @@
 #define ASTEROID_H
 
 #include "vector.h"
+
+#include <boost/tuple/tuple.hpp>
 #include <boost/python.hpp>
 
-using namespace boost::python;
+namespace bp = boost::python;
 
 class Asteroid {
     /*
@@ -25,19 +27,19 @@ class Asteroid {
 public:
     // Requires: semi_axis[0] > semi_axis[1] > semi_axis[2]
     Asteroid(const Vector3D &semi_axis, const double &density, const Vector3D &angular_velocity, const double &time_bias);
-    Asteroid(const list &semi_axis, const double &density, const list &angular_velocity, const double &time_bias);
+    Asteroid(const bp::list &semi_axis, const double &density, const bp::list &angular_velocity, const double &time_bias);
 
     // Computes the gravity components in asteroid centered RF at an outside point "position" which is also in asteroid centered RF
-    void GravityAtPosition(const Vector3D &position, Vector3D &gravity) const;
-    list GravityAtPositionWrapper(const list &position) const;
+    Vector3D GravityAtPosition(const Vector3D &position) const;
+    bp::list GravityAtPositionWrapper(const bp::list &position) const;
 
     // Computes w ("velocity") and d/dt ("acceleration") w of the asteroid rotating RF at time "time"
-    void AngularVelocityAndAccelerationAtTime(const double &time, Vector3D &velocity, Vector3D &acceleration) const;
-    tuple AngularVelocityAndAccelerationAtTimeWrapper(const double &time) const;
+    boost::tuple<Vector3D, Vector3D> AngularVelocityAndAccelerationAtTime(const double &time) const;
+    bp::tuple AngularVelocityAndAccelerationAtTimeWrapper(const double &time) const;
 
     // Computes the distance "distance" and orthogonal projection of a position "position" outside the asteroid onto the asteroid's surface "point" in asteroid centered RF
-    void NearestPointOnSurfaceToPosition(const Vector3D &position, Vector3D &point, double *distance) const;
-    tuple NearestPointOnSurfaceToPositionWrapper(const list &position) const;
+    boost::tuple<Vector3D, double> NearestPointOnSurfaceToPosition(const Vector3D &position) const;
+    bp::tuple NearestPointOnSurfaceToPositionWrapper(const bp::list &position) const;
 
     // Returns the semi axis for a given dimension "dimension" [0-2]
     double SemiAxis(const int &dimension) const;
@@ -47,12 +49,12 @@ public:
 
 private:
     // Helper function for NearestPointOnSurfaceToPosition since we assume a symmetric ellipsoid. Position "position" has to be in first quadrant.
-    void NearestPointOnEllipsoidFirstQuadrant(const Vector3D &position, Vector3D &point) const;
+    Vector3D NearestPointOnEllipsoidFirstQuadrant(const Vector3D &position) const;
 
     // Helper function for NearestPointOnEllipsoidFirstQuadrant when one dimension of the 3D position is zero
     // (i.e., we have a 2D problem where we need to find the closest point on an ellipse).
     // "semi_axis": the 2 semi axis relevant for position "position"
-    void NearestPointOnEllipseFirstQuadrant(const Vector2D &semi_axis, const Vector2D &position, Vector2D &point) const;
+    Vector2D NearestPointOnEllipseFirstQuadrant(const Vector2D &semi_axis, const Vector2D &position) const;
 
     // Mass of asteroid
     double mass_;
