@@ -19,7 +19,7 @@ int main(int argc, char *argv[]) {
     //UnitTestAny();
     //return 0;
 
-    const double time = 24.0 * 60.0 * 60.0;
+    const double time = 2.0 * 60.0 * 60.0;
 
     const Vector3D semi_axis = {SampleUniform(8000.0,12000.0), SampleUniform(4000.0, 7500.0), SampleUniform(1000.0, 3500.0)};
     const double density = SampleUniform(1500.0,3000.0);
