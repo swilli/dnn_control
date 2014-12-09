@@ -17,14 +17,7 @@ void ODESystem::operator()(const State &state, State &d_state_dt, const double &
     // This operator implements eq(1) of "Control of Hovering Spacecraft Using Altimetry" by S. Sawai et. al.
     // r'' + 2w x r' + w' x r + w x (w x r) = Fc + Fg, whereas Fc = control acceleration and Fg = gravity acceleration
 
-    Vector3D gravity_acceleration;
     Vector3D thrust_acceleration;
-    Vector3D euler_acceleration;
-    Vector3D centrifugal_acceleration;
-    Vector3D coriolis_acceleration;
-    Vector3D angular_velocity;
-    Vector3D angular_acceleration;
-    Vector3D tmp;
 
     // 1/m
     const double coef_mass = 1.0 / state[6];
@@ -37,10 +30,12 @@ void ODESystem::operator()(const State &state, State &d_state_dt, const double &
     }
 
     // g
-    asteroid_.GravityAtPosition(position,gravity_acceleration);
+    Vector3D gravity_acceleration = asteroid_.GravityAtPosition(position);
 
     // w, w'
-    asteroid_.AngularVelocityAndAccelerationAtTime(time, angular_velocity, angular_acceleration);
+    const boost::tuple<Vector3D, Vector3D> result = asteroid_.AngularVelocityAndAccelerationAtTime(time);
+    Vector3D angular_velocity = boost::get<0>(result);
+    Vector3D angular_acceleration = boost::get<1>(result);
 
     // Fg, Fc
     for(int i = 0; i < 3; ++i) {
@@ -49,18 +44,18 @@ void ODESystem::operator()(const State &state, State &d_state_dt, const double &
     }
 
     // w' x r
-    CrossProduct(angular_acceleration, position, euler_acceleration);
+    const Vector3D euler_acceleration = CrossProduct(angular_acceleration, position);
 
     // w x (w x r)
-    CrossProduct(angular_velocity, position, tmp);
-    CrossProduct(angular_velocity, tmp, centrifugal_acceleration);
+    const Vector3D centrifugal_acceleration = CrossProduct(angular_velocity, CrossProduct(angular_velocity, position));
 
+    Vector3D tmp;
     for(int i = 0; i < 3; ++i) {
         tmp[i] = angular_velocity[i] * 2.0;
     }
 
     // 2w x r'
-    CrossProduct(tmp, velocity, coriolis_acceleration);
+    const Vector3D coriolis_acceleration = CrossProduct(tmp, velocity);
 
     for (int i = 0; i < 3 ;++i) {
         d_state_dt[i] = state[3+i];
@@ -68,5 +63,5 @@ void ODESystem::operator()(const State &state, State &d_state_dt, const double &
                 - coriolis_acceleration[i] - euler_acceleration[i] - centrifugal_acceleration[i];
     }
 
-    d_state_dt[6] = sqrt(thrust_[0] * thrust_[0] + thrust_[1] * thrust_[1] + thrust_[2] * thrust_[2]) * coef_earth_acceleration_mul_specific_impulse_;
+    d_state_dt[6] = -sqrt(thrust_[0] * thrust_[0] + thrust_[1] * thrust_[1] + thrust_[2] * thrust_[2]) * coef_earth_acceleration_mul_specific_impulse_;
 }

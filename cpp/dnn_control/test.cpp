@@ -45,10 +45,9 @@ void UnitTestAngularVelocity() {
     double max_error = 1e-20;
     double avg_error = 0.0;
     for (int i = 0; i < num_test_cases; ++i) {
-        Vector3D omega_analytical;
-        Vector3D d_omega_dt_analytical;
         const double time = SampleUniform(0.0, 24.0*60.0*60.0);
-        asteroid.AngularVelocityAndAccelerationAtTime(time, omega_analytical, d_omega_dt_analytical);
+        const boost::tuple<Vector3D, Vector3D> result = asteroid.AngularVelocityAndAccelerationAtTime(time);
+        Vector3D omega_analytical = boost::get<0>(result);
 
         AngularVelocityState omega_numerical = {angular_velocity[0], 0.0, angular_velocity[2]};
 
@@ -104,8 +103,7 @@ void UnitTestTrajectory() {
         Vector3D position;
         SamplePointOutSideEllipsoid(semi_axis, band_width_scaling, position);
 
-        Vector3D velocity;
-        CrossProduct(angular_velocity, position, velocity);
+        Vector3D velocity = CrossProduct(angular_velocity, position);
         velocity[0] *= -1;
         velocity[1] *= -1;
         velocity[2] *= -1;
@@ -131,20 +129,15 @@ void UnitTestTrajectory() {
         norm_pos = sqrt(norm_pos);
         norm_next_pos = sqrt(norm_next_pos);
         if(norm_pos < norm_next_pos) {
-            Vector3D gravity;
-            asteroid.GravityAtPosition(position, gravity);
+            Vector3D gravity = asteroid.GravityAtPosition(position);
             gravity[0] /= state[6];
             gravity[1] /= state[6];
             gravity[2] /= state[6];
 
-            Vector3D angular_velocity;
-            Vector3D angular_acceleration;
-            asteroid.AngularVelocityAndAccelerationAtTime(0.0, angular_velocity, angular_acceleration);
+            const boost::tuple<Vector3D, Vector3D> result = asteroid.AngularVelocityAndAccelerationAtTime(time);
+            Vector3D angular_velocity = boost::get<0>(result);
 
-            Vector3D centrifugal_acceleration;
-            Vector3D tmp;
-            CrossProduct(angular_velocity, position, tmp);
-            CrossProduct(angular_velocity, tmp, centrifugal_acceleration);
+            const Vector3D centrifugal_acceleration = CrossProduct(angular_velocity, CrossProduct(angular_velocity, position));
 
             std::cout << "gravity at position: (" << gravity[0] << "," << gravity[1] << "," << gravity[2] << ")" << std::endl;
             std::cout << "centrifugal force at position: (" << centrifugal_acceleration[0] << "," << centrifugal_acceleration[1] << "," << centrifugal_acceleration[2] << ")" << std::endl;
@@ -170,8 +163,8 @@ void UnitTestAny() {
 
     Asteroid asteroid(semi_axis,density, angular_velocity, time_bias);
     const Vector3D position = {816.5726055517212, 0.9933720217425616, -716.1995078171824};
-    Vector3D surface_position;
-    double distance;
-    asteroid.NearestPointOnSurfaceToPosition(position, surface_position, &distance);
+
+    const boost::tuple<Vector3D, double> result = asteroid.NearestPointOnSurfaceToPosition(position);
+    const double distance = boost::get<1>(result);
     std::cout << distance << std::endl;
 }

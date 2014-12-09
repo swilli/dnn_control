@@ -64,6 +64,9 @@ private:
     };
     std::vector<LogState> log_states_;
 
+    // Number of actually recorded log states
+    int num_log_states_;
+
     // File stream to write the log to
     std::ofstream log_file_;
 };

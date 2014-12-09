@@ -29,23 +29,25 @@ int main(int argc, char *argv[]) {
     Vector3D spacecraft_position;
     SamplePointOutSideEllipsoid(semi_axis, 4.0, spacecraft_position);
 
-    Vector3D spacecraft_velocity;
-    CrossProduct(angular_velocity, spacecraft_position, spacecraft_velocity);
+    Vector3D spacecraft_velocity = CrossProduct(angular_velocity, spacecraft_position);
     spacecraft_velocity[0] *= -1; spacecraft_velocity[1] *= -1; spacecraft_velocity[2] *= -1;
 
     const double spacecraft_specific_impulse = 200.0;
     const double spacecraft_mass = 1000.0;
 
     const double control_frequency = 10.0;
+
     Vector3D target_position;
-    SamplePointOutSideEllipsoid(semi_axis, 4.0, target_position);
+    for (int i = 0; i < 3; ++i) {
+        target_position[i] = SampleUniform(spacecraft_position[i] - 500.0, spacecraft_position[i] + 500.0);
+    }
 
     const double sensor_noise = 0.05;
     const double perturbation_noise = 1e-7;
 
     Asteroid asteroid(semi_axis, density, angular_velocity, time_bias);
     FullStateSensorSimulator *sensor_simulator = new FullStateSensorSimulator(asteroid, sensor_noise);
-    FullStateController *spacecraft_controller = new FullStateController(target_position);
+    FullStateController *spacecraft_controller = new FullStateController(control_frequency, target_position);
 
     std::cout << "running simulation ..." << std::endl;
     Simulator simulator(asteroid, sensor_simulator, spacecraft_controller, control_frequency, perturbation_noise);

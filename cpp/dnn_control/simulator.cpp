@@ -22,12 +22,12 @@ void Simulator::InitSpacecraft(const Vector3D &position, const Vector3D &velocit
     system_.state_[6] = mass;
 
     // Cache g * Isp
-    system_.coef_earth_acceleration_mul_specific_impulse_ = specific_impulse * k_earth_acceleration;
+    system_.coef_earth_acceleration_mul_specific_impulse_ = 1.0 / (specific_impulse * k_earth_acceleration);
 }
 
 void Simulator::InitSpacecraftSpecificImpulse(const double &specific_impulse) {
     // Cache g * Isp
-    system_.coef_earth_acceleration_mul_specific_impulse_ = specific_impulse * k_earth_acceleration;
+    system_.coef_earth_acceleration_mul_specific_impulse_ = 1.0 / (specific_impulse * k_earth_acceleration);
 }
 
 void Simulator::NextState(const State &state, const Vector3D &thrust, const double &time, State &next_state) {
@@ -57,6 +57,8 @@ void Simulator::NextState(const State &state, const Vector3D &thrust, const doub
 double Simulator::Run(const double &time, const bool &log_data) {
     using namespace boost::numeric::odeint;
 
+    num_log_states_ = 0;
+
     if (sensor_simulator_->Dimensions() != spacecraft_controller_->Dimensions()) {
         std::cout << "Warning: sensor simulator and spacecraft controller have different output/input dimensions." << std::endl;
     }
@@ -76,15 +78,15 @@ double Simulator::Run(const double &time, const bool &log_data) {
             if (log_data) {
                 // Log position and height, if enabled
                 const Vector3D position = {system_.state_[0], system_.state_[1], system_.state_[2]};
-                double distance;
-                Vector3D surface_point;
-                system_.asteroid_.NearestPointOnSurfaceToPosition(position, surface_point, &distance);
+                const boost::tuple<Vector3D, double> result = system_.asteroid_.NearestPointOnSurfaceToPosition(position);
+                const Vector3D surface_point = boost::get<0>(result);
                 LogState state;
                 for (int i = 0; i < 3; ++i) {
                     state.trajectory_position[i] = position[i];
                     state.height[i] = position[i] - surface_point[i];
                 }
                 log_states_.at(iteration) = state;
+                num_log_states_++;
             }
 
             // Simulate perturbations, directly write it to the ode system
@@ -98,7 +100,14 @@ double Simulator::Run(const double &time, const bool &log_data) {
 
             // Integrate the system for control_interval_ time
             integrator.do_step(system_, system_.state_, current_time, dt);
+
             current_time += dt;
+
+            // Check if spacecraft is out of fuel
+            if (system_.state_[6] <= 0.0) {
+                std::cout << "The spacecraft is out of fuel." << std::endl;
+                break;
+            }
         }
     } catch (boost::exception const &exception) {
         std::cout << "The spacecraft crashed into the asteroid's surface." << std::endl;
@@ -118,7 +127,7 @@ void Simulator::FlushLogToFile(const std::string &path_to_file) {
     log_file_.open(path_to_file.c_str());
     log_file_ << std::setprecision(10);
     log_file_ << system_.asteroid_.SemiAxis(0) << ",\t" << system_.asteroid_.SemiAxis(1) << ",\t" << system_.asteroid_.SemiAxis(2) << ",\t" << control_frequency_ << std::endl;
-    for (unsigned int i = 0; i < log_states_.size(); ++i) {
+    for (unsigned int i = 0; i < num_log_states_; ++i) {
         LogState state = log_states_.at(i);
         log_file_ << state.trajectory_position[0] << ",\t" << state.trajectory_position[1] << ",\t" << state.trajectory_position[2] << ",\t" << state.height[0] << ",\t" << state.height[1] << ",\t" << state.height[2] << "\n";
     }

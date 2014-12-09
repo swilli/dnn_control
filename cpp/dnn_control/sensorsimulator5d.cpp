@@ -19,9 +19,10 @@ void SensorSimulator5D::Simulate(const State &state, const Vector3D &perturbatio
     const Vector3D velocity = {state[3], state[4], state[5]};
     const double mass = state[6];
 
-    Vector3D surface_point;
-    double norm_height = 0.0;
-    asteroid_.NearestPointOnSurfaceToPosition(position, surface_point, &norm_height);
+
+    const boost::tuple<Vector3D, double> result_surface = asteroid_.NearestPointOnSurfaceToPosition(position);
+    const Vector3D surface_point = boost::get<0>(result_surface);
+    const double norm_height = boost::get<1>(result_surface);
 
     const Vector3D height = {position[0] - surface_point[0],
                               position[1] - surface_point[1],
@@ -47,31 +48,25 @@ void SensorSimulator5D::Simulate(const State &state, const Vector3D &perturbatio
     sensor_data[0] = norm_vel_vert / norm_height;
     sensor_data[1] = norm_vel_rem / norm_height;
 
-    Vector3D gravity_acceleration;
-    Vector3D euler_acceleration;
-    Vector3D centrifugal_acceleration;
-    Vector3D coriolis_acceleration;
-    Vector3D angular_velocity;
-    Vector3D angular_acceleration;
-    Vector3D tmp;
 
-    asteroid_.GravityAtPosition(position, gravity_acceleration);
+    Vector3D gravity_acceleration = asteroid_.GravityAtPosition(position);
     gravity_acceleration[0] /= mass;
     gravity_acceleration[1] /= mass;
     gravity_acceleration[2] /= mass;
 
-    asteroid_.AngularVelocityAndAccelerationAtTime(time, angular_velocity, angular_acceleration);
+    const boost::tuple<Vector3D, Vector3D> result_angular = asteroid_.AngularVelocityAndAccelerationAtTime(time);
+    Vector3D angular_velocity = boost::get<0>(result_angular);
+    Vector3D angular_acceleration = boost::get<1>(result_angular);
 
-    CrossProduct(angular_acceleration, position, euler_acceleration);
-    CrossProduct(angular_velocity, position, tmp);
-    CrossProduct(angular_velocity, tmp, centrifugal_acceleration);
+    const Vector3D euler_acceleration = CrossProduct(angular_acceleration, position);
+    const Vector3D centrifugal_acceleration = CrossProduct(angular_velocity, CrossProduct(angular_velocity, position));
 
+    Vector3D tmp;
     for(int i = 0; i < 3; ++i) {
         tmp[i] = angular_velocity[i] * 2.0;
     }
 
-    CrossProduct(tmp, velocity, coriolis_acceleration);
-
+    const Vector3D coriolis_acceleration = CrossProduct(tmp, velocity);
 
     for (int i = 0; i < 3; ++i) {
         sensor_data[i] += sensor_data[i] * normal_distribution_();
