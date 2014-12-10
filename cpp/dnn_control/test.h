@@ -4,5 +4,6 @@
 void UnitTestAngularVelocity();
 void UnitTestTrajectory();
 void UnitTestAny();
+void UnitTestGravity();
 
 #endif // TEST_H

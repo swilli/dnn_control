@@ -17,6 +17,7 @@ int main(int argc, char *argv[]) {
     //UnitTestTrajectory();
     //UnitTestAngularVelocity();
     //UnitTestAny();
+    //UnitTestGravity();
     //return 0;
 
     const double time = 24.0 * 60.0 * 60.0;

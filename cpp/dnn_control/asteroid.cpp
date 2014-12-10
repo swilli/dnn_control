@@ -5,6 +5,7 @@
 #include <gsl/gsl_poly.h>
 #include <gsl/gsl_sf_ellint.h>
 #include <gsl/gsl_sf_elljac.h>
+#include <boost/math/special_functions.hpp>
 #include <math.h>
 
 Asteroid::Asteroid(const Vector3D &semi_axis, const double &density, const Vector3D &angular_velocity, const double &time_bias) {
@@ -62,6 +63,8 @@ Asteroid::Asteroid(const Vector3D &semi_axis, const double &density, const Vecto
 
     // Lifshitz eq (37.9)
     elliptic_modulus_ = (inertia[1] - inertia[0]) * (energy_mul2_ * inertia[2] - momentum_pow2_) / ((inertia[2] - inertia[1]) * (momentum_pow2_ - energy_mul2_ * inertia[0]));
+
+    coef_mass_gravitational_constant_ = mass_ * k_gravitational_constant;
 }
 
 double Asteroid::SemiAxis(const int &dimension) const {
@@ -117,6 +120,47 @@ Vector3D Asteroid::GravityAtPosition(const Vector3D &position) const {
     gravity[1] = gamma_ * ((-semi_axis_pow2_[0] + semi_axis_pow2_[2]) * integral_E / ((semi_axis_pow2_[0] - semi_axis_pow2_[1]) * (semi_axis_pow2_[1] - semi_axis_pow2_[2]))
             + integral_F / (semi_axis_pow2_[0] - semi_axis_pow2_[1]) + delta * (semi_axis_pow2_[2] + kappa) / (semi_axis_pow2_[1] - semi_axis_pow2_[2]));
     gravity[2] = gamma_ / (semi_axis_pow2_[2] - semi_axis_pow2_[1]) * (-integral_E + (semi_axis_pow2_[1] + kappa) * delta);
+
+    gravity[0] *= position[0];
+    gravity[1] *= position[1];
+    gravity[2] *= position[2];
+
+    return gravity;
+}
+
+Vector3D Asteroid::GravityAtPositionImpl2(const Vector3D &position) const
+{
+    using boost::math::ellint_rd;
+
+    Vector3D gravity = {0.0, 0.0, 0.0};
+
+    const double pos_x_pow2 = position[0] * position[0];
+    const double pos_y_pow2 = position[1] * position[1];
+    const double pos_z_pow2 = position[2] * position[2];
+
+    // Cersosimo eq (3.7)
+    const double coef_2 = -(pos_x_pow2 + pos_y_pow2 + pos_z_pow2 - semi_axis_pow2_[0] - semi_axis_pow2_[1] - semi_axis_pow2_[2]);
+    const double coef_1 = -(semi_axis_pow2_[1] * pos_x_pow2 + semi_axis_pow2_[2] * pos_x_pow2
+            + semi_axis_pow2_[0] * pos_y_pow2 + semi_axis_pow2_[2] * pos_y_pow2
+            + semi_axis_pow2_[0] * pos_z_pow2 + semi_axis_pow2_[1] * pos_z_pow2
+            - semi_axis_pow2_[0] * semi_axis_pow2_[2] - semi_axis_pow2_[1] * semi_axis_pow2_[2] - semi_axis_pow2_[0] * semi_axis_pow2_[1]);
+    const double coef_0 = -(semi_axis_pow2_[1] * semi_axis_pow2_[2] * pos_x_pow2
+            + semi_axis_pow2_[0] * semi_axis_pow2_[2] * pos_y_pow2
+            + semi_axis_pow2_[0] * semi_axis_pow2_[1] * pos_z_pow2
+            - semi_axis_pow2_[0] * semi_axis_pow2_[1] * semi_axis_pow2_[2]);
+
+    double root_1 = 0.0, root_2 = 0.0, root_3 = 0.0;
+    double kappa = 0.0;
+    const int num_roots = gsl_poly_solve_cubic(coef_2, coef_1, coef_0, &root_1, &root_2, &root_3);
+    if(num_roots == 1) {
+        kappa = root_1;
+    } else {
+        kappa = root_3;
+    }
+
+    gravity[0] = - coef_mass_gravitational_constant_ * ellint_rd(semi_axis_pow2_[2] + kappa, semi_axis_pow2_[1] + kappa, semi_axis_pow2_[0] + kappa);
+    gravity[1] = - coef_mass_gravitational_constant_ * ellint_rd(semi_axis_pow2_[0] + kappa, semi_axis_pow2_[2] + kappa, semi_axis_pow2_[1] + kappa);
+    gravity[2] = - coef_mass_gravitational_constant_ * ellint_rd(semi_axis_pow2_[1] + kappa, semi_axis_pow2_[0] + kappa, semi_axis_pow2_[2] + kappa);
 
     gravity[0] *= position[0];
     gravity[1] *= position[1];

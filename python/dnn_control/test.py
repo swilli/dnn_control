@@ -469,6 +469,7 @@ def unit_test_angular_velocity_period():
         close()
 
 def unit_test_boost_asteroid():
+    from time import time
     from math import sqrt
     from boost_asteroid import boost_asteroid
     from utility import sample_position_outside_ellipsoid
@@ -496,6 +497,10 @@ def unit_test_boost_asteroid():
     avg_omg = 0.0
     avg_domg = 0.0
     avg_srf = 0.0
+    avg_grav_impl2 = 0.0
+    time_boost = 0.0
+    time_python = 0.0
+    time_python_impl2 = 0.0
     num_tests = 100000
     for i in xrange(num_tests):
         b_axis_n = random.uniform(1.1, 2.0)
@@ -508,21 +513,32 @@ def unit_test_boost_asteroid():
                             random.choice(signs) * random.uniform(0.0002, 0.0008)]  # [1/s]
 
         time_bias = 0.0  # random.uniform(0.0, 60.0 * 60.0 * 6.0)  # [s]
-        time = random.uniform(0.0, 1000.0)
+        t = random.uniform(0.0, 1000.0)
 
         boost_ast = boost_asteroid.Asteroid(semi_axis, density, angular_velocity, time_bias)
         python_asteroid = PythonAsteroid(semi_axis, density, angular_velocity, time_bias)
         position = sample_position_outside_ellipsoid(semi_axis, band_width_scale)
 
+        start = time()
         grav_boost = boost_ast.gravity_at_position(position)
+        end = time()
+        time_boost += end - start
+        start = time()
         grav_python = python_asteroid.gravity_at_position(position)
-        omg_boost, domg_boost = boost_ast.angular_velocity_and_acceleration_at_time(time)
-        omg_python, domg_python = python_asteroid.angular_velocity_and_acceleration_at_time(time)
+        end = time()
+        time_python += end - start
+        start = time()
+        grav_python_impl2 = python_asteroid.gravity_at_position2(position)
+        end = time()
+        time_python_impl2 += end - start
+        omg_boost, domg_boost = boost_ast.angular_velocity_and_acceleration_at_time(t)
+        omg_python, domg_python = python_asteroid.angular_velocity_and_acceleration_at_time(t)
         srf_boost = boost_ast.nearest_point_on_surface_to_position(position)[0]
         srf_python = python_asteroid.nearest_point_on_surface_to_position(position)[0]
         check(srf_python, position, semi_axis)
         check(srf_boost, position, semi_axis)
         avg_grav += sqrt(sum([(b-p)*(b-p) for b,p in zip(grav_boost, grav_python)]))
+        avg_grav_impl2 += sqrt(sum([(b-p)*(b-p) for b,p in zip(grav_python_impl2, grav_python)]))
         avg_srf += sqrt(sum([(b-p)*(b-p) for b,p in zip(srf_boost, srf_python)]))
         avg_omg += sqrt(sum([(b-p)*(b-p) for b,p in zip(omg_boost, omg_python)]))
         avg_domg += sqrt(sum([(b-p)*(b-p) for b,p in zip(domg_boost, domg_python)]))
@@ -531,10 +547,18 @@ def unit_test_boost_asteroid():
     avg_srf /= num_tests
     avg_omg /= num_tests
     avg_domg /= num_tests
+    avg_grav_impl2 /= num_tests
+    time_boost /= num_tests
+    time_python_impl2 /= num_tests
+    time_python /= num_tests
     print("gravity : {0}".format(avg_grav))
     print("surface : {0}".format(avg_srf))
     print("omega : {0}".format(avg_omg))
     print("domega : {0}".format(avg_domg))
+    print("grav impl2 : {0}".format(avg_grav_impl2))
+    print("time boost : {0}".format(time_boost))
+    print("time python : {0}".format(time_python))
+    print("time python impl2 : {0}".format(time_python_impl2))
 
 
 

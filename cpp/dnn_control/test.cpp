@@ -9,6 +9,7 @@
 
 #include <iostream>
 #include <iomanip>
+#include <ctime>
 
 #define PATH_TO_FILE    "../result.txt"
 
@@ -166,4 +167,47 @@ void UnitTestAny() {
     const boost::tuple<Vector3D, double> result = asteroid.NearestPointOnSurfaceToPosition(position);
     const double distance = boost::get<1>(result);
     std::cout << distance << std::endl;
+}
+
+
+void UnitTestGravity()
+{
+    const Vector3D semi_axis = {1103.1670527778024, 466.18400577010857, 293.35148306268576};
+    const double density = 2215.0;
+    const Vector3D angular_velocity = {-0.0002, 0.0, 0.0008};
+    const double time_bias = 0.0;
+
+    Asteroid asteroid(semi_axis,density, angular_velocity, time_bias);
+
+    double avg_error = 0.0;
+    double avg_time = 0.0;
+    double avg_time_impl2 = 0.0;
+    const int num_tests = 10000000;
+    for (int j = 0; j < num_tests; ++j) {
+        Vector3D position = SamplePointOutSideEllipsoid(semi_axis, 2.0);
+
+        clock_t begin = clock();
+        Vector3D gravity = asteroid.GravityAtPosition(position);
+        clock_t end = clock();
+        avg_time += end - begin;
+
+        begin = clock();
+        Vector3D gravity_impl2 = asteroid.GravityAtPositionImpl2(position);
+        end = clock();
+        avg_time_impl2 += end - begin;
+
+        double error = 0.0;
+        for (int i = 0; i < 3; ++i) {
+            error += (gravity[i] - gravity_impl2[i]) * (gravity[i] - gravity_impl2[i]);
+        }
+        error = sqrt(error);
+
+        avg_error += error;
+    }
+    avg_error /= (double) num_tests;
+    avg_time /= (double) num_tests;
+    avg_time_impl2 /= (double) num_tests;
+    std::cout << "error : " << avg_error << std::endl;
+    std::cout << "time impl1 : " << avg_time << std::endl;
+    std::cout << "time impl2 : " << avg_time_impl2 << std::endl;
 }

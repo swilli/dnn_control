@@ -28,6 +28,8 @@ public:
     // Computes the gravity components in asteroid centered RF at an outside point "position" which is also in asteroid centered RF
     Vector3D GravityAtPosition(const Vector3D &position) const;
 
+    Vector3D GravityAtPositionImpl2(const Vector3D &position) const;
+
     // Computes w ("velocity") and d/dt ("acceleration") w of the asteroid rotating RF at time "time"
     boost::tuple<Vector3D, Vector3D> AngularVelocityAndAccelerationAtTime(const double &time) const;
 
@@ -78,6 +80,8 @@ private:
 
     // Cersosimo eq (3.12)
     double gamma_;
+
+    double coef_mass_gravitational_constant_;
 
     // /Lifshitz eq (37.10)
     Vector3D elliptic_coefficients_;
