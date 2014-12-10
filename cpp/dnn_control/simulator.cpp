@@ -54,11 +54,12 @@ void Simulator::NextState(const State &state, const Vector3D &thrust, const doub
     }
 }
 
-boost::tuple<double, std::vector<Vector3D>, std::vector<SensorData> > Simulator::Run(const double &time, const bool &log_sensor_data) {
+boost::tuple<double, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<SensorData> > Simulator::Run(const double &time, const bool &log_sensor_data) {
     using namespace boost::numeric::odeint;
 
     std::vector<SensorData> logged_sensor_data;
     std::vector<Vector3D> logged_positions;
+    std::vector<Vector3D> logged_heights;
 
     const int sensor_dimensions = sensor_simulator_->Dimensions();
     if (sensor_dimensions != spacecraft_controller_->Dimensions()) {
@@ -68,6 +69,7 @@ boost::tuple<double, std::vector<Vector3D>, std::vector<SensorData> > Simulator:
     const int iterations = time / dt;
 
     logged_positions = std::vector<Vector3D>(iterations);
+    logged_heights = std::vector<Vector3D>(iterations);
 
     if (log_sensor_data) {
         logged_sensor_data = std::vector<SensorData>(iterations, std::vector<double>(sensor_dimensions,0));
@@ -84,6 +86,12 @@ boost::tuple<double, std::vector<Vector3D>, std::vector<SensorData> > Simulator:
             iter_pos[0] = system_.state_[0];
             iter_pos[1] = system_.state_[1];
             iter_pos[2] = system_.state_[2];
+
+            Vector3D &iter_height = logged_heights.at(iteration);
+            const Vector3D surf_pos = boost::get<0>(system_.asteroid_.NearestPointOnSurfaceToPosition(iter_pos));
+            iter_height[0] = iter_pos[0] - surf_pos[0];
+            iter_height[1] = iter_pos[1] - surf_pos[1];
+            iter_height[2] = iter_pos[2] - surf_pos[2];
 
             // Simulate perturbations, directly write it to the ode system
             SimulatePerturbations(system_.perturbations_acceleration_);
@@ -117,7 +125,7 @@ boost::tuple<double, std::vector<Vector3D>, std::vector<SensorData> > Simulator:
         std::cout << "The spacecraft crashed into the asteroid's surface." << std::endl;
     }
 
-    return boost::make_tuple(current_time, logged_positions, logged_sensor_data);
+    return boost::make_tuple(current_time, logged_positions, logged_heights, logged_sensor_data);
 }
 
 void Simulator::SimulatePerturbations(Vector3D &perturbations) {

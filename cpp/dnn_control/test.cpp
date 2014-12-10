@@ -96,7 +96,7 @@ void UnitTestTrajectory() {
     Asteroid asteroid(semi_axis,density, angular_velocity, time_bias);
     SensorSimulator5D *sensor_simulator = new SensorSimulator5D(asteroid, sensor_noise);
     Controller5D *spacecraft_controller = new Controller5D();
-    Simulator simulator(asteroid, sensor_simulator, spacecraft_controller, control_frequency, perturbation_noise);
+    /*Simulator simulator(asteroid, sensor_simulator, spacecraft_controller, control_frequency, perturbation_noise);
     simulator.InitSpacecraftSpecificImpulse(spacecraft_specific_impulse);
 
     const int num_test_cases = 1000000;
@@ -150,6 +150,7 @@ void UnitTestTrajectory() {
             break;
         }
     }
+    */
     delete sensor_simulator;
     std::cout << "done." << std::endl;
 }

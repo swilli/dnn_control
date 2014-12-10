@@ -30,19 +30,15 @@ Asteroid::Asteroid(const Vector3D &semi_axis, const double &density, const Vecto
     inertia_[1] = 0.2 * mass_ * (semi_axis_pow2_[0] + semi_axis_pow2_[2]);
     inertia_[2] = 0.2 * mass_ * (semi_axis_pow2_[0] + semi_axis_pow2_[1]);
 
-    gamma_ = 4.0 * k_pi * k_gravitational_constant * density;
     energy_mul2_ = 0.0;
     momentum_pow2_ = 0.0;
     Vector3D inertia;
     for (int i = 0; i < 3; ++i) {
         inertia[i] = inertia_[i];
         inertia_pow2_[i] = inertia_[i] * inertia_[i];
-        gamma_ *= semi_axis_[i];
         energy_mul2_ += inertia_[i] * initial_angular_velocity_[i] * initial_angular_velocity_[i];
         momentum_pow2_ += inertia_[i] * inertia_[i] * initial_angular_velocity_[i] * initial_angular_velocity_[i];
     }
-    // Cersosimo eq (3.12)
-    gamma_ /= sqrt(semi_axis_pow2_[0] - semi_axis_pow2_[2]);
 
     inversion_ = false;
     if (momentum_pow2_ < energy_mul2_ * inertia_[1]) {
@@ -110,9 +106,9 @@ Vector3D Asteroid::GravityAtPosition(const Vector3D &position) const
     }
 
     // Improvement of Dario Izzo
-    gravity[0] = - coef_mass_gravitational_constant_ * gsl_sf_ellint_RD(semi_axis_pow2_[2] + kappa, semi_axis_pow2_[1] + kappa, semi_axis_pow2_[0] + kappa, 0);
-    gravity[1] = - coef_mass_gravitational_constant_ * gsl_sf_ellint_RD(semi_axis_pow2_[0] + kappa, semi_axis_pow2_[2] + kappa, semi_axis_pow2_[1] + kappa, 0);
-    gravity[2] = - coef_mass_gravitational_constant_ * gsl_sf_ellint_RD(semi_axis_pow2_[1] + kappa, semi_axis_pow2_[0] + kappa, semi_axis_pow2_[2] + kappa, 0);
+    gravity[0] = -coef_mass_gravitational_constant_ * gsl_sf_ellint_RD(semi_axis_pow2_[2] + kappa, semi_axis_pow2_[1] + kappa, semi_axis_pow2_[0] + kappa, 0);
+    gravity[1] = -coef_mass_gravitational_constant_ * gsl_sf_ellint_RD(semi_axis_pow2_[0] + kappa, semi_axis_pow2_[2] + kappa, semi_axis_pow2_[1] + kappa, 0);
+    gravity[2] = -coef_mass_gravitational_constant_ * gsl_sf_ellint_RD(semi_axis_pow2_[1] + kappa, semi_axis_pow2_[0] + kappa, semi_axis_pow2_[2] + kappa, 0);
 
     gravity[0] *= position[0];
     gravity[1] *= position[1];

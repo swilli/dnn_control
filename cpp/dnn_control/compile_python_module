@@ -1,0 +1,4 @@
+#/bin/bash
+g++ -fPIC -I /usr/include/python2.7/ -shared -o boost_simulator.so pythonsimulator.cpp utility.cpp asteroid.cpp sensorsimulator.cpp sensorsimulator5d.cpp fullstatesensorsimulator.cpp spacecraftcontroller.cpp fullstatecontroller.cpp controller5d.cpp odesystem.cpp simulator.cpp -O2 -lgsl -lgslcblas -lboost_python -lboost_system
+
+

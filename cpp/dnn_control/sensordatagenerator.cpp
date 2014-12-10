@@ -45,8 +45,8 @@ void SensorDataGenerator::Generate(const int &num_datasets, const std::string &p
         Simulator simulator(asteroid, sensor_simulator, spacecraft_controller, control_frequency, perturbation_noise);
         simulator.InitSpacecraft(spacecraft_position, spacecraft_velocity, spacecraft_mass, spacecraft_specific_impulse);
 
-        const boost::tuple<double, std::vector<Vector3D>, std::vector<SensorData> > result = simulator.Run(time, true);
-        const std::vector<SensorData> sensor_data = boost::get<2>(result);
+        const boost::tuple<double, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<SensorData> > result = simulator.Run(time, true);
+        const std::vector<SensorData> sensor_data = boost::get<3>(result);
 
         std::string path_to_file(path_to_data_folder_);
 

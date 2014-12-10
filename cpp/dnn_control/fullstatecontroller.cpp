@@ -22,7 +22,7 @@ void FullStateController::GetThrustForSensorData(const SensorData &sensor_data, 
         const double error = target_position_[i] - sensor_data[i];
         const double derivative = (error - previous_error_[i]) / control_interval_;
         integral_[i] += error * control_interval_;
-        thrust[i] = constant_proportional_ * error + constant_derivative_ * derivative + constant_integral_ * integral_[i];
+        thrust[i] = 0.0; //constant_proportional_ * error + constant_derivative_ * derivative + constant_integral_ * integral_[i];
         previous_error_[i] = error;
     }
 }

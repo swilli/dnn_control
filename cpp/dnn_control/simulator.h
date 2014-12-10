@@ -27,7 +27,7 @@ public:
     void NextState(const State &state, const Vector3D &thrust, const double &time, State &next_state);
 
     // Simulates the system for time "time". Logs the states if "log_data" is enabled, Returns the number of iterations the simulator made to get to the specified time.
-    boost::tuple<double, std::vector<Vector3D>, std::vector<SensorData> > Run(const double &time, const bool &log_sensor_data);
+    boost::tuple<double, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<SensorData> > Run(const double &time, const bool &log_sensor_data);
 
 private:
     // Simulates random noise in the dynamical system (which is fed into the ODE system "system_")

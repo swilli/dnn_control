@@ -1,8 +1,10 @@
 #include "odesystem.h"
 #include "utility.h"
-#include <math.h>
 
-ODESystem::ODESystem(Asteroid &asteroid) : asteroid_(asteroid) {
+#include <math.h>
+#include <iostream>
+
+ODESystem::ODESystem(const Asteroid &asteroid) : asteroid_(asteroid) {
     coef_earth_acceleration_mul_specific_impulse_ = 0.0;
     for (int i = 0; i < 3; ++i) {
         thrust_[i] = 0.0;
@@ -17,7 +19,6 @@ void ODESystem::operator()(const State &state, State &d_state_dt, const double &
     // This operator implements eq(1) of "Control of Hovering Spacecraft Using Altimetry" by S. Sawai et. al.
     // r'' + 2w x r' + w' x r + w x (w x r) = Fc + Fg, whereas Fc = control acceleration and Fg = gravity acceleration
 
-    Vector3D thrust_acceleration;
 
     // 1/m
     const double coef_mass = 1.0 / state[6];
@@ -38,6 +39,7 @@ void ODESystem::operator()(const State &state, State &d_state_dt, const double &
     Vector3D angular_acceleration = boost::get<1>(result);
 
     // Fg, Fc
+    Vector3D thrust_acceleration;
     for(int i = 0; i < 3; ++i) {
         gravity_acceleration[i] *= coef_mass;
         thrust_acceleration[i] = thrust_[i] * coef_mass;

@@ -1,18 +1,16 @@
 #include "filewriter.h"
 #include <iomanip>
-#include <string>
 
 FileWriter::FileWriter() {
     file_ << std::setprecision(10);
 }
 
-void FileWriter::CreateVisualizationFile(const std::string &path_to_file, const double &control_frequency, const Asteroid &asteroid, const std::vector<Vector3D> &positions) {
+void FileWriter::CreateVisualizationFile(const std::string &path_to_file, const double &control_frequency, const Asteroid &asteroid, const std::vector<Vector3D> &positions, const std::vector<Vector3D> &heights) {
     file_.open(path_to_file.c_str());
     file_ << asteroid.SemiAxis(0) << ",\t" << asteroid.SemiAxis(1) << ",\t" << asteroid.SemiAxis(2) << ",\t" << control_frequency << std::endl;
     for (unsigned int i = 0; i < positions.size(); ++i) {
         const Vector3D &pos = positions.at(i);
-        const Vector3D surf_pos = boost::get<0>(asteroid.NearestPointOnSurfaceToPosition(pos));
-        const Vector3D height = {pos[0] - surf_pos[0], pos[1] - surf_pos[1], pos[2] - surf_pos[2]};
+        const Vector3D &height = heights.at(i);
         file_ << pos[0] << ",\t" << pos[1] << ",\t" << pos[2] << ",\t" << height[0] << ",\t" << height[1] << ",\t" << height[2] << " \n";
     }
     file_.close();

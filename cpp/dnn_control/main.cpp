@@ -13,7 +13,7 @@
 
 #define NUM_NEW_DATA_SETS                   100
 
-#define WRITE_SENSOR_DATA_TO_FILE           1
+#define WRITE_SENSOR_DATA_TO_FILE           0
 #define PATH_TO_SENSOR_DATA_FOLDER          "../../../data/"
 #define WRITE_STATES_TO_FILE                1
 #define PATH_TO_STATES_FILE                 "../../../results/states.txt"
@@ -51,8 +51,6 @@ int main(int argc, char *argv[]) {
     const double spacecraft_specific_impulse = 200.0;
     const double spacecraft_mass = 1000.0;
 
-
-
     Vector3D target_position;
     for (int i = 0; i < 3; ++i) {
         target_position[i] = SampleUniform(spacecraft_position[i] - 500.0, spacecraft_position[i] + 500.0);
@@ -69,7 +67,7 @@ int main(int argc, char *argv[]) {
     Simulator simulator(asteroid, sensor_simulator, spacecraft_controller, control_frequency, perturbation_noise);
     simulator.InitSpacecraft(spacecraft_position, spacecraft_velocity, spacecraft_mass, spacecraft_specific_impulse);
     const clock_t begin = clock();
-    const boost::tuple<double, std::vector<Vector3D>, std::vector<SensorData> > result = simulator.Run(time, false);
+    const boost::tuple<double, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<SensorData> > result = simulator.Run(time, false);
     const clock_t end = clock();
     const double simulated_time = boost::get<0>(result);
     double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
@@ -79,7 +77,8 @@ int main(int argc, char *argv[]) {
         std::cout << "writing states to file ... ";
         FileWriter writer;
         const std::vector<Vector3D> positions = boost::get<1>(result);
-        writer.CreateVisualizationFile(PATH_TO_STATES_FILE, control_frequency, asteroid, positions);
+        const std::vector<Vector3D> heights = boost::get<2>(result);
+        writer.CreateVisualizationFile(PATH_TO_STATES_FILE, control_frequency, asteroid, positions, heights);
         std::cout << "done." << std::endl;
     }
 }

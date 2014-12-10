@@ -85,9 +85,6 @@ private:
     // Momentum^2 of asteroid
     double momentum_pow2_;
 
-    // Cersosimo eq (3.12)
-    double gamma_;
-
     double coef_mass_gravitational_constant_;
 
     // /Lifshitz eq (37.10)
