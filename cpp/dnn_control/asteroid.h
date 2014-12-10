@@ -28,19 +28,23 @@ public:
     // Computes the gravity components in asteroid centered RF at an outside point "position" which is also in asteroid centered RF
     Vector3D GravityAtPosition(const Vector3D &position) const;
 
-    Vector3D GravityAtPositionImpl2(const Vector3D &position) const;
-
     // Computes w ("velocity") and d/dt ("acceleration") w of the asteroid rotating RF at time "time"
     boost::tuple<Vector3D, Vector3D> AngularVelocityAndAccelerationAtTime(const double &time) const;
 
     // Computes the distance "distance" and orthogonal projection of a position "position" outside the asteroid onto the asteroid's surface "point" in asteroid centered RF
     boost::tuple<Vector3D, double> NearestPointOnSurfaceToPosition(const Vector3D &position) const;
 
+    // Returns the initially in the constructor provided angular velocity
+    Vector3D InitialAngularVelocity() const;
+
     // Returns the semi axis for a given dimension "dimension" [0-2]
     double SemiAxis(const int &dimension) const;
 
     // Returns the inertia for a given dimension "dimension" [0-2]
     double Inertia(const int &dimension) const;
+
+    // Returns the density
+    double Density() const;
 
 private:
     // Helper function for NearestPointOnSurfaceToPosition since we assume a symmetric ellipsoid. Position "position" has to be in first quadrant.
@@ -68,6 +72,9 @@ private:
 
     // Cached power of 2 of the inertia
     Vector3D inertia_pow2_;
+
+    // Cached initial angular velocity
+    Vector3D initial_angular_velocity_;
 
     // Time bias for the analytical angular velocity computation: w_y(-time_bias_) = 0.
     double time_bias_;

@@ -54,46 +54,50 @@ void Simulator::NextState(const State &state, const Vector3D &thrust, const doub
     }
 }
 
-double Simulator::Run(const double &time, const bool &log_data) {
+boost::tuple<double, std::vector<Vector3D>, std::vector<SensorData> > Simulator::Run(const double &time, const bool &log_sensor_data) {
     using namespace boost::numeric::odeint;
 
-    num_log_states_ = 0;
+    std::vector<SensorData> logged_sensor_data;
+    std::vector<Vector3D> logged_positions;
 
-    if (sensor_simulator_->Dimensions() != spacecraft_controller_->Dimensions()) {
+    const int sensor_dimensions = sensor_simulator_->Dimensions();
+    if (sensor_dimensions != spacecraft_controller_->Dimensions()) {
         std::cout << "Warning: sensor simulator and spacecraft controller have different output/input dimensions." << std::endl;
     }
     const double dt = control_interval_;
     const int iterations = time / dt;
 
-    if (log_data) {
-        log_states_ = std::vector<LogState>(iterations);
+    logged_positions = std::vector<Vector3D>(iterations);
+
+    if (log_sensor_data) {
+        logged_sensor_data = std::vector<SensorData>(iterations, std::vector<double>(sensor_dimensions,0));
     }
 
     runge_kutta4<State> integrator;
     double current_time = 0.0;
-    SensorData sensor_data(sensor_simulator_->Dimensions(),0);
+    SensorData sensor_data(sensor_dimensions,0);
+
     // Stepwise integration for "iterations" iterations
     try {
         for(int iteration = 0; iteration < iterations; ++iteration) {
-            if (log_data) {
-                // Log position and height, if enabled
-                const Vector3D position = {system_.state_[0], system_.state_[1], system_.state_[2]};
-                const boost::tuple<Vector3D, double> result = system_.asteroid_.NearestPointOnSurfaceToPosition(position);
-                const Vector3D surface_point = boost::get<0>(result);
-                LogState state;
-                for (int i = 0; i < 3; ++i) {
-                    state.trajectory_position[i] = position[i];
-                    state.height[i] = position[i] - surface_point[i];
-                }
-                log_states_.at(iteration) = state;
-                num_log_states_++;
-            }
+            Vector3D &iter_pos = logged_positions.at(iteration);
+            iter_pos[0] = system_.state_[0];
+            iter_pos[1] = system_.state_[1];
+            iter_pos[2] = system_.state_[2];
 
             // Simulate perturbations, directly write it to the ode system
             SimulatePerturbations(system_.perturbations_acceleration_);
 
             // Simulate sensor data
             sensor_simulator_->Simulate(system_.state_, system_.perturbations_acceleration_, current_time, sensor_data);
+
+            if (log_sensor_data) {
+                // Log sensor data, if enabled
+                SensorData &data = logged_sensor_data.at(iteration);
+                for (int i = 0; i < sensor_dimensions; ++i) {
+                    data[i] = sensor_data[i];
+                }
+            }
 
             // Poll controller for control thrust, write it to the ode system
             spacecraft_controller_->GetThrustForSensorData(sensor_data, system_.thrust_);
@@ -113,7 +117,7 @@ double Simulator::Run(const double &time, const bool &log_data) {
         std::cout << "The spacecraft crashed into the asteroid's surface." << std::endl;
     }
 
-    return current_time;
+    return boost::make_tuple(current_time, logged_positions, logged_sensor_data);
 }
 
 void Simulator::SimulatePerturbations(Vector3D &perturbations) {
@@ -121,16 +125,4 @@ void Simulator::SimulatePerturbations(Vector3D &perturbations) {
     for(int i = 0; i < 3; ++i) {
         perturbations[i] = mass * normal_distribution_();
     }
-}
-
-void Simulator::FlushLogToFile(const std::string &path_to_file) {
-    log_file_.open(path_to_file.c_str());
-    log_file_ << std::setprecision(10);
-    log_file_ << system_.asteroid_.SemiAxis(0) << ",\t" << system_.asteroid_.SemiAxis(1) << ",\t" << system_.asteroid_.SemiAxis(2) << ",\t" << control_frequency_ << std::endl;
-    for (unsigned int i = 0; i < num_log_states_; ++i) {
-        LogState state = log_states_.at(i);
-        log_file_ << state.trajectory_position[0] << ",\t" << state.trajectory_position[1] << ",\t" << state.trajectory_position[2] << ",\t" << state.height[0] << ",\t" << state.height[1] << ",\t" << state.height[2] << "\n";
-    }
-    log_states_.clear();
-    log_file_.close();
 }

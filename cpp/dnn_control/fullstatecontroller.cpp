@@ -9,8 +9,8 @@ FullStateController::FullStateController(const double &control_frequency, const 
     }
 
     constant_integral_ = 0.0;
-    constant_derivative_ = 1.5;
-    constant_proportional_ = 1.0;
+    constant_derivative_ = 5;
+    constant_proportional_ = 4;
 }
 
 FullStateController::~FullStateController() {

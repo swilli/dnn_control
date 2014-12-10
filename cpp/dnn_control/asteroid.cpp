@@ -5,7 +5,7 @@
 #include <gsl/gsl_poly.h>
 #include <gsl/gsl_sf_ellint.h>
 #include <gsl/gsl_sf_elljac.h>
-#include <boost/math/special_functions.hpp>
+
 #include <math.h>
 
 Asteroid::Asteroid(const Vector3D &semi_axis, const double &density, const Vector3D &angular_velocity, const double &time_bias) {
@@ -17,13 +17,14 @@ Asteroid::Asteroid(const Vector3D &semi_axis, const double &density, const Vecto
     for (int i = 0; i < 3; ++i) {
         semi_axis_[i] = semi_axis[i];
         semi_axis_pow2_[i] = semi_axis_[i] * semi_axis_[i];
+        initial_angular_velocity_[i] = angular_velocity[i];
         mass_ *= semi_axis_[i];
     }
 
     Vector3D signs;
-    signs[0] = (angular_velocity[0] > 0 ? 1.0 : -1.0);
-    signs[1] = (angular_velocity[0] * angular_velocity[2] > 0 ? 1.0 : -1.0);
-    signs[2] = (angular_velocity[2] > 0 ? 1.0 : -1.0);
+    signs[0] = (initial_angular_velocity_[0] > 0 ? 1.0 : -1.0);
+    signs[1] = (initial_angular_velocity_[0] * initial_angular_velocity_[2] > 0 ? 1.0 : -1.0);
+    signs[2] = (initial_angular_velocity_[2] > 0 ? 1.0 : -1.0);
 
     inertia_[0] = 0.2 * mass_ * (semi_axis_pow2_[1] + semi_axis_pow2_[2]);
     inertia_[1] = 0.2 * mass_ * (semi_axis_pow2_[0] + semi_axis_pow2_[2]);
@@ -37,8 +38,8 @@ Asteroid::Asteroid(const Vector3D &semi_axis, const double &density, const Vecto
         inertia[i] = inertia_[i];
         inertia_pow2_[i] = inertia_[i] * inertia_[i];
         gamma_ *= semi_axis_[i];
-        energy_mul2_ += inertia_[i] * angular_velocity[i] * angular_velocity[i];
-        momentum_pow2_ += inertia_[i] * inertia_[i] * angular_velocity[i] * angular_velocity[i];
+        energy_mul2_ += inertia_[i] * initial_angular_velocity_[i] * initial_angular_velocity_[i];
+        momentum_pow2_ += inertia_[i] * inertia_[i] * initial_angular_velocity_[i] * initial_angular_velocity_[i];
     }
     // Cersosimo eq (3.12)
     gamma_ /= sqrt(semi_axis_pow2_[0] - semi_axis_pow2_[2]);
@@ -75,63 +76,13 @@ double Asteroid::Inertia(const int &dimension) const {
     return inertia_[dimension];
 }
 
-Vector3D Asteroid::GravityAtPosition(const Vector3D &position) const {
-    Vector3D gravity = {0.0, 0.0, 0.0};
-
-    const double pos_x_pow2 = position[0] * position[0];
-    const double pos_y_pow2 = position[1] * position[1];
-    const double pos_z_pow2 = position[2] * position[2];
-
-    // Cersosimo eq (3.7)
-    const double coef_2 = -(pos_x_pow2 + pos_y_pow2 + pos_z_pow2 - semi_axis_pow2_[0] - semi_axis_pow2_[1] - semi_axis_pow2_[2]);
-    const double coef_1 = -(semi_axis_pow2_[1] * pos_x_pow2 + semi_axis_pow2_[2] * pos_x_pow2
-            + semi_axis_pow2_[0] * pos_y_pow2 + semi_axis_pow2_[2] * pos_y_pow2
-            + semi_axis_pow2_[0] * pos_z_pow2 + semi_axis_pow2_[1] * pos_z_pow2
-            - semi_axis_pow2_[0] * semi_axis_pow2_[2] - semi_axis_pow2_[1] * semi_axis_pow2_[2] - semi_axis_pow2_[0] * semi_axis_pow2_[1]);
-    const double coef_0 = -(semi_axis_pow2_[1] * semi_axis_pow2_[2] * pos_x_pow2
-            + semi_axis_pow2_[0] * semi_axis_pow2_[2] * pos_y_pow2
-            + semi_axis_pow2_[0] * semi_axis_pow2_[1] * pos_z_pow2
-            - semi_axis_pow2_[0] * semi_axis_pow2_[1] * semi_axis_pow2_[2]);
-
-    double root_1 = 0.0, root_2 = 0.0, root_3 = 0.0;
-    double kappa = 0.0;
-    const int num_roots = gsl_poly_solve_cubic(coef_2, coef_1, coef_0, &root_1, &root_2, &root_3);
-    if(num_roots == 1) {
-        kappa = root_1;
-    } else {
-        kappa = root_3;
-    }
-
-    // Cersosimo eq (3.8)
-    const double phi = asin(sqrt((semi_axis_pow2_[0] - semi_axis_pow2_[2]) / (kappa + semi_axis_pow2_[0])));
-
-    // Cersosimo eq (3.9)
-    const double k = sqrt((semi_axis_pow2_[0] - semi_axis_pow2_[1]) / (semi_axis_pow2_[0] - semi_axis_pow2_[2]));
-
-    // Cersosimo eq (3.10)
-    const double integral_F = gsl_sf_ellint_F(phi,k,0);
-    const double integral_E = gsl_sf_ellint_E(phi,k,0);
-
-    // Cersosimo eq (3.13)
-    const double delta = sqrt((semi_axis_pow2_[0] - semi_axis_pow2_[2]) / ((semi_axis_pow2_[0] + kappa) * (semi_axis_pow2_[1] + kappa) * (semi_axis_pow2_[2] + kappa)));
-
-    // Cersosimo eq (3.11a-c)
-    gravity[0] = gamma_ / (semi_axis_pow2_[0] - semi_axis_pow2_[1]) * (integral_E - integral_F);
-    gravity[1] = gamma_ * ((-semi_axis_pow2_[0] + semi_axis_pow2_[2]) * integral_E / ((semi_axis_pow2_[0] - semi_axis_pow2_[1]) * (semi_axis_pow2_[1] - semi_axis_pow2_[2]))
-            + integral_F / (semi_axis_pow2_[0] - semi_axis_pow2_[1]) + delta * (semi_axis_pow2_[2] + kappa) / (semi_axis_pow2_[1] - semi_axis_pow2_[2]));
-    gravity[2] = gamma_ / (semi_axis_pow2_[2] - semi_axis_pow2_[1]) * (-integral_E + (semi_axis_pow2_[1] + kappa) * delta);
-
-    gravity[0] *= position[0];
-    gravity[1] *= position[1];
-    gravity[2] *= position[2];
-
-    return gravity;
+double Asteroid::Density() const
+{
+    return density_;
 }
 
-Vector3D Asteroid::GravityAtPositionImpl2(const Vector3D &position) const
+Vector3D Asteroid::GravityAtPosition(const Vector3D &position) const
 {
-    using boost::math::ellint_rd;
-
     Vector3D gravity = {0.0, 0.0, 0.0};
 
     const double pos_x_pow2 = position[0] * position[0];
@@ -158,9 +109,10 @@ Vector3D Asteroid::GravityAtPositionImpl2(const Vector3D &position) const
         kappa = root_3;
     }
 
-    gravity[0] = - coef_mass_gravitational_constant_ * ellint_rd(semi_axis_pow2_[2] + kappa, semi_axis_pow2_[1] + kappa, semi_axis_pow2_[0] + kappa);
-    gravity[1] = - coef_mass_gravitational_constant_ * ellint_rd(semi_axis_pow2_[0] + kappa, semi_axis_pow2_[2] + kappa, semi_axis_pow2_[1] + kappa);
-    gravity[2] = - coef_mass_gravitational_constant_ * ellint_rd(semi_axis_pow2_[1] + kappa, semi_axis_pow2_[0] + kappa, semi_axis_pow2_[2] + kappa);
+    // Improvement of Dario Izzo
+    gravity[0] = - coef_mass_gravitational_constant_ * gsl_sf_ellint_RD(semi_axis_pow2_[2] + kappa, semi_axis_pow2_[1] + kappa, semi_axis_pow2_[0] + kappa, 0);
+    gravity[1] = - coef_mass_gravitational_constant_ * gsl_sf_ellint_RD(semi_axis_pow2_[0] + kappa, semi_axis_pow2_[2] + kappa, semi_axis_pow2_[1] + kappa, 0);
+    gravity[2] = - coef_mass_gravitational_constant_ * gsl_sf_ellint_RD(semi_axis_pow2_[1] + kappa, semi_axis_pow2_[0] + kappa, semi_axis_pow2_[2] + kappa, 0);
 
     gravity[0] *= position[0];
     gravity[1] *= position[1];
@@ -224,6 +176,11 @@ boost::tuple<Vector3D, double> Asteroid::NearestPointOnSurfaceToPosition(const V
     const double distance = sqrt(result);
 
     return make_tuple(point, distance);
+}
+
+Vector3D Asteroid::InitialAngularVelocity() const
+{
+    return initial_angular_velocity_;
 }
 
 Vector3D Asteroid::NearestPointOnEllipsoidFirstQuadrant(const Vector3D &position) const {

@@ -143,8 +143,8 @@ void UnitTestTrajectory() {
             std::cout << "centrifugal force at position: (" << centrifugal_acceleration[0] << "," << centrifugal_acceleration[1] << "," << centrifugal_acceleration[2] << ")" << std::endl;
 
             simulator.InitSpacecraft(position, velocity, spacecraft_mass, spacecraft_specific_impulse);
-            simulator.Run(time, true);
-            simulator.FlushLogToFile(PATH_TO_FILE);
+            //simulator.Run(time, true, false);
+            //simulator.FlushLoggedStatesToFile(PATH_TO_FILE);
 
             std::cout << "-> check the result.txt file..." << std::endl;
             break;
@@ -180,34 +180,16 @@ void UnitTestGravity()
     Asteroid asteroid(semi_axis,density, angular_velocity, time_bias);
 
     double avg_error = 0.0;
-    double avg_time = 0.0;
-    double avg_time_impl2 = 0.0;
-    const int num_tests = 10000000;
+    double avg_time_legendre = 0.0;
+    double avg_time_carlson = 0.0;
+    const int num_tests = 1000000;
     for (int j = 0; j < num_tests; ++j) {
-        Vector3D position = SamplePointOutSideEllipsoid(semi_axis, 2.0);
 
-        clock_t begin = clock();
-        Vector3D gravity = asteroid.GravityAtPosition(position);
-        clock_t end = clock();
-        avg_time += end - begin;
-
-        begin = clock();
-        Vector3D gravity_impl2 = asteroid.GravityAtPositionImpl2(position);
-        end = clock();
-        avg_time_impl2 += end - begin;
-
-        double error = 0.0;
-        for (int i = 0; i < 3; ++i) {
-            error += (gravity[i] - gravity_impl2[i]) * (gravity[i] - gravity_impl2[i]);
-        }
-        error = sqrt(error);
-
-        avg_error += error;
     }
-    avg_error /= (double) num_tests;
-    avg_time /= (double) num_tests;
-    avg_time_impl2 /= (double) num_tests;
+    avg_error /= num_tests;
+    avg_time_legendre = avg_time_legendre / num_tests;
+    avg_time_carlson = avg_time_carlson / num_tests;
     std::cout << "error : " << avg_error << std::endl;
-    std::cout << "time impl1 : " << avg_time << std::endl;
-    std::cout << "time impl2 : " << avg_time_impl2 << std::endl;
+    std::cout << "time cersosimo : " << avg_time_legendre / CLOCKS_PER_SEC << std::endl;
+    std::cout << "time izzo : " << avg_time_carlson / CLOCKS_PER_SEC << std::endl;
 }

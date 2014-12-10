@@ -4,12 +4,20 @@
 #include "test.h"
 #include "vector.h"
 #include "utility.h"
+#include "filewriter.h"
+#include "sensordatagenerator.h"
 
 #include <iostream>
+#include <sstream>
 #include <ctime>
 
-#define WRITE_TO_FILE   1
-#define PATH_TO_FILE    "../../../results/states.txt"
+#define NUM_NEW_DATA_SETS                   100
+
+#define WRITE_SENSOR_DATA_TO_FILE           1
+#define PATH_TO_SENSOR_DATA_FOLDER          "../../../data/"
+#define WRITE_STATES_TO_FILE                1
+#define PATH_TO_STATES_FILE                 "../../../results/states.txt"
+
 
 int main(int argc, char *argv[]) {
     srand(time(NULL));
@@ -21,11 +29,19 @@ int main(int argc, char *argv[]) {
     //return 0;
 
     const double time = 24.0 * 60.0 * 60.0;
+    const double control_frequency = 10.0;
+
+    if (WRITE_SENSOR_DATA_TO_FILE) {
+        SensorDataGenerator generator(PATH_TO_SENSOR_DATA_FOLDER, control_frequency, time / 6.0);
+        generator.Generate(100);
+        return 0;
+    }
+
 
     const Vector3D semi_axis = {SampleUniform(8000.0,12000.0), SampleUniform(4000.0, 7500.0), SampleUniform(1000.0, 3500.0)};
     const double density = SampleUniform(1500.0,3000.0);
     const Vector3D angular_velocity = {SampleSign() * SampleUniform(0.0002, 0.0008), 0.0, SampleSign() * SampleUniform(0.0002, 0.0008)};
-    const double time_bias = 0.0;
+    const double time_bias = 0.0; //SampleUniform(0.0, 24.0 * 60 * 60);
 
     const Vector3D spacecraft_position = SamplePointOutSideEllipsoid(semi_axis, 4.0);
 
@@ -35,7 +51,7 @@ int main(int argc, char *argv[]) {
     const double spacecraft_specific_impulse = 200.0;
     const double spacecraft_mass = 1000.0;
 
-    const double control_frequency = 10.0;
+
 
     Vector3D target_position;
     for (int i = 0; i < 3; ++i) {
@@ -52,18 +68,19 @@ int main(int argc, char *argv[]) {
     std::cout << "running simulation ..." << std::endl;
     Simulator simulator(asteroid, sensor_simulator, spacecraft_controller, control_frequency, perturbation_noise);
     simulator.InitSpacecraft(spacecraft_position, spacecraft_velocity, spacecraft_mass, spacecraft_specific_impulse);
-    clock_t begin = clock();
-    const double simulated_time = simulator.Run(time, WRITE_TO_FILE);
-    clock_t end = clock();
+    const clock_t begin = clock();
+    const boost::tuple<double, std::vector<Vector3D>, std::vector<SensorData> > result = simulator.Run(time, false);
+    const clock_t end = clock();
+    const double simulated_time = boost::get<0>(result);
     double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
     std::cout << simulated_time << " seconds simulation time took " << elapsed_secs << " real time to compute (x" << simulated_time/elapsed_secs << ")." << std::endl;
 
-    if(WRITE_TO_FILE) {
-        std::cout << "writing results to file ... ";
-        simulator.FlushLogToFile(PATH_TO_FILE);
+    if(WRITE_STATES_TO_FILE) {
+        std::cout << "writing states to file ... ";
+        FileWriter writer;
+        const std::vector<Vector3D> positions = boost::get<1>(result);
+        writer.CreateVisualizationFile(PATH_TO_STATES_FILE, control_frequency, asteroid, positions);
         std::cout << "done." << std::endl;
     }
-
-    return 0;
 }
 

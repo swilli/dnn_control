@@ -8,8 +8,6 @@
 
 #include <boost/random.hpp>
 #include <boost/random/normal_distribution.hpp>
-#include <vector>
-#include <fstream>
 
 class Simulator {
     /*
@@ -29,11 +27,7 @@ public:
     void NextState(const State &state, const Vector3D &thrust, const double &time, State &next_state);
 
     // Simulates the system for time "time". Logs the states if "log_data" is enabled, Returns the number of iterations the simulator made to get to the specified time.
-    double Run(const double &time, const bool &log_data);
-
-    // Writes the logged data from Run to the file given by "path_to_file"
-    void FlushLogToFile(const std::string &path_to_file);
-
+    boost::tuple<double, std::vector<Vector3D>, std::vector<SensorData> > Run(const double &time, const bool &log_sensor_data);
 
 private:
     // Simulates random noise in the dynamical system (which is fed into the ODE system "system_")
@@ -56,19 +50,6 @@ private:
 
     // 1/control_interval_
     double control_frequency_;
-
-    // Logging stores these informations for every control point
-    struct LogState {
-        Vector3D trajectory_position;
-        Vector3D height;
-    };
-    std::vector<LogState> log_states_;
-
-    // Number of actually recorded log states
-    int num_log_states_;
-
-    // File stream to write the log to
-    std::ofstream log_file_;
 };
 
 #endif // SIMULATOR_H
