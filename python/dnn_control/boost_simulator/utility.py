@@ -4,6 +4,11 @@ def cross_product(u, v):
             u[2] * v[0] - u[0] * v[2],
             u[0] * v[1] - u[1] * v[0]]
 
+# returns -1.0 or 1.0, each with probability 1/2
+def sample_sign():
+    from numpy import random
+
+    return random.choice([-1.0, 1.0])
 
 # Returns a point, whereas
 # semi_axis_[0] * cos(u) * sin(v) < point[0] < semi_axis[0] * band_width_scale * cos(u) * sin(v)

@@ -13,7 +13,7 @@
 
 #define NUM_NEW_DATA_SETS                   100
 
-#define WRITE_SENSOR_DATA_TO_FILE           1
+#define WRITE_SENSOR_DATA_TO_FILE           0
 #define PATH_TO_SENSOR_DATA_FOLDER          "../../../data/"
 #define WRITE_STATES_TO_FILE                1
 #define PATH_TO_STATES_FILE                 "../../../results/states.txt"
@@ -28,7 +28,7 @@ int main(int argc, char *argv[]) {
     //UnitTestGravity();
     //return 0;
 
-    const double time = 24.0 * 60.0 * 60.0;
+    const double time = 5.0 * 60.0 * 60.0;
     const double control_frequency = 10.0;
 
     if (WRITE_SENSOR_DATA_TO_FILE) {

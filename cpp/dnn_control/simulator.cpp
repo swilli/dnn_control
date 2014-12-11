@@ -30,8 +30,10 @@ void Simulator::InitSpacecraftSpecificImpulse(const double &specific_impulse) {
     system_.coef_earth_acceleration_mul_specific_impulse_ = 1.0 / (specific_impulse * k_earth_acceleration);
 }
 
-void Simulator::NextState(const State &state, const Vector3D &thrust, const double &time, State &next_state) {
+State Simulator::NextState(const State &state, const Vector3D &thrust, const double &time) {
     using namespace boost::numeric::odeint;
+
+    State next_state;
 
     // Assign state
     for (int i = 0; i < 3; ++i) {
@@ -52,6 +54,8 @@ void Simulator::NextState(const State &state, const Vector3D &thrust, const doub
     for (int i = 0; i < 7; ++i) {
         next_state[i] = system_.state_[i];
     }
+
+    return next_state;
 }
 
 boost::tuple<double, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<SensorData> > Simulator::Run(const double &time, const bool &log_sensor_data) {

@@ -14,7 +14,6 @@ class ODESystem:
     # This function gets called by the scipy ode stepper to integrate the system.
     # The function computes d/dt x = f(x, t). Or in our case: "d_state_dt" = this(state, time)
     def dynamics(self, time, state):
-        from utility import cross_product
         from math import sqrt
 
         # implements eq(1) of "Control of Hovering Spacecraft Using Altimetry" by S. Sawai et. al.

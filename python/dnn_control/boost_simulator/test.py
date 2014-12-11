@@ -1,9 +1,9 @@
-from boost_simulator import BoostSimulator
-from numpy import random
 from time import time
-from utility import sample_point_outside_ellipsoid, cross_product
 
-signs = [-1.0, 1.0]
+from numpy import random
+
+from boost_simulator import BoostSimulator
+from utility import sample_point_outside_ellipsoid, cross_product, sample_sign
 
 # Simulation settings
 time_to_run = 24.0 * 60.0 * 60.0  # [s]
@@ -11,9 +11,9 @@ time_to_run = 24.0 * 60.0 * 60.0  # [s]
 # Asteroid settings
 semi_axis = [random.uniform(8000.0, 12000.0), random.uniform(4000.0, 7500.0), random.uniform(1000.0, 3500.0)]  # [m]
 density = random.uniform(1500.0, 3000.0)  # [kg/m^3]
-angular_velocity = [random.choice(signs) * random.uniform(0.0002, 0.0008),
+angular_velocity = [sample_sign() * random.uniform(0.0002, 0.0008),
                     0.0,
-                    random.choice(signs) * random.uniform(0.0002, 0.0008)]  # [1/s]
+                    sample_sign() * random.uniform(0.0002, 0.0008)]  # [1/s]
 
 time_bias = 0.0  # random.uniform(0.0, 60.0 * 60.0 * 6.0)  # [s]
 
@@ -30,8 +30,14 @@ sensor_noise = 0.05
 perturbation_noise = 1e-7
 
 simulator = BoostSimulator(semi_axis, density, angular_velocity, time_bias,
-                            spacecraft_position, spacecraft_velocity, spacecraft_mass, spacecraft_specific_impulse,
-                            target_position, control_frequency, sensor_noise, perturbation_noise)
+                           spacecraft_position, spacecraft_velocity, spacecraft_mass, spacecraft_specific_impulse,
+                           target_position, control_frequency, sensor_noise, perturbation_noise)
+
+state_t1 = spacecraft_position + spacecraft_velocity + [spacecraft_mass]
+start = time()
+state_t2 = simulator.next_state(state_t1, [0.0, 0.0, 0.0], 0.0)
+end = time()
+print("f(s,a,t) took {0} real time to compute".format(end-start))
 
 print("running simulation ...")
 start = time()

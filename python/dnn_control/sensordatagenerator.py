@@ -10,7 +10,7 @@ class SensorDataGenerator:
         from numpy import random
         from time import gmtime, strftime
         from  sys import stdout
-        from utility import sample_sign, sample_point_outside_ellipsoid, cross_product
+        from boost_simulator.utility import sample_sign, sample_point_outside_ellipsoid, cross_product
         from filewriter import FileWriter
         from boost_simulator import boost_simulator
         Simulator = boost_simulator.BoostSimulator

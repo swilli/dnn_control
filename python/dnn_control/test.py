@@ -256,7 +256,7 @@ def unit_test_gravity_direction():
     from numpy import random, array, mgrid, sin, cos
     from math import copysign
     from asteroid import Asteroid
-    from utility import sample_positions_outside_ellipsoid
+    from boost_simulator.utility import sample_positions_outside_ellipsoid
     from mayavi import mlab
     from constants import PI
 
@@ -319,7 +319,7 @@ def unit_test_gravity_direction():
 def unit_test_gravity_contour():
     from numpy import random, linspace, meshgrid, array
     from numpy.linalg import norm
-    from utility import sample_positions_outside_ellipse
+    from boost_simulator.utility import sample_positions_outside_ellipse
     from asteroid import Asteroid
     from matplotlib.pyplot import imshow, scatter, colorbar, title, close, gcf, xlabel, ylabel
     from scipy.interpolate import Rbf
@@ -389,7 +389,7 @@ def unit_test_gravity_speed():
     from asteroid import Asteroid
     from sys import float_info
     from time import time
-    from utility import sample_positions_outside_ellipsoid
+    from boost_simulator.utility import sample_positions_outside_ellipsoid
 
     signs = [-1.0, 1.0]
 
@@ -472,7 +472,7 @@ def unit_test_boost_asteroid():
     from time import time
     from math import sqrt
     from boost_asteroid import boost_asteroid
-    from utility import sample_point_outside_ellipsoid
+    from boost_simulator.utility import sample_point_outside_ellipsoid
 
     from asteroid import Asteroid as PythonAsteroid
     from numpy import random

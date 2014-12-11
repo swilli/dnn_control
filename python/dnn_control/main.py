@@ -1,9 +1,9 @@
-from numpy import random
-from filewriter import FileWriter
 from time import time
+from filewriter import FileWriter
 from utility import cross_product, sample_point_outside_ellipsoid, sample_sign
 from sensordatagenerator import SensorDataGenerator
 from boost_simulator import boost_simulator
+
 Simulator = boost_simulator.BoostSimulator
 
 NUM_NEW_DATA_SETS = 100
