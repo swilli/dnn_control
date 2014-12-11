@@ -13,7 +13,7 @@
 
 #define NUM_NEW_DATA_SETS                   100
 
-#define WRITE_SENSOR_DATA_TO_FILE           0
+#define WRITE_SENSOR_DATA_TO_FILE           1
 #define PATH_TO_SENSOR_DATA_FOLDER          "../../../data/"
 #define WRITE_STATES_TO_FILE                1
 #define PATH_TO_STATES_FILE                 "../../../results/states.txt"
@@ -38,8 +38,8 @@ int main(int argc, char *argv[]) {
     }
 
 
-    const Vector3D semi_axis = {SampleUniform(8000.0,12000.0), SampleUniform(4000.0, 7500.0), SampleUniform(1000.0, 3500.0)};
-    const double density = SampleUniform(1500.0,3000.0);
+    const Vector3D semi_axis = {SampleUniform(8000.0, 12000.0), SampleUniform(4000.0, 7500.0), SampleUniform(1000.0, 3500.0)};
+    const double density = SampleUniform(1500.0, 3000.0);
     const Vector3D angular_velocity = {SampleSign() * SampleUniform(0.0002, 0.0008), 0.0, SampleSign() * SampleUniform(0.0002, 0.0008)};
     const double time_bias = 0.0; //SampleUniform(0.0, 24.0 * 60 * 60);
 

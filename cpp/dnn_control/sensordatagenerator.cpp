@@ -15,8 +15,8 @@ void SensorDataGenerator::Generate(const int &num_datasets, const std::string &p
 {
     for (int data_iter = 0; data_iter < num_datasets; ++data_iter) {
         const double time = data_set_time_;
-        const Vector3D semi_axis = {SampleUniform(8000.0,12000.0), SampleUniform(4000.0, 7500.0), SampleUniform(1000.0, 3500.0)};
-        const double density = SampleUniform(1500.0,3000.0);
+        const Vector3D semi_axis = {SampleUniform(8000.0, 12000.0), SampleUniform(4000.0, 7500.0), SampleUniform(1000.0, 3500.0)};
+        const double density = SampleUniform(1500.0, 3000.0);
         const Vector3D angular_velocity = {SampleSign() * SampleUniform(0.0002, 0.0008), 0.0, SampleSign() * SampleUniform(0.0002, 0.0008)};
         const double time_bias = 0.0;
 
@@ -57,7 +57,7 @@ void SensorDataGenerator::Generate(const int &num_datasets, const std::string &p
 
             std::time(&raw_time);
             time_info = localtime(&raw_time);
-            strftime(buffer,80,"%d_%m_%Y_%I_%M_%S_",time_info);
+            strftime(buffer,80,"%d_%m_%H_%I_%M_%S_",time_info);
 
             std::string str(buffer);
             path_to_file += str;

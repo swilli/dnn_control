@@ -128,23 +128,3 @@ class Simulator:
             print("The spacecraft crashed into the asteroid's surface.")
 
         return current_time
-
-    # Writes the logged data from Run to the file given by "path_to_file"
-    def flush_log_to_file(self, path_to_file):
-        from os import remove
-
-        try:
-            remove(path_to_file)
-        except OSError:
-            pass
-
-        log_file = open(path_to_file, "a")
-        log_file.write("{0},\t{1},\t{2},\t{3}\n".format(self._system.asteroid.get_semi_axis(0),
-                                                  self._system.asteroid.get_semi_axis(1),
-                                                  self._system.asteroid.get_semi_axis(2),
-                                                  self._control_frequency))
-        for state in self._log_states:
-            log_file.write("{0},\t{1},\t{2},\t{3},\t{4},\t{5}\n".format(state[0][0], state[0][1], state[0][2],
-                                                            state[1][0], state[1][1], state[1][2]))
-        log_file.close()
-        self._log_states = []

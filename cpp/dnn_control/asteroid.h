@@ -22,6 +22,8 @@ class Asteroid {
      * Implementation for the nearest point on the surface is largely ported from David Eberly "Distance from a Point to an Ellipse, an Ellipsoid, or a Hyperellipsoid".
 */
 public:
+    Asteroid();
+
     // Requires: semi_axis[0] > semi_axis[1] > semi_axis[2]
     Asteroid(const Vector3D &semi_axis, const double &density, const Vector3D &angular_velocity, const double &time_bias);
 
@@ -45,6 +47,9 @@ public:
 
     // Returns the density
     double Density() const;
+
+    // Returns time_bias
+    double TimeBias() const;
 
 private:
     // Helper function for NearestPointOnSurfaceToPosition since we assume a symmetric ellipsoid. Position "position" has to be in first quadrant.

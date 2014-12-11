@@ -1,8 +1,7 @@
-from boost_simulator import PythonSimulator
-from boost_asteroid import Asteroid
+from boost_simulator import BoostSimulator
 from numpy import random
 from time import time
-from utility import sample_position_outside_ellipsoid, cross_product
+from utility import sample_point_outside_ellipsoid, cross_product
 
 signs = [-1.0, 1.0]
 
@@ -19,7 +18,7 @@ angular_velocity = [random.choice(signs) * random.uniform(0.0002, 0.0008),
 time_bias = 0.0  # random.uniform(0.0, 60.0 * 60.0 * 6.0)  # [s]
 
 # Spacecraft settings
-spacecraft_position = sample_position_outside_ellipsoid(semi_axis, 4.0)
+spacecraft_position = sample_point_outside_ellipsoid(semi_axis, 4.0)
 spacecraft_velocity = [-val for val in cross_product(angular_velocity, spacecraft_position)]  # [m/s]
 spacecraft_mass = 1000.0  # [kg]
 spacecraft_specific_impulse = 200.0  # [s]
@@ -30,13 +29,9 @@ target_position = [random.uniform(-500.0, 500.0) + pos for pos in spacecraft_pos
 sensor_noise = 0.05
 perturbation_noise = 1e-7
 
-simulator = PythonSimulator(semi_axis, density, angular_velocity, time_bias,
+simulator = BoostSimulator(semi_axis, density, angular_velocity, time_bias,
                             spacecraft_position, spacecraft_velocity, spacecraft_mass, spacecraft_specific_impulse,
                             target_position, control_frequency, sensor_noise, perturbation_noise)
-
-print(semi_axis)
-print(spacecraft_position)
-asteroid = Asteroid(semi_axis, density, angular_velocity, time_bias)
 
 print("running simulation ...")
 start = time()
@@ -45,6 +40,7 @@ end = time()
 print("{0} seconds simulation time took {1} real time to compute (x{2}).".format(result[0], end - start,
                                                                              result[0] / (end - start)))
 positions = result[1]
+heights = result[2]
 
 from os import remove
 
@@ -57,9 +53,7 @@ except OSError:
 
 log_file = open(path_to_file, "a")
 log_file.write("{0},\t{1},\t{2},\t{3}\n".format(semi_axis[0], semi_axis[1], semi_axis[2], control_frequency))
-for pos in positions:
-    surf_pos, _ = asteroid.nearest_point_on_surface_to_position(pos)
-    height = [p-s for p,s, in zip(pos, surf_pos)]
+for pos, height in zip(positions,heights):
     log_file.write("{0},\t{1},\t{2},\t{3},\t{4},\t{5}\n".format(pos[0], pos[1], pos[2],
                                                     height[0], height[1], height[2]))
 log_file.close()

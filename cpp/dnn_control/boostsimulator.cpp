@@ -1,13 +1,9 @@
-#include "pythonsimulator.h"
+#include "boostsimulator.h"
 #include "asteroid.h"
 #include "fullstatesensorsimulator.h"
 #include "fullstatecontroller.h"
 
-void PrintVector(const Vector3D &v) {
-	std::cout << "[" << v[0] << "," << v[1] << "," << v[2] << "]" << std::endl;
-}
-
-PythonSimulator::PythonSimulator(const bp::list &asteroid_semi_axis, const double &asteroid_density, const bp::list &asteroid_angular_velocity, const double &time_bias, const bp::list &spacecraft_position, const bp::list &spacecraft_velocity, const double &spacecraft_mass, const double &spacecraft_specific_impulse, const bp::list &target_position, const double &control_frequency, const double &sensor_noise, const double &perturbation_noise) {
+BoostSimulator::BoostSimulator(const bp::list &asteroid_semi_axis, const double &asteroid_density, const bp::list &asteroid_angular_velocity, const double &time_bias, const bp::list &spacecraft_position, const bp::list &spacecraft_velocity, const double &spacecraft_mass, const double &spacecraft_specific_impulse, const bp::list &target_position, const double &control_frequency, const double &sensor_noise, const double &perturbation_noise) {
 	const Vector3D asteroid_semi_axis_cpp = {bp::extract<double>(asteroid_semi_axis[0]),
         									 bp::extract<double>(asteroid_semi_axis[1]),
         									 bp::extract<double>(asteroid_semi_axis[2])};
@@ -39,7 +35,7 @@ PythonSimulator::PythonSimulator(const bp::list &asteroid_semi_axis, const doubl
     simulator_cpp_->InitSpacecraft(spacecraft_position_cpp, spacecraft_velocity_cpp, spacecraft_mass, spacecraft_specific_impulse);
 }
 
-bp::tuple PythonSimulator::Run(const double &time, const bool &log_sensor_data) {
+bp::tuple BoostSimulator::Run(const double &time, const bool &log_sensor_data) {
 	const boost::tuple<double, std::vector<Vector3D>,  std::vector<Vector3D>, std::vector<SensorData> > result = simulator_cpp_->Run(time, log_sensor_data);
 	const double simulation_time = boost::get<0>(result);
     std::vector<Vector3D> positions = boost::get<1>(result);
@@ -79,10 +75,10 @@ bp::tuple PythonSimulator::Run(const double &time, const bool &log_sensor_data) 
 
 BOOST_PYTHON_MODULE(boost_simulator)
 {
-    bp::class_<PythonSimulator>("PythonSimulator", bp::init<const bp::list &, const double &, const bp::list &, const double &,
+    bp::class_<BoostSimulator>("BoostSimulator", bp::init<const bp::list &, const double &, const bp::list &, const double &,
                     const bp::list &, const bp::list &, const double &, const double &,
                     const bp::list &, const double &, const double &, const double &>())
-        .def("run", &PythonSimulator::Run)
+        .def("run", &BoostSimulator::Run)
     ;
 }
 

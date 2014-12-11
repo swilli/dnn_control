@@ -472,7 +472,7 @@ def unit_test_boost_asteroid():
     from time import time
     from math import sqrt
     from boost_asteroid import boost_asteroid
-    from utility import sample_position_outside_ellipsoid
+    from utility import sample_point_outside_ellipsoid
 
     from asteroid import Asteroid as PythonAsteroid
     from numpy import random
@@ -517,7 +517,7 @@ def unit_test_boost_asteroid():
 
         boost_ast = boost_asteroid.Asteroid(semi_axis, density, angular_velocity, time_bias)
         python_asteroid = PythonAsteroid(semi_axis, density, angular_velocity, time_bias)
-        position = sample_position_outside_ellipsoid(semi_axis, band_width_scale)
+        position = sample_point_outside_ellipsoid(semi_axis, band_width_scale)
 
         start = time()
         grav_boost = boost_ast.gravity_at_position(position)

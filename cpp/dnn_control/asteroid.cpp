@@ -8,6 +8,10 @@
 
 #include <math.h>
 
+Asteroid::Asteroid() {
+
+}
+
 Asteroid::Asteroid(const Vector3D &semi_axis, const double &density, const Vector3D &angular_velocity, const double &time_bias) {
     time_bias_ = time_bias;
 
@@ -75,6 +79,11 @@ double Asteroid::Inertia(const int &dimension) const {
 double Asteroid::Density() const
 {
     return density_;
+}
+
+double Asteroid::TimeBias() const
+{
+    return time_bias_;
 }
 
 Vector3D Asteroid::GravityAtPosition(const Vector3D &position) const

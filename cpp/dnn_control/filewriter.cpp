@@ -27,6 +27,7 @@ void FileWriter::CreateSensorDataFile(const std::string &path_to_file, const dou
     file_ << "#" << std::endl;
     file_ << "# asteroid:" << std::endl;
     file_ << "#  density: " << asteroid.Density() << " kg/m^3" << std::endl;
+    file_ << "#  time bias: " << asteroid.TimeBias() << " s" << std::endl;
     file_ << "#  semi axis: " << asteroid.SemiAxis(0) << ", " << asteroid.SemiAxis(1) << ", " << asteroid.SemiAxis(2) << " m" << std::endl;
     file_ << "#  angular velocity: " << angular_velocity[0] << ", " << angular_velocity[1] << ", " << angular_velocity[2] << " 1/s" << std::endl;
     file_ << "#" << std::endl;

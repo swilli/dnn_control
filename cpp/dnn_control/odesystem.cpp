@@ -4,7 +4,7 @@
 #include <math.h>
 #include <iostream>
 
-ODESystem::ODESystem(const Asteroid &asteroid) : asteroid_(asteroid) {
+ODESystem::ODESystem(Asteroid asteroid) : asteroid_(asteroid) {
     coef_earth_acceleration_mul_specific_impulse_ = 0.0;
     for (int i = 0; i < 3; ++i) {
         thrust_[i] = 0.0;
@@ -12,7 +12,6 @@ ODESystem::ODESystem(const Asteroid &asteroid) : asteroid_(asteroid) {
         state_[i] = 0.0;
         state_[3+i] = 0.0;
     }
-    coef_earth_acceleration_mul_specific_impulse_ = 0.0;
 }
 
 void ODESystem::operator()(const State &state, State &d_state_dt, const double &time) const {

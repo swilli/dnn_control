@@ -9,7 +9,7 @@ def cross_product(u, v):
 # semi_axis_[0] * cos(u) * sin(v) < point[0] < semi_axis[0] * band_width_scale * cos(u) * sin(v)
 # semi_axis_[1] * sin(u) * sin(v) < point[1] < semi_axis[1] * band_width_scale * sin(u) * sin(v)
 # semi_axis_[2] * cos(v)          < point[2] < semi_axis[1] * band_width_scale * cos(v)
-def sample_position_outside_ellipsoid(semi_axis, band_width_scale):
+def sample_point_outside_ellipsoid(semi_axis, band_width_scale):
     from numpy import random
     from math import cos, sin
     from constants import PI
