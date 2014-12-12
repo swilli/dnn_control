@@ -14,7 +14,7 @@ class Simulator {
      * This class implements the interaction between stepwise integration of the ode system, artificial sensor data generation, control polling, and result logging.
      */
 public:
-    Simulator(Asteroid &asteroid, SensorSimulator *sensor_simulator, SpacecraftController *spacecraft_controller, const double &control_frequency, const double &perturbation_noise);
+    Simulator(Asteroid &asteroid, SensorSimulator *sensor_simulator, SpacecraftController *spacecraft_controller, const double &control_frequency, const double &perturbation_noise, const double &control_noise);
     ~Simulator();
 
     // Before running the simulator, it has to be initialized with a spacecraft configuration
@@ -42,8 +42,8 @@ private:
     // Controller which generates control thrust given sensor data
     SpacecraftController *spacecraft_controller_;
 
-    // normal_distribution_ ~ N(0, perturbation_noise), whereas perturbation_noise is given in the constructor
-    boost::variate_generator<boost::mt19937, boost::normal_distribution<> > normal_distribution_;
+    // perturbation_distribution_ ~ N(0, perturbation_noise), whereas perturbation_noise is given in the constructor
+    boost::variate_generator<boost::mt19937, boost::normal_distribution<> > perturbation_distribution_;
 
     // Every control_interval_ seconds we poll the controller for control thrust
     double control_interval_;

@@ -37,12 +37,13 @@ void SensorDataGenerator::Generate(const int &num_datasets, const std::string &p
 
         const double sensor_noise = 0.05;
         const double perturbation_noise = 1e-7;
+        const double control_noise = 0.05;
 
         Asteroid asteroid(semi_axis, density, angular_velocity, time_bias);
         FullStateSensorSimulator *sensor_simulator = new FullStateSensorSimulator(asteroid, sensor_noise);
         FullStateController *spacecraft_controller = new FullStateController(control_frequency, target_position);
 
-        Simulator simulator(asteroid, sensor_simulator, spacecraft_controller, control_frequency, perturbation_noise);
+        Simulator simulator(asteroid, sensor_simulator, spacecraft_controller, control_frequency, perturbation_noise, control_noise);
         simulator.InitSpacecraft(spacecraft_position, spacecraft_velocity, spacecraft_mass, spacecraft_specific_impulse);
 
         const boost::tuple<double, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<SensorData> > result = simulator.Run(time, true);

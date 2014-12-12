@@ -26,12 +26,14 @@ spacecraft_specific_impulse = 200.0  # [s]
 # Controller settings
 control_frequency = 10.0  # [Hz]
 target_position = [random.uniform(-500.0, 500.0) + pos for pos in spacecraft_position]
+
 sensor_noise = 0.05
 perturbation_noise = 1e-7
+control_noise = 0.05
 
 simulator = BoostSimulator(semi_axis, density, angular_velocity, time_bias,
                            spacecraft_position, spacecraft_velocity, spacecraft_mass, spacecraft_specific_impulse,
-                           target_position, control_frequency, sensor_noise, perturbation_noise)
+                           target_position, control_frequency, sensor_noise, perturbation_noise, control_noise)
 
 state_t1 = spacecraft_position + spacecraft_velocity + [spacecraft_mass]
 start = time()

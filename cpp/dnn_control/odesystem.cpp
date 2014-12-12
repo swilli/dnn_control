@@ -1,11 +1,12 @@
 #include "odesystem.h"
 #include "utility.h"
+#include "constants.h"
 
 #include <math.h>
 #include <iostream>
 
-ODESystem::ODESystem(Asteroid asteroid) : asteroid_(asteroid) {
-    coef_earth_acceleration_mul_specific_impulse_ = 0.0;
+ODESystem::ODESystem(Asteroid asteroid, const double &control_noise) : asteroid_(asteroid), control_distribution_(boost::mt19937(time(0)),boost::normal_distribution<>(0.0, control_noise)) {
+    spacecraft_specific_impulse_ = 0.0;
     for (int i = 0; i < 3; ++i) {
         thrust_[i] = 0.0;
         perturbations_acceleration_[i] = 0.0;
@@ -14,7 +15,7 @@ ODESystem::ODESystem(Asteroid asteroid) : asteroid_(asteroid) {
     }
 }
 
-void ODESystem::operator()(const State &state, State &d_state_dt, const double &time) const {
+void ODESystem::operator()(const State &state, State &d_state_dt, const double &time) {
     // This operator implements eq(1) of "Control of Hovering Spacecraft Using Altimetry" by S. Sawai et. al.
     // r'' + 2w x r' + w' x r + w x (w x r) = Fc + Fg, whereas Fc = control acceleration and Fg = gravity acceleration
 
@@ -64,5 +65,5 @@ void ODESystem::operator()(const State &state, State &d_state_dt, const double &
                 - coriolis_acceleration[i] - euler_acceleration[i] - centrifugal_acceleration[i];
     }
 
-    d_state_dt[6] = -sqrt(thrust_[0] * thrust_[0] + thrust_[1] * thrust_[1] + thrust_[2] * thrust_[2]) * coef_earth_acceleration_mul_specific_impulse_;
+    d_state_dt[6] = -sqrt(thrust_[0] * thrust_[0] + thrust_[1] * thrust_[1] + thrust_[2] * thrust_[2]) / ((spacecraft_specific_impulse_ + spacecraft_specific_impulse_ * control_distribution_()) * k_earth_acceleration);
 }

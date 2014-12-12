@@ -28,7 +28,7 @@ int main(int argc, char *argv[]) {
     //UnitTestGravity();
     //return 0;
 
-    const double time = 5.0 * 60.0 * 60.0;
+    const double time = 24.0 * 60.0 * 60.0;
     const double control_frequency = 10.0;
 
     if (WRITE_SENSOR_DATA_TO_FILE) {
@@ -53,18 +53,19 @@ int main(int argc, char *argv[]) {
 
     Vector3D target_position;
     for (int i = 0; i < 3; ++i) {
-        target_position[i] = SampleUniform(spacecraft_position[i] - 500.0, spacecraft_position[i] + 500.0);
+        target_position[i] = SampleUniform(spacecraft_position[i] - 3.0, spacecraft_position[i] + 3.0);
     }
 
-    const double sensor_noise = 0.05;
+    const double sensor_noise = 1e-20;
     const double perturbation_noise = 1e-7;
+    const double control_noise = 0.05;
 
     Asteroid asteroid(semi_axis, density, angular_velocity, time_bias);
     FullStateSensorSimulator *sensor_simulator = new FullStateSensorSimulator(asteroid, sensor_noise);
     FullStateController *spacecraft_controller = new FullStateController(control_frequency, target_position);
 
     std::cout << "running simulation ..." << std::endl;
-    Simulator simulator(asteroid, sensor_simulator, spacecraft_controller, control_frequency, perturbation_noise);
+    Simulator simulator(asteroid, sensor_simulator, spacecraft_controller, control_frequency, perturbation_noise, control_noise);
     simulator.InitSpacecraft(spacecraft_position, spacecraft_velocity, spacecraft_mass, spacecraft_specific_impulse);
     const clock_t begin = clock();
     const boost::tuple<double, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<SensorData> > result = simulator.Run(time, false);

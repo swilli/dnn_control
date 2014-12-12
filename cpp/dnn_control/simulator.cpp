@@ -1,9 +1,9 @@
 #include "simulator.h"
-#include "constants.h"
 #include "odeint.h"
 
-Simulator::Simulator(Asteroid &asteroid, SensorSimulator *sensor_simulator, SpacecraftController *spacecraft_controller, const double &control_frequency, const double &perturbation_noise) :
-    sensor_simulator_(sensor_simulator), spacecraft_controller_(spacecraft_controller), system_(ODESystem(asteroid)), normal_distribution_(boost::mt19937(time(0)),boost::normal_distribution<>(0.0, perturbation_noise)) {
+Simulator::Simulator(Asteroid &asteroid, SensorSimulator *sensor_simulator, SpacecraftController *spacecraft_controller, const double &control_frequency, const double &perturbation_noise, const double &control_noise) :
+    sensor_simulator_(sensor_simulator), spacecraft_controller_(spacecraft_controller), system_(ODESystem(asteroid, control_noise)), perturbation_distribution_(boost::mt19937(time(0)),boost::normal_distribution<>(0.0, perturbation_noise)) {
+
     control_frequency_ = control_frequency;
     control_interval_ = 1.0 / control_frequency;
 }
@@ -21,13 +21,13 @@ void Simulator::InitSpacecraft(const Vector3D &position, const Vector3D &velocit
     }
     system_.state_[6] = mass;
 
-    // Cache g * Isp
-    system_.coef_earth_acceleration_mul_specific_impulse_ = 1.0 / (specific_impulse * k_earth_acceleration);
+    // Cache Isp
+    system_.spacecraft_specific_impulse_ = specific_impulse;
 }
 
 void Simulator::InitSpacecraftSpecificImpulse(const double &specific_impulse) {
-    // Cache g * Isp
-    system_.coef_earth_acceleration_mul_specific_impulse_ = 1.0 / (specific_impulse * k_earth_acceleration);
+    // Cache Isp
+    system_.spacecraft_specific_impulse_ = specific_impulse;
 }
 
 State Simulator::NextState(const State &state, const Vector3D &thrust, const double &time) {
@@ -135,6 +135,6 @@ boost::tuple<double, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<S
 void Simulator::SimulatePerturbations(Vector3D &perturbations) {
     double mass = system_.state_[6];
     for(int i = 0; i < 3; ++i) {
-        perturbations[i] = mass * normal_distribution_();
+        perturbations[i] = mass * perturbation_distribution_();
     }
 }
