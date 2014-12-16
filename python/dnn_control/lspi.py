@@ -1,90 +1,41 @@
 # Least Squares Policy Iteration
 from numpy import zeros, array
+from pendulum import PENDULUM_PHI_SIZE, pendulum_pi, pendulum_phi, prepare_samples_pendulum
 
-
-def ncr(n, r):
-    import operator as op
-    r = min(r, n-r)
-    if r == 0: return 1
-    numer = reduce(op.mul, xrange(n, n-r, -1))
-    denom = reduce(op.mul, xrange(1, r+1))
-    return numer//denom
-
-# STATE_DIMENSION: dimension of the state
-STATE_DIMENSION = 6
 
 # NUM_SAMPLES: the number of samples we have available
-NUM_SAMPLES = 50000
+NUM_SAMPLES = 1000
 
-# ACTIONS: discrete actions
-ACTIONS = {0: [20.0, 0.0, 0.0],
-           1: [-20.0, 0.0, 0.0],
-           2: [0.0, 20.0, 0.0],
-           3: [0.0, -20.0, 0.0],
-           4: [0.0, 0.0, 20.0],
-           5: [0.0, 0.0, -20.0],
-           6: [0.0, 0.0, 0.0]}
+# NUM_STEPS: the number of steps taken from an intial sample point
+NUM_STEPS = 50
 
-# DEGREE_POLYNOMIAL: highest degree polynomial
-DEGREE_POLYNOMIAL = 2
+# STATE_ACTION_DIMENSIONS: Number of dimensions in the transformed state action space
+STATE_ACTION_DIMENSIONS = PENDULUM_PHI_SIZE
 
-STATE_ACTION_DIMENSIONS = len(ACTIONS) * (ncr(DEGREE_POLYNOMIAL + STATE_DIMENSION - 1, STATE_DIMENSION - 1) + 1)
+# PHI: Function which transforms state action pairs into the STATE_ACTION_DIMENSIONS state action space
+PHI = pendulum_phi
+
+# Policy of the system
+POLICY = pendulum_pi
 
 # W: parameters of parametric approximation of Q
 W = zeros([STATE_ACTION_DIMENSIONS, 1])
 
-# GAMMA: learning parameter
+# GAMMA: discount parameter
 GAMMA = 0.9
 
-# EXPLORE: exploration exploitation tradeoff
-EXPLORE = 0.5
-
-# EPSILON:
-EPSILON = 1e-10
+# EPSILON: Defines when the system has converged
+EPSILON = 1e-20
 
 
-# Our finite dimensional state-action space
-def phi(s, a):
-    from numpy import zeros
-    result = zeros([STATE_ACTION_DIMENSIONS, 1])
-    base = a * (ncr(DEGREE_POLYNOMIAL + STATE_DIMENSION - 1, STATE_DIMENSION - 1) + 1)
-
-    result[base] = 1.0
-    base += 1
-    num_polys = 0
-    for pow_0 in range(DEGREE_POLYNOMIAL + 1):
-        for pow_1 in range(DEGREE_POLYNOMIAL + 1 - pow_0):
-            for pow_2 in range(DEGREE_POLYNOMIAL + 1 - pow_0 - pow_1):
-                for pow_3 in range(DEGREE_POLYNOMIAL + 1 - pow_0 - pow_1 - pow_2):
-                    for pow_4 in range(DEGREE_POLYNOMIAL + 1 - pow_0 - pow_1 - pow_2 - pow_3):
-                        pow_5 = DEGREE_POLYNOMIAL + 1 - pow_0 - pow_1 - pow_2 - pow_3 - pow_4
-                        result[base] = s[0] ** pow_0 * s[1] ** pow_1 * s[2] ** pow_2 \
-                                       * s[3] ** pow_3 * s[4] ** pow_4 * s[5] ** pow_5
-                        base += 1
-                        num_polys += 1
-    return result
-
-
-# policy of system: to be optimized
+# policy of system defined by weights in w
 def pi(s, w):
-    from numpy import random
-    from numpy import empty, copy, dot
-    from sys import float_info
+    return POLICY(s, w)
 
-    if random.rand() < EXPLORE:
-        a = random.choice(len(ACTIONS))
-        return a
-    else:
-        best_a = random.choice(len(ACTIONS))
-        best_q = 0.0
-        for a in ACTIONS:
-            val_phi = phi(s, a).T
-            q = dot(val_phi, w)[0, 0]
-            if q > best_q:
-                best_q = q
-                best_a = a
 
-        return best_a
+# state action kernel
+def phi(s, a):
+    return PHI(s, a)
 
 
 def lstdq(D, gamma, w):
@@ -96,17 +47,17 @@ def lstdq(D, gamma, w):
 
     for (s, a, r, s_prime) in D:
         phi_sa = phi(s, a)
-        phi_sa_prime = phi_sa - gamma * phi(s_prime, pi(s, w))
-        A = A + dot(phi_sa, phi_sa_prime.T)
+        a_prime = pi(s_prime, w)
+        phi_sa_prime = phi(s_prime, a_prime)
+        A = A + dot(phi_sa, (phi_sa - GAMMA * phi_sa_prime).T)
         b = b + phi_sa * r
 
-    print("Rank of A: {0}".format(matrix_rank(A)))
+    print("STATE_ACTION_DIMENSIONS: {0}, Rank of A: {1}".format(STATE_ACTION_DIMENSIONS, matrix_rank(A)))
     return inv(A) * b
 
 
 def lspi(D, gamma, epsilon, w):
     from numpy.linalg import norm
-    from numpy import copy
 
     iteration = 0
     w_prime = w
@@ -118,9 +69,11 @@ def lspi(D, gamma, epsilon, w):
         val_norm = norm(w_prime - w)
         iteration += 1
 
+    print("iteration {0}. Norm: {1}".format(iteration, val_norm))
     return w
 
-def prepare_samples(num_samples):
+
+def prepare_samples_spacecraft(num_samples):
     from math import sqrt
     from numpy import random, array
     from utility import sample_sign
@@ -163,7 +116,10 @@ def prepare_samples(num_samples):
         next_state = simulator.next_state(state, thrust, t)
         next_pos = next_state[0:3]
 
-        r = 1.0 / (1.0 + sqrt(sum([(p-np) ** 2 for p, np in zip(position, next_pos)])))
+        err_state = sqrt(sum([(p-np) ** 2 for p, np in zip(target_position, position)]))
+        err_next_state = sqrt(sum([(p-np) ** 2 for p, np in zip(target_position, next_pos)]))
+
+        r = err_state - err_next_state
 
         sample = (array(state), a, r, array(next_state))
         samples.append(sample)
@@ -171,7 +127,8 @@ def prepare_samples(num_samples):
     return samples
 
 
-D = prepare_samples(NUM_SAMPLES)
+D = prepare_samples_pendulum(NUM_SAMPLES, NUM_STEPS)
+print("Generated {0} samples".format(len(D)))
 result = lspi(D, GAMMA, EPSILON, W)
 print("")
 print(result)
