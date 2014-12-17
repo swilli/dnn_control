@@ -28,6 +28,16 @@ def d_state_dt(time, state, action):
     return result
 
 
+def pendulum_next_state(state, action):
+    from scipy.integrate import ode
+    integrator = ode(d_state_dt)
+    integrator.set_integrator("lsoda")
+    integrator.set_initial_value(state, 0.0)
+    integrator.set_f_params(PENDULUM_ACTIONS[action])
+    integrator.integrate(0.1)
+    return integrator.y[:]
+
+
 def pendulum_phi(s, a):
     from numpy import zeros
     from math import acos, exp
@@ -45,16 +55,6 @@ def pendulum_phi(s, a):
             base += 1
 
     return result
-
-
-def pendulum_next_state(state, action):
-    from scipy.integrate import ode
-    integrator = ode(d_state_dt)
-    integrator.set_integrator("lsoda")
-    integrator.set_initial_value(state, 0.0)
-    integrator.set_f_params(PENDULUM_ACTIONS[action])
-    integrator.integrate(0.1)
-    return integrator.y[:]
 
 
 def pendulum_initialize_state():
@@ -81,7 +81,7 @@ def pendulum_pi(s, w):
     return random.choice(best_a)
 
 
-def prepare_samples_pendulum(num_samples, num_steps):
+def pendulum_prepare_samples(num_samples, num_steps):
     from numpy import random, array
     from constants import PI
 

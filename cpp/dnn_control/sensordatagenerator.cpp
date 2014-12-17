@@ -1,7 +1,7 @@
 #include "sensordatagenerator.h"
 #include "simulator.h"
 #include "utility.h"
-#include "fullstatesensorsimulator.h"
+#include "sensorsimulatoranyd.h"
 #include "fullstatecontroller.h"
 #include "filewriter.h"
 
@@ -35,13 +35,16 @@ void SensorDataGenerator::Generate(const int &num_datasets, const std::string &p
             target_position[i] = SampleUniform(spacecraft_position[i] - 500.0, spacecraft_position[i] + 500.0);
         }
 
-        const double sensor_noise = 0.05;
+        SensorNoiseConfiguration sensor_noise;
+        for (unsigned int i = 0; i < sensor_noise.size(); ++i) {
+            sensor_noise[i] = 0.05;
+        }
         const double perturbation_noise = 1e-7;
         const double control_noise = 0.05;
 
         Asteroid asteroid(semi_axis, density, angular_velocity, time_bias);
-        FullStateSensorSimulator *sensor_simulator = new FullStateSensorSimulator(asteroid, sensor_noise);
-        FullStateController *spacecraft_controller = new FullStateController(control_frequency, target_position);
+        SensorSimulator *sensor_simulator = new SensorSimulatorAnyD(asteroid, sensor_noise);
+        SpacecraftController *spacecraft_controller = new FullStateController(control_frequency, target_position);
 
         Simulator simulator(asteroid, sensor_simulator, spacecraft_controller, control_frequency, perturbation_noise, control_noise);
         simulator.InitSpacecraft(spacecraft_position, spacecraft_velocity, spacecraft_mass, spacecraft_specific_impulse);

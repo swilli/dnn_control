@@ -67,7 +67,7 @@ boost::tuple<double, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<S
 
     const int sensor_dimensions = sensor_simulator_->Dimensions();
     if (sensor_dimensions != spacecraft_controller_->Dimensions()) {
-        std::cout << "Warning: sensor simulator and spacecraft controller have different output/input dimensions." << std::endl;
+        std::cout << "warning: sensor simulator and spacecraft controller have different output/input dimensions." << std::endl;
     }
     const double dt = control_interval_;
     const int iterations = time / dt;

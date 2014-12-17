@@ -1,7 +1,7 @@
 #include "sensorsimulator5d.h"
 #include "utility.h"
 
-SensorSimulator5D::SensorSimulator5D(const Asteroid &asteroid, const double &sensor_noise) : SensorSimulator(asteroid, sensor_noise)
+SensorSimulator5D::SensorSimulator5D(const Asteroid &asteroid, const double &sensor_noise) : SensorSimulator(asteroid), normal_distribution_ (boost::mt19937(time(0)),boost::normal_distribution<>(0.0, sensor_noise))
 {
     dimensions_ = 5;
 }

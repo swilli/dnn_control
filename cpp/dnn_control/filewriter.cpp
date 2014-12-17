@@ -40,7 +40,7 @@ void FileWriter::CreateSensorDataFile(const std::string &path_to_file, const dou
     for (unsigned int i = 0; i < sensor_data.size(); ++i) {
         const SensorData &data = sensor_data.at(i);
         file_ << data[0];
-        for (int j = 1; j < data.size(); ++j) {
+        for (unsigned int j = 1; j < data.size(); ++j) {
             file_ << ", " << data[j];
         }
         file_ << std::endl;

@@ -1,5 +1,5 @@
 #include "simulator.h"
-#include "fullstatesensorsimulator.h"
+#include "sensorsimulatoranyd.h"
 #include "fullstatecontroller.h"
 #include "test.h"
 #include "vector.h"
@@ -13,8 +13,9 @@
 
 #define NUM_NEW_DATA_SETS                   100
 
-#define WRITE_SENSOR_DATA_TO_FILE           0
+#define WRITE_SENSOR_DATA_TO_FILE           1
 #define PATH_TO_SENSOR_DATA_FOLDER          "../../../data/"
+#define NUM_SENSOR_DATA_FILES               5
 #define WRITE_STATES_TO_FILE                1
 #define PATH_TO_STATES_FILE                 "../../../results/states.txt"
 
@@ -33,7 +34,7 @@ int main(int argc, char *argv[]) {
 
     if (WRITE_SENSOR_DATA_TO_FILE) {
         SensorDataGenerator generator(PATH_TO_SENSOR_DATA_FOLDER, control_frequency, time / 6.0);
-        generator.Generate(100);
+        generator.Generate(NUM_SENSOR_DATA_FILES);
         return 0;
     }
 
@@ -56,13 +57,16 @@ int main(int argc, char *argv[]) {
         target_position[i] = SampleUniform(spacecraft_position[i] - 3.0, spacecraft_position[i] + 3.0);
     }
 
-    const double sensor_noise = 1e-20;
+    SensorNoiseConfiguration sensor_noise;
+    for (unsigned int i = 0; i < sensor_noise.size(); ++i) {
+        sensor_noise[i] = 0.05;
+    }
     const double perturbation_noise = 1e-7;
     const double control_noise = 0.05;
 
     Asteroid asteroid(semi_axis, density, angular_velocity, time_bias);
-    FullStateSensorSimulator *sensor_simulator = new FullStateSensorSimulator(asteroid, sensor_noise);
-    FullStateController *spacecraft_controller = new FullStateController(control_frequency, target_position);
+    SensorSimulator *sensor_simulator = new SensorSimulatorAnyD(asteroid, sensor_noise);
+    SpacecraftController *spacecraft_controller = new FullStateController(control_frequency, target_position);
 
     std::cout << "running simulation ..." << std::endl;
     Simulator simulator(asteroid, sensor_simulator, spacecraft_controller, control_frequency, perturbation_noise, control_noise);
