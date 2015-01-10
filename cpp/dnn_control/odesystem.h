@@ -34,7 +34,7 @@ public:
     // T for each dimension
     Vector3D thrust_;
 
-    // We assume some random noise in the system which is given by "perturbations_acceleration_" and is constant during one integration step
+    // Changing perturbations acceleration which gets assigned by the simulator. We assume some random noise in the system which is given by "perturbations_acceleration_" and is constant during one integration step
     Vector3D perturbations_acceleration_;
 
     // The spacecraft state [x,y,z,dx,dy,dz,m]

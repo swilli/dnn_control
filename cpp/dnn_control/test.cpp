@@ -22,7 +22,7 @@ struct AngularVelocitySystem {
         d_state_dt[2] = (inertia[0] - inertia[1]) * state[0] * state[1] / inertia[2];
     };
     AngularVelocitySystem(const Vector3D &para_inertia) {
-        for (int i = 0; i < 3; ++i) {
+        for (unsigned int i = 0; i < 3; ++i) {
             inertia[i] = para_inertia[i];
         }
     };
@@ -33,31 +33,31 @@ void UnitTestAngularVelocity() {
 
     const Vector3D semi_axis = {10000.0, 6000.0, 4000.0};
     const double density = 2215.0;
-    const Vector3D angular_velocity = {-0.0002, 0.0, -0.0008};
+    const Vector2D angular_velocity_xz = {-0.0002, -0.0008};
     const double time_bias = 0.0;
 
-    Asteroid asteroid(semi_axis, density, angular_velocity, time_bias);
+    Asteroid asteroid(semi_axis, density, angular_velocity_xz, time_bias);
 
-    const Vector3D inertia = {asteroid.Inertia(0), asteroid.Inertia(1), asteroid.Inertia(2)};
+    const Vector3D inertia = asteroid.Inertia();
     AngularVelocitySystem sys(inertia);
 
     const int num_test_cases = 10000;
     double min_error = 1e20;
     double max_error = 1e-20;
     double avg_error = 0.0;
-    for (int i = 0; i < num_test_cases; ++i) {
+    for (unsigned int i = 0; i < num_test_cases; ++i) {
         const double time = SampleUniform(0.0, 24.0*60.0*60.0);
         const boost::tuple<Vector3D, Vector3D> result = asteroid.AngularVelocityAndAccelerationAtTime(time);
         Vector3D omega_analytical = boost::get<0>(result);
 
-        AngularVelocityState omega_numerical = {angular_velocity[0], 0.0, angular_velocity[2]};
+        AngularVelocityState omega_numerical = {angular_velocity_xz[0], 0.0, angular_velocity_xz[1]};
 
         runge_kutta4<AngularVelocityState> integrator;
         const double dt = 0.1;
         integrate_const(integrator, sys, omega_numerical, 0.0, time, dt);
 
         double error = 0.0;
-        for (int i = 0; i < 3; ++i) {
+        for (unsigned int i = 0; i < 3; ++i) {
             error += (omega_analytical[i] - omega_numerical[i]) * (omega_analytical[i] - omega_numerical[i]);
         }
         error = sqrt(error);
@@ -80,27 +80,28 @@ void UnitTestTrajectory() {
 
     const Vector3D semi_axis = {10000.0, 6000.0, 4000.0};
     const double density = 2215.0;
-    const Vector3D angular_velocity = {-0.0002, 0.0, 0.0008};
+    const Vector2D angular_velocity_xz = {-0.0002, 0.0008};
     const double time_bias = 0.0;
 
     const double band_width_scaling = 4.0;
 
     const double spacecraft_specific_impulse = 200.0;
     const double spacecraft_mass = 1000.0;
+    const double spacecraft_maximum_thrust = 21.0;
 
     const double control_frequency = 10.0;
 
     const double sensor_noise = 0.05;
     const double perturbation_noise = 0.0;
 
-    Asteroid asteroid(semi_axis,density, angular_velocity, time_bias);
+    Asteroid asteroid(semi_axis,density, angular_velocity_xz, time_bias);
     SensorSimulator5D *sensor_simulator = new SensorSimulator5D(asteroid, sensor_noise);
-    Controller5D *spacecraft_controller = new Controller5D();
+    Controller5D *spacecraft_controller = new Controller5D(spacecraft_maximum_thrust);
     /*Simulator simulator(asteroid, sensor_simulator, spacecraft_controller, control_frequency, perturbation_noise);
     simulator.InitSpacecraftSpecificImpulse(spacecraft_specific_impulse);
 
     const int num_test_cases = 1000000;
-    for (int i = 0; i < num_test_cases; ++i) {
+    for (unsigned int i = 0; i < num_test_cases; ++i) {
         const Vector3D position = SamplePointOutSideEllipsoid(semi_axis, band_width_scaling);
 
         Vector3D velocity = CrossProduct(angular_velocity, position);
@@ -109,7 +110,7 @@ void UnitTestTrajectory() {
         velocity[2] *= -1;
 
         State state;
-        for(int i = 0; i < 3; ++i) {
+        for(unsigned int i = 0; i < 3; ++i) {
             state[i] = position[i];
             state[3+i] = velocity[i];
         }
@@ -122,7 +123,7 @@ void UnitTestTrajectory() {
         const Vector3D next_position = {next_state[0], next_state[1], next_state[2]};
         double norm_pos = 0.0;
         double norm_next_pos = 0.0;
-        for (int i = 0; i < 3; ++i) {
+        for (unsigned int i = 0; i < 3; ++i) {
             norm_pos += position[i] * position[i];
             norm_next_pos += next_position[i] * next_position[i];
         }
@@ -159,10 +160,10 @@ void UnitTestTrajectory() {
 void UnitTestAny() {
     const Vector3D semi_axis = {1103.1670527778024, 466.18400577010857, 293.35148306268576};
     const double density = 2215.0;
-    const Vector3D angular_velocity = {-0.0002, 0.0, 0.0008};
+    const Vector2D angular_velocity_xz = {-0.0002, 0.0008};
     const double time_bias = 0.0;
 
-    Asteroid asteroid(semi_axis,density, angular_velocity, time_bias);
+    Asteroid asteroid(semi_axis,density, angular_velocity_xz, time_bias);
     const Vector3D position = {816.5726055517212, 0.9933720217425616, -716.1995078171824};
 
     const boost::tuple<Vector3D, double> result = asteroid.NearestPointOnSurfaceToPosition(position);
@@ -175,16 +176,16 @@ void UnitTestGravity()
 {
     const Vector3D semi_axis = {1103.1670527778024, 466.18400577010857, 293.35148306268576};
     const double density = 2215.0;
-    const Vector3D angular_velocity = {-0.0002, 0.0, 0.0008};
+    const Vector2D angular_velocity_xz = {-0.0002, 0.0008};
     const double time_bias = 0.0;
 
-    Asteroid asteroid(semi_axis,density, angular_velocity, time_bias);
+    Asteroid asteroid(semi_axis,density, angular_velocity_xz, time_bias);
 
     double avg_error = 0.0;
     double avg_time_legendre = 0.0;
     double avg_time_carlson = 0.0;
     const int num_tests = 1000000;
-    for (int j = 0; j < num_tests; ++j) {
+    for (unsigned int j = 0; j < num_tests; ++j) {
 
     }
     avg_error /= num_tests;

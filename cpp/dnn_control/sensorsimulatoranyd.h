@@ -10,12 +10,12 @@
 
 #include <boost/array.hpp>
 
-#define SENSOR_DATA_DIMENSIONS  5
-#define SENSOR_DATA_MULTIPLIER  3
-#define SENSOR_DATA_HISTORY     3
+#define SENSOR_SIMULATOR_DATA_DIMENSIONS  5
+#define SENSOR_SIMULATOR_DATA_MULTIPLIER  3
+#define SENSOR_SIMULATOR_DATA_HISTORY     3
 
-typedef boost::array<double, SENSOR_DATA_DIMENSIONS * SENSOR_DATA_MULTIPLIER> SensorNoiseConfiguration;
-typedef boost::array<double, SENSOR_DATA_DIMENSIONS * SENSOR_DATA_MULTIPLIER * SENSOR_DATA_HISTORY> SensorDataCache;
+typedef boost::array<double, SENSOR_SIMULATOR_DATA_DIMENSIONS * SENSOR_SIMULATOR_DATA_MULTIPLIER> SensorNoiseConfiguration;
+typedef boost::array<double, SENSOR_SIMULATOR_DATA_DIMENSIONS * SENSOR_SIMULATOR_DATA_MULTIPLIER * SENSOR_SIMULATOR_DATA_HISTORY> SensorDataCache;
 
 class SensorSimulatorAnyD : public SensorSimulator
 {
@@ -27,9 +27,9 @@ public:
     SensorSimulatorAnyD(const Asteroid &asteroid, const SensorNoiseConfiguration &configuration);
     virtual ~SensorSimulatorAnyD();
 
-    virtual void Simulate(const State &state, const Vector3D &perturbations_acceleration, const double &time, SensorData &sensor_data);
+    virtual SensorData Simulate(const State &state, const Vector3D &height, const Vector3D &perturbations_acceleration, const double &time);
 
-    // Resets num_calls_
+    // Resets first_simulation_ to false
     void ResetSimulator();
 
 private:

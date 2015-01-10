@@ -25,7 +25,8 @@ public:
     Asteroid();
 
     // Requires: semi_axis[0] > semi_axis[1] > semi_axis[2]
-    Asteroid(const Vector3D &semi_axis, const double &density, const Vector3D &angular_velocity, const double &time_bias);
+    // angular_velocity only requires values for x and z since y == 0.
+    Asteroid(const Vector3D &semi_axis, const double &density, const Vector2D &angular_velocity_xz, const double &time_bias);
 
     // Computes the gravity components in asteroid centered RF at an outside point "position" which is also in asteroid centered RF
     Vector3D GravityAtPosition(const Vector3D &position) const;
@@ -36,14 +37,17 @@ public:
     // Computes the distance "distance" and orthogonal projection of a position "position" outside the asteroid onto the asteroid's surface "point" in asteroid centered RF
     boost::tuple<Vector3D, double> NearestPointOnSurfaceToPosition(const Vector3D &position) const;
 
-    // Returns the initially in the constructor provided angular velocity
-    Vector3D InitialAngularVelocity() const;
+    // Returns the euler angles (theta, psi, phi) in an inertial reference frame where the axis coalign with the rotating body frame in the beginning
+    Vector3D InertialEulerAnglesAtTime(const double &time) const;
 
-    // Returns the semi axis for a given dimension "dimension" [0-2]
-    double SemiAxis(const int &dimension) const;
+    // Returns the initially in the constructor provided angular velocity in x and z dimension
+    Vector2D ConstructorAngularVelocitiesXZ() const;
 
-    // Returns the inertia for a given dimension "dimension" [0-2]
-    double Inertia(const int &dimension) const;
+    // Returns the 3 semi axis
+    Vector3D SemiAxis() const;
+
+    // Returns the 3 inertia
+    Vector3D Inertia() const;
 
     // Returns the density
     double Density() const;
@@ -78,8 +82,8 @@ private:
     // Cached power of 2 of the inertia
     Vector3D inertia_pow2_;
 
-    // Cached initial angular velocity
-    Vector3D initial_angular_velocity_;
+    // Cached initial angular velocity in x and z dimension
+    Vector2D constructor_angular_velocities_xz_;
 
     // Time bias for the analytical angular velocity computation: w_y(-time_bias_) = 0.
     double time_bias_;
@@ -90,16 +94,22 @@ private:
     // Momentum^2 of asteroid
     double momentum_pow2_;
 
+    // Cached m * G
     double coef_mass_gravitational_constant_;
 
-    // /Lifshitz eq (37.10)
+    // Lifshitz eq (37.10)
     Vector3D elliptic_coefficients_;
 
     // Lifshitz eq (37.8)
-    double elliptic_tau_;
+    double coef_elliptic_tau_;
 
     // Lifshitz eq (37.9)
     double elliptic_modulus_;
+
+    // Euler angle coefficients
+    double coef_euler_angle_theta_;
+    double coef_euler_angle_phi_;
+    double coef_euler_angle_psi_;
 
     // True if momentum_pow2_ < energy_mul2_ * inertia_[1]
     bool inversion_;

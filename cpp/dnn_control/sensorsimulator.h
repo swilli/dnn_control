@@ -13,21 +13,21 @@ class SensorSimulator {
      * This abstract class generates the artificial the sensor data required for a controller.
      */
 public:
-    SensorSimulator(const Asteroid &asteroid);
+    SensorSimulator(const unsigned int &dimensions, const Asteroid &asteroid);
     virtual ~SensorSimulator();
 
 
     // Generates (simulates) sensor data based on the current spacecraft state "state" and time "time"
-    virtual void Simulate(const State &state, const Vector3D &perturbations_acceleration, const double &time, SensorData &sensor_data) = 0;
+    virtual SensorData Simulate(const State &state, const Vector3D &height, const Vector3D &perturbations_acceleration, const double &time) = 0;
 
-    int Dimensions() const;
+    unsigned int Dimensions() const;
 
 protected:
     // The system's asteroid
     Asteroid asteroid_;
 
     // How large is the sensor data space
-    int dimensions_;
+    unsigned int dimensions_;
 };
 
 #endif // SENSORSIMULATOR_H

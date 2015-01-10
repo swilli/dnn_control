@@ -515,7 +515,7 @@ def unit_test_boost_asteroid():
         time_bias = 0.0  # random.uniform(0.0, 60.0 * 60.0 * 6.0)  # [s]
         t = random.uniform(0.0, 1000.0)
 
-        boost_ast = boost_asteroid.Asteroid(semi_axis, density, angular_velocity, time_bias)
+        boost_ast = boost_asteroid.BoostAsteroid(semi_axis, density, angular_velocity, time_bias)
         python_asteroid = PythonAsteroid(semi_axis, density, angular_velocity, time_bias)
         position = sample_point_outside_ellipsoid(semi_axis, band_width_scale)
 

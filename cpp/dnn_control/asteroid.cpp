@@ -12,23 +12,27 @@ Asteroid::Asteroid() {
 
 }
 
-Asteroid::Asteroid(const Vector3D &semi_axis, const double &density, const Vector3D &angular_velocity, const double &time_bias) {
+Asteroid::Asteroid(const Vector3D &semi_axis, const double &density, const Vector2D &angular_velocity_xz, const double &time_bias) {
     time_bias_ = time_bias;
 
     density_ = density;
 
-    mass_ = 4.0 / 3.0 * k_pi * density;
-    for (int i = 0; i < 3; ++i) {
+    constructor_angular_velocities_xz_[0] = angular_velocity_xz[0];
+    constructor_angular_velocities_xz_[1] = angular_velocity_xz[1];
+
+    const Vector3D angular_velocity_3d = {angular_velocity_xz[0], 0.0, angular_velocity_xz[1]};
+
+    mass_ = 4.0 / 3.0 * kPi * density;
+    for (unsigned int i = 0; i < 3; ++i) {
         semi_axis_[i] = semi_axis[i];
         semi_axis_pow2_[i] = semi_axis_[i] * semi_axis_[i];
-        initial_angular_velocity_[i] = angular_velocity[i];
         mass_ *= semi_axis_[i];
     }
 
     Vector3D signs;
-    signs[0] = (initial_angular_velocity_[0] > 0 ? 1.0 : -1.0);
-    signs[1] = (initial_angular_velocity_[0] * initial_angular_velocity_[2] > 0 ? 1.0 : -1.0);
-    signs[2] = (initial_angular_velocity_[2] > 0 ? 1.0 : -1.0);
+    signs[0] = (angular_velocity_3d[0] > 0 ? 1.0 : -1.0);
+    signs[1] = (angular_velocity_3d[0] * angular_velocity_3d[2] > 0 ? 1.0 : -1.0);
+    signs[2] = (angular_velocity_3d[2] > 0 ? 1.0 : -1.0);
 
     inertia_[0] = 0.2 * mass_ * (semi_axis_pow2_[1] + semi_axis_pow2_[2]);
     inertia_[1] = 0.2 * mass_ * (semi_axis_pow2_[0] + semi_axis_pow2_[2]);
@@ -37,11 +41,11 @@ Asteroid::Asteroid(const Vector3D &semi_axis, const double &density, const Vecto
     energy_mul2_ = 0.0;
     momentum_pow2_ = 0.0;
     Vector3D inertia;
-    for (int i = 0; i < 3; ++i) {
+    for (unsigned int i = 0; i < 3; ++i) {
         inertia[i] = inertia_[i];
         inertia_pow2_[i] = inertia_[i] * inertia_[i];
-        energy_mul2_ += inertia_[i] * initial_angular_velocity_[i] * initial_angular_velocity_[i];
-        momentum_pow2_ += inertia_[i] * inertia_[i] * initial_angular_velocity_[i] * initial_angular_velocity_[i];
+        energy_mul2_ += inertia_[i] * angular_velocity_3d[i] * angular_velocity_3d[i];
+        momentum_pow2_ += inertia_[i] * inertia_[i] * angular_velocity_3d[i] * angular_velocity_3d[i];
     }
 
     inversion_ = false;
@@ -60,34 +64,37 @@ Asteroid::Asteroid(const Vector3D &semi_axis, const double &density, const Vecto
     elliptic_coefficients_[2] = signs[2] * sqrt((momentum_pow2_ - energy_mul2_ * inertia[0]) / (inertia[2] * (inertia[2] - inertia[0])));
 
     // Lifshitz eq (37.8)
-    elliptic_tau_ = sqrt((inertia[2] - inertia[1]) * (momentum_pow2_ - energy_mul2_ * inertia[0]) / (inertia[0] * inertia[1] * inertia[2]));
+    coef_elliptic_tau_ = sqrt((inertia[2] - inertia[1]) * (momentum_pow2_ - energy_mul2_ * inertia[0]) / (inertia[0] * inertia[1] * inertia[2]));
 
     // Lifshitz eq (37.9)
     elliptic_modulus_ = (inertia[1] - inertia[0]) * (energy_mul2_ * inertia[2] - momentum_pow2_) / ((inertia[2] - inertia[1]) * (momentum_pow2_ - energy_mul2_ * inertia[0]));
 
-    coef_mass_gravitational_constant_ = mass_ * k_gravitational_constant;
+    coef_mass_gravitational_constant_ = mass_ * kGravitationalConstant;
+
+    // Lifshitz eq (37.15)
+    coef_euler_angle_theta_ = sqrt(inertia[2] * (momentum_pow2_ - energy_mul2_ * inertia[0]) / (momentum_pow2_ * (inertia[2] - inertia[0])));
+    coef_euler_angle_psi_ = sqrt(inertia[0] * (inertia[2] - inertia[1]) / (inertia[1] * (inertia[2] - inertia[0])));
+    coef_euler_angle_phi_ = 0.0; //TODO
+
 }
 
-double Asteroid::SemiAxis(const int &dimension) const {
-    return semi_axis_[dimension];
+Vector3D Asteroid::SemiAxis() const {
+    return semi_axis_;
 }
 
-double Asteroid::Inertia(const int &dimension) const {
-    return inertia_[dimension];
+Vector3D Asteroid::Inertia() const {
+    return inertia_;
 }
 
-double Asteroid::Density() const
-{
+double Asteroid::Density() const {
     return density_;
 }
 
-double Asteroid::TimeBias() const
-{
+double Asteroid::TimeBias() const {
     return time_bias_;
 }
 
-Vector3D Asteroid::GravityAtPosition(const Vector3D &position) const
-{
+Vector3D Asteroid::GravityAtPosition(const Vector3D &position) const {
     Vector3D gravity = {0.0, 0.0, 0.0};
 
     const double pos_x_pow2 = position[0] * position[0];
@@ -130,7 +137,7 @@ boost::tuple<Vector3D, Vector3D> Asteroid::AngularVelocityAndAccelerationAtTime(
     Vector3D velocity;
     Vector3D acceleration;
     // Lifshitz eq (37.8)
-    const double t = (time + time_bias_) * elliptic_tau_;
+    const double t = (time + time_bias_) * coef_elliptic_tau_;
 
     // Get analytical solution
     double sn_tau = 0.0, cn_tau = 0.0, dn_tau = 0.0;
@@ -160,7 +167,7 @@ boost::tuple<Vector3D, double> Asteroid::NearestPointOnSurfaceToPosition(const V
     Vector3D abs_position;
 
     // Project point to first quadrant, keep in mind the original point signs
-    for (int i = 0; i < 3; ++i) {
+    for (unsigned int i = 0; i < 3; ++i) {
         signs[i] = (position[i] >= 0.0 ? 1.0 : -1.0);
         abs_position[i] = signs[i] * position[i];
     }
@@ -174,7 +181,7 @@ boost::tuple<Vector3D, double> Asteroid::NearestPointOnSurfaceToPosition(const V
     point[2] *= signs[2];
 
     double result = 0.0;
-    for(int i = 0; i < 3; ++i) {
+    for(unsigned int i = 0; i < 3; ++i) {
         result += (point[i] - position[i]) * (point[i] - position[i]);
     }
 
@@ -183,9 +190,8 @@ boost::tuple<Vector3D, double> Asteroid::NearestPointOnSurfaceToPosition(const V
     return make_tuple(point, distance);
 }
 
-Vector3D Asteroid::InitialAngularVelocity() const
-{
-    return initial_angular_velocity_;
+Vector2D Asteroid::ConstructorAngularVelocitiesXZ() const {
+    return constructor_angular_velocities_xz_;
 }
 
 Vector3D Asteroid::NearestPointOnEllipsoidFirstQuadrant(const Vector3D &position) const {
@@ -298,4 +304,24 @@ Vector2D Asteroid::NearestPointOnEllipseFirstQuadrant(const Vector2D &semi_axis,
     }
 
     return point;
+}
+
+Vector3D Asteroid::InertialEulerAnglesAtTime(const double &time) const {
+    Vector3D euler_angles;
+    // Lifshitz eq (37.8)
+    const double t = (time + time_bias_) * coef_elliptic_tau_;
+
+    // Get analytical solution
+    double sn_tau = 0.0, cn_tau = 0.0, dn_tau = 0.0;
+    gsl_sf_elljac_e(t,elliptic_modulus_,&sn_tau, &cn_tau, & dn_tau);
+
+    euler_angles[0] = acos(coef_euler_angle_theta_ * dn_tau);
+    if (inversion_) {
+        euler_angles[1] = atan(coef_euler_angle_psi_ * sn_tau / cn_tau);
+    } else {
+        euler_angles[1] = atan(coef_euler_angle_psi_ * cn_tau / sn_tau);
+    }
+    euler_angles[2] = 0.0; //TODO
+
+    return euler_angles;
 }

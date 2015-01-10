@@ -1,19 +1,19 @@
 #ifndef FULLSTATECONTROLLER_H
 #define FULLSTATECONTROLLER_H
 
-#include "spacecraftcontroller.h"
-#include "fullstatesensorsimulator.h"
+#include "controller.h"
+#include "sensorsimulatorfullstate.h"
 
-class FullStateController : public SpacecraftController
+class ControllerFullState : public Controller
 {
 public:
-    FullStateController(const double &control_frequency, const Vector3D &target_position);
-    virtual ~FullStateController();
+    ControllerFullState(const double &control_frequency, const double &maximum_thrust, const Vector3D &target_position);
+    virtual ~ControllerFullState();
 
     // thrust = F(sensor_data), whereas F can be eg., a PD controller, some RL solution, a NN, ...
-    virtual void GetThrustForSensorData(const SensorData &sensor_data, Vector3D &thrust);
+    virtual Vector3D GetThrustForSensorData(const SensorData &sensor_data);
 
-protected:
+private:
     double control_interval_;
 
     double constant_proportional_;

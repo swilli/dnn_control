@@ -1,21 +1,30 @@
 #include "simulator.h"
 #include "odeint.h"
 
-Simulator::Simulator(Asteroid &asteroid, SensorSimulator *sensor_simulator, SpacecraftController *spacecraft_controller, const double &control_frequency, const double &perturbation_noise, const double &control_noise) :
-    sensor_simulator_(sensor_simulator), spacecraft_controller_(spacecraft_controller), system_(ODESystem(asteroid, control_noise)), perturbation_distribution_(boost::mt19937(time(0)),boost::normal_distribution<>(0.0, perturbation_noise)) {
+Simulator::Simulator(const double &control_frequency, const double &perturbation_noise, const double &control_noise, Asteroid &asteroid, SensorSimulator *sensor_simulator, Controller *spacecraft_controller, ControllerFullState *full_state_controller) :
+    system_(ODESystem(asteroid, control_noise)), perturbation_distribution_(boost::mt19937(time(0)),boost::normal_distribution<>(0.0, perturbation_noise)) {
 
     control_frequency_ = control_frequency;
     control_interval_ = 1.0 / control_frequency;
+
+    sensor_simulator_ = sensor_simulator;
+    spacecraft_controller_ = spacecraft_controller;
+    full_state_controller_ = full_state_controller;
 }
 
 Simulator::~Simulator() {
     delete sensor_simulator_;
-    delete spacecraft_controller_;
+    if (spacecraft_controller_) {
+        delete spacecraft_controller_;
+    }
+    if (full_state_controller_) {
+        delete full_state_controller_;
+    }
 }
 
 void Simulator::InitSpacecraft(const Vector3D &position, const Vector3D &velocity, const double &mass, const double &specific_impulse) {
     // Transform position, velocity and mass to state
-    for (int i = 0; i < 3; ++i) {
+    for (unsigned int i = 0; i < 3; ++i) {
         system_.state_[i] = position[i];
         system_.state_[3+i] = velocity[i];
     }
@@ -36,7 +45,7 @@ State Simulator::NextState(const State &state, const Vector3D &thrust, const dou
     State next_state;
 
     // Assign state
-    for (int i = 0; i < 3; ++i) {
+    for (unsigned int i = 0; i < 3; ++i) {
         system_.state_[i] = state[i];
         system_.state_[3+i] = state[3+i];
         system_.thrust_[i] = thrust[i];
@@ -51,7 +60,7 @@ State Simulator::NextState(const State &state, const Vector3D &thrust, const dou
     integrator.do_step(system_, system_.state_, time, control_interval_);
 
     // Extract new state out of system
-    for (int i = 0; i < 7; ++i) {
+    for (unsigned int i = 0; i < 7; ++i) {
         next_state[i] = system_.state_[i];
     }
 
@@ -65,12 +74,12 @@ boost::tuple<double, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<S
     std::vector<Vector3D> logged_positions;
     std::vector<Vector3D> logged_heights;
 
-    const int sensor_dimensions = sensor_simulator_->Dimensions();
-    if (sensor_dimensions != spacecraft_controller_->Dimensions()) {
+    const unsigned int sensor_dimensions = sensor_simulator_->Dimensions();
+    if ((spacecraft_controller_ != NULL) && (sensor_dimensions != spacecraft_controller_->Dimensions())) {
         std::cout << "warning: sensor simulator and spacecraft controller have different output/input dimensions." << std::endl;
     }
     const double dt = control_interval_;
-    const int iterations = time / dt;
+    const unsigned int iterations = time / dt;
 
     logged_positions = std::vector<Vector3D>(iterations);
     logged_heights = std::vector<Vector3D>(iterations);
@@ -81,38 +90,63 @@ boost::tuple<double, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<S
 
     runge_kutta4<State> integrator;
     double current_time = 0.0;
-    SensorData sensor_data(sensor_dimensions,0);
 
     // Stepwise integration for "iterations" iterations
     try {
-        for(int iteration = 0; iteration < iterations; ++iteration) {
+        for(unsigned int iteration = 0; iteration < iterations; ++iteration) {
+            // Compute spacecraft position
+            const Vector3D position = {system_.state_[0], system_.state_[1], system_.state_[2]};
+
+            // Compute height
+            const Vector3D surf_pos = boost::get<0>(system_.asteroid_.NearestPointOnSurfaceToPosition(position));
+            const Vector3D height = {position[0] - surf_pos[0], position[1] - surf_pos[1], position[2] - surf_pos[2],};
+
+            // Log position and height
             Vector3D &iter_pos = logged_positions.at(iteration);
-            iter_pos[0] = system_.state_[0];
-            iter_pos[1] = system_.state_[1];
-            iter_pos[2] = system_.state_[2];
+            iter_pos[0] = position[0];
+            iter_pos[1] = position[1];
+            iter_pos[2] = position[2];
 
             Vector3D &iter_height = logged_heights.at(iteration);
-            const Vector3D surf_pos = boost::get<0>(system_.asteroid_.NearestPointOnSurfaceToPosition(iter_pos));
-            iter_height[0] = iter_pos[0] - surf_pos[0];
-            iter_height[1] = iter_pos[1] - surf_pos[1];
-            iter_height[2] = iter_pos[2] - surf_pos[2];
+            iter_height[0] = height[0];
+            iter_height[1] = height[1];
+            iter_height[2] = height[2];
 
             // Simulate perturbations, directly write it to the ode system
             SimulatePerturbations(system_.perturbations_acceleration_);
 
             // Simulate sensor data
-            sensor_simulator_->Simulate(system_.state_, system_.perturbations_acceleration_, current_time, sensor_data);
+            const SensorData sensor_data = sensor_simulator_->Simulate(system_.state_, height, system_.perturbations_acceleration_, current_time);
 
             if (log_sensor_data) {
                 // Log sensor data, if enabled
                 SensorData &data = logged_sensor_data.at(iteration);
-                for (int i = 0; i < sensor_dimensions; ++i) {
+                for (unsigned int i = 0; i < sensor_dimensions; ++i) {
                     data[i] = sensor_data[i];
                 }
             }
 
-            // Poll controller for control thrust, write it to the ode system
-            spacecraft_controller_->GetThrustForSensorData(sensor_data, system_.thrust_);
+            //std::cout << "real position:" << std::endl;
+            //std::cout << "[" << system_.state_[0] << ";" << std::endl << system_.state_[1] << ";" << std::endl << system_.state_[2] <<  "]" << std::endl << std::endl;
+
+            // If default controller is available, use it
+            if (full_state_controller_) {
+                SensorData full_state(7, 0.0);
+                for (unsigned int i = 0; i < 7; ++i) {
+                    full_state[i] = system_.state_[i];
+                }
+                system_.thrust_ = full_state_controller_->GetThrustForSensorData(full_state);
+
+            } else if (spacecraft_controller_){
+                // Poll controller for control thrust, write it to the ode system
+                system_.thrust_ = spacecraft_controller_->GetThrustForSensorData(sensor_data);
+
+            } else {
+                // No controller -> no thrust
+                system_.thrust_[0] = 0.0;
+                system_.thrust_[1] = 0.0;
+                system_.thrust_[2] = 0.0;
+            }
 
             // Integrate the system for control_interval_ time
             integrator.do_step(system_, system_.state_, current_time, dt);
@@ -132,9 +166,21 @@ boost::tuple<double, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<S
     return boost::make_tuple(current_time, logged_positions, logged_heights, logged_sensor_data);
 }
 
+Asteroid& Simulator::AsteroidOfSystem() {
+    return system_.asteroid_;
+}
+
+double Simulator::ControlFrequency() const {
+    return control_frequency_;
+}
+
+double Simulator::ControlInterval() const {
+    return control_interval_;
+}
+
 void Simulator::SimulatePerturbations(Vector3D &perturbations) {
     double mass = system_.state_[6];
-    for(int i = 0; i < 3; ++i) {
+    for(unsigned int i = 0; i < 3; ++i) {
         perturbations[i] = mass * perturbation_distribution_();
     }
 }

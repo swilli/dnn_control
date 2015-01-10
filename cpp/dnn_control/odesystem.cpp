@@ -7,7 +7,7 @@
 
 ODESystem::ODESystem(Asteroid asteroid, const double &control_noise) : asteroid_(asteroid), control_distribution_(boost::mt19937(time(0)),boost::normal_distribution<>(0.0, control_noise)) {
     spacecraft_specific_impulse_ = 0.0;
-    for (int i = 0; i < 3; ++i) {
+    for (unsigned int i = 0; i < 3; ++i) {
         thrust_[i] = 0.0;
         perturbations_acceleration_[i] = 0.0;
         state_[i] = 0.0;
@@ -25,7 +25,7 @@ void ODESystem::operator()(const State &state, State &d_state_dt, const double &
 
     Vector3D position;
     Vector3D velocity;
-    for(int i = 0; i < 3; ++i) {
+    for(unsigned int i = 0; i < 3; ++i) {
         position[i] = state[i];
         velocity[i] = state[3+i];
     }
@@ -40,7 +40,7 @@ void ODESystem::operator()(const State &state, State &d_state_dt, const double &
 
     // Fg, Fc
     Vector3D thrust_acceleration;
-    for(int i = 0; i < 3; ++i) {
+    for(unsigned int i = 0; i < 3; ++i) {
         gravity_acceleration[i] *= coef_mass;
         thrust_acceleration[i] = thrust_[i] * coef_mass;
     }
@@ -52,18 +52,18 @@ void ODESystem::operator()(const State &state, State &d_state_dt, const double &
     const Vector3D centrifugal_acceleration = CrossProduct(angular_velocity, CrossProduct(angular_velocity, position));
 
     Vector3D tmp;
-    for(int i = 0; i < 3; ++i) {
+    for(unsigned int i = 0; i < 3; ++i) {
         tmp[i] = angular_velocity[i] * 2.0;
     }
 
     // 2w x r'
     const Vector3D coriolis_acceleration = CrossProduct(tmp, velocity);
 
-    for (int i = 0; i < 3 ;++i) {
+    for (unsigned int i = 0; i < 3 ;++i) {
         d_state_dt[i] = state[3+i];
         d_state_dt[3+i] = perturbations_acceleration_[i] + gravity_acceleration[i] + thrust_acceleration[i]
                 - coriolis_acceleration[i] - euler_acceleration[i] - centrifugal_acceleration[i];
     }
 
-    d_state_dt[6] = -sqrt(thrust_[0] * thrust_[0] + thrust_[1] * thrust_[1] + thrust_[2] * thrust_[2]) / ((spacecraft_specific_impulse_ + spacecraft_specific_impulse_ * control_distribution_()) * k_earth_acceleration);
+    d_state_dt[6] = -sqrt(thrust_[0] * thrust_[0] + thrust_[1] * thrust_[1] + thrust_[2] * thrust_[2]) / ((spacecraft_specific_impulse_ + spacecraft_specific_impulse_ * control_distribution_()) * kEarthAcceleration);
 }

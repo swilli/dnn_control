@@ -4,22 +4,25 @@
 #include "sensorsimulator.h"
 #include "vector.h"
 
-class SpacecraftController {
+class Controller {
         /*
          * This abstract class generates the thrust for a given sensor_data input (which will hopefully result in hovering at some point).
         */
 public:
-    SpacecraftController(const int &dimensions);
-    virtual ~SpacecraftController();
+    Controller(const unsigned int &dimensions, const double &maximum_thrust);
+    virtual ~Controller();
 
     // thrust = F(sensor_data), whereas F can be eg., a PD controller, some RL solution, a NN, ...
-    virtual void GetThrustForSensorData(const SensorData &sensor_data, Vector3D &thrust) = 0;
+    virtual Vector3D GetThrustForSensorData(const SensorData &sensor_data) = 0;
 
-    int Dimensions() const;
+    unsigned int Dimensions() const;
 
 protected:
     // How large can the sensor space be
-    int dimensions_;
+    unsigned int dimensions_;
+
+    // What is the maximum absolute thrust that the spacecraft can generate
+    double maximum_thrust_;
 };
 
 #endif // SPACECRAFTCONTROLLER_H

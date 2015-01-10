@@ -24,8 +24,8 @@ double SampleSign() {
 Vector3D SamplePointOutSideEllipsoid(const Vector3D &semi_axis, const double &band_width_scale) {
     Vector3D point;
 
-    const double u = SampleUniform(0.0, 2.0 * k_pi);
-    const double v = SampleUniform(0.0, k_pi);
+    const double u = SampleUniform(0.0, 2.0 * kPi);
+    const double v = SampleUniform(0.0, kPi);
     point[0] = SampleUniform(1.0, band_width_scale) * semi_axis[0] * cos(u) * sin(v);
     point[1] = SampleUniform(1.0, band_width_scale) * semi_axis[1] * sin(u) * sin(v);
     point[2] = SampleUniform(1.0, band_width_scale) * semi_axis[2] * cos(v);
@@ -50,7 +50,7 @@ static struct BisectEllipsoidApproximator  {
     Vector3D semi_axis_pow2;
     double operator() (double time)  {
         double result = 0.0;
-        for (int i = 0; i < 3; ++i) {
+        for (unsigned int i = 0; i < 3; ++i) {
             result += (semi_axis_mul_pos[i] / (time + semi_axis_pow2[i])) * (semi_axis_mul_pos[i] / (time + semi_axis_pow2[i]));
         }
         result -= 1.0;
@@ -63,7 +63,7 @@ double BisectEllipsoid(const Vector3D &semi_axis_mul_pos, const Vector3D &semi_a
 
     double lower_boundary = 0.0;
     double upper_boundary = 0.0;
-    for (int i = 0; i < 3; ++i) {
+    for (unsigned int i = 0; i < 3; ++i) {
         upper_boundary += semi_axis_mul_pos[i] * semi_axis_mul_pos[i];
     }
     upper_boundary = sqrt(upper_boundary);
@@ -82,7 +82,7 @@ static struct BisectEllipseApproximator {
     Vector2D semi_axis_pow2;
     double operator() (double time)  {
         double result = 0.0;
-        for (int i = 0; i < 2; ++i) {
+        for (unsigned int i = 0; i < 2; ++i) {
             result += (semi_axis_mul_pos[i] / (time + semi_axis_pow2[i])) * (semi_axis_mul_pos[i] / (time + semi_axis_pow2[i]));
         }
         result -= 1.0;
@@ -95,7 +95,7 @@ double BisectEllipse(const Vector2D &semi_axis_mul_pos, const Vector2D &semi_axi
 
     double lower_boundary = 0.0;
     double upper_boundary = 0.0;
-    for (int i = 0; i < 2; ++i) {
+    for (unsigned int i = 0; i < 2; ++i) {
         upper_boundary += semi_axis_mul_pos[i] * semi_axis_mul_pos[i];
     }
     upper_boundary = sqrt(upper_boundary);

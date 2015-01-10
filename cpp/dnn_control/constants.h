@@ -4,12 +4,12 @@
 #include <math.h>
 
 // G
-const double k_gravitational_constant = 6.6695e-11;  // [Nm^2/kg^2]
+const double kGravitationalConstant = 6.6695e-11;  // [Nm^2/kg^2]
 
 // PI
-const double k_pi = M_PI;
+const double kPi = M_PI;
 
 // g
-const double k_earth_acceleration = 9.981;  // [m/s^2]
+const double kEarthAcceleration = 9.981;  // [m/s^2]
 
 #endif // CONSTANTS_H

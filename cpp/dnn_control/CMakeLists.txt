@@ -28,7 +28,7 @@ SET(MANDATORY_LIBRARIES ${MANDATORY_LIBRARIES} ${GSL_GSL_LIBRARY} ${GSL_GSLCBLAS
 INCLUDE_DIRECTORIES("${GSL_INCLUDE_DIR}")
 
 # 5 - Define the target and linked libraries
-add_executable(main asteroid.cpp main.cpp odesystem.cpp sensorsimulator.cpp simulator.cpp spacecraftcontroller.cpp utility.cpp controller5d.cpp fullstatecontroller.cpp fullstatesensorsimulator.cpp sensorsimulator5d.cpp filewriter.cpp 
-sensordatagenerator.cpp sensorsimulator45d.cpp) 
+add_executable(main asteroid.cpp main.cpp odesystem.cpp sensorsimulator.cpp simulator.cpp spacecraftcontroller.cpp utility.cpp controller5d.cpp fullstatecontroller.cpp controlleranyd.cpp fullstatesensorsimulator.cpp sensorsimulator5d.cpp filewriter.cpp 
+sensordatagenerator.cpp sensorsimulatoranyd.cpp) 
 TARGET_LINK_LIBRARIES(main ${MANDATORY_LIBRARIES})
 

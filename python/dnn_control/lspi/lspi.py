@@ -4,10 +4,10 @@ from pendulum import PENDULUM_PHI_SIZE, pendulum_pi, pendulum_phi, pendulum_prep
 from spacecraft import SPACECRAFT_PHI_SIZE, spacecraft_pi, spacecraft_phi, spacecraft_prepare_samples, spacecraft_test
 
 # NUM_SAMPLES: the number of samples we have available
-NUM_SAMPLES = 100
+NUM_SAMPLES = 50
 
 # NUM_STEPS: the number of steps taken from an intial sample point
-NUM_STEPS = 50
+NUM_STEPS = 200
 
 # STATE_ACTION_DIMENSIONS: Number of dimensions in the transformed state action space
 STATE_ACTION_DIMENSIONS = SPACECRAFT_PHI_SIZE
@@ -78,16 +78,16 @@ def lspi(D, gamma, epsilon, w):
     print("iteration {0}. Norm: {1}".format(iteration, val_norm))
     return w
 
-D, semi_axis, simulator, control_frequency = spacecraft_prepare_samples(NUM_SAMPLES, NUM_STEPS)
+D, asteroid, simulator = spacecraft_prepare_samples(NUM_SAMPLES, NUM_STEPS)
 print("Generated {0} samples. Training policy ... ".format(len(D)))
 
 w = lspi(D, GAMMA, EPSILON, W)
 
 print("done. Testing policy ... ")
-positions, heights = spacecraft_test(w, semi_axis, simulator, control_frequency,
-                                     int(control_frequency * 60.0 * 60.0 * 2.0))
-print("done. Writing result file ...")
-from filewriter import FileWriter
-writer = FileWriter()
-writer.create_visualization_file("../../../results/states.txt", control_frequency, semi_axis, positions, heights)
-print("done.")
+#positions, heights = spacecraft_test(w, semi_axis, simulator, control_frequency,
+#                                     int(control_frequency * 60.0 * 60.0 * 2.0))
+#print("done. Writing result file ...")
+#from filewriter import FileWriter
+#writer = FileWriter()
+#writer.create_visualization_file("../../../results/states.txt", control_frequency, semi_axis, positions, heights)
+#print("done.")

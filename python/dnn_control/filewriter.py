@@ -18,6 +18,7 @@ class FileWriter:
                                                                     height[0], height[1],height[2]))
         result_file.close()
 
+
     def create_sensor_data_file(self, path_to_file, control_frequency, time_to_run,
                                 semi_axis, density, angular_velocity, time_bias,
                                 spacecraft_position, spacecraft_velocity, spacecraft_mass, spacecraft_specific_impulse,
