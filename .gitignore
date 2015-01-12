@@ -1,0 +1,15 @@
+*.pyc
+matlab
+.idea
+build-dnn*
+CMakeFiles
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+*.o
+build*
+*.save
+*.so
+*.pro*
+*.pri
+main
