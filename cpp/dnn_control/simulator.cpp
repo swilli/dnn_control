@@ -166,6 +166,7 @@ boost::tuple<double, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<S
                 if (log_sensor_data) {
                     logged_sensor_data.resize(performed_iterations);
                 }
+
                 break;
             }
         }

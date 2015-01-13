@@ -56,7 +56,7 @@ void HoveringProblem::Init(const unsigned int &random_seed, const bool &full_sta
     const double control_frequency = 10;
 
     SensorSimulator *sensor_simulator = new SensorSimulatorAcceleration(asteroid, sensor_noise);
-    Controller *spacecraft_controller = new ControllerAcceleration(control_frequency, spacecraft_maximum_thrust, target_position, spacecraft_position, spacecraft_velocity);
+    Controller *spacecraft_controller = NULL; //new ControllerAcceleration(control_frequency, spacecraft_maximum_thrust, target_position, spacecraft_position, spacecraft_velocity);
 
     ControllerFullState *full_state_controller = NULL;
     if (full_state_controlled) {

@@ -1,5 +1,6 @@
 #include "hoveringproblem.h"
 #include "samplefactory.h"
+
 #include "simulator.h"
 #include "controllerfullstate.h"
 
@@ -11,7 +12,6 @@
 #include "utility.h"
 #include "filewriter.h"
 #include "sensordatagenerator.h"
-
 
 #include <iostream>
 #include <sstream>
@@ -48,8 +48,6 @@ int main(int argc, char *argv[]) {
         generator.Generate(NUM_SENSOR_DATA_FILES,true);
         return 0;
     }
-
-
 
     const Vector3D spacecraft_position = SamplePointOutSideEllipsoid(semi_axis, 4.0);
     const Vector3D angular_velocity = boost::get<0>(asteroid.AngularVelocityAndAccelerationAtTime(0.0));

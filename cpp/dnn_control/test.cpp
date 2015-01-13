@@ -103,6 +103,7 @@ void UnitTestTrajectory() {
     Controller5D *spacecraft_controller = new Controller5D(spacecraft_maximum_thrust);
 
     delete sensor_simulator;
+    delete spacecraft_controller;
     std::cout << "done." << std::endl;
 }
 

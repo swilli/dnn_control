@@ -1,12 +1,7 @@
 #include "utility.h"
 #include "constants.h"
 #include "samplefactory.h"
-
-#include <gsl/gsl_errno.h>
-#include <gsl/gsl_math.h>
-#include <gsl/gsl_roots.h>
 #include <boost/math/tools/roots.hpp>
-#include <boost/random.hpp>
 
 Vector3D SamplePointOutSideEllipsoid(const Vector3D &semi_axis, const double &band_width_scale) {
     Vector3D point;
@@ -16,7 +11,6 @@ Vector3D SamplePointOutSideEllipsoid(const Vector3D &semi_axis, const double &ba
     point[0] = SampleFactory::SampleUniform(1.0, band_width_scale) * semi_axis[0] * cos(u) * sin(v);
     point[1] = SampleFactory::SampleUniform(1.0, band_width_scale) * semi_axis[1] * sin(u) * sin(v);
     point[2] = SampleFactory::SampleUniform(1.0, band_width_scale) * semi_axis[2] * cos(v);
-
     return point;
 }
 

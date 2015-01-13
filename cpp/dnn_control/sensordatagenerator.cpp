@@ -17,6 +17,7 @@ void SensorDataGenerator::Generate(const unsigned int &num_datasets, const bool 
         const double time = data_set_time_;
 
         /*const Vector3D semi_axis = {SampleUniform(8000.0, 12000.0), SampleUniform(4000.0, 7500.0), SampleUniform(1000.0, 3500.0)};
+
         const double density = SampleUniform(1500.0, 3000.0);
         Vector2D angular_velocity_xz = {SampleSign() * SampleUniform(0.0002, 0.0008), SampleSign() * SampleUniform(0.0002, 0.0008)};
         const double time_bias = SampleUniform(0.0, 24.0 * 60 * 60);
@@ -110,6 +111,7 @@ void SensorDataGenerator::Generate(const unsigned int &num_datasets, const bool 
         std::cout << "   writing stats to file " << path_to_trajectory_file << " ... ";
         writer.CreateVisualizationFile(path_to_trajectory_file, control_frequency, asteroid, positions, heights);
         std::cout << "done." << std::endl;
+<<<<<<< HEAD
         */
     }
 }

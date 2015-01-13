@@ -16,7 +16,7 @@ void SampleFactory::Init(const unsigned int &random_seed) {
     uniform_distribution_ = boost::random::uniform_real_distribution<>(0.0, 1.0);
 }
 
-boost::random::mt19937 &SampleFactory::RandomNumberGenerator() {
+boost::random::mt19937& SampleFactory::RandomNumberGenerator() {
     return generator_;
 }
 

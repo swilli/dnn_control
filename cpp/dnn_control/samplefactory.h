@@ -13,7 +13,7 @@ public:
     static void Init(const unsigned int &random_seed);
 
     // The underlying RNG
-    static boost::mt19937 &RandomNumberGenerator();
+    static boost::mt19937& RandomNumberGenerator();
 
     // X ~ U(minimum, maximum)
     static double SampleUniform(const double &minimum, const double &maximum);
