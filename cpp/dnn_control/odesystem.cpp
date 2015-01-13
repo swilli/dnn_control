@@ -1,11 +1,12 @@
 #include "odesystem.h"
 #include "utility.h"
 #include "constants.h"
+#include "samplefactory.h"
 
 #include <math.h>
 #include <iostream>
 
-ODESystem::ODESystem(Asteroid asteroid, const double &control_noise) : asteroid_(asteroid), control_distribution_(boost::mt19937(time(0)),boost::normal_distribution<>(0.0, control_noise)) {
+ODESystem::ODESystem(Asteroid asteroid, const double &control_noise) : asteroid_(asteroid), control_distribution_(SampleFactory::RandomNumberGenerator(), boost::normal_distribution<>(0.0, control_noise)) {
     spacecraft_specific_impulse_ = 0.0;
     for (unsigned int i = 0; i < 3; ++i) {
         thrust_[i] = 0.0;

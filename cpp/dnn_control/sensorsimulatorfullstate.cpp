@@ -1,10 +1,10 @@
 #include "sensorsimulatorfullstate.h"
+#include "samplefactory.h"
 
 SensorSimulatorFullState::SensorSimulatorFullState(const Asteroid &asteroid, const SensorNoiseConfiguration &configuration) : SensorSimulator(7, asteroid) {
     for (unsigned int i = 0; i < dimensions_; ++i) {
-        boost::mt19937 generator(rand());
         boost::normal_distribution<> normal(0.0, configuration.at(i));
-        boost::variate_generator<boost::mt19937, boost::normal_distribution<> > distribution(generator, normal);
+        boost::variate_generator<boost::mt19937, boost::normal_distribution<> > distribution(SampleFactory::RandomNumberGenerator(), normal);
 
         normal_distributions_.push_back(distribution);
     }

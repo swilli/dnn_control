@@ -1,3 +1,5 @@
+#include "hoveringproblem.h"
+#include "samplefactory.h"
 #include "simulator.h"
 #include "controllerfullstate.h"
 
@@ -22,13 +24,22 @@
 #define PATH_TO_SENSOR_DATA_FOLDER              "../../../data/"
 
 #define GENERATE_RANDOM_TRAJECTORY_FILE     1
-#define FULL_STATE_CONTROLLED                           1
+#define FULL_STATE_CONTROLLED                           0
 #define PATH_TO_RANDOM_TRAJECTORY_FILE       "../../../results/trajectory.txt"
 
 int main(int argc, char *argv[]) {
-    srand(time(NULL));
+    const unsigned int random_seed = 679;
 
-    const double time = SIMULATION_TIME;
+    if (GENERATE_RANDOM_TRAJECTORY_FILE) {
+        HoveringProblem problem;
+        std::cout << "creating visualization file ... " << std::endl;
+        problem.Init(random_seed, FULL_STATE_CONTROLLED);
+        problem.CreateVisualizationFile(PATH_TO_RANDOM_TRAJECTORY_FILE);
+        std::cout << "done." << std::endl;
+    }
+    return 0;
+
+    /*const double time = SIMULATION_TIME;
     const double control_frequency = 10.0;
 
     if (GENERATE_SENSOR_DATA_FILES) {
@@ -38,12 +49,7 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
-    const Vector3D semi_axis = {SampleUniform(8000.0, 12000.0), SampleUniform(4000.0, 7500.0), SampleUniform(1000.0, 3500.0)};
-    const double density = SampleUniform(1500.0, 3000.0);
-    Vector2D angular_velocity_xz = {SampleSign() * SampleUniform(0.0002, 0.0008), SampleSign() * SampleUniform(0.0002, 0.0008)};
-    const double time_bias = SampleUniform(0.0, 12.0 * 60 * 60);
 
-    Asteroid asteroid(semi_axis, density, angular_velocity_xz, time_bias);
 
     const Vector3D spacecraft_position = SamplePointOutSideEllipsoid(semi_axis, 4.0);
     const Vector3D angular_velocity = boost::get<0>(asteroid.AngularVelocityAndAccelerationAtTime(0.0));
@@ -93,5 +99,6 @@ int main(int argc, char *argv[]) {
         writer.CreateVisualizationFile(PATH_TO_RANDOM_TRAJECTORY_FILE, control_frequency, asteroid, positions, heights);
         std::cout << "done." << std::endl;
     }
+    */
 }
 

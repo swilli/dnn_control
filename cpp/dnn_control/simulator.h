@@ -28,8 +28,11 @@ public:
     // Implements F: S x A x T -> S : F(s,a,t) = s' (Useful for RL?)
     State NextState(const State &state, const Vector3D &thrust, const double &time);
 
-    // Simulates the system for time "frame_type". Logs the states if "log_data" is enabled, Returns the actual simulated time, positions, heights, and sensor data
+    // Simulates the system for time "time". Logs the states if "log_data" is enabled, Returns the actual simulated time, positions, heights, and sensor data
     boost::tuple<double, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<SensorData> > Run(const double &time, const bool &log_sensor_data);
+
+    // Simulates the system for time "time". Returns the actual simulated time, positions and heights
+    boost::tuple<double, std::vector<Vector3D>, std::vector<Vector3D> > RunForVisualization(const double &time);
 
     // The asteroid the simulator's ode system uses
     Asteroid& AsteroidOfSystem();

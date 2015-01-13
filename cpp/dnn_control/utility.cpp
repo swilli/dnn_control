@@ -1,5 +1,6 @@
 #include "utility.h"
 #include "constants.h"
+#include "samplefactory.h"
 
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_math.h>
@@ -7,28 +8,14 @@
 #include <boost/math/tools/roots.hpp>
 #include <boost/random.hpp>
 
-
-
-static boost::mt19937 rand_generator(std::time(0));
-static boost::random::uniform_real_distribution<> distribution(0.0, 1.0);
-
-double SampleUniform(const double &minimum, const double &maximum) {
-    return minimum + (maximum - minimum) * distribution(rand_generator);
-}
-
-double SampleSign() {
-    const double value = SampleUniform(-1.0, 1.0);
-    return value >= 0 ? 1.0 : -1.0;
-}
-
 Vector3D SamplePointOutSideEllipsoid(const Vector3D &semi_axis, const double &band_width_scale) {
     Vector3D point;
 
-    const double u = SampleUniform(0.0, 2.0 * kPi);
-    const double v = SampleUniform(0.0, kPi);
-    point[0] = SampleUniform(1.0, band_width_scale) * semi_axis[0] * cos(u) * sin(v);
-    point[1] = SampleUniform(1.0, band_width_scale) * semi_axis[1] * sin(u) * sin(v);
-    point[2] = SampleUniform(1.0, band_width_scale) * semi_axis[2] * cos(v);
+    const double u = SampleFactory::SampleUniform(0.0, 2.0 * kPi);
+    const double v = SampleFactory::SampleUniform(0.0, kPi);
+    point[0] = SampleFactory::SampleUniform(1.0, band_width_scale) * semi_axis[0] * cos(u) * sin(v);
+    point[1] = SampleFactory::SampleUniform(1.0, band_width_scale) * semi_axis[1] * sin(u) * sin(v);
+    point[2] = SampleFactory::SampleUniform(1.0, band_width_scale) * semi_axis[2] * cos(v);
 
     return point;
 }

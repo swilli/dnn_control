@@ -1,6 +1,7 @@
 #include "test.h"
 #include "asteroid.h"
 #include "utility.h"
+#include "samplefactory.h"
 #include "odesystem.h"
 #include "simulator.h"
 #include "sensorsimulator5d.h"
@@ -46,7 +47,7 @@ void UnitTestAngularVelocity() {
     double max_error = 1e-20;
     double avg_error = 0.0;
     for (unsigned int i = 0; i < num_test_cases; ++i) {
-        const double time = SampleUniform(0.0, 24.0*60.0*60.0);
+        const double time = SampleFactory::SampleUniform(0.0, 24.0*60.0*60.0);
         const boost::tuple<Vector3D, Vector3D> result = asteroid.AngularVelocityAndAccelerationAtTime(time);
         Vector3D omega_analytical = boost::get<0>(result);
 
