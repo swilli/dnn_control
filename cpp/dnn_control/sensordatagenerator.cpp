@@ -48,7 +48,7 @@ void SensorDataGenerator::Generate(const unsigned int &num_datasets, const bool 
             target_position[i] = SampleUniform(spacecraft_position[i] - 3.0, spacecraft_position[i] + 3.0);
         }
 
-        SensorNoiseConfiguration sensor_noise;
+        SensorSimulatorAnyD::SensorNoiseConfiguration sensor_noise;
         for (unsigned int i = 0; i < sensor_noise.size(); ++i) {
             sensor_noise[i] = 0.05;
         }

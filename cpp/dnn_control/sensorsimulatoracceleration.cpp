@@ -1,8 +1,14 @@
 #include "sensorsimulatoracceleration.h"
 #include "utility.h"
 
-SensorSimulatorAcceleration::SensorSimulatorAcceleration(const Asteroid &asteroid, const double &sensor_noise) : SensorSimulator(4, asteroid), normal_distribution_(boost::mt19937(time(0)),boost::normal_distribution<>(0.0, sensor_noise)) {
+SensorSimulatorAcceleration::SensorSimulatorAcceleration(const Asteroid &asteroid, const SensorNoiseConfiguration &configuration) : SensorSimulator(4, asteroid) {
+    for (unsigned int i = 0; i < dimensions_; ++i) {
+        boost::mt19937 generator(rand());
+        boost::normal_distribution<> normal(0.0, configuration.at(i));
+        boost::variate_generator<boost::mt19937, boost::normal_distribution<> > distribution(generator, normal);
 
+        normal_distributions_.push_back(distribution);
+    }
 }
 
 SensorSimulatorAcceleration::~SensorSimulatorAcceleration() {
@@ -10,7 +16,7 @@ SensorSimulatorAcceleration::~SensorSimulatorAcceleration() {
 }
 
 SensorData SensorSimulatorAcceleration::Simulate(const State &state, const Vector3D &height, const Vector3D &perturbations_acceleration, const double &time) {
-    SensorData sensor_data(4, 0.0);
+    SensorData sensor_data(dimensions_, 0.0);
 
     const Vector3D position = {state[0], state[1], state[2]};
     const Vector3D velocity = {state[3], state[4], state[5]};
@@ -42,9 +48,9 @@ SensorData SensorSimulatorAcceleration::Simulate(const State &state, const Vecto
                 - euler_acceleration[i]
                 - centrifugal_acceleration[i];
 
-        sensor_data[i] += sensor_data[i] * normal_distribution_();
+        sensor_data[i] += sensor_data[i] * normal_distributions_.at(i)();
     }
-    sensor_data[3] = state[6];
+    sensor_data[3] = state[6] + state[6] * normal_distributions_.at(3)();
 
     return sensor_data;
 }

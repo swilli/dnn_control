@@ -91,7 +91,10 @@ void UnitTestTrajectory() {
 
     const double control_frequency = 10.0;
 
-    const double sensor_noise = 0.05;
+    SensorSimulator5D::SensorNoiseConfiguration sensor_noise;
+    for (unsigned int i = 0; i < sensor_noise.size(); ++i) {
+        sensor_noise[i] = 0.05;
+    }
     const double perturbation_noise = 0.0;
 
     Asteroid asteroid(semi_axis,density, angular_velocity_xz, time_bias);

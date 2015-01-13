@@ -25,7 +25,7 @@ Vector3D ControllerAcceleration::GetThrustForSensorData(const SensorData &sensor
     Vector3D estimated_position;
     estimated_position[0] = state_[0];
     estimated_position[1] = state_[1];
-    estimated_position[1] = state_[2];
+    estimated_position[2] = state_[2];
 
     const double &mass = sensor_data[3];
 

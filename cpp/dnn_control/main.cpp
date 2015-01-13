@@ -16,7 +16,7 @@
 #include <sstream>
 #include <ctime>
 
-#define SIMULATION_TIME                     24.0 * 60.0 * 60.0
+#define SIMULATION_TIME                     6.0 * 60.0 * 60.0
 
 #define GENERATE_SENSOR_DATA_FILES          0
 #define NUM_SENSOR_DATA_FILES               5
@@ -67,18 +67,16 @@ int main(int argc, char *argv[]) {
         target_position[i] = SampleUniform(spacecraft_position[i] - 3.0, spacecraft_position[i] + 3.0);
     }
 
-    /*SensorNoiseConfiguration sensor_noise;
+    SensorSimulatorAcceleration::SensorNoiseConfiguration sensor_noise;
     for (unsigned int i = 0; i < sensor_noise.size(); ++i) {
         sensor_noise[i] = 0.05;
     }
-    */
-    const double sensor_noise = 0.05;
 
     const double perturbation_noise = 1e-7;
     const double control_noise = 0.05;
 
     SensorSimulator *sensor_simulator = new SensorSimulatorAcceleration(asteroid, sensor_noise);
-    Controller *spacecraft_controller = new ControllerAcceleration(control_frequency, spacecraft_maximum_thrust, target_position, spacecraft_position, spacecraft_velocity);
+    Controller *spacecraft_controller = NULL; //new ControllerAcceleration(control_frequency, spacecraft_maximum_thrust, target_position, spacecraft_position, spacecraft_velocity);
 
     ControllerFullState *full_state_controller = NULL;
     if (FULL_STATE_CONTROLLED) {

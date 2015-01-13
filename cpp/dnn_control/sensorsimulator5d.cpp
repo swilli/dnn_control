@@ -1,8 +1,14 @@
 #include "sensorsimulator5d.h"
 #include "utility.h"
 
-SensorSimulator5D::SensorSimulator5D(const Asteroid &asteroid, const double &sensor_noise) : SensorSimulator(5, asteroid), normal_distribution_(boost::mt19937(time(0)),boost::normal_distribution<>(0.0, sensor_noise)) {
+SensorSimulator5D::SensorSimulator5D(const Asteroid &asteroid, const SensorNoiseConfiguration &configuration) : SensorSimulator(5, asteroid) {
+    for (unsigned int i = 0; i < dimensions_; ++i) {
+        boost::mt19937 generator(rand());
+        boost::normal_distribution<> normal(0.0, configuration.at(i));
+        boost::variate_generator<boost::mt19937, boost::normal_distribution<> > distribution(generator, normal);
 
+        normal_distributions_.push_back(distribution);
+    }
 }
 
 SensorSimulator5D::~SensorSimulator5D() {
@@ -62,13 +68,13 @@ SensorData SensorSimulator5D::Simulate(const State &state, const Vector3D &heigh
     const Vector3D coriolis_acceleration = CrossProduct(tmp, velocity);
 
     for (unsigned int i = 0; i < 3; ++i) {
-        sensor_data[i] += sensor_data[i] * normal_distribution_();
+        sensor_data[i] += sensor_data[i] * normal_distributions_.at(i)();
         sensor_data[2+i] = perturbations_acceleration[i]
                 + gravity_acceleration[i]
                 - coriolis_acceleration[i]
                 - euler_acceleration[i]
                 - centrifugal_acceleration[i];
-        sensor_data[2+i] += sensor_data[2+i] * normal_distribution_();
+        sensor_data[2+i] += sensor_data[2+i] * normal_distributions_.at(2+i)();
     }
 
     return sensor_data;

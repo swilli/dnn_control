@@ -3,7 +3,7 @@
 
 SensorSimulatorAnyD::SensorSimulatorAnyD(const Asteroid &asteroid, const SensorNoiseConfiguration &configuration) : SensorSimulator(SENSOR_SIMULATOR_DATA_DIMENSIONS * SENSOR_SIMULATOR_DATA_MULTIPLIER * SENSOR_SIMULATOR_DATA_HISTORY, asteroid) {
     for (unsigned int i = 0; i < SENSOR_SIMULATOR_DATA_DIMENSIONS * SENSOR_SIMULATOR_DATA_MULTIPLIER; ++i) {
-        boost::mt19937 generator(time(0));
+        boost::mt19937 generator(rand());
         boost::normal_distribution<> normal(0.0, configuration.at(i));
         boost::variate_generator<boost::mt19937, boost::normal_distribution<> > distribution(generator, normal);
 

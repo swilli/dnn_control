@@ -14,8 +14,6 @@
 #define SENSOR_SIMULATOR_DATA_MULTIPLIER  3
 #define SENSOR_SIMULATOR_DATA_HISTORY     3
 
-typedef boost::array<double, SENSOR_SIMULATOR_DATA_DIMENSIONS * SENSOR_SIMULATOR_DATA_MULTIPLIER> SensorNoiseConfiguration;
-typedef boost::array<double, SENSOR_SIMULATOR_DATA_DIMENSIONS * SENSOR_SIMULATOR_DATA_MULTIPLIER * SENSOR_SIMULATOR_DATA_HISTORY> SensorDataCache;
 
 class SensorSimulatorAnyD : public SensorSimulator
 {
@@ -24,6 +22,9 @@ class SensorSimulatorAnyD : public SensorSimulator
      * In addition, it keeps the last SENSOR_DATA_HISTORY sensor readings. This gives a total dimension of SENSOR_DATA_DIMENSIONS * SENSOR_DATA_MULTIPLIER * SENSOR_DATA_HISTORY.
      */
 public:
+    typedef boost::array<double, SENSOR_SIMULATOR_DATA_DIMENSIONS * SENSOR_SIMULATOR_DATA_MULTIPLIER> SensorNoiseConfiguration;
+    typedef boost::array<double, SENSOR_SIMULATOR_DATA_DIMENSIONS * SENSOR_SIMULATOR_DATA_MULTIPLIER * SENSOR_SIMULATOR_DATA_HISTORY> SensorDataCache;
+
     SensorSimulatorAnyD(const Asteroid &asteroid, const SensorNoiseConfiguration &configuration);
     virtual ~SensorSimulatorAnyD();
 
