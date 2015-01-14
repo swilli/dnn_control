@@ -174,7 +174,9 @@ void UnitTestRunThrough() {
     for (unsigned int i = 0; i < num_tests; ++i) {
         std::cout << i << std::endl;
         const unsigned int seed = rand();
+
         HoveringProblem problem1, problem2;
+
         problem1.Init(seed, full_state_controlled);
         const Vector3D final_position_1 = problem1.PositionAtEnd();
 
