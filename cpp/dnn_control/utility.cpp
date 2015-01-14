@@ -8,9 +8,9 @@ Vector3D SamplePointOutSideEllipsoid(const Vector3D &semi_axis, const double &ba
 
     const double u = SampleFactory::SampleUniform(0.0, 2.0 * kPi);
     const double v = SampleFactory::SampleUniform(0.0, kPi);
-    point[0] = SampleFactory::SampleUniform(1.0, band_width_scale) * semi_axis[0] * cos(u) * sin(v);
-    point[1] = SampleFactory::SampleUniform(1.0, band_width_scale) * semi_axis[1] * sin(u) * sin(v);
-    point[2] = SampleFactory::SampleUniform(1.0, band_width_scale) * semi_axis[2] * cos(v);
+    point[0] = SampleFactory::SampleUniform(1.1, band_width_scale) * semi_axis[0] * cos(u) * sin(v);
+    point[1] = SampleFactory::SampleUniform(1.1, band_width_scale) * semi_axis[1] * sin(u) * sin(v);
+    point[2] = SampleFactory::SampleUniform(1.1, band_width_scale) * semi_axis[2] * cos(v);
     return point;
 }
 

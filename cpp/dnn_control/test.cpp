@@ -170,6 +170,7 @@ void UnitTestRunThrough() {
 
     srand(time(0));
 
+    unsigned int num_comparable_tests = 0;
     for (unsigned int i = 0; i < num_tests; ++i) {
         std::cout << i << std::endl;
         const unsigned int seed = rand();
@@ -186,8 +187,13 @@ void UnitTestRunThrough() {
             error += (final_position_1[i] - final_position_2[i]) * (final_position_1[i] - final_position_2[i]);
         }
         error = sqrt(error);
+        if (error > 100.0) {
+            std::cout << "skip" << std::endl;
+            continue;
+        }
         mean_error += error;
+        num_comparable_tests++;
     }
 
-    std::cout << mean_error / num_tests << std::endl;
+    std::cout << mean_error / num_comparable_tests << std::endl;
 }

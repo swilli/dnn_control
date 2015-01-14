@@ -34,13 +34,11 @@ void HoveringProblem::Init(const unsigned int &random_seed, const bool &full_sta
     const double spacecraft_specific_impulse = 200.0;
     const double spacecraft_maximum_thrust = 21.0;
 
-    const Vector3D spacecraft_position = {2.0 * semi_axis[0], 0.0, 0.0}; //SamplePointOutSideEllipsoid(semi_axis, 4.0);
+    const Vector3D spacecraft_position = SamplePointOutSideEllipsoid(semi_axis, 4.0);
     const Vector3D angular_velocity = boost::get<0>(asteroid.AngularVelocityAndAccelerationAtTime(0.0));
     Vector3D spacecraft_velocity = CrossProduct(angular_velocity, spacecraft_position);
     spacecraft_velocity = {-spacecraft_velocity[0], sqrt(asteroid.MassGravitationalConstant() / fabs(spacecraft_position[0])) - spacecraft_velocity[1], -spacecraft_velocity[2]};
     //spacecraft_velocity[0] *= -1; spacecraft_velocity[1] *= -1; spacecraft_velocity[2] *= -1;
-
-
 
     Vector3D target_position;
     for (unsigned int i = 0; i < 3; ++i) {
@@ -52,7 +50,7 @@ void HoveringProblem::Init(const unsigned int &random_seed, const bool &full_sta
         sensor_noise[i] = 0.05;
     }
 
-    const double perturbation_noise = 1e-7;
+    const double perturbation_noise = 0.0;
 
     const double control_noise = 0.05;
     const double control_frequency = 10;
