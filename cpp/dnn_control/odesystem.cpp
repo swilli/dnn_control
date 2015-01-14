@@ -32,7 +32,7 @@ void ODESystem::operator()(const State &state, State &d_state_dt, const double &
     }
 
     // g
-    Vector3D gravity_acceleration = asteroid_.GravityAtPosition(position);
+    Vector3D gravity_acceleration = asteroid_.GravityAccelerationAtPosition(position);
 
     // w, w'
     const boost::tuple<Vector3D, Vector3D> result = asteroid_.AngularVelocityAndAccelerationAtTime(time);
@@ -42,7 +42,6 @@ void ODESystem::operator()(const State &state, State &d_state_dt, const double &
     // Fg, Fc
     Vector3D thrust_acceleration;
     for(unsigned int i = 0; i < 3; ++i) {
-        gravity_acceleration[i] *= coef_mass;
         thrust_acceleration[i] = thrust_[i] * coef_mass;
     }
 

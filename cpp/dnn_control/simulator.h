@@ -34,6 +34,9 @@ public:
     // Simulates the system for time "time". Returns the actual simulated time, positions and heights
     boost::tuple<double, std::vector<Vector3D>, std::vector<Vector3D> > RunForVisualization(const double &time);
 
+    // Simulates the system for time "time". Returns the final position of the spacecraft.
+    Vector3D RunThrough(const double &time);
+
     // The asteroid the simulator's ode system uses
     Asteroid& AsteroidOfSystem();
 

@@ -28,7 +28,7 @@ public:
     // Isp (for deltaV budget computation)
     double spacecraft_specific_impulse_;
 
-    // control_distribution_ ~ N(0, control_noise), whereas perturbation_noise is given in the constructor
+    // control_distribution_ ~ N(0, control_noise), whereas control_noise is given in the constructor
     boost::variate_generator<boost::mt19937, boost::normal_distribution<> > control_distribution_;
 
     // T for each dimension

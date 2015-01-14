@@ -17,25 +17,32 @@
 #include <sstream>
 #include <ctime>
 
-#define SIMULATION_TIME                                         24.0 * 60.0 * 60.0
 
-#define GENERATE_SENSOR_DATA_FILES                 0
-#define NUM_SENSOR_DATA_FILES                          5
-#define PATH_TO_SENSOR_DATA_FOLDER              "../../../data/"
+#define FULL_STATE_CONTROLLED                                   0
 
-#define GENERATE_RANDOM_TRAJECTORY_FILE     1
-#define FULL_STATE_CONTROLLED                           0
-#define PATH_TO_RANDOM_TRAJECTORY_FILE       "../../../results/trajectory.txt"
+#define GENERATE_SENSOR_DATA_FILES                              0
+#define NUM_SENSOR_DATA_FILES                                   5
+#define PATH_TO_SENSOR_DATA_FOLDER                              "../../../data/"
+
+#define CREATE_RANDOM_VISUALIZATION_FILE                        0
+#define PATH_TO_RANDOM_TRAJECTORY_FILE                          "../../../results/visualization.txt"
+
+#define TEST_RUN_THROUGH                                        1
 
 int main(int argc, char *argv[]) {
-    const unsigned int random_seed = 679;
+    srand(time(0));
+    const unsigned int random_seed = rand();
+    std::cout << "current seed: " << random_seed << std::endl;
 
-    if (GENERATE_RANDOM_TRAJECTORY_FILE) {
+    if (CREATE_RANDOM_VISUALIZATION_FILE) {
         HoveringProblem problem;
         std::cout << "creating visualization file ... " << std::endl;
         problem.Init(random_seed, FULL_STATE_CONTROLLED);
         problem.CreateVisualizationFile(PATH_TO_RANDOM_TRAJECTORY_FILE);
         std::cout << "done." << std::endl;
+
+    } else if (TEST_RUN_THROUGH) {
+        UnitTestRunThrough();
     }
     return 0;
 

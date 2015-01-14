@@ -29,7 +29,7 @@ public:
     Asteroid(const Vector3D &semi_axis, const double &density, const Vector2D &angular_velocity_xz, const double &time_bias);
 
     // Computes the gravity components in asteroid centered RF at an outside point "position" which is also in asteroid centered RF
-    Vector3D GravityAtPosition(const Vector3D &position) const;
+    Vector3D GravityAccelerationAtPosition(const Vector3D &position) const;
 
     // Computes w ("velocity") and d/dt ("acceleration") w of the asteroid rotating RF at time "time"
     boost::tuple<Vector3D, Vector3D> AngularVelocityAndAccelerationAtTime(const double &time) const;
@@ -54,6 +54,9 @@ public:
 
     // Returns time_bias
     double TimeBias() const;
+
+    // Returns coef_mass_gravitational_constant
+    double MassGravitationalConstant() const;
 
 private:
     // Helper function for NearestPointOnSurfaceToPosition since we assume a symmetric ellipsoid. Position "position" has to be in first quadrant.
@@ -95,13 +98,13 @@ private:
     double momentum_pow2_;
 
     // Cached m * G
-    double coef_mass_gravitational_constant_;
+    double mass_gravitational_constant_;
 
     // Lifshitz eq (37.10)
     Vector3D elliptic_coefficients_;
 
     // Lifshitz eq (37.8)
-    double coef_elliptic_tau_;
+    double elliptic_tau_;
 
     // Lifshitz eq (37.9)
     double elliptic_modulus_;

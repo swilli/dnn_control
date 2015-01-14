@@ -20,12 +20,8 @@ SensorData SensorSimulatorAcceleration::Simulate(const State &state, const Vecto
 
     const Vector3D position = {state[0], state[1], state[2]};
     const Vector3D velocity = {state[3], state[4], state[5]};
-    const double coef_mass = 1.0 / state[6];
 
-    Vector3D gravity_acceleration = asteroid_.GravityAtPosition(position);
-    gravity_acceleration[0] *= coef_mass;
-    gravity_acceleration[1] *= coef_mass;
-    gravity_acceleration[2] *= coef_mass;
+    const Vector3D gravity_acceleration = asteroid_.GravityAccelerationAtPosition(position);
 
     const boost::tuple<Vector3D, Vector3D> result_angular = asteroid_.AngularVelocityAndAccelerationAtTime(time);
     const Vector3D angular_velocity = boost::get<0>(result_angular);

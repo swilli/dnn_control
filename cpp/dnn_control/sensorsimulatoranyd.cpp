@@ -24,7 +24,6 @@ SensorData SensorSimulatorAnyD::Simulate(const State &state, const Vector3D &hei
 
     const Vector3D position = {state[0], state[1], state[2]};
     const Vector3D velocity = {state[3], state[4], state[5]};
-    const double mass = state[6];
 
     double norm_height_pow2 = 0.0;
     for (unsigned int i = 0; i < 3; ++i) {
@@ -52,10 +51,7 @@ SensorData SensorSimulatorAnyD::Simulate(const State &state, const Vector3D &hei
     sensor_seed[1] = norm_vel_rem / norm_height;
 
 
-    Vector3D gravity_acceleration = asteroid_.GravityAtPosition(position);
-    gravity_acceleration[0] /= mass;
-    gravity_acceleration[1] /= mass;
-    gravity_acceleration[2] /= mass;
+    const Vector3D gravity_acceleration = asteroid_.GravityAccelerationAtPosition(position);
 
     const boost::tuple<Vector3D, Vector3D> result_angular = asteroid_.AngularVelocityAndAccelerationAtTime(time);
     const Vector3D angular_velocity = boost::get<0>(result_angular);

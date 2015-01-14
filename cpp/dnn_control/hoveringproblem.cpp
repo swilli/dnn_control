@@ -7,6 +7,7 @@
 #include "controlleracceleration.h"
 #include "utility.h"
 #include "filewriter.h"
+#include "constants.h"
 
 HoveringProblem::HoveringProblem() {
     simulation_time_ = 24.0 * 60.0 * 60.0;
@@ -27,17 +28,18 @@ void HoveringProblem::Init(const unsigned int &random_seed, const bool &full_sta
     const double density = SampleFactory::SampleUniform(1500.0, 3000.0);
     Vector2D angular_velocity_xz = {SampleFactory::SampleSign() * SampleFactory::SampleUniform(0.0002, 0.0008), SampleFactory::SampleSign() * SampleFactory::SampleUniform(0.0002, 0.0008)};
     const double time_bias = SampleFactory::SampleUniform(0.0, 12.0 * 60 * 60);
-
     Asteroid asteroid(semi_axis, density, angular_velocity_xz, time_bias);
 
-    const Vector3D spacecraft_position = SamplePointOutSideEllipsoid(semi_axis, 4.0);
+    const double spacecraft_mass = SampleFactory::SampleUniform(450.0, 500.0);
+    const double spacecraft_specific_impulse = 200.0;
+    const double spacecraft_maximum_thrust = 21.0;
+
+    const Vector3D spacecraft_position = {2.0 * semi_axis[0], 0.0, 0.0}; //SamplePointOutSideEllipsoid(semi_axis, 4.0);
     const Vector3D angular_velocity = boost::get<0>(asteroid.AngularVelocityAndAccelerationAtTime(0.0));
     Vector3D spacecraft_velocity = CrossProduct(angular_velocity, spacecraft_position);
-    spacecraft_velocity[0] *= -1; spacecraft_velocity[1] *= -1; spacecraft_velocity[2] *= -1;
+    spacecraft_velocity = {-spacecraft_velocity[0], sqrt(asteroid.MassGravitationalConstant() / fabs(spacecraft_position[0])) - spacecraft_velocity[1], -spacecraft_velocity[2]};
+    //spacecraft_velocity[0] *= -1; spacecraft_velocity[1] *= -1; spacecraft_velocity[2] *= -1;
 
-    const double spacecraft_specific_impulse = 200.0;
-    const double spacecraft_mass = 1000.0;
-    const double spacecraft_maximum_thrust = 21.0;
 
 
     Vector3D target_position;
@@ -72,10 +74,26 @@ void HoveringProblem::CreateVisualizationFile(const std::string &path_to_visuali
         return;
     }
     const boost::tuple<double, std::vector<Vector3D>, std::vector<Vector3D> > result = simulator_->RunForVisualization(simulation_time_);
+
     FileWriter writer;
     const std::vector<Vector3D> positions = boost::get<1>(result);
     const std::vector<Vector3D> heights = boost::get<2>(result);
     writer.CreateVisualizationFile(path_to_visualization_file, simulator_->ControlFrequency(), simulator_->AsteroidOfSystem(), positions, heights);
+}
+
+Vector3D HoveringProblem::PositionAtEnd() {
+    if (simulator_ == NULL) {
+        return Vector3D();
+    }
+    return simulator_->RunThrough(simulation_time_);
+}
+
+Simulator *HoveringProblem::SimulatorOfProblem() {
+    return simulator_;
+}
+
+double HoveringProblem::SimulationTime() const {
+    return simulation_time_;
 }
 
 

@@ -12,6 +12,12 @@ public:
     void Init(const unsigned int &random_seed, const bool &full_state_controlled);
     void CreateVisualizationFile(const std::string &path_to_trajectory_file);
 
+    Vector3D PositionAtEnd();
+
+    Simulator* SimulatorOfProblem();
+
+    double SimulationTime() const;
+
 private:
     double simulation_time_;
 

@@ -22,7 +22,7 @@ Asteroid::Asteroid(const Vector3D &semi_axis, const double &density, const Vecto
 
     const Vector3D angular_velocity_3d = {angular_velocity_xz[0], 0.0, angular_velocity_xz[1]};
 
-    mass_ = 4.0 / 3.0 * kPi * density;
+    mass_ = 4.0 / 3.0 * kPi * density_;
     for (unsigned int i = 0; i < 3; ++i) {
         semi_axis_[i] = semi_axis[i];
         semi_axis_pow2_[i] = semi_axis_[i] * semi_axis_[i];
@@ -64,12 +64,12 @@ Asteroid::Asteroid(const Vector3D &semi_axis, const double &density, const Vecto
     elliptic_coefficients_[2] = signs[2] * sqrt((momentum_pow2_ - energy_mul2_ * inertia[0]) / (inertia[2] * (inertia[2] - inertia[0])));
 
     // Lifshitz eq (37.8)
-    coef_elliptic_tau_ = sqrt((inertia[2] - inertia[1]) * (momentum_pow2_ - energy_mul2_ * inertia[0]) / (inertia[0] * inertia[1] * inertia[2]));
+    elliptic_tau_ = sqrt((inertia[2] - inertia[1]) * (momentum_pow2_ - energy_mul2_ * inertia[0]) / (inertia[0] * inertia[1] * inertia[2]));
 
     // Lifshitz eq (37.9)
     elliptic_modulus_ = (inertia[1] - inertia[0]) * (energy_mul2_ * inertia[2] - momentum_pow2_) / ((inertia[2] - inertia[1]) * (momentum_pow2_ - energy_mul2_ * inertia[0]));
 
-    coef_mass_gravitational_constant_ = mass_ * kGravitationalConstant;
+    mass_gravitational_constant_ = mass_ * kGravitationalConstant;
 }
 
 Vector3D Asteroid::SemiAxis() const {
@@ -88,8 +88,12 @@ double Asteroid::TimeBias() const {
     return time_bias_;
 }
 
-Vector3D Asteroid::GravityAtPosition(const Vector3D &position) const {
-    Vector3D gravity = {0.0, 0.0, 0.0};
+double Asteroid::MassGravitationalConstant() const {
+    return mass_gravitational_constant_;
+}
+
+Vector3D Asteroid::GravityAccelerationAtPosition(const Vector3D &position) const {
+    Vector3D acceleration = {0.0, 0.0, 0.0};
 
     const double pos_x_pow2 = position[0] * position[0];
     const double pos_y_pow2 = position[1] * position[1];
@@ -116,22 +120,18 @@ Vector3D Asteroid::GravityAtPosition(const Vector3D &position) const {
     }
 
     // Improvement of Dario Izzo
-    gravity[0] = -coef_mass_gravitational_constant_ * gsl_sf_ellint_RD(semi_axis_pow2_[2] + kappa, semi_axis_pow2_[1] + kappa, semi_axis_pow2_[0] + kappa, 0);
-    gravity[1] = -coef_mass_gravitational_constant_ * gsl_sf_ellint_RD(semi_axis_pow2_[0] + kappa, semi_axis_pow2_[2] + kappa, semi_axis_pow2_[1] + kappa, 0);
-    gravity[2] = -coef_mass_gravitational_constant_ * gsl_sf_ellint_RD(semi_axis_pow2_[1] + kappa, semi_axis_pow2_[0] + kappa, semi_axis_pow2_[2] + kappa, 0);
+    acceleration[0] = -mass_gravitational_constant_ * gsl_sf_ellint_RD(semi_axis_pow2_[2] + kappa, semi_axis_pow2_[1] + kappa, semi_axis_pow2_[0] + kappa, 0) * position[0];
+    acceleration[1] = -mass_gravitational_constant_ * gsl_sf_ellint_RD(semi_axis_pow2_[0] + kappa, semi_axis_pow2_[2] + kappa, semi_axis_pow2_[1] + kappa, 0) * position[1];
+    acceleration[2] = -mass_gravitational_constant_ * gsl_sf_ellint_RD(semi_axis_pow2_[1] + kappa, semi_axis_pow2_[0] + kappa, semi_axis_pow2_[2] + kappa, 0) * position[2];
 
-    gravity[0] *= position[0];
-    gravity[1] *= position[1];
-    gravity[2] *= position[2];
-
-    return gravity;
+    return acceleration;
 }
 
 boost::tuple<Vector3D, Vector3D> Asteroid::AngularVelocityAndAccelerationAtTime(const double &time) const {
     Vector3D velocity;
     Vector3D acceleration;
     // Lifshitz eq (37.8)
-    const double t = (time + time_bias_) * coef_elliptic_tau_;
+    const double t = (time + time_bias_) * elliptic_tau_;
 
     // Get analytical solution
     double sn_tau = 0.0, cn_tau = 0.0, dn_tau = 0.0;

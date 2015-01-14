@@ -276,6 +276,24 @@ boost::tuple<double, std::vector<Vector3D>, std::vector<Vector3D> > Simulator::R
     return boost::make_tuple(current_time, logged_positions, logged_heights);
 }
 
+Vector3D Simulator::RunThrough(const double &time) {
+    using namespace boost::numeric::odeint;
+
+    const double &min_step_size = 0.1;
+
+    typedef runge_kutta_cash_karp54<State> ErrorStepperType;
+    typedef controlled_runge_kutta<ErrorStepperType> ControlledStepperType;
+
+    // Simulate perturbations, directly write it to the ode system
+    SimulatePerturbations(system_.perturbations_acceleration_);
+
+    ControlledStepperType controlled_stepper;
+    integrate_adaptive(controlled_stepper, system_, system_.state_, 0.0, time, min_step_size);
+
+    Vector3D final_position = {system_.state_[0], system_.state_[1], system_.state_[2]};
+    return final_position;
+}
+
 Asteroid& Simulator::AsteroidOfSystem() {
     return system_.asteroid_;
 }

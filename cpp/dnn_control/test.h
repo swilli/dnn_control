@@ -6,5 +6,6 @@ void UnitTestTrajectory();
 void UnitTestAny();
 void UnitTestGravity();
 void UnitTestIsNan();
+void UnitTestRunThrough();
 
 #endif // TEST_H

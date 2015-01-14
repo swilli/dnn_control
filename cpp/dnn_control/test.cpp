@@ -7,6 +7,7 @@
 #include "sensorsimulator5d.h"
 #include "controller5d.h"
 #include "odeint.h"
+#include "hoveringproblem.h"
 
 #include <iostream>
 #include <iomanip>
@@ -159,4 +160,34 @@ void UnitTestIsNan() {
     const boost::tuple<Vector3D, Vector3D> result = asteroid.AngularVelocityAndAccelerationAtTime(time);
     Vector3D omega_analytical = boost::get<0>(result);
     std::cout << "test done." << std::endl;
+}
+
+
+void UnitTestRunThrough() {
+    double mean_error = 0.0;
+    unsigned int num_tests = 100;
+    const bool full_state_controlled = false;
+
+    srand(time(0));
+
+    for (unsigned int i = 0; i < num_tests; ++i) {
+        std::cout << i << std::endl;
+        const unsigned int seed = rand();
+        HoveringProblem problem1, problem2;
+        problem1.Init(seed, full_state_controlled);
+        const Vector3D final_position_1 = problem1.PositionAtEnd();
+
+        problem2.Init(seed, full_state_controlled);
+        const boost::tuple<double, std::vector<Vector3D>, std::vector<Vector3D> > result = problem2.SimulatorOfProblem()->RunForVisualization(problem2.SimulationTime());
+        const Vector3D final_position_2 = boost::get<1>(result).back();
+
+        double error = 0;
+        for (unsigned int i = 0; i < 3; ++i) {
+            error += (final_position_1[i] - final_position_2[i]) * (final_position_1[i] - final_position_2[i]);
+        }
+        error = sqrt(error);
+        mean_error += error;
+    }
+
+    std::cout << mean_error / num_tests << std::endl;
 }
