@@ -31,7 +31,7 @@ double SampleFactory::SampleNormal(const double &mean, const double &variance) {
 }
 
 double SampleFactory::SampleSign() {
-    if (rand() % 2) {
+    if (generator_() % 2) {
         return 1.0;
     } else {
         return -1.0;
