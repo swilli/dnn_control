@@ -24,10 +24,10 @@ Simulation::Simulation(const unsigned int &random_seed) : sample_factory_(Sample
     Vector3D spacecraft_velocity = CrossProduct(angular_velocity, spacecraft_position);
 
     // orbit
-    //spacecraft_velocity[0] = -spacecraft_velocity[0]; spacecraft_velocity[1] = -spacecraft_velocity[1] + sqrt(asteroid_.MassGravitationalConstant() / norm_position); spacecraft_velocity[2] = -spacecraft_velocity[2];
+    spacecraft_velocity[0] = -spacecraft_velocity[0]; spacecraft_velocity[1] = -spacecraft_velocity[1] + sqrt(asteroid_.MassGravitationalConstant() / norm_position); spacecraft_velocity[2] = -spacecraft_velocity[2];
 
     // no velocity
-    spacecraft_velocity[0] *= -1; spacecraft_velocity[1] *= -1; spacecraft_velocity[2] *= -1;
+    //spacecraft_velocity[0] *= -1; spacecraft_velocity[1] *= -1; spacecraft_velocity[2] *= -1;
 
     Vector3D target_position;
     for (unsigned int i = 0; i < 3; ++i) {
@@ -41,7 +41,7 @@ Simulation::Simulation(const unsigned int &random_seed) : sample_factory_(Sample
     for (unsigned int i = 0; i < sensor_noise.size(); ++i) {
         sensor_noise[i] = 0.05;
     }
-    sensor_simulator_ = new SensorSimulatorFullState(sample_factory_, asteroid_, sensor_noise);
+    sensor_simulator_ = NULL; //new SensorSimulatorFullState(sample_factory_, asteroid_, sensor_noise);
 
 
     const double perturbation_noise = 1e-7;

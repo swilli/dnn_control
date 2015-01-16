@@ -2,19 +2,29 @@
 #include "fixedsimulation.h"
 #include "filewriter.h"
 
-#define FULL_STATE_CONTROLLED                                   0
+#include <pagmo/pagmo.h>
 
-#define GENERATE_SENSOR_DATA_FILES                              0
-#define NUM_SENSOR_DATA_FILES                                   5
-#define PATH_TO_SENSOR_DATA_FOLDER                              "../../../data/"
+#define FULL_STATE_CONTROLLED                                                 0
 
-#define CREATE_RANDOM_VISUALIZATION_FILE                        1
+#define GENERATE_SENSOR_DATA_FILES                                       0
+#define NUM_SENSOR_DATA_FILES                                                 5
+#define PATH_TO_SENSOR_DATA_FOLDER                                      "../../../data/"
+
+#define CREATE_RANDOM_VISUALIZATION_FILE                            1
 #define PATH_TO_RANDOM_VISUALIZATION_FILE                          "../../../results/visualization.txt"
 
 int main(int argc, char *argv[]) {
     srand(time(0));
 
-    /*FixedSimulation f_sim( rand());
+    pagmo::problem::zdt prob(1, 50);
+    pagmo::algorithm::pade algo;
+
+    pagmo::population pop(prob, 100);
+    algo.evolve(pop);
+    std::cout << pop.champion() << std::endl;
+    return 0;
+
+    /*  FixedSimulation f_sim( rand());
     const boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D> > f_result = f_sim.Evaluate();
     const std::vector<Vector3D> &f_positions = boost::get<1>(f_result);
     const std::vector<Vector3D> &f_heights = boost::get<2>(f_result);
@@ -22,9 +32,10 @@ int main(int argc, char *argv[]) {
     FileWriter writer;
     writer.CreateVisualizationFile(PATH_TO_RANDOM_VISUALIZATION_FILE, 1.0 / f_sim.FixedStepSize(), f_sim.AsteroidOfSystem(), f_positions, f_heights);
     exit(0);
+
     */
 
-    double error = 0.0;
+    /*double error = 0.0;
     const unsigned int num_tests = 1000;
     for (unsigned int i = 0; i < num_tests; ++i) {
         const unsigned int random_seed = rand();
