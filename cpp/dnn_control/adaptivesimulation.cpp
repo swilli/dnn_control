@@ -27,7 +27,9 @@ boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D> >
         integrate_adaptive(controlled_stepper , system_, system_state, 0.0, simulation_time_, minimum_step_size_, collector);
     } catch (const Asteroid::Exception &exception) {
         std::cout << "The spacecraft crashed into the asteroid's surface." << std::endl;
-    }
+    } catch (const ODESystem::Exception &exception) {
+        std::cout << "The spacecraft is out of fuel." << std::endl;
+   }
 
     return boost::make_tuple(time_points, evaluated_positions, evaluated_heights);
 }
