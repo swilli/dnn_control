@@ -1,44 +1,42 @@
-#ifndef ODESYSTEM_H
-#define ODESYSTEM_H
+#ifndef ODESYSTEMCONTROLLED_H
+#define ODESYSTEMCONTROLLED_H
 
-#include "asteroid.h"
 #include "vector.h"
-
-#include <boost/array.hpp>
-#include <boost/random.hpp>
-#include <boost/random/normal_distribution.hpp>
-
-typedef boost::array<double,7> State;
+#include "asteroid.h"
+#include "samplefactory.h"
+#include "systemstate.h"
+#include "sensorsimulator.h"
+#include "controller.h"
 
 class ODESystem {
-    /*
-     * This class represents the dynamics in a rotating reference frame (which we have around an asteroid) using ordinary differential equations.
-     * Implementation is inspired from "Control of Hovering Spacecraft Using Altimetry" by S. Sawai et. al.
-     */
 public:
-    ODESystem(Asteroid asteroid, const double &control_noise);
+    ODESystem();
+    ODESystem(SampleFactory *sample_factory, const Asteroid &asteroid, SensorSimulator *sensor_simulator, Controller *controller, const double &spacecraft_specific_impulse, const double &perturbation_noise, const double &engine_noise);
+    ~ODESystem();
 
-    // This operator gets called by the boost stepper to integrate the system.
-    // The function computes d/dt x = f(x, t). Or in our case: "d_state_dt" = this(state, time)
-    void operator()(const State &state, State &d_state_dt, const double &time) ;
+    void operator () (const SystemState &state, SystemState &d_state_dt, const double &time);
 
-    // The asteroid which is at the center of the system
-    Asteroid asteroid_;
+    void SetThrust(const Vector3D &thrust);
+    Vector3D PerturbationsAcceleration() const;
 
-    // Isp (for deltaV budget computation)
+    class Exception {};
+    class OutOfFuelException : public Exception {};
+
+private:
     double spacecraft_specific_impulse_;
+    double engine_noise_;
+    double latest_control_input_time_;
+    double min_control_interval_;
 
-    // control_distribution_ ~ N(0, control_noise), whereas control_noise is given in the constructor
-    boost::variate_generator<boost::mt19937, boost::normal_distribution<> > control_distribution_;
-
-    // T for each dimension
     Vector3D thrust_;
-
-    // Changing perturbations acceleration which gets assigned by the simulator. We assume some random noise in the system which is given by "perturbations_acceleration_" and is constant during one integration step
     Vector3D perturbations_acceleration_;
 
-    // The spacecraft state [x,y,z,dx,dy,dz,m]
-    State state_;
+    Asteroid asteroid_;
+
+    SampleFactory *sample_factory_;
+
+    Controller *controller_;
+    SensorSimulator *sensor_simulator_;
 };
 
-#endif // ODESYSTEM_H
+#endif // ODESYSTEMCONTROLLED_H

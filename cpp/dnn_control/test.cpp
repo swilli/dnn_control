@@ -171,31 +171,38 @@ void UnitTestRunThrough() {
     srand(time(0));
 
     unsigned int num_comparable_tests = 0;
-    for (unsigned int i = 0; i < num_tests; ++i) {
-        std::cout << i << std::endl;
+    unsigned int i = 0;
+    while(true) {
         const unsigned int seed = rand();
+        std::cout << "round " << i++ << ", current seed: " << seed << std::endl;
 
         HoveringProblem problem1, problem2;
 
         problem1.Init(seed, full_state_controlled);
-        const Vector3D final_position_1 = problem1.PositionAtEnd();
+        boost::tuple<double, Vector3D> result1 = problem1.SimulatorOfProblem()->RunThrough(problem1.SimulationTime());
+        const double simulated_time1 = boost::get<0>(result1);
+        const Vector3D final_position1 = boost::get<1>(result1);
 
         problem2.Init(seed, full_state_controlled);
-        const boost::tuple<double, std::vector<Vector3D>, std::vector<Vector3D> > result = problem2.SimulatorOfProblem()->RunForVisualization(problem2.SimulationTime());
-        const Vector3D final_position_2 = boost::get<1>(result).back();
+        const boost::tuple<double, std::vector<Vector3D>, std::vector<Vector3D> > result2 = problem2.SimulatorOfProblem()->RunForVisualization(problem2.SimulationTime());
+        const double simulated_time2 = boost::get<0>(result2);
+        const Vector3D final_position2 = boost::get<1>(result2).back();
 
         double error = 0;
         for (unsigned int i = 0; i < 3; ++i) {
-            error += (final_position_1[i] - final_position_2[i]) * (final_position_1[i] - final_position_2[i]);
+            error += (final_position1[i] - final_position2[i]) * (final_position1[i] - final_position2[i]);
         }
         error = sqrt(error);
-        if (error > 100.0) {
-            std::cout << "skip" << std::endl;
+
+        if (fabs(simulated_time1 - simulated_time2) > problem1.SimulatorOfProblem()->ControlInterval()) {
+            std::cout << "continue" << std::endl;
             continue;
         }
         mean_error += error;
         num_comparable_tests++;
     }
 
+    std::cout << mean_error << std::endl;
+    std::cout << num_comparable_tests << std::endl;
     std::cout << mean_error / num_comparable_tests << std::endl;
 }

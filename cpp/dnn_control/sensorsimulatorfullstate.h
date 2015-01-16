@@ -7,19 +7,17 @@
 #include <boost/random/variate_generator.hpp>
 
 
-class SensorSimulatorFullState : public SensorSimulator
-{
+class SensorSimulatorFullState : public SensorSimulator {
 public:
     typedef boost::array<double, 7> SensorNoiseConfiguration;
 
-    SensorSimulatorFullState(const Asteroid &asteroid, const SensorNoiseConfiguration &configuration);
+    SensorSimulatorFullState(SampleFactory &sample_factory, const Asteroid &asteroid, const SensorNoiseConfiguration &configuration);
     virtual ~SensorSimulatorFullState();
 
-    virtual SensorData Simulate(const State &state, const Vector3D  &height, const Vector3D &perturbations_acceleration, const double &time);
+    virtual SensorData Simulate(const SystemState &state, const Vector3D  &, const Vector3D &, const double &time);
 
 private:
-    // Normal distributions for each sensor dimension
-    std::vector<boost::variate_generator<boost::mt19937, boost::normal_distribution<> > > normal_distributions_;
+    SensorNoiseConfiguration sensor_noise_configuration_;
 };
 
 #endif // FULLSTATESENSORSIMULATOR_H

@@ -1,28 +1,39 @@
 #include "odesystem.h"
 #include "utility.h"
 #include "constants.h"
-#include "samplefactory.h"
 
-#include <math.h>
-#include <iostream>
+ODESystem::ODESystem() {
 
-ODESystem::ODESystem(Asteroid asteroid, const double &control_noise) : asteroid_(asteroid), control_distribution_(SampleFactory::RandomNumberGenerator(), boost::normal_distribution<>(0.0, control_noise)) {
-    spacecraft_specific_impulse_ = 0.0;
+}
+
+ODESystem::ODESystem(SampleFactory *sample_factory, const Asteroid &asteroid, SensorSimulator *sensor_simulator, Controller *controller, const double &spacecraft_specific_impulse, const double &perturbation_noise, const double &engine_noise) : sample_factory_(sample_factory) {
+    engine_noise_ = engine_noise;
+    asteroid_ = asteroid;
+    spacecraft_specific_impulse_ = spacecraft_specific_impulse;
+    sensor_simulator_ = sensor_simulator;
+    controller_ = controller;
+    latest_control_input_time_ = 0.0;
+    min_control_interval_ = 0.2;
+
     for (unsigned int i = 0; i < 3; ++i) {
+        perturbations_acceleration_[i] = sample_factory_->SampleNormal(0.0, perturbation_noise);
         thrust_[i] = 0.0;
-        perturbations_acceleration_[i] = 0.0;
-        state_[i] = 0.0;
-        state_[3+i] = 0.0;
     }
 }
 
-void ODESystem::operator()(const State &state, State &d_state_dt, const double &time) {
-    // This operator implements eq(1) of "Control of Hovering Spacecraft Using Altimetry" by S. Sawai et. al.
-    // r'' + 2w x r' + w' x r + w x (w x r) = Fc + Fg, whereas Fc = control acceleration and Fg = gravity acceleration
+ODESystem::~ODESystem() {
 
+}
+
+void ODESystem::operator ()(const SystemState &state, SystemState &d_state_dt, const double &time) {
+    const double mass = state[6];
+    // check if spacecraft is out of fuel
+    if (mass <= 0.0) {
+        throw OutOfFuelException();
+    }
 
     // 1/m
-    const double coef_mass = 1.0 / state[6];
+    const double coef_mass = 1.0 / mass;
 
     Vector3D position;
     Vector3D velocity;
@@ -31,18 +42,37 @@ void ODESystem::operator()(const State &state, State &d_state_dt, const double &
         velocity[i] = state[3+i];
     }
 
-    // g
-    Vector3D gravity_acceleration = asteroid_.GravityAccelerationAtPosition(position);
+    // Compute height
+    const Vector3D surf_pos = boost::get<0>(asteroid_.NearestPointOnSurfaceToPosition(position));
+    const Vector3D height = {position[0] - surf_pos[0], position[1] - surf_pos[1], position[2] - surf_pos[2]};
+
+    // Fg
+    const Vector3D gravity_acceleration = asteroid_.GravityAccelerationAtPosition(position);
 
     // w, w'
     const boost::tuple<Vector3D, Vector3D> result = asteroid_.AngularVelocityAndAccelerationAtTime(time);
-    Vector3D angular_velocity = boost::get<0>(result);
-    Vector3D angular_acceleration = boost::get<1>(result);
+    const Vector3D angular_velocity = boost::get<0>(result);
+    const Vector3D angular_acceleration = boost::get<1>(result);
 
-    // Fg, Fc
+    // Fc
     Vector3D thrust_acceleration;
-    for(unsigned int i = 0; i < 3; ++i) {
-        thrust_acceleration[i] = thrust_[i] * coef_mass;
+    if (sensor_simulator_ != NULL && controller_ != NULL) {
+        if (time - latest_control_input_time_ >= min_control_interval_) {
+            latest_control_input_time_ = time;
+            const SensorData sensor_data = sensor_simulator_->Simulate(state, height, perturbations_acceleration_, time);
+            thrust_ = controller_->GetThrustForSensorData(sensor_data);
+            for(unsigned int i = 0; i < 3; ++i) {
+                thrust_acceleration[i] = thrust_[i] * coef_mass;
+            }
+        } else {
+            for(unsigned int i = 0; i < 3; ++i) {
+                thrust_acceleration[i] = thrust_[i] * coef_mass;
+            }
+        }
+    } else {
+        for(unsigned int i = 0; i < 3; ++i) {
+            thrust_acceleration[i] = 0.0;
+        }
     }
 
     // w' x r
@@ -65,5 +95,14 @@ void ODESystem::operator()(const State &state, State &d_state_dt, const double &
                 - coriolis_acceleration[i] - euler_acceleration[i] - centrifugal_acceleration[i];
     }
 
-    d_state_dt[6] = -sqrt(thrust_[0] * thrust_[0] + thrust_[1] * thrust_[1] + thrust_[2] * thrust_[2]) / ((spacecraft_specific_impulse_ + spacecraft_specific_impulse_ * control_distribution_()) * kEarthAcceleration);
+    d_state_dt[6] = -sqrt(thrust_[0] * thrust_[0] + thrust_[1] * thrust_[1] + thrust_[2] * thrust_[2]) / ((spacecraft_specific_impulse_ + spacecraft_specific_impulse_ * sample_factory_->SampleNormal(0.0, engine_noise_)) * kEarthAcceleration);
 }
+
+void ODESystem::SetThrust(const Vector3D &thrust) {
+    VectorCopy3D(thrust, thrust_);
+}
+
+Vector3D ODESystem::PerturbationsAcceleration() const {
+    return perturbations_acceleration_;
+}
+

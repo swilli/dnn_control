@@ -58,6 +58,13 @@ public:
     // Returns coef_mass_gravitational_constant
     double MassGravitationalConstant() const;
 
+    // Returns x^2/a^2 + y^2/b^2 + z^2/c^2
+    double EvaluatePointWithStandardEquation(const Vector3D &position) const;
+
+    class Exception {};
+    class PositionInsideException : public Exception {};
+    class InvalidParametersException: public Exception {};
+
 private:
     // Helper function for NearestPointOnSurfaceToPosition since we assume a symmetric ellipsoid. Position "position" has to be in first quadrant.
     Vector3D NearestPointOnEllipsoidFirstQuadrant(const Vector3D &position) const;

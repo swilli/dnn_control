@@ -1,7 +1,6 @@
 #include "sensorsimulator.h"
-#include "utility.h"
 
-SensorSimulator::SensorSimulator(const unsigned int &dimensions, const Asteroid &asteroid) : asteroid_(asteroid), dimensions_(dimensions) {
+SensorSimulator::SensorSimulator(const unsigned int &dimensions, SampleFactory &sample_factory, const Asteroid &asteroid) : asteroid_(asteroid), dimensions_(dimensions), sample_factory_(sample_factory) {
 
 }
 

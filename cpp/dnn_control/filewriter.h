@@ -8,8 +8,7 @@
 #include <string>
 #include <fstream>
 
-class FileWriter
-{
+class FileWriter {
 public:
     FileWriter();
 

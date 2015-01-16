@@ -4,17 +4,16 @@
 #include "controller.h"
 #include "sensorsimulatorfullstate.h"
 
-class ControllerFullState : public Controller
-{
+class ControllerFullState : public Controller {
 public:
-    ControllerFullState(const double &control_frequency, const double &maximum_thrust, const Vector3D &target_position);
+    ControllerFullState(const double &maximum_thrust, const Vector3D &target_position);
     virtual ~ControllerFullState();
 
     // thrust = F(sensor_data), whereas F can be eg., a PD controller, some RL solution, a NN, ...
     virtual Vector3D GetThrustForSensorData(const SensorData &sensor_data);
 
 private:
-    double control_interval_;
+    double latest_control_action_;
 
     double constant_proportional_;
 

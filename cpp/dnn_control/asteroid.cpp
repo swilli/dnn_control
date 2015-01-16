@@ -92,8 +92,21 @@ double Asteroid::MassGravitationalConstant() const {
     return mass_gravitational_constant_;
 }
 
+double Asteroid::EvaluatePointWithStandardEquation(const Vector3D &position) const {
+    double result = 0.0;
+    for (unsigned int i = 0; i < 3; ++i) {
+        result += position[i] * position[i] / semi_axis_pow2_[i];
+    }
+    return result;
+}
+
 Vector3D Asteroid::GravityAccelerationAtPosition(const Vector3D &position) const {
     Vector3D acceleration = {0.0, 0.0, 0.0};
+
+    const double eval = EvaluatePointWithStandardEquation(position);
+    if (eval < 1.0) {
+        throw PositionInsideException();
+    }
 
     const double pos_x_pow2 = position[0] * position[0];
     const double pos_y_pow2 = position[1] * position[1];
@@ -197,7 +210,12 @@ Vector3D Asteroid::NearestPointOnEllipsoidFirstQuadrant(const Vector3D &position
             if (position[0] > 0.0) {
                 // Perform bisection to find the root (David Eberly eq (26))
                 Vector3D semi_axis_mul_pos = {semi_axis_[0] * position[0], semi_axis_[1] * position[1], semi_axis_[2] * position[2]};
-                const double time = BisectEllipsoid(semi_axis_mul_pos, semi_axis_pow2_);
+                double time = 0.0;
+                try {
+                    time = BisectEllipsoid(semi_axis_mul_pos, semi_axis_pow2_);
+                } catch (const UtilityException &exception) {
+                    throw PositionInsideException();
+                }
                 point[0] = semi_axis_pow2_[0] * position[0] / (time + semi_axis_pow2_[0]);
                 point[1] = semi_axis_pow2_[1] * position[1] / (time + semi_axis_pow2_[1]);
                 point[2] = semi_axis_pow2_[2] * position[2] / (time + semi_axis_pow2_[2]);
@@ -270,7 +288,12 @@ Vector2D Asteroid::NearestPointOnEllipseFirstQuadrant(const Vector2D &semi_axis,
         if (position[0] > 0.0) {
             // Perform bisection to find the root (David Eberly eq (11))
             Vector2D semi_axis_mul_pos = {semi_axis_[0] * position[0], semi_axis_[1] * position[1]};
-            const double time = BisectEllipse(semi_axis_mul_pos, semi_axis_pow2);
+            double time = 0.0;
+            try {
+                time = BisectEllipse(semi_axis_mul_pos, semi_axis_pow2);
+            } catch (const UtilityException &exception) {
+                throw PositionInsideException();
+            }
             point[0] = semi_axis_pow2[0] * position[0] / (time + semi_axis_pow2[0]);
             point[1] = semi_axis_pow2[1] * position[1] / (time + semi_axis_pow2[1]);
         } else {

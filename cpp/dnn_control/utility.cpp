@@ -1,18 +1,8 @@
 #include "utility.h"
 #include "constants.h"
 #include "samplefactory.h"
+
 #include <boost/math/tools/roots.hpp>
-
-Vector3D SamplePointOutSideEllipsoid(const Vector3D &semi_axis, const double &band_width_scale) {
-    Vector3D point;
-
-    const double u = SampleFactory::SampleUniform(0.0, 2.0 * kPi);
-    const double v = SampleFactory::SampleUniform(0.0, kPi);
-    point[0] = SampleFactory::SampleUniform(1.1, band_width_scale) * semi_axis[0] * cos(u) * sin(v);
-    point[1] = SampleFactory::SampleUniform(1.1, band_width_scale) * semi_axis[1] * sin(u) * sin(v);
-    point[2] = SampleFactory::SampleUniform(1.1, band_width_scale) * semi_axis[2] * cos(v);
-    return point;
-}
 
 static struct TerminationCondition  {
     double tolerance;
@@ -52,10 +42,15 @@ double BisectEllipsoid(const Vector3D &semi_axis_mul_pos, const Vector3D &semi_a
     VectorCopy3D(semi_axis_mul_pos, bisect_ellipsoid_approximator.semi_axis_mul_pos);
     VectorCopy3D(semi_axis_pow2, bisect_ellipsoid_approximator.semi_axis_pow2);
 
-    std::pair<double, double> result = bisect(bisect_ellipsoid_approximator, lower_boundary, upper_boundary, termination_condition);
+    try {
+        std::pair<double, double> result = bisect(bisect_ellipsoid_approximator, lower_boundary, upper_boundary, termination_condition);
 
-    const double root = (result.first + result.second) / 2.0;
-    return root;
+        const double root = (result.first + result.second) / 2.0;
+        return root;
+
+    } catch (boost::exception const &exception) {
+        throw PositionInsideEllipsoidException();
+    }
 }
 
 static struct BisectEllipseApproximator {
@@ -84,8 +79,13 @@ double BisectEllipse(const Vector2D &semi_axis_mul_pos, const Vector2D &semi_axi
     VectorCopy2D(semi_axis_mul_pos, bisect_ellipse_approximator.semi_axis_mul_pos);
     VectorCopy2D(semi_axis_pow2, bisect_ellipse_approximator.semi_axis_pow2);
 
-    std::pair<double, double> result = bisect(bisect_ellipse_approximator, lower_boundary, upper_boundary, termination_condition);
+    try {
+        std::pair<double, double> result = bisect(bisect_ellipse_approximator, lower_boundary, upper_boundary, termination_condition);
 
-    const double root = (result.first + result.second) / 2.0;
-    return root;
+        const double root = (result.first + result.second) / 2.0;
+        return root;
+
+    } catch (boost::exception const &exception) {
+        throw PositionInsideEllipseException();
+    }
 }
