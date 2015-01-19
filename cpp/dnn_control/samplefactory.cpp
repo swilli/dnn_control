@@ -8,6 +8,10 @@ SampleFactory::SampleFactory() {
     normal_distribution_ = boost::random::normal_distribution<>(0.0, 1.0);
 }
 
+SampleFactory::SampleFactory(const SampleFactory &other) : generator_(other.generator_) {
+
+}
+
 SampleFactory::SampleFactory(const unsigned int &random_seed) {
     generator_ = boost::mt19937(random_seed);
     uniform_distribution_ = boost::random::uniform_real_distribution<>(0.0, 1.0);

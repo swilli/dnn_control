@@ -9,6 +9,7 @@
 class SampleFactory {
 public:
     SampleFactory();
+    SampleFactory(const SampleFactory &other);
     SampleFactory(const unsigned int &seed);
     ~SampleFactory();
 
