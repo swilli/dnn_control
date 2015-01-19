@@ -1,6 +1,6 @@
 #include "adaptivesimulation.h"
 #include "datacollector.h"
-#include "controlledrungekutta.h"
+#include "modifiedcontrolledrungekutta.h"
 #include "odeint.h"
 
 AdaptiveSimulation::AdaptiveSimulation(const unsigned int &random_seed) : Simulation(random_seed) {
@@ -12,6 +12,8 @@ AdaptiveSimulation::~AdaptiveSimulation() {
 }
 
 boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D> > AdaptiveSimulation::Evaluate() {
+    sample_factory_.SetSeed(random_seed_);
+
     std::vector<double> time_points;
     std::vector<Vector3D> evaluated_positions;
     std::vector<Vector3D> evaluated_heights;

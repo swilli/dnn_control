@@ -38,13 +38,17 @@ double SampleFactory::SampleSign() {
     }
 }
 
-Vector3D SampleFactory::SamplePointOutSideEllipsoid(const Vector3D &semi_axis, const double &band_width_scale) {
+Vector3D SampleFactory::SamplePointOutSideEllipsoid(const Vector3D &semi_axis, const double &min_scale, const double &max_scale) {
     Vector3D point;
 
     const double u = SampleUniform(0.0, 2.0 * kPi);
     const double v = SampleUniform(0.0, kPi);
-    point[0] = SampleUniform(1.1, band_width_scale) * semi_axis[0] * cos(u) * sin(v);
-    point[1] = SampleUniform(1.1, band_width_scale) * semi_axis[1] * sin(u) * sin(v);
-    point[2] = SampleUniform(1.1, band_width_scale) * semi_axis[2] * cos(v);
+    point[0] = SampleUniform(min_scale, max_scale) * semi_axis[0] * cos(u) * sin(v);
+    point[1] = SampleUniform(min_scale, max_scale) * semi_axis[1] * sin(u) * sin(v);
+    point[2] = SampleUniform(min_scale, max_scale) * semi_axis[2] * cos(v);
     return point;
+}
+
+void SampleFactory::SetSeed(const unsigned int &random_seed) {
+    generator_.seed(random_seed);
 }

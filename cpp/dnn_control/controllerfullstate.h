@@ -3,6 +3,7 @@
 
 #include "controller.h"
 
+#define CONTROLLER_DIMENSION    8
 class ControllerFullState : public Controller {
 public:
     ControllerFullState(const double &maximum_thrust, const Vector3D &target_position);

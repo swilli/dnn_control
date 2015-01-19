@@ -1,6 +1,6 @@
 #include "controllerfullstate.h"
 
-ControllerFullState::ControllerFullState(const double &maximum_thrust, const Vector3D &target_position) : Controller(7, maximum_thrust) {
+ControllerFullState::ControllerFullState(const double &maximum_thrust, const Vector3D &target_position) : Controller(CONTROLLER_DIMENSION, maximum_thrust) {
     for (unsigned int i = 0; i < 3; ++i) {
         target_position_[i] = target_position[i];
         previous_error_[i] = 0.0;

@@ -27,7 +27,9 @@ public:
     // semi_axis_[0] * cos(u) * sin(v) < point[0] < semi_axis[0] * band_width_scale * cos(u) * sin(v)
     // semi_axis_[1] * sin(u) * sin(v) < point[1] < semi_axis[1] * band_width_scale * sin(u) * sin(v)
     // semi_axis_[2] * cos(v)          < point[2] < semi_axis[1] * band_width_scale * cos(v)
-    Vector3D SamplePointOutSideEllipsoid(const Vector3D &semi_axis, const double &band_width_scale);
+    Vector3D SamplePointOutSideEllipsoid(const Vector3D &semi_axis, const double &min_scale, const double &max_scale);
+
+    void SetSeed(const unsigned int &random_seed);
 
 private:
     boost::mt19937 generator_;

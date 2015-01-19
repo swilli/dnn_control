@@ -6,7 +6,7 @@
 #include <boost/random.hpp>
 #include <boost/random/variate_generator.hpp>
 
-#define SENSOR_SIMULATOR_DIMENSION      7
+#define SENSOR_SIMULATOR_DIMENSION      8
 
 class SensorSimulatorFullState : public SensorSimulator {
 public:

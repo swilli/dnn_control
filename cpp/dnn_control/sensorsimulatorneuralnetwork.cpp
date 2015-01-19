@@ -1,6 +1,6 @@
 #include "sensorsimulatorneuralnetwork.h"
 
-SensorSimulatorNeuralNetwork::SensorSimulatorNeuralNetwork(SampleFactory &sample_factory, const Asteroid &asteroid, const SensorNoiseConfiguration &configuration) : SensorSimulator(7, sample_factory, asteroid){
+SensorSimulatorNeuralNetwork::SensorSimulatorNeuralNetwork(SampleFactory &sample_factory, const Asteroid &asteroid, const SensorNoiseConfiguration &configuration) : SensorSimulator(SENSOR_SIMULATOR_DIMENSION, sample_factory, asteroid){
     sensor_noise_configuration_ = configuration;
 }
 

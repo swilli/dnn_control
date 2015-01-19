@@ -1,5 +1,5 @@
-#ifndef CONTROLLEDRUNGEKUTTA_H
-#define CONTROLLEDRUNGEKUTTA_H
+#ifndef MODIFIEDCONTROLLEDRUNGEKUTTA_H
+#define MODIFIEDCONTROLLEDRUNGEKUTTA_H
 
 
 #include <cmath>
@@ -25,7 +25,8 @@
 
 #include <boost/numeric/odeint/stepper/controlled_runge_kutta.hpp>
 
-#define     MAX_REL_ERROR   100.0
+#define     MAX_REL_ERROR   1.0
+#define     MAX_TIME_STEP    86400.0
 
 namespace boost {
 namespace numeric {
@@ -284,7 +285,7 @@ public:
                                                          pow( m_max_rel_error , static_cast<value_type>(-1) / ( m_stepper.error_order() - 1 ) ) ) ,
                                                          static_cast<value_type>( static_cast<value_type>(1)/static_cast<value_type> (5) ) );
 
-
+            dt = (dt > MAX_TIME_STEP ? MAX_TIME_STEP : dt);
             return fail;
         }
         else
@@ -300,6 +301,7 @@ public:
                 dt *= static_cast<value_type>(9)/static_cast<value_type>(10) * pow( m_max_rel_error ,
                                                                                     static_cast<value_type>(-1) / m_stepper.stepper_order() );
 
+                dt = (dt > MAX_TIME_STEP ? MAX_TIME_STEP : dt);
                 return success;
             }
             else
@@ -814,4 +816,4 @@ private:
 
 
 
-#endif // CONTROLLEDRUNGEKUTTA_H
+#endif // MODIFIEDCONTROLLEDRUNGEKUTTA_H

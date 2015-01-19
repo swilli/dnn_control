@@ -1,6 +1,6 @@
 #include "sensorsimulatorfullstate.h"
 
-SensorSimulatorFullState::SensorSimulatorFullState(SampleFactory &sample_factory, const Asteroid &asteroid, const SensorNoiseConfiguration &configuration) : SensorSimulator(8, sample_factory, asteroid) {
+SensorSimulatorFullState::SensorSimulatorFullState(SampleFactory &sample_factory, const Asteroid &asteroid, const SensorNoiseConfiguration &configuration) : SensorSimulator(SENSOR_SIMULATOR_DIMENSION, sample_factory, asteroid) {
     sensor_noise_configuration_ = configuration;
 }
 

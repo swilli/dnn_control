@@ -10,6 +10,8 @@ FixedSimulation::~FixedSimulation() {
 }
 
 boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D> > FixedSimulation::Evaluate() {
+    sample_factory_.SetSeed(random_seed_);
+
     std::vector<double> time_points;
     std::vector<Vector3D> evaluated_positions;
     std::vector<Vector3D> evaluated_heights;

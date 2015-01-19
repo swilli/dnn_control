@@ -18,6 +18,7 @@ public:
     Asteroid& AsteroidOfSystem();
 
 protected:
+    unsigned int random_seed_;
     double simulation_time_;
 
     SampleFactory sample_factory_;
