@@ -18,7 +18,7 @@ void FileWriter::CreateVisualizationFile(const std::string &path_to_file, const 
     file_.close();
 }
 
-void FileWriter::CreateSensorDataFile(const std::string &path_to_file, const double &control_frequency, const double &time, const Asteroid &asteroid, const Vector3D &spacecraft_position, const Vector3D spacecraft_velocity, const double &spacecraft_mass, const double &spacecraft_specific_impulse, const Vector3D &target_position, const std::vector<SensorData> &sensor_data)
+void FileWriter::CreateSensorDataFile(const std::string &path_to_file, const double &control_frequency, const double &time, const Asteroid &asteroid, const Vector3D &spacecraft_position, const Vector3D spacecraft_velocity, const double &spacecraft_mass, const double &spacecraft_specific_impulse, const Vector3D &target_position, const std::vector<std::vector<double> > &sensor_data)
 {
     const Vector2D angular_velocity = asteroid.ConstructorAngularVelocitiesXZ();
     const Vector3D semi_axis = asteroid.SemiAxis();
@@ -41,7 +41,7 @@ void FileWriter::CreateSensorDataFile(const std::string &path_to_file, const dou
     file_ << "#  velocity: " << spacecraft_velocity[0] << ", " << spacecraft_velocity[1] << ", " << spacecraft_velocity[2] << " m/s" << std::endl;
     file_ << "#" << std::endl;
     for (unsigned int i = 0; i < sensor_data.size(); ++i) {
-        const SensorData &data = sensor_data.at(i);
+        const std::vector<double> &data = sensor_data.at(i);
         file_ << data[0];
         for (unsigned int j = 1; j < data.size(); ++j) {
             file_ << ", " << data[j];

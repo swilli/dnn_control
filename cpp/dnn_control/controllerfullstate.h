@@ -2,7 +2,6 @@
 #define FULLSTATECONTROLLER_H
 
 #include "controller.h"
-#include "sensorsimulatorfullstate.h"
 
 class ControllerFullState : public Controller {
 public:

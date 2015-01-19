@@ -1,8 +1,8 @@
 #ifndef SPACECRAFTCONTROLLER_H
 #define SPACECRAFTCONTROLLER_H
 
-#include "sensorsimulator.h"
 #include "vector.h"
+#include "sensorsimulator.h"
 
 class Controller {
         /*

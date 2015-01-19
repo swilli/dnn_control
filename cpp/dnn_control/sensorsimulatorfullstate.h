@@ -6,10 +6,11 @@
 #include <boost/random.hpp>
 #include <boost/random/variate_generator.hpp>
 
+#define SENSOR_SIMULATOR_DIMENSION      7
 
 class SensorSimulatorFullState : public SensorSimulator {
 public:
-    typedef boost::array<double, 7> SensorNoiseConfiguration;
+    typedef boost::array<double, SENSOR_SIMULATOR_DIMENSION> SensorNoiseConfiguration;
 
     SensorSimulatorFullState(SampleFactory &sample_factory, const Asteroid &asteroid, const SensorNoiseConfiguration &configuration);
     virtual ~SensorSimulatorFullState();

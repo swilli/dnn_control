@@ -2,8 +2,8 @@
 #include "utility.h"
 
 // DEFINE CONTROLLER AND SENSORSIMULATOR USED IN THE SIMULATION
-#include "controllerfullstate.h"
-#include "sensorsimulatorfullstate.h"
+#include "controllerneuralnetwork.h"
+#include "sensorsimulatorneuralnetwork.h"
 
 Simulation::Simulation(const unsigned int &random_seed) : sample_factory_(SampleFactory(random_seed)) {
     simulation_time_ = 24.0 * 60.0 * 60.0;
@@ -18,7 +18,7 @@ Simulation::Simulation(const unsigned int &random_seed) : sample_factory_(Sample
     const double spacecraft_specific_impulse = 200.0;
     const double spacecraft_maximum_thrust = 21.0;
 
-    const Vector3D spacecraft_position = sample_factory_.SamplePointOutSideEllipsoid(semi_axis, 4.0);
+    const Vector3D spacecraft_position = {2.0 * semi_axis[0], 0.0, 0.0};//sample_factory_.SamplePointOutSideEllipsoid(semi_axis, 4.0);
     const double norm_position = VectorNorm(spacecraft_position);
     const Vector3D angular_velocity = boost::get<0>(asteroid_.AngularVelocityAndAccelerationAtTime(0.0));
     Vector3D spacecraft_velocity = CrossProduct(angular_velocity, spacecraft_position);
@@ -35,13 +35,13 @@ Simulation::Simulation(const unsigned int &random_seed) : sample_factory_(Sample
     }
 
     // ADAPT CONTROLLER AND SENSOR SIMULATOR HERE
-    controller_ = new ControllerFullState(spacecraft_maximum_thrust, target_position);
+    controller_ = new ControllerNeuralNetwork(spacecraft_maximum_thrust);
 
-    SensorSimulatorFullState::SensorNoiseConfiguration sensor_noise;
+    SensorSimulatorNeuralNetwork::SensorNoiseConfiguration sensor_noise;
     for (unsigned int i = 0; i < sensor_noise.size(); ++i) {
         sensor_noise[i] = 0.05;
     }
-    sensor_simulator_ = NULL; //new SensorSimulatorFullState(sample_factory_, asteroid_, sensor_noise);
+    sensor_simulator_ = new SensorSimulatorNeuralNetwork(sample_factory_, asteroid_, sensor_noise);
 
 
     const double perturbation_noise = 1e-7;
