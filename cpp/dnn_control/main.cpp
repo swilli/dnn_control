@@ -18,24 +18,41 @@
 int main(int argc, char *argv[]) {
     srand(time(0));
 
-    /*
+    /* Copy constructor & assignment operator test */
+
     PaGMOSimulation s1(500);
     PaGMOSimulation s2(0);
+    PaGMOSimulation s4(s2);
     {
         PaGMOSimulation s3(s2);
         s1 = s3;
     }
 
-    const boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D> > r1 = s1.Evaluate();
-    const boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D> > r2 = s2.Evaluate();
+    const boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D> > r1 = s1.EvaluateDetailed();
+    const boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D> > r2 = s2.EvaluateDetailed();
+    const boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D> > r4 = s4.EvaluateDetailed();
+
     const std::vector<Vector3D> &r1pos = boost::get<1>(r1);
+    const std::vector<Vector3D> &r1hei = boost::get<2>(r1);
+
     const std::vector<Vector3D> &r2pos = boost::get<1>(r2);
+    const std::vector<Vector3D> &r2hei = boost::get<2>(r2);
+
+    const std::vector<Vector3D> &r4pos = boost::get<1>(r4);
+    const std::vector<Vector3D> &r4hei = boost::get<2>(r4);
+
     const Vector3D r1p = r1pos.back();
     const Vector3D r2p = r2pos.back();
+    const Vector3D r4p = r4pos.back();
+
+    /*FileWriter writer;
+    writer.CreateVisualizationFile("../../../results/visualization1.txt", 1.0 / s1.FixedStepSize(), s1.AsteroidOfSystem(), r1pos, r1hei);
+    writer.CreateVisualizationFile("../../../results/visualization2.txt", 1.0 / s2.FixedStepSize(), s2.AsteroidOfSystem(), r2pos, r2hei);
+    writer.CreateVisualizationFile("../../../results/visualization4.txt", 1.0 / s4.FixedStepSize(), s4.AsteroidOfSystem(), r4pos, r4hei);
+    return 0;
+    */
 
     return 0;
-
-    */
 
     /*
     FixedSimulation sim(0);
@@ -49,8 +66,9 @@ int main(int argc, char *argv[]) {
 
     */
 
+    /*
     double error = 0.0;
-    const unsigned int num_tests = 20;
+    const unsigned int num_tests = 100;
 
     PaGMOSimulation p_sim(0);
     for (unsigned int i = 0; i < num_tests; ++i) {
@@ -90,6 +108,7 @@ int main(int argc, char *argv[]) {
     std::cout << "error: " << error / (double) num_tests << std::endl;
     std::cout << "done" << std::endl;
 
+    */
 
 /*
     double error = 0.0;

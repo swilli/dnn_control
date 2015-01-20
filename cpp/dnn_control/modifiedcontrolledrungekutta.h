@@ -25,8 +25,11 @@
 
 #include <boost/numeric/odeint/stepper/controlled_runge_kutta.hpp>
 
-const static  double kMaximumRelativeError = 1.0;
-const static  double kMaximumTimeStep = 86400.0;
+#include "asteroid.h"
+
+const static double kMaximumRelativeError = 1.0;
+const static double kMaximumTimeStep = 86400.0;
+const static double kMaximumCollisionTimeStep = 0.1;
 
 namespace boost {
 namespace numeric {
@@ -274,7 +277,18 @@ public:
         m_xerr_resizer.adjust_size( in , detail::bind( &modified_controlled_runge_kutta::template resize_m_xerr_impl< StateIn > , detail::ref( *this ) , detail::_1 ) );
 
         // do one step with error calculation
-        m_stepper.do_step( system , in , dxdt , t , out , dt , m_xerr.m_v );
+        try {
+            m_stepper.do_step( system , in , dxdt , t , out , dt , m_xerr.m_v );
+        } catch (const Asteroid::Exception &exception) {
+            if (dt > kMaximumCollisionTimeStep ) {
+                // we hit the asteroid but maybe we are already inside the asteroid. -> decrease dt
+                dt *= 0.5;
+
+                return fail;
+            } else {
+                throw exception;
+            }
+        }
 
         m_max_rel_error = m_error_checker.error( m_stepper.algebra() , in , dxdt , m_xerr.m_v , dt );
 
@@ -285,7 +299,6 @@ public:
                                                          pow( m_max_rel_error , static_cast<value_type>(-1) / ( m_stepper.error_order() - 1 ) ) ) ,
                                                          static_cast<value_type>( static_cast<value_type>(1)/static_cast<value_type> (5) ) );
 
-            dt = (dt > kMaximumTimeStep ? kMaximumTimeStep : dt);
             return fail;
         }
         else

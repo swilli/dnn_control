@@ -23,7 +23,6 @@ public:
 
     PaGMOSimulation& operator=(const PaGMOSimulation &other);
 
-
     boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D> > Evaluate();
 
     boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D> > EvaluateDetailed();
@@ -34,6 +33,8 @@ public:
     Asteroid& AsteroidOfSystem();
 
 private:
+    void Init();
+
     unsigned int random_seed_;
 
     double simulation_time_;
