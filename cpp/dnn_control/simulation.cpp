@@ -15,8 +15,8 @@ Simulation::Simulation(const unsigned int &random_seed) : sensor_simulator_(NULL
     asteroid_ = Asteroid(semi_axis, density, angular_velocity_xz, time_bias);
 
     const double spacecraft_mass = sample_factory_.SampleUniform(450.0, 500.0);
-    const double spacecraft_specific_impulse = 200.0;
     const double spacecraft_maximum_thrust = 21.0;
+    spacecraft_specific_impulse_ = 200.0;
 
     const Vector3D spacecraft_position = {sample_factory_.SampleUniform(4.0, 6.0) * semi_axis[0], 0.0, 0.0}; //sample_factory_.SamplePointOutSideEllipsoid(semi_axis, 1.1, 4.0);
     const double norm_position = VectorNorm(spacecraft_position);
@@ -35,7 +35,7 @@ Simulation::Simulation(const unsigned int &random_seed) : sensor_simulator_(NULL
     }
 
     // ADAPT CONTROLLER AND SENSOR SIMULATOR HERE
-    SensorSimulatorFullState::SensorNoiseConfiguration sensor_noise;
+    SensorNoiseConfiguration sensor_noise(SensorSimulatorFullState::kDimensions, 0.0);
     for (unsigned int i = 0; i < sensor_noise.size(); ++i) {
         sensor_noise[i] = 0.05;
     }
@@ -43,8 +43,8 @@ Simulation::Simulation(const unsigned int &random_seed) : sensor_simulator_(NULL
 
     controller_ = new ControllerFullState(spacecraft_maximum_thrust, target_position);
 
-    const double perturbation_noise = 1e-7;
-    const double engine_noise = 0.05;
+    perturbation_noise_ = 1e-7;
+    engine_noise_ = 0.05;
 
     for (unsigned int i = 0; i < 3; ++i) {
         initial_system_state_[i] = spacecraft_position[i];
@@ -52,12 +52,31 @@ Simulation::Simulation(const unsigned int &random_seed) : sensor_simulator_(NULL
     }
     initial_system_state_[6] = spacecraft_mass;
 
-    system_ = ODESystem(&sample_factory_, asteroid_, sensor_simulator_, controller_, spacecraft_specific_impulse, perturbation_noise, engine_noise);
-
     if (sensor_simulator_ != NULL && controller_  != NULL && sensor_simulator_->Dimensions() != controller_->Dimensions()) {
         std::cout << "sensor simulator - controller dimension mismatch" << std::endl;
         exit(EXIT_FAILURE);
     }
+}
+
+Simulation::Simulation(const Simulation &other) {
+    random_seed_ = other.random_seed_;
+    simulation_time_ = other.simulation_time_;
+    engine_noise_ = other.engine_noise_;
+    perturbation_noise_ = other.perturbation_noise_;
+    spacecraft_specific_impulse_ = other.spacecraft_specific_impulse_;
+    sample_factory_ = other.sample_factory_;
+    asteroid_ = other.asteroid_;
+    if (other.sensor_simulator_ != NULL) {
+        sensor_simulator_ = other.sensor_simulator_->Clone(sample_factory_);
+    } else {
+        sensor_simulator_ = NULL;
+    }
+    if (other.controller_ != NULL) {
+        controller_ = other.controller_->Clone();
+    } else {
+        controller_ = NULL;
+    }
+    initial_system_state_ = other.initial_system_state_;
 }
 
 Simulation::~Simulation() {

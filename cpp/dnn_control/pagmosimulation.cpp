@@ -9,8 +9,31 @@ PaGMOSimulation::PaGMOSimulation() {
     sensor_simulator_ = NULL;
 }
 
+PaGMOSimulation::PaGMOSimulation(const PaGMOSimulation &other) {
+    random_seed_ = other.random_seed_;
+    simulation_time_ = other.simulation_time_;
+    minimum_step_size_ = other.minimum_step_size_;
+    fixed_step_size_ = other.fixed_step_size_;
+    engine_noise_ = other.engine_noise_;
+    perturbation_noise_ = other.perturbation_noise_;
+    spacecraft_specific_impulse_ = other.spacecraft_specific_impulse_;
+    sample_factory_ = other.sample_factory_;
+    asteroid_ = other.asteroid_;
+    if (other.sensor_simulator_ != NULL) {
+        sensor_simulator_ = new SensorSimulatorNeuralNetwork(sample_factory_, asteroid_, other.sensor_simulator_->NoiseConfiguration());
+    } else {
+        sensor_simulator_ = NULL;
+    }
+    if (other.controller_ != NULL) {
+        controller_ = new ControllerNeuralNetwork(*other.controller_);
+    } else {
+        controller_ = NULL;
+    }
+    initial_system_state_ = other.initial_system_state_;
+}
+
 PaGMOSimulation::PaGMOSimulation(const unsigned int &random_seed) : random_seed_(random_seed), sample_factory_(SampleFactory(random_seed))  {
-    simulation_time_ = 24.0 * 60.0 * 60.0;
+    simulation_time_ = 1.0 * 60.0 * 60.0;
 
     minimum_step_size_ = 0.1;
     fixed_step_size_ = 0.1;
@@ -22,8 +45,8 @@ PaGMOSimulation::PaGMOSimulation(const unsigned int &random_seed) : random_seed_
     asteroid_ = Asteroid(semi_axis, density, angular_velocity_xz, time_bias);
 
     const double spacecraft_mass = sample_factory_.SampleUniform(450.0, 500.0);
-    const double spacecraft_specific_impulse = 200.0;
     const double spacecraft_maximum_thrust = 21.0;
+    spacecraft_specific_impulse_ = 200.0;
 
     const Vector3D spacecraft_position = {sample_factory_.SampleUniform(4.0, 6.0) * semi_axis[0], 0.0, 0.0}; //sample_factory_.SamplePointOutSideEllipsoid(semi_axis, 1.1, 4.0);
     const double norm_position = VectorNorm(spacecraft_position);
@@ -36,7 +59,7 @@ PaGMOSimulation::PaGMOSimulation(const unsigned int &random_seed) : random_seed_
     // no velocity
     //spacecraft_velocity[0] *= -1; spacecraft_velocity[1] *= -1; spacecraft_velocity[2] *= -1;
 
-    SensorSimulatorNeuralNetwork::SensorNoiseConfiguration sensor_noise;
+    SensorNoiseConfiguration sensor_noise(SensorSimulatorNeuralNetwork::kDimensions, 0.0);
     for (unsigned int i = 0; i < sensor_noise.size(); ++i) {
         sensor_noise[i] = 0.05;
     }
@@ -45,16 +68,14 @@ PaGMOSimulation::PaGMOSimulation(const unsigned int &random_seed) : random_seed_
     const unsigned int num_hidden_nodes = 10;
     controller_ = new ControllerNeuralNetwork(spacecraft_maximum_thrust, num_hidden_nodes);
 
-    const double perturbation_noise = 1e-7;
-    const double engine_noise = 0.05;
+    perturbation_noise_ = 1e-7;
+    engine_noise_ = 0.05;
 
     for (unsigned int i = 0; i < 3; ++i) {
         initial_system_state_[i] = spacecraft_position[i];
         initial_system_state_[3+i] = spacecraft_velocity[i];
     }
     initial_system_state_[6] = spacecraft_mass;
-
-    system_ = ODESystem(&sample_factory_, asteroid_, sensor_simulator_, controller_, spacecraft_specific_impulse, perturbation_noise, engine_noise);
 
     if (sensor_simulator_->Dimensions() != controller_->Dimensions()) {
         std::cout << "sensor simulator - controller dimension mismatch" << std::endl;
@@ -75,8 +96,8 @@ PaGMOSimulation::PaGMOSimulation(const unsigned int &random_seed, const std::vec
     asteroid_ = Asteroid(semi_axis, density, angular_velocity_xz, time_bias);
 
     const double spacecraft_mass = sample_factory_.SampleUniform(450.0, 500.0);
-    const double spacecraft_specific_impulse = 200.0;
     const double spacecraft_maximum_thrust = 21.0;
+    spacecraft_specific_impulse_ = 200.0;
 
     const Vector3D spacecraft_position = {sample_factory_.SampleUniform(4.0, 6.0) * semi_axis[0], 0.0, 0.0}; //sample_factory_.SamplePointOutSideEllipsoid(semi_axis, 1.1, 4.0);
     const double norm_position = VectorNorm(spacecraft_position);
@@ -89,7 +110,7 @@ PaGMOSimulation::PaGMOSimulation(const unsigned int &random_seed, const std::vec
     // no velocity
     //spacecraft_velocity[0] *= -1; spacecraft_velocity[1] *= -1; spacecraft_velocity[2] *= -1;
 
-    SensorSimulatorNeuralNetwork::SensorNoiseConfiguration sensor_noise;
+    SensorNoiseConfiguration sensor_noise(SensorSimulatorNeuralNetwork::kDimensions, 0.0);
     for (unsigned int i = 0; i < sensor_noise.size(); ++i) {
         sensor_noise[i] = 0.05;
     }
@@ -99,16 +120,14 @@ PaGMOSimulation::PaGMOSimulation(const unsigned int &random_seed, const std::vec
     controller_ = new ControllerNeuralNetwork(spacecraft_maximum_thrust, num_hidden_nodes);
     controller_->SetWeights(neural_network_weights);
 
-    const double perturbation_noise = 1e-7;
-    const double engine_noise = 0.05;
+    perturbation_noise_ = 1e-7;
+    engine_noise_ = 0.05;
 
     for (unsigned int i = 0; i < 3; ++i) {
         initial_system_state_[i] = spacecraft_position[i];
         initial_system_state_[3+i] = spacecraft_velocity[i];
     }
     initial_system_state_[6] = spacecraft_mass;
-
-    system_ = ODESystem(&sample_factory_, asteroid_, sensor_simulator_, controller_, spacecraft_specific_impulse, perturbation_noise, engine_noise);
 
     if (sensor_simulator_->Dimensions() != controller_->Dimensions()) {
         std::cout << "sensor simulator - controller dimension mismatch" << std::endl;
@@ -125,6 +144,38 @@ PaGMOSimulation::~PaGMOSimulation() {
     }
 }
 
+PaGMOSimulation& PaGMOSimulation::operator=(const PaGMOSimulation &other) {
+    if (&other != this) {
+        random_seed_ = other.random_seed_;
+        simulation_time_ = other.simulation_time_;
+        minimum_step_size_ = other.minimum_step_size_;
+        fixed_step_size_ = other.fixed_step_size_;
+        engine_noise_ = other.engine_noise_;
+        perturbation_noise_ = other.perturbation_noise_;
+        spacecraft_specific_impulse_ = other.spacecraft_specific_impulse_;
+        sample_factory_ = other.sample_factory_;
+        asteroid_ = other.asteroid_;
+        if (sensor_simulator_ != NULL) {
+            delete sensor_simulator_;
+        }
+        if (other.sensor_simulator_ != NULL) {
+            sensor_simulator_ = new SensorSimulatorNeuralNetwork(sample_factory_, asteroid_, other.sensor_simulator_->NoiseConfiguration());
+        } else {
+            sensor_simulator_ = NULL;
+        }
+        if (controller_ != NULL) {
+            delete controller_;
+        }
+        if (other.controller_ != NULL) {
+            controller_ = new ControllerNeuralNetwork(*other.controller_);
+        } else {
+            controller_ = NULL;
+        }
+        initial_system_state_ = other.initial_system_state_;
+    }
+    return *this;
+}
+
 boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D> > PaGMOSimulation::Evaluate() {
     sample_factory_.SetSeed(random_seed_);
 
@@ -139,8 +190,10 @@ boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D> >
     typedef odeint::modified_controlled_runge_kutta<ErrorStepper> ControlledStepper;
     ControlledStepper controlled_stepper;
 
+    ODESystem sys(sample_factory_, asteroid_, sensor_simulator_, controller_, spacecraft_specific_impulse_, perturbation_noise_, engine_noise_);
+
     try {
-        integrate_adaptive(controlled_stepper , system_, system_state, 0.0, simulation_time_, minimum_step_size_, collector);
+        integrate_adaptive(controlled_stepper , sys, system_state, 0.0, simulation_time_, minimum_step_size_, collector);
     } catch (const Asteroid::Exception &exception) {
         std::cout << "The spacecraft crashed into the asteroid's surface." << std::endl;
     } catch (const ODESystem::Exception &exception) {
@@ -160,9 +213,11 @@ boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D> >
     DataCollector collector(asteroid_, time_points, evaluated_positions, evaluated_heights);
     SystemState system_state(initial_system_state_);
 
+    ODESystem sys(sample_factory_, asteroid_, sensor_simulator_, controller_, spacecraft_specific_impulse_, perturbation_noise_, engine_noise_);
+
     odeint::runge_kutta4<SystemState> stepper;
     try {
-         integrate_const(stepper , system_, system_state, 0.0, simulation_time_, fixed_step_size_, collector);
+         integrate_const(stepper , sys, system_state, 0.0, simulation_time_, fixed_step_size_, collector);
     } catch (const Asteroid::Exception &exception) {
         std::cout << "The spacecraft crashed into the asteroid's surface." << std::endl;
     } catch (const ODESystem::Exception &exception) {

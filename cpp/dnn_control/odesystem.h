@@ -10,8 +10,7 @@
 
 class ODESystem {
 public:
-    ODESystem();
-    ODESystem(SampleFactory *sample_factory, const Asteroid &asteroid, SensorSimulator *sensor_simulator, Controller *controller, const double &spacecraft_specific_impulse, const double &perturbation_noise, const double &engine_noise);
+    ODESystem(SampleFactory &sample_factory, const Asteroid &asteroid, SensorSimulator *sensor_simulator, Controller *controller, const double &spacecraft_specific_impulse, const double &perturbation_noise, const double &engine_noise);
     ~ODESystem();
 
     void operator () (const SystemState &state, SystemState &d_state_dt, const double &time);
@@ -31,9 +30,9 @@ private:
     Vector3D thrust_;
     Vector3D perturbations_acceleration_;
 
-    Asteroid asteroid_;
+    const Asteroid &asteroid_;
 
-    SampleFactory *sample_factory_;
+    SampleFactory &sample_factory_;
 
     Controller *controller_;
     SensorSimulator *sensor_simulator_;

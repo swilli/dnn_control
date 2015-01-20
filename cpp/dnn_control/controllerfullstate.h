@@ -3,11 +3,14 @@
 
 #include "controller.h"
 
-#define CONTROLLER_DIMENSION    8
 class ControllerFullState : public Controller {
 public:
+    static const unsigned int kDimensions;
+
     ControllerFullState(const double &maximum_thrust, const Vector3D &target_position);
     virtual ~ControllerFullState();
+
+    virtual Controller* Clone() const;
 
     // thrust = F(sensor_data), whereas F can be eg., a PD controller, some RL solution, a NN, ...
     virtual Vector3D GetThrustForSensorData(const SensorData &sensor_data);

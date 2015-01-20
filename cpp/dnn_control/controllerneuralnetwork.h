@@ -4,13 +4,15 @@
 #include "controller.h"
 #include "feedforwardneuralnetwork.h"
 
-#define CONTROLLER_DIMENSION      7
-
 class ControllerNeuralNetwork : public Controller {
 public:
+    static const unsigned int kDimensions;
+
     ControllerNeuralNetwork(const double &maximum_thrust, const unsigned int &num_hidden);
     ControllerNeuralNetwork(const double &maximum_thrust, const unsigned int &num_hidden, const std::vector<double> &weights);
     virtual ~ControllerNeuralNetwork();
+
+    virtual Controller* Clone() const;
 
     // thrust = F(sensor_data), whereas F can be eg., a PD controller, some RL solution, a NN, ...
     virtual Vector3D GetThrustForSensorData(const SensorData &sensor_data);

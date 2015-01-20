@@ -25,8 +25,8 @@
 
 #include <boost/numeric/odeint/stepper/controlled_runge_kutta.hpp>
 
-#define     MAX_REL_ERROR   1.0
-#define     MAX_TIME_STEP    86400.0
+const static  double kMaximumRelativeError = 1.0;
+const static  double kMaximumTimeStep = 86400.0;
 
 namespace boost {
 namespace numeric {
@@ -278,14 +278,14 @@ public:
 
         m_max_rel_error = m_error_checker.error( m_stepper.algebra() , in , dxdt , m_xerr.m_v , dt );
 
-        if( m_max_rel_error > MAX_REL_ERROR)
+        if( m_max_rel_error > kMaximumRelativeError)
         {
             // error too large - decrease dt ,limit scaling factor to 0.2 and reset state
             dt *= max BOOST_PREVENT_MACRO_SUBSTITUTION ( static_cast<value_type>( static_cast<value_type>(9)/static_cast<value_type>(10) *
                                                          pow( m_max_rel_error , static_cast<value_type>(-1) / ( m_stepper.error_order() - 1 ) ) ) ,
                                                          static_cast<value_type>( static_cast<value_type>(1)/static_cast<value_type> (5) ) );
 
-            dt = (dt > MAX_TIME_STEP ? MAX_TIME_STEP : dt);
+            dt = (dt > kMaximumTimeStep ? kMaximumTimeStep : dt);
             return fail;
         }
         else
@@ -301,7 +301,7 @@ public:
                 dt *= static_cast<value_type>(9)/static_cast<value_type>(10) * pow( m_max_rel_error ,
                                                                                     static_cast<value_type>(-1) / m_stepper.stepper_order() );
 
-                dt = (dt > MAX_TIME_STEP ? MAX_TIME_STEP : dt);
+                dt = (dt > kMaximumTimeStep ? kMaximumTimeStep : dt);
                 return success;
             }
             else

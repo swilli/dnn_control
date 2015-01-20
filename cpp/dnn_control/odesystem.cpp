@@ -2,13 +2,8 @@
 #include "utility.h"
 #include "constants.h"
 
-ODESystem::ODESystem() {
-
-}
-
-ODESystem::ODESystem(SampleFactory *sample_factory, const Asteroid &asteroid, SensorSimulator *sensor_simulator, Controller *controller, const double &spacecraft_specific_impulse, const double &perturbation_noise, const double &engine_noise) : sample_factory_(sample_factory) {
+ODESystem::ODESystem(SampleFactory &sample_factory, const Asteroid &asteroid, SensorSimulator *sensor_simulator, Controller *controller, const double &spacecraft_specific_impulse, const double &perturbation_noise, const double &engine_noise) : sample_factory_(sample_factory), asteroid_(asteroid) {
     engine_noise_ = engine_noise;
-    asteroid_ = asteroid;
     spacecraft_specific_impulse_ = spacecraft_specific_impulse;
     sensor_simulator_ = sensor_simulator;
     controller_ = controller;
@@ -16,7 +11,7 @@ ODESystem::ODESystem(SampleFactory *sample_factory, const Asteroid &asteroid, Se
     min_control_interval_ = 0.2;
 
     for (unsigned int i = 0; i < 3; ++i) {
-        perturbations_acceleration_[i] = sample_factory_->SampleNormal(0.0, perturbation_noise);
+        perturbations_acceleration_[i] = sample_factory_.SampleNormal(0.0, perturbation_noise);
         thrust_[i] = 0.0;
     }
 }
@@ -95,7 +90,7 @@ void ODESystem::operator ()(const SystemState &state, SystemState &d_state_dt, c
                 - coriolis_acceleration[i] - euler_acceleration[i] - centrifugal_acceleration[i];
     }
 
-    d_state_dt[6] = -sqrt(thrust_[0] * thrust_[0] + thrust_[1] * thrust_[1] + thrust_[2] * thrust_[2]) / ((spacecraft_specific_impulse_ + spacecraft_specific_impulse_ * sample_factory_->SampleNormal(0.0, engine_noise_)) * kEarthAcceleration);
+    d_state_dt[6] = -sqrt(thrust_[0] * thrust_[0] + thrust_[1] * thrust_[1] + thrust_[2] * thrust_[2]) / ((spacecraft_specific_impulse_ + spacecraft_specific_impulse_ * sample_factory_.SampleNormal(0.0, engine_noise_)) * kEarthAcceleration);
 }
 
 void ODESystem::SetThrust(const Vector3D &thrust) {

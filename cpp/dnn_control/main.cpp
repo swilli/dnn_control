@@ -2,6 +2,7 @@
 #include "fixedsimulation.h"
 #include "pagmosimulation.h"
 #include "filewriter.h"
+#include "samplefactory.h"
 
 #include <pagmo/pagmo.h>
 
@@ -18,6 +19,25 @@ int main(int argc, char *argv[]) {
     srand(time(0));
 
     /*
+    PaGMOSimulation s1(500);
+    PaGMOSimulation s2(0);
+    {
+        PaGMOSimulation s3(s2);
+        s1 = s3;
+    }
+
+    const boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D> > r1 = s1.Evaluate();
+    const boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D> > r2 = s2.Evaluate();
+    const std::vector<Vector3D> &r1pos = boost::get<1>(r1);
+    const std::vector<Vector3D> &r2pos = boost::get<1>(r2);
+    const Vector3D r1p = r1pos.back();
+    const Vector3D r2p = r2pos.back();
+
+    return 0;
+
+    */
+
+    /*
     FixedSimulation sim(0);
     const boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D> > f_result = sim.Evaluate();
     const std::vector<Vector3D> &f_positions = boost::get<1>(f_result);
@@ -26,15 +46,19 @@ int main(int argc, char *argv[]) {
     writer.CreateVisualizationFile(PATH_TO_RANDOM_VISUALIZATION_FILE, 1.0 / sim.FixedStepSize(), sim.AsteroidOfSystem(), f_positions, f_heights);
 
     return 0;
+
     */
 
     double error = 0.0;
-    const unsigned int num_tests = 100;
+    const unsigned int num_tests = 20;
+
+    PaGMOSimulation p_sim(0);
     for (unsigned int i = 0; i < num_tests; ++i) {
         const unsigned int random_seed = rand();
         std::cout << "test " << (i + 1) << ", current seed: " << random_seed << std::endl;
 
-        PaGMOSimulation p_sim(random_seed);
+        p_sim = PaGMOSimulation(random_seed);
+        p_sim = p_sim;
         std::cout << "running fixed ... " << std::endl;
         clock_t begin = clock();
         const boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D> > f_result = p_sim.EvaluateDetailed();
@@ -67,14 +91,16 @@ int main(int argc, char *argv[]) {
     std::cout << "done" << std::endl;
 
 
-    /*
+/*
     double error = 0.0;
     const unsigned int num_tests = 10;
+    FixedSimulation f_sim(0);
+    AdaptiveSimulation a_sim(0);
     for (unsigned int i = 0; i < num_tests; ++i) {
         const unsigned int random_seed = rand();
         std::cout << "test " << (i + 1) << ", current seed: " << random_seed << std::endl;
 
-        FixedSimulation f_sim(random_seed);
+        f_sim = FixedSimulation(random_seed);
         std::cout << "running fixed ... " << std::endl;
         clock_t begin = clock();
         const boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D> > f_result = f_sim.Evaluate();
@@ -87,7 +113,7 @@ int main(int argc, char *argv[]) {
         const std::vector<Vector3D> &f_heights = boost::get<2>(f_result);
         const Vector3D f_pos = f_positions.back();
 
-        AdaptiveSimulation a_sim(random_seed);
+        a_sim = AdaptiveSimulation(random_seed);
         std::cout << "running adaptive ... " << std::endl;
         begin = clock();
         const boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D> > a_result = a_sim.Evaluate();
@@ -105,7 +131,7 @@ int main(int argc, char *argv[]) {
     std::cout << "error: " << error / (double) num_tests << std::endl;
     std::cout << "done" << std::endl;
 
-    */
+
 
     /*PaGMOSimulation sim(0);
     const boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D> > result1 = sim.Evaluate();

@@ -53,6 +53,6 @@ SET(MANDATORY_LIBRARIES ${MANDATORY_LIBRARIES} ${GSL_GSL_LIBRARY} ${GSL_GSLCBLAS
 INCLUDE_DIRECTORIES("${GSL_INCLUDE_DIR} ${PAGMO_INCLUDE_DIR}")
 
 # 5 - Define the target and linked libraries
-add_executable(main main.cpp asteroid.cpp simulation.cpp adaptivesimulation.cpp fixedsimulation.cpp odesystem.cpp sensorsimulator.cpp controller.cpp utility.cpp controllerfullstate.cpp sensorsimulatorfullstate.cpp filewriter.cpp samplefactory.cpp datacollector.cpp) 
+add_executable(main main.cpp asteroid.cpp simulation.cpp adaptivesimulation.cpp fixedsimulation.cpp pagmosimulation.cpp odesystem.cpp utility.cpp filewriter.cpp samplefactory.cpp datacollector.cpp feedforwardneuralnetwork.cpp sensorsimulator.cpp controller.cpp controllerfullstate.cpp controllerneuralnetwork.cpp sensorsimulatorfullstate.cpp sensorsimulatorneuralnetwork.cpp ) 
 TARGET_LINK_LIBRARIES(main ${MANDATORY_LIBRARIES})
 

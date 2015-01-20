@@ -8,6 +8,10 @@ SensorSimulator::~SensorSimulator() {
 
 }
 
+SensorNoiseConfiguration SensorSimulator::NoiseConfiguration() const {
+    return noise_configuration_;
+}
+
 unsigned int SensorSimulator::Dimensions() const {
     return dimensions_;
 }

@@ -8,6 +8,7 @@
 #include <vector>
 
 typedef std::vector<double> SensorData;
+typedef std::vector<double> SensorNoiseConfiguration;
 
 class SensorSimulator {
     /*
@@ -17,16 +18,22 @@ public:
     SensorSimulator(const unsigned int &dimensions, SampleFactory &sample_factory, const Asteroid &asteroid);
     virtual ~SensorSimulator();
 
+    virtual SensorSimulator* Clone(SampleFactory &sample_factory) const = 0;
+
     // Generates (simulates) sensor data based on the current spacecraft state "state" and time "time"
     virtual SensorData Simulate(const SystemState &state, const Vector3D &height, const Vector3D &perturbations_acceleration, const double &time) = 0;
+
+    SensorNoiseConfiguration NoiseConfiguration() const;
 
     unsigned int Dimensions() const;
 
 protected:
+    SensorNoiseConfiguration noise_configuration_;
+
     SampleFactory &sample_factory_;
 
     // The system's asteroid
-    Asteroid asteroid_;
+    const Asteroid asteroid_;
 
     // How large is the sensor data space
     unsigned int dimensions_;

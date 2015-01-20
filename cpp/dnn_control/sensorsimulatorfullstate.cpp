@@ -1,11 +1,17 @@
 #include "sensorsimulatorfullstate.h"
 
-SensorSimulatorFullState::SensorSimulatorFullState(SampleFactory &sample_factory, const Asteroid &asteroid, const SensorNoiseConfiguration &configuration) : SensorSimulator(SENSOR_SIMULATOR_DIMENSION, sample_factory, asteroid) {
-    sensor_noise_configuration_ = configuration;
+const unsigned int SensorSimulatorFullState::kDimensions = 8;
+
+SensorSimulatorFullState::SensorSimulatorFullState(SampleFactory &sample_factory, const Asteroid &asteroid, const SensorNoiseConfiguration &configuration) : SensorSimulator(kDimensions, sample_factory, asteroid) {
+    noise_configuration_ = configuration;
 }
 
 SensorSimulatorFullState::~SensorSimulatorFullState() {
 
+}
+
+SensorSimulator *SensorSimulatorFullState::Clone(SampleFactory &sample_factory) const {
+    return static_cast<SensorSimulator*>(new SensorSimulatorFullState(sample_factory, asteroid_, noise_configuration_));
 }
 
 SensorData SensorSimulatorFullState::Simulate(const SystemState &state, const Vector3D &, const Vector3D &, const double &time) {

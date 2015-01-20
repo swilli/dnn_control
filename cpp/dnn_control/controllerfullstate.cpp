@@ -1,6 +1,8 @@
 #include "controllerfullstate.h"
 
-ControllerFullState::ControllerFullState(const double &maximum_thrust, const Vector3D &target_position) : Controller(CONTROLLER_DIMENSION, maximum_thrust) {
+const unsigned int ControllerFullState::kDimensions = 8;
+
+ControllerFullState::ControllerFullState(const double &maximum_thrust, const Vector3D &target_position) : Controller(kDimensions, maximum_thrust) {
     for (unsigned int i = 0; i < 3; ++i) {
         target_position_[i] = target_position[i];
         previous_error_[i] = 0.0;
@@ -16,6 +18,10 @@ ControllerFullState::ControllerFullState(const double &maximum_thrust, const Vec
 
 ControllerFullState::~ControllerFullState() {
 
+}
+
+Controller *ControllerFullState::Clone() const {
+    return static_cast<Controller*>(new ControllerFullState(*this));
 }
 
 Vector3D ControllerFullState::GetThrustForSensorData(const SensorData &sensor_data) {
