@@ -12,7 +12,7 @@ public:
 
     FixedSimulation& operator=(const FixedSimulation &other);
 
-    virtual boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D> > Evaluate();
+    virtual boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<double> > Evaluate();
 
     double FixedStepSize() const;
 

@@ -23,9 +23,9 @@ public:
 
     PaGMOSimulation& operator=(const PaGMOSimulation &other);
 
-    boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D> > Evaluate();
+    boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<double> > Evaluate();
 
-    boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D> > EvaluateDetailed();
+    boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<double> > EvaluateDetailed();
 
     double FixedStepSize() const;
     double MinimumStepSize() const;

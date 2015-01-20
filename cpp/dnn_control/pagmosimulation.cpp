@@ -82,14 +82,16 @@ PaGMOSimulation& PaGMOSimulation::operator=(const PaGMOSimulation &other) {
     return *this;
 }
 
-boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D> > PaGMOSimulation::Evaluate() {
+boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<double> > PaGMOSimulation::Evaluate() {
     sample_factory_.SetSeed(random_seed_);
 
     std::vector<double> time_points;
+    std::vector<double> evaluated_masses;
     std::vector<Vector3D> evaluated_positions;
+    std::vector<Vector3D> evaluated_velocities;
     std::vector<Vector3D> evaluated_heights;
 
-    DataCollector collector(asteroid_, time_points, evaluated_positions, evaluated_heights);
+    DataCollector collector(asteroid_, time_points, evaluated_positions, evaluated_heights, evaluated_velocities, evaluated_masses);
     SystemState system_state(initial_system_state_);
 
     typedef odeint::runge_kutta_cash_karp54<SystemState> ErrorStepper;
@@ -101,22 +103,24 @@ boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D> >
     try {
         integrate_adaptive(controlled_stepper , sys, system_state, 0.0, simulation_time_, minimum_step_size_, collector);
     } catch (const Asteroid::Exception &exception) {
-        std::cout << "The spacecraft crashed into the asteroid's surface." << std::endl;
+        //std::cout << "The spacecraft crashed into the asteroid's surface." << std::endl;
     } catch (const ODESystem::Exception &exception) {
-        std::cout << "The spacecraft is out of fuel." << std::endl;
+        //std::cout << "The spacecraft is out of fuel." << std::endl;
     }
 
-    return boost::make_tuple(time_points, evaluated_positions, evaluated_heights);
+    return boost::make_tuple(time_points, evaluated_positions, evaluated_heights, evaluated_velocities, evaluated_masses);
 }
 
-boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D> > PaGMOSimulation::EvaluateDetailed() {
+boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<double> > PaGMOSimulation::EvaluateDetailed() {
     sample_factory_.SetSeed(random_seed_);
 
     std::vector<double> time_points;
+    std::vector<double> evaluated_masses;
     std::vector<Vector3D> evaluated_positions;
+    std::vector<Vector3D> evaluated_velocities;
     std::vector<Vector3D> evaluated_heights;
 
-    DataCollector collector(asteroid_, time_points, evaluated_positions, evaluated_heights);
+    DataCollector collector(asteroid_, time_points, evaluated_positions, evaluated_heights, evaluated_velocities, evaluated_masses);
     SystemState system_state(initial_system_state_);
 
     ODESystem sys(sample_factory_, asteroid_, sensor_simulator_, controller_, spacecraft_specific_impulse_, perturbation_noise_, engine_noise_);
@@ -125,12 +129,12 @@ boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D> >
     try {
         integrate_const(stepper , sys, system_state, 0.0, simulation_time_, fixed_step_size_, collector);
     } catch (const Asteroid::Exception &exception) {
-        std::cout << "The spacecraft crashed into the asteroid's surface." << std::endl;
+        //std::cout << "The spacecraft crashed into the asteroid's surface." << std::endl;
     } catch (const ODESystem::Exception &exception) {
-        std::cout << "The spacecraft is out of fuel." << std::endl;
+        //std::cout << "The spacecraft is out of fuel." << std::endl;
     }
 
-    return boost::make_tuple(time_points, evaluated_positions, evaluated_heights);
+    return boost::make_tuple(time_points, evaluated_positions, evaluated_heights, evaluated_velocities, evaluated_masses);
 }
 
 double PaGMOSimulation::FixedStepSize() const {
@@ -146,7 +150,7 @@ Asteroid& PaGMOSimulation::AsteroidOfSystem() {
 }
 
 void PaGMOSimulation::Init() {
-    simulation_time_ = 0.1 * 60.0 * 60.0;
+    simulation_time_ = 24.0 * 60.0 * 60.0;
 
     minimum_step_size_ = 0.1;
     fixed_step_size_ = 0.1;
@@ -161,21 +165,23 @@ void PaGMOSimulation::Init() {
     const double spacecraft_maximum_thrust = 21.0;
     spacecraft_specific_impulse_ = 200.0;
 
+
     // orbit
-    const Vector3D spacecraft_position = {sample_factory_.SampleUniform(4.0, 6.0) * semi_axis[0], 0.0, 0.0};
+    //const Vector3D spacecraft_position = {sample_factory_.SampleUniform(4.0, 6.0) * semi_axis[0], 0.0, 0.0};
 
     // random
-    //const Vector3D spacecraft_position = sample_factory_.SamplePointOutSideEllipsoid(semi_axis, 1.1, 10.0);
+    const Vector3D spacecraft_position = sample_factory_.SamplePointOutSideEllipsoid(semi_axis, 1.1, 4.0);
+
 
     const double norm_position = VectorNorm(spacecraft_position);
     const Vector3D angular_velocity = boost::get<0>(asteroid_.AngularVelocityAndAccelerationAtTime(0.0));
     Vector3D spacecraft_velocity = CrossProduct(angular_velocity, spacecraft_position);
 
     // orbit
-    spacecraft_velocity[0] = -spacecraft_velocity[0]; spacecraft_velocity[1] = -spacecraft_velocity[1] + sqrt(asteroid_.MassGravitationalConstant() / norm_position); spacecraft_velocity[2] = -spacecraft_velocity[2];
+    //spacecraft_velocity[0] = -spacecraft_velocity[0]; spacecraft_velocity[1] = -spacecraft_velocity[1] + sqrt(asteroid_.MassGravitationalConstant() / norm_position); spacecraft_velocity[2] = -spacecraft_velocity[2];
 
     // no velocity
-    //spacecraft_velocity[0] *= -1; spacecraft_velocity[1] *= -1; spacecraft_velocity[2] *= -1;
+    spacecraft_velocity[0] *= -1; spacecraft_velocity[1] *= -1; spacecraft_velocity[2] *= -1;
 
     SensorNoiseConfiguration sensor_noise(SensorSimulatorNeuralNetwork::kDimensions, 0.0);
     for (unsigned int i = 0; i < sensor_noise.size(); ++i) {

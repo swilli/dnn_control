@@ -18,7 +18,18 @@
 int main(int argc, char *argv[]) {
     srand(time(0));
 
-    /* Copy constructor & assignment operator test */
+    while (true) {
+        clock_t begin = clock();
+        PaGMOSimulation p_sim(rand());
+        const boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<double> > a_result = p_sim.Evaluate();
+        double simulated_time = boost::get<0>(a_result).back();
+        clock_t end = clock();
+        double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+        std::cout << simulated_time << " seconds simulation time took " << elapsed_secs << " real time to compute (x" << simulated_time/elapsed_secs << ")." << std::endl;
+    }
+    return 0;
+
+    /* Copy constructor & assignment operator test
 
     PaGMOSimulation s1(500);
     PaGMOSimulation s2(0);
@@ -28,9 +39,9 @@ int main(int argc, char *argv[]) {
         s1 = s3;
     }
 
-    const boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D> > r1 = s1.EvaluateDetailed();
-    const boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D> > r2 = s2.EvaluateDetailed();
-    const boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D> > r4 = s4.EvaluateDetailed();
+    const boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<double> > r1 = s1.EvaluateDetailed();
+    const boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<double> > r2 = s2.EvaluateDetailed();
+    const boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<double> > r4 = s4.EvaluateDetailed();
 
     const std::vector<Vector3D> &r1pos = boost::get<1>(r1);
     const std::vector<Vector3D> &r1hei = boost::get<2>(r1);
@@ -44,6 +55,9 @@ int main(int argc, char *argv[]) {
     const Vector3D r1p = r1pos.back();
     const Vector3D r2p = r2pos.back();
     const Vector3D r4p = r4pos.back();
+
+    FileWriter writer;
+    writer.CreateVisualizationFile(PATH_TO_RANDOM_VISUALIZATION_FILE, 1.0 / s4.FixedStepSize(), s4.AsteroidOfSystem(), r4pos, r4hei);
 
     /*FileWriter writer;
     writer.CreateVisualizationFile("../../../results/visualization1.txt", 1.0 / s1.FixedStepSize(), s1.AsteroidOfSystem(), r1pos, r1hei);
@@ -150,20 +164,6 @@ int main(int argc, char *argv[]) {
     std::cout << "error: " << error / (double) num_tests << std::endl;
     std::cout << "done" << std::endl;
 
-
-
-    /*PaGMOSimulation sim(0);
-    const boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D> > result1 = sim.Evaluate();
-    const std::vector<Vector3D> &positions1 = boost::get<1>(result1);
-    const std::vector<Vector3D> &heights1 = boost::get<2>(result1);
-
-    const boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D> > result2 = sim.Evaluate();
-    const std::vector<Vector3D> &positions2 = boost::get<1>(result2);
-    const std::vector<Vector3D> &heights2 = boost::get<2>(result2);
-
-    FileWriter writer;
-    writer.CreateVisualizationFile("../../../results/visualization1.txt", 1.0 / sim.FixedStepSize(), sim.AsteroidOfSystem(), positions1, heights1);
-    writer.CreateVisualizationFile("../../../results/visualization2.txt", 1.0 / sim.FixedStepSize(), sim.AsteroidOfSystem(), positions2, heights2);
     */
     return 0;
 }

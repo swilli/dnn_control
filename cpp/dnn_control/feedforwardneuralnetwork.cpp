@@ -2,8 +2,12 @@
 #include <cmath>
 
 FeedForwardNeuralNetwork::FeedForwardNeuralNetwork(const unsigned int &dim_input, const unsigned int &dim_hidden, const unsigned int &dim_output) : dim_input_(dim_input), dim_hidden_(dim_hidden), dim_output_(dim_output) {
-    weights_ = std::vector<double>((dim_input + 1) * dim_hidden + (dim_hidden + 1) * dim_output, 0.0);
-    hidden_ = std::vector<double>(dim_hidden, 0.0);
+    const unsigned int size_weights = (dim_input + 1) * dim_hidden + (dim_hidden + 1) * dim_output;
+    const double init_weights = 1.0 / size_weights;
+    weights_ = std::vector<double>(size_weights, init_weights);
+
+    const double init_hidden = 1.0 / dim_hidden;
+    hidden_ = std::vector<double>(dim_hidden, init_hidden);
 }
 
 FeedForwardNeuralNetwork::~FeedForwardNeuralNetwork() {
