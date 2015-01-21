@@ -153,7 +153,7 @@ Asteroid& PaGMOSimulation::AsteroidOfSystem() {
 }
 
 void PaGMOSimulation::Init() {
-    hidden_nodes_ = 9;
+    hidden_nodes_ = 6;
 
     minimum_step_size_ = 0.1;
     fixed_step_size_ = 0.1;

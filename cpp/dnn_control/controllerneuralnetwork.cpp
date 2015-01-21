@@ -20,13 +20,10 @@ Controller *ControllerNeuralNetwork::Clone() const {
 
 Vector3D ControllerNeuralNetwork::GetThrustForSensorData(const SensorData &sensor_data) {
     const std::vector<double> normalized_thrust = neural_network_.Evaluate(sensor_data);
-    //std::cout << VectorToString({normalized_thrust[0], normalized_thrust[1], normalized_thrust[2]}) << std::endl;
     Vector3D thrust;
     for (unsigned int i = 0; i < 3; ++i) {
         thrust[i] = (normalized_thrust[i] * maximum_thrust_ * 2.0) - maximum_thrust_;
-        //thrust[i] = 4.0 * normalized_thrust[i] * maximum_thrust_ - 3.0 * maximum_thrust_;
     }
-    //std::cout << VectorToString(thrust) << std::endl;
     return thrust;
 }
 
