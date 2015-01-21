@@ -13,11 +13,15 @@ public:
     std::vector<double> Evaluate(const std::vector<double> &input);
     void SetWeights(const std::vector<double> &weights);
 
+    unsigned int Size() const;
+
+    class Exception {};
+    class SizeMismatchException : public Exception {};
+
 private:
     friend class boost::serialization::access;
 
     template <class Archive>
-
     void serialize(Archive &ar, const unsigned int) {
         ar & const_cast<unsigned int &>(dim_input_);
         ar & const_cast<unsigned int &>(dim_hidden_);

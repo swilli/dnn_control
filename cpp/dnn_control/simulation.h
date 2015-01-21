@@ -14,7 +14,7 @@ public:
 
     virtual ~Simulation();
 
-    virtual boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<double> > Evaluate() = 0;
+    virtual boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> >  Evaluate() = 0;
 
     Asteroid& AsteroidOfSystem();
 

@@ -11,6 +11,8 @@ public:
     static const unsigned int kDimensions;
 
     SensorSimulatorFullState(SampleFactory &sample_factory, const Asteroid &asteroid, const SensorNoiseConfiguration &configuration);
+    SensorSimulatorFullState(SampleFactory &sample_factory, const SensorSimulatorFullState &other);
+
     virtual ~SensorSimulatorFullState();
 
     virtual SensorSimulator* Clone(SampleFactory &sample_factory) const;

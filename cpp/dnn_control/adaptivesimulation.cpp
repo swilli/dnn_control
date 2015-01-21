@@ -47,7 +47,7 @@ AdaptiveSimulation& AdaptiveSimulation::operator=(const AdaptiveSimulation &othe
     return *this;
 }
 
-boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<double> > AdaptiveSimulation::Evaluate() {
+boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > AdaptiveSimulation::Evaluate() {
     sample_factory_.SetSeed(random_seed_);
 
     std::vector<double> time_points;
@@ -55,8 +55,9 @@ boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, 
     std::vector<Vector3D> evaluated_positions;
     std::vector<Vector3D> evaluated_velocities;
     std::vector<Vector3D> evaluated_heights;
+    std::vector<Vector3D> evaluated_angular_velocities;
 
-    DataCollector collector(asteroid_, time_points, evaluated_positions, evaluated_heights, evaluated_velocities, evaluated_masses);
+    DataCollector collector(asteroid_, time_points, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities, evaluated_angular_velocities);
     SystemState system_state(initial_system_state_);
 
     typedef odeint::runge_kutta_cash_karp54<SystemState> ErrorStepper;
@@ -73,7 +74,7 @@ boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, 
         std::cout << "The spacecraft is out of fuel." << std::endl;
    }
 
-    return boost::make_tuple(time_points, evaluated_positions, evaluated_heights, evaluated_velocities, evaluated_masses);
+    return boost::make_tuple(time_points, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities, evaluated_angular_velocities);
 }
 
 double AdaptiveSimulation::MinimumStepSize() const {

@@ -13,22 +13,25 @@
 class PaGMOSimulation
 {
 public:
-    PaGMOSimulation();
+    static const unsigned int kHiddenNodes;
+
     PaGMOSimulation(const PaGMOSimulation &other);
 
-    PaGMOSimulation(const unsigned int &random_seed);
-    PaGMOSimulation(const unsigned int &random_seed, const std::vector<double> &neural_network_weights);
+    PaGMOSimulation(const unsigned int &random_seed, const double &simulation_time);
+    PaGMOSimulation(const unsigned int &random_seed, const double &simulation_time, const std::vector<double> &neural_network_weights);
 
     virtual ~PaGMOSimulation();
 
     PaGMOSimulation& operator=(const PaGMOSimulation &other);
 
-    boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<double> > Evaluate();
+    boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > Evaluate();
 
-    boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<double> > EvaluateDetailed();
+    boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > EvaluateDetailed();
 
     double FixedStepSize() const;
     double MinimumStepSize() const;
+
+    unsigned int ControllerNeuralNetworkSize() const;
 
     Asteroid& AsteroidOfSystem();
 
@@ -36,6 +39,8 @@ private:
     void Init();
 
     unsigned int random_seed_;
+
+    unsigned int hidden_nodes_;
 
     double simulation_time_;
 

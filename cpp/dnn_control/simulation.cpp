@@ -21,7 +21,7 @@ Simulation::Simulation(const unsigned int &random_seed) : sensor_simulator_(NULL
     const Vector3D spacecraft_position = {sample_factory_.SampleUniform(4.0, 6.0) * semi_axis[0], 0.0, 0.0}; //sample_factory_.SamplePointOutSideEllipsoid(semi_axis, 1.1, 4.0);
     const double norm_position = VectorNorm(spacecraft_position);
     const Vector3D angular_velocity = boost::get<0>(asteroid_.AngularVelocityAndAccelerationAtTime(0.0));
-    Vector3D spacecraft_velocity = CrossProduct(angular_velocity, spacecraft_position);
+    Vector3D spacecraft_velocity = VectorCrossProduct(angular_velocity, spacecraft_position);
 
     // orbit
     spacecraft_velocity[0] = -spacecraft_velocity[0]; spacecraft_velocity[1] = -spacecraft_velocity[1] + sqrt(asteroid_.MassGravitationalConstant() / norm_position); spacecraft_velocity[2] = -spacecraft_velocity[2];

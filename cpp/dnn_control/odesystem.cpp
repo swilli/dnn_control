@@ -71,10 +71,10 @@ void ODESystem::operator ()(const SystemState &state, SystemState &d_state_dt, c
     }
 
     // w' x r
-    const Vector3D euler_acceleration = CrossProduct(angular_acceleration, position);
+    const Vector3D euler_acceleration = VectorCrossProduct(angular_acceleration, position);
 
     // w x (w x r)
-    const Vector3D centrifugal_acceleration = CrossProduct(angular_velocity, CrossProduct(angular_velocity, position));
+    const Vector3D centrifugal_acceleration = VectorCrossProduct(angular_velocity, VectorCrossProduct(angular_velocity, position));
 
     Vector3D tmp;
     for(unsigned int i = 0; i < 3; ++i) {
@@ -82,7 +82,7 @@ void ODESystem::operator ()(const SystemState &state, SystemState &d_state_dt, c
     }
 
     // 2w x r'
-    const Vector3D coriolis_acceleration = CrossProduct(tmp, velocity);
+    const Vector3D coriolis_acceleration = VectorCrossProduct(tmp, velocity);
 
     for (unsigned int i = 0; i < 3 ;++i) {
         d_state_dt[i] = state[3+i];

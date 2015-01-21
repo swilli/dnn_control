@@ -10,6 +10,7 @@ public:
 
     ControllerNeuralNetwork(const double &maximum_thrust, const unsigned int &num_hidden);
     ControllerNeuralNetwork(const double &maximum_thrust, const unsigned int &num_hidden, const std::vector<double> &weights);
+
     virtual ~ControllerNeuralNetwork();
 
     virtual Controller* Clone() const;
@@ -18,6 +19,8 @@ public:
     virtual Vector3D GetThrustForSensorData(const SensorData &sensor_data);
 
     void SetWeights(const std::vector<double> &weights);
+
+    unsigned int NeuralNetworkSize() const;
 
 private:
     FeedForwardNeuralNetwork neural_network_;

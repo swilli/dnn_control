@@ -4,13 +4,9 @@
 #include "odeint.h"
 #include "modifiedcontrolledrungekutta.h"
 
-PaGMOSimulation::PaGMOSimulation() {
-    controller_ = NULL;
-    sensor_simulator_ = NULL;
-}
-
 PaGMOSimulation::PaGMOSimulation(const PaGMOSimulation &other) {
     random_seed_ = other.random_seed_;
+    hidden_nodes_ = other.hidden_nodes_;
     simulation_time_ = other.simulation_time_;
     minimum_step_size_ = other.minimum_step_size_;
     fixed_step_size_ = other.fixed_step_size_;
@@ -20,7 +16,7 @@ PaGMOSimulation::PaGMOSimulation(const PaGMOSimulation &other) {
     sample_factory_ = other.sample_factory_;
     asteroid_ = other.asteroid_;
     if (other.sensor_simulator_ != NULL) {
-        sensor_simulator_ = new SensorSimulatorNeuralNetwork(sample_factory_, asteroid_, other.sensor_simulator_->NoiseConfiguration());
+        sensor_simulator_ = new SensorSimulatorNeuralNetwork(sample_factory_, *other.sensor_simulator_);
     } else {
         sensor_simulator_ = NULL;
     }
@@ -32,11 +28,11 @@ PaGMOSimulation::PaGMOSimulation(const PaGMOSimulation &other) {
     initial_system_state_ = other.initial_system_state_;
 }
 
-PaGMOSimulation::PaGMOSimulation(const unsigned int &random_seed) : random_seed_(random_seed), sample_factory_(SampleFactory(random_seed))  {
+PaGMOSimulation::PaGMOSimulation(const unsigned int &random_seed,  const double &simulation_time) : random_seed_(random_seed), sample_factory_(SampleFactory(random_seed)), simulation_time_(simulation_time)  {
     Init();
 }
 
-PaGMOSimulation::PaGMOSimulation(const unsigned int &random_seed, const std::vector<double> &neural_network_weights) : random_seed_(random_seed), sample_factory_(SampleFactory(random_seed)) {
+PaGMOSimulation::PaGMOSimulation(const unsigned int &random_seed, const double &simulation_time, const std::vector<double> &neural_network_weights) : random_seed_(random_seed), sample_factory_(SampleFactory(random_seed)), simulation_time_(simulation_time) {
     Init();
     controller_->SetWeights(neural_network_weights);
 }
@@ -53,6 +49,7 @@ PaGMOSimulation::~PaGMOSimulation() {
 PaGMOSimulation& PaGMOSimulation::operator=(const PaGMOSimulation &other) {
     if (&other != this) {
         random_seed_ = other.random_seed_;
+        hidden_nodes_ = other.hidden_nodes_;
         simulation_time_ = other.simulation_time_;
         minimum_step_size_ = other.minimum_step_size_;
         fixed_step_size_ = other.fixed_step_size_;
@@ -65,7 +62,7 @@ PaGMOSimulation& PaGMOSimulation::operator=(const PaGMOSimulation &other) {
             delete sensor_simulator_;
         }
         if (other.sensor_simulator_ != NULL) {
-            sensor_simulator_ = new SensorSimulatorNeuralNetwork(sample_factory_, asteroid_, other.sensor_simulator_->NoiseConfiguration());
+            sensor_simulator_ = new SensorSimulatorNeuralNetwork(sample_factory_, *other.sensor_simulator_);
         } else {
             sensor_simulator_ = NULL;
         }
@@ -82,7 +79,7 @@ PaGMOSimulation& PaGMOSimulation::operator=(const PaGMOSimulation &other) {
     return *this;
 }
 
-boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<double> > PaGMOSimulation::Evaluate() {
+boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > PaGMOSimulation::Evaluate() {
     sample_factory_.SetSeed(random_seed_);
 
     std::vector<double> time_points;
@@ -90,8 +87,9 @@ boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, 
     std::vector<Vector3D> evaluated_positions;
     std::vector<Vector3D> evaluated_velocities;
     std::vector<Vector3D> evaluated_heights;
+    std::vector<Vector3D> evaluated_angular_velocities;
 
-    DataCollector collector(asteroid_, time_points, evaluated_positions, evaluated_heights, evaluated_velocities, evaluated_masses);
+    DataCollector collector(asteroid_, time_points, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities, evaluated_angular_velocities);
     SystemState system_state(initial_system_state_);
 
     typedef odeint::runge_kutta_cash_karp54<SystemState> ErrorStepper;
@@ -108,10 +106,10 @@ boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, 
         //std::cout << "The spacecraft is out of fuel." << std::endl;
     }
 
-    return boost::make_tuple(time_points, evaluated_positions, evaluated_heights, evaluated_velocities, evaluated_masses);
+    return boost::make_tuple(time_points, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities, evaluated_angular_velocities);
 }
 
-boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<double> > PaGMOSimulation::EvaluateDetailed() {
+boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > PaGMOSimulation::EvaluateDetailed() {
     sample_factory_.SetSeed(random_seed_);
 
     std::vector<double> time_points;
@@ -119,8 +117,9 @@ boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, 
     std::vector<Vector3D> evaluated_positions;
     std::vector<Vector3D> evaluated_velocities;
     std::vector<Vector3D> evaluated_heights;
+    std::vector<Vector3D> evaluated_angular_velocities;
 
-    DataCollector collector(asteroid_, time_points, evaluated_positions, evaluated_heights, evaluated_velocities, evaluated_masses);
+    DataCollector collector(asteroid_, time_points, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities, evaluated_angular_velocities);
     SystemState system_state(initial_system_state_);
 
     ODESystem sys(sample_factory_, asteroid_, sensor_simulator_, controller_, spacecraft_specific_impulse_, perturbation_noise_, engine_noise_);
@@ -134,7 +133,7 @@ boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, 
         //std::cout << "The spacecraft is out of fuel." << std::endl;
     }
 
-    return boost::make_tuple(time_points, evaluated_positions, evaluated_heights, evaluated_velocities, evaluated_masses);
+    return boost::make_tuple(time_points, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities, evaluated_angular_velocities);
 }
 
 double PaGMOSimulation::FixedStepSize() const {
@@ -145,12 +144,16 @@ double PaGMOSimulation::MinimumStepSize() const {
     return minimum_step_size_;
 }
 
+unsigned int PaGMOSimulation::ControllerNeuralNetworkSize() const {
+    return controller_->NeuralNetworkSize();
+}
+
 Asteroid& PaGMOSimulation::AsteroidOfSystem() {
     return asteroid_;
 }
 
 void PaGMOSimulation::Init() {
-    simulation_time_ = 24.0 * 60.0 * 60.0;
+    hidden_nodes_ = 9;
 
     minimum_step_size_ = 0.1;
     fixed_step_size_ = 0.1;
@@ -175,7 +178,7 @@ void PaGMOSimulation::Init() {
 
     const double norm_position = VectorNorm(spacecraft_position);
     const Vector3D angular_velocity = boost::get<0>(asteroid_.AngularVelocityAndAccelerationAtTime(0.0));
-    Vector3D spacecraft_velocity = CrossProduct(angular_velocity, spacecraft_position);
+    Vector3D spacecraft_velocity = VectorCrossProduct(angular_velocity, spacecraft_position);
 
     // orbit
     //spacecraft_velocity[0] = -spacecraft_velocity[0]; spacecraft_velocity[1] = -spacecraft_velocity[1] + sqrt(asteroid_.MassGravitationalConstant() / norm_position); spacecraft_velocity[2] = -spacecraft_velocity[2];
@@ -187,10 +190,9 @@ void PaGMOSimulation::Init() {
     for (unsigned int i = 0; i < sensor_noise.size(); ++i) {
         sensor_noise[i] = 0.05;
     }
-    sensor_simulator_ = new SensorSimulatorNeuralNetwork(sample_factory_, asteroid_, sensor_noise);
+    sensor_simulator_ = new SensorSimulatorNeuralNetwork(sample_factory_, asteroid_, sensor_noise, spacecraft_position);
 
-    const unsigned int num_hidden_nodes = 10;
-    controller_ = new ControllerNeuralNetwork(spacecraft_maximum_thrust, num_hidden_nodes);
+    controller_ = new ControllerNeuralNetwork(spacecraft_maximum_thrust, hidden_nodes_);
 
     perturbation_noise_ = 1e-7;
     engine_noise_ = 0.05;

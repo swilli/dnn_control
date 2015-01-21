@@ -3,9 +3,18 @@
 
 #include <boost/array.hpp>
 #include <math.h>
+#include <sstream>
 
 typedef boost::array<double,3> Vector3D;
 typedef boost::array<double,2> Vector2D;
+
+// c = u x v
+inline Vector3D VectorCrossProduct(const Vector3D &vector_u, const Vector3D &vector_v) {
+    Vector3D result = {vector_u[1] * vector_v[2] - vector_u[2] * vector_v[1],
+                       vector_u[2] * vector_v[0] - vector_u[0] * vector_v[2],
+                       vector_u[0] * vector_v[1] - vector_u[1] * vector_v[0]};
+    return result;
+}
 
 inline void VectorCopy3D(const Vector3D &from, Vector3D &to) {
     to[0] = from[0];
@@ -40,6 +49,23 @@ inline double VectorNorm(const Vector2D &v) {
         result += v[i] * v[i];
     }
     return sqrt(result);
+}
+
+inline std::string VectorToString(const Vector3D &v) {
+    std::ostringstream oss;
+    oss << "(";
+    oss << v[0] << ",";
+    oss << v[1] << ",";
+    oss << v[2] << ")";
+    return oss.str();
+}
+
+inline std::string VectorToString(const Vector2D &v) {
+    std::ostringstream oss;
+    oss << "(";
+    oss << v[0] << ",";
+    oss << v[1] << ")";
+    return oss.str();
 }
 
 #endif // VECTOR_H

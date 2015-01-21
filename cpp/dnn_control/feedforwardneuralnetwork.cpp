@@ -15,7 +15,14 @@ FeedForwardNeuralNetwork::~FeedForwardNeuralNetwork() {
 }
 
 void FeedForwardNeuralNetwork::SetWeights(const std::vector<double> &weights) {
+    if (weights_.size() != weights.size()) {
+        throw SizeMismatchException();
+    }
     weights_ = weights;
+}
+
+unsigned int FeedForwardNeuralNetwork::Size() const {
+    return weights_.size();
 }
 
 std::vector<double> FeedForwardNeuralNetwork::Evaluate(const std::vector<double> &input) {
