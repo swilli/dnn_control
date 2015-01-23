@@ -89,3 +89,55 @@ double BisectEllipse(const Vector2D &semi_axis_mul_pos, const Vector2D &semi_axi
         throw PositionInsideEllipseException();
     }
 }
+
+double NewtonRaphsonEllipsoid(const Vector3D &semi_axis_mul_pos, const Vector3D &semi_axis_pow2) {
+    const double tolerance = 1e-3;
+    double root = 0.0;
+    double old_root = root;
+    double error = 0.0;
+    do {
+        old_root = root;
+        double f_root = 0.0;
+        for (unsigned int i = 0; i < 3; ++i) {
+            f_root += (semi_axis_mul_pos[i] / (root + semi_axis_pow2[i])) * (semi_axis_mul_pos[i] / (root + semi_axis_pow2[i]));
+        }
+        f_root -= 1.0;
+        double df_root = 0.0;
+        for (unsigned int i = 0; i < 3; ++i) {
+            df_root += (semi_axis_mul_pos[i] * semi_axis_mul_pos[i]) * (-2.0) / ((root + semi_axis_pow2[i]) * (root + semi_axis_pow2[i]) * (root + semi_axis_pow2[i]));
+        }
+        root = root - f_root/df_root;
+        error = root - old_root;
+        error = (error < 0.0 ? -error : error);
+        if (isinf(root) || isnan(root)) {
+            throw PositionInsideEllipsoidException();
+        }
+    } while (error > tolerance);
+    return root;
+}
+
+double NewtonRaphsonEllipse(const Vector2D &semi_axis_mul_pos, const Vector2D &semi_axis_pow2) {
+    const double tolerance = 1e-3;
+    double root = 0.0;
+    double old_root = root;
+    double error = 0.0;
+    do {
+        old_root = root;
+        double f_root = 0.0;
+        for (unsigned int i = 0; i < 2; ++i) {
+            f_root += (semi_axis_mul_pos[i] / (root + semi_axis_pow2[i])) * (semi_axis_mul_pos[i] / (root + semi_axis_pow2[i]));
+        }
+        f_root -= 1.0;
+        double df_root = 0.0;
+        for (unsigned int i = 0; i < 2; ++i) {
+            df_root += (semi_axis_mul_pos[i] * semi_axis_mul_pos[i]) * (-2.0) / ((root + semi_axis_pow2[i]) * (root + semi_axis_pow2[i]) * (root + semi_axis_pow2[i]));
+        }
+        root = root - f_root/df_root;
+        error = root - old_root;
+        error = (error < 0.0 ? -error : error);
+        if (isinf(root) || isnan(root)) {
+            throw PositionInsideEllipseException();
+        }
+    } while (error > tolerance);
+    return root;
+}

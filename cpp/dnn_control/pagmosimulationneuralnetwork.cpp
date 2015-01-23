@@ -16,7 +16,7 @@ PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const PaGMOSimulation
     sample_factory_ = other.sample_factory_;
     asteroid_ = other.asteroid_;
     if (other.sensor_simulator_ != NULL) {
-        sensor_simulator_ = new SensorSimulatorNeuralNetwork(sample_factory_, *other.sensor_simulator_);
+        sensor_simulator_ = new SensorSimulatorNeuralNetwork(*other.sensor_simulator_);
     } else {
         sensor_simulator_ = NULL;
     }
@@ -73,7 +73,7 @@ PaGMOSimulationNeuralNetwork& PaGMOSimulationNeuralNetwork::operator=(const PaGM
             delete sensor_simulator_;
         }
         if (other.sensor_simulator_ != NULL) {
-            sensor_simulator_ = new SensorSimulatorNeuralNetwork(sample_factory_, *other.sensor_simulator_);
+            sensor_simulator_ = new SensorSimulatorNeuralNetwork(*other.sensor_simulator_);
         } else {
             sensor_simulator_ = NULL;
         }
@@ -106,7 +106,7 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     typedef odeint::modified_controlled_runge_kutta<ErrorStepper> ControlledStepper;
     ControlledStepper controlled_stepper;
 
-    ODESystem sys(sample_factory_, asteroid_, sensor_simulator_, controller_, spacecraft_specific_impulse_, perturbation_noise_, engine_noise_);
+    ODESystem sys(sample_factory_, asteroid_, spacecraft_specific_impulse_, perturbation_noise_, engine_noise_, sensor_simulator_, controller_);
 
     try {
         integrate_adaptive(controlled_stepper , sys, system_state, 0.0, simulation_time_, minimum_step_size_, collector);
@@ -131,7 +131,7 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     DataCollector collector(asteroid_, time_points, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities);
     SystemState system_state(initial_system_state_);
 
-    ODESystem sys(sample_factory_, asteroid_, sensor_simulator_, controller_, spacecraft_specific_impulse_, perturbation_noise_, engine_noise_);
+    ODESystem sys(sample_factory_, asteroid_, spacecraft_specific_impulse_, perturbation_noise_, engine_noise_, sensor_simulator_, controller_);
 
     odeint::runge_kutta4<SystemState> stepper;
     try {

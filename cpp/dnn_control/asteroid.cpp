@@ -73,28 +73,6 @@ Asteroid::Asteroid(const Vector3D &semi_axis, const double &density, const Vecto
     elliptic_modulus_ = (inertia[1] - inertia[0]) * (energy_mul2_ * inertia[2] - momentum_pow2_) / ((inertia[2] - inertia[1]) * (momentum_pow2_ - energy_mul2_ * inertia[0]));
 
     mass_gravitational_constant_ = mass_ * kGravitationalConstant;
-
-    num_points_ = 100;
-    const double dpi = kPi / 2.0 / (num_points_-1);
-    std::set<std::vector<double> > configurations;
-    for (unsigned int i = 0; i < num_points_; ++i) {
-        for (unsigned int j = 0; j < num_points_; ++j) {
-            const double u = i * dpi;
-            const double v = j * dpi;
-            std::vector<double> cur_conf(3);
-            cur_conf[0] = cos(u) * sin(v);
-            cur_conf[1] = sin(u) * sin(v);
-            cur_conf[2] =  cos(v);
-            if (configurations.find(cur_conf) == configurations.end()) {
-                configurations.insert(cur_conf);
-                const Vector3D point = {semi_axis_[0] * cur_conf[0],
-                                    semi_axis_[1] * cur_conf[1],
-                                    semi_axis_[2] * cur_conf[2]};
-
-                points_.push_back(point);
-            }
-        }
-    }
 }
 
 Vector3D Asteroid::SemiAxis() const {
@@ -198,7 +176,7 @@ boost::tuple<Vector3D, Vector3D> Asteroid::AngularVelocityAndAccelerationAtTime(
     return make_tuple(velocity, acceleration);
 }
 
-boost::tuple<Vector3D, double> Asteroid::NearestPointOnSurfaceToPositionImpl2(const Vector3D &position) const {
+boost::tuple<Vector3D, double> Asteroid::NearestPointOnSurfaceToPosition(const Vector3D &position) const {
     Vector3D signs;
     Vector3D abs_position;
 
@@ -226,83 +204,6 @@ boost::tuple<Vector3D, double> Asteroid::NearestPointOnSurfaceToPositionImpl2(co
     return make_tuple(point, distance);
 }
 
-boost::tuple<Vector3D, double> Asteroid::NearestPointOnSurfaceToPosition(const Vector3D &position) const {
-    Vector3D signs;
-    Vector3D abs_position;
-
-    // Project point to first quadrant, keep in mind the original point signs
-    for (unsigned int i = 0; i < 3; ++i) {
-        signs[i] = (position[i] >= 0.0 ? 1.0 : -1.0);
-        abs_position[i] = signs[i] * position[i];
-    }
-
-    const unsigned int num_points = points_.size();
-
-    double min_distance = 1e20;
-    Vector3D point;
-    for (unsigned int i = 0; i < num_points; ++i) {
-        const Vector3D &cur_pos = points_.at(i);
-        const double dist = VectorNorm(VectorSub(cur_pos, abs_position));
-        if (dist < min_distance) {
-            min_distance = dist;
-            point = cur_pos;
-        }
-    }
-
-    // Project point from first quadrant back to original quadrant
-    point[0] *= signs[0];
-    point[1] *= signs[1];
-    point[2] *= signs[2];
-
-    return make_tuple(point, min_distance);
-
-    /*std::vector<std::pair<double, unsigned int> > nearest_neigh(num_points, std::make_pair(0.0, 0));
-    for (unsigned int i = 0; i < num_points; ++i) {
-        nearest_neigh.at(i) = std::make_pair(VectorNorm(VectorSub(abs_position, points_.at(i))), i);
-    }
-    sort(nearest_neigh.begin(), nearest_neigh.end());
-
-    std::vector<Vector3D> plane_points(3);
-    plane_points[0] = points_.at(nearest_neigh.at(0).second);
-    plane_points[1] = points_.at(nearest_neigh.at(1).second);
-    plane_points[2] = points_.at(nearest_neigh.at(2).second);
-
-    std::cout << VectorToString(abs_position) << std::endl;
-    for (unsigned int i = 0; i < 3; ++i) {
-        std::cout << VectorToString(plane_points[i]) << std::endl;
-    }
-    sort(plane_points.begin(), plane_points.end(), SortMinimumZ);
-
-    const Vector3D &point_21 = {plane_points[1][0] - plane_points[0][0], plane_points[1][1] - plane_points[0][1], plane_points[1][2] - plane_points[0][2]};
-    const Vector3D &point_31 = {plane_points[2][0] - plane_points[0][0], plane_points[2][1] - plane_points[0][1], plane_points[2][2] - plane_points[0][2]};
-
-    Vector3D plane_normal = VectorCrossProduct(point_31, point_21);
-    const double coef_plane_norm = 1.0 / VectorNorm(plane_normal);
-
-    plane_normal[0] *= coef_plane_norm;
-    plane_normal[1] *= coef_plane_norm;
-    plane_normal[2] *= coef_plane_norm;
-
-    Vector3D tmp = VectorSub(abs_position, points_.at(nearest_neigh.at(0).second));
-    double distance = VectorDotProduct(plane_normal, tmp);
-    distance = (distance < 0.0 ? -distance : distance);
-
-    double coeftmp_norm = 1.0 / VectorNorm(tmp);
-    tmp[0] *= coeftmp_norm;
-    tmp[1] *= coeftmp_norm;
-    tmp[2] *= coeftmp_norm;
-
-    Vector3D point = {abs_position[0] - distance * plane_normal[0], abs_position[1] - distance * plane_normal[1], abs_position[2] - distance * plane_normal[2]};
-
-    // Project point from first quadrant back to original quadrant
-    point[0] *= signs[0];
-    point[1] *= signs[1];
-    point[2] *= signs[2];
-
-    return make_tuple(point, distance);
-    */
-}
-
 Vector2D Asteroid::ConstructorAngularVelocitiesXZ() const {
     return constructor_angular_velocities_xz_;
 }
@@ -318,7 +219,7 @@ Vector3D Asteroid::NearestPointOnEllipsoidFirstQuadrant(const Vector3D &position
                 Vector3D semi_axis_mul_pos = {semi_axis_[0] * position[0], semi_axis_[1] * position[1], semi_axis_[2] * position[2]};
                 double time = 0.0;
                 try {
-                    time = BisectEllipsoid(semi_axis_mul_pos, semi_axis_pow2_);
+                    time = NewtonRaphsonEllipsoid(semi_axis_mul_pos, semi_axis_pow2_);
                 } catch (const UtilityException &exception) {
                     throw PositionInsideException();
                 }
@@ -396,7 +297,7 @@ Vector2D Asteroid::NearestPointOnEllipseFirstQuadrant(const Vector2D &semi_axis,
             Vector2D semi_axis_mul_pos = {semi_axis_[0] * position[0], semi_axis_[1] * position[1]};
             double time = 0.0;
             try {
-                time = BisectEllipse(semi_axis_mul_pos, semi_axis_pow2);
+                time = NewtonRaphsonEllipse(semi_axis_mul_pos, semi_axis_pow2);
             } catch (const UtilityException &exception) {
                 throw PositionInsideException();
             }

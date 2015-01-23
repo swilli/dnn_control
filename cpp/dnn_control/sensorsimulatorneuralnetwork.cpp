@@ -6,7 +6,7 @@ SensorSimulatorNeuralNetwork::SensorSimulatorNeuralNetwork(SampleFactory &sample
     target_position_ = target_position;
 }
 
-SensorSimulatorNeuralNetwork::SensorSimulatorNeuralNetwork(SampleFactory &sample_factory, const SensorSimulatorNeuralNetwork &other) : SensorSimulator(kDimensions, sample_factory, other.asteroid_, other.noise_configuration_) {
+SensorSimulatorNeuralNetwork::SensorSimulatorNeuralNetwork(const SensorSimulatorNeuralNetwork &other) : SensorSimulator(kDimensions, other.sample_factory_, other.asteroid_, other.noise_configuration_) {
     target_position_ = other.target_position_;
 }
 
@@ -14,8 +14,8 @@ SensorSimulatorNeuralNetwork::~SensorSimulatorNeuralNetwork() {
 
 }
 
-SensorSimulator* SensorSimulatorNeuralNetwork::Clone(SampleFactory &sample_factory) const {
-    return static_cast<SensorSimulator*>(new SensorSimulatorNeuralNetwork(sample_factory, *this));
+SensorSimulator* SensorSimulatorNeuralNetwork::Clone() const {
+    return static_cast<SensorSimulator*>(new SensorSimulatorNeuralNetwork(*this));
 }
 
 SensorData SensorSimulatorNeuralNetwork::Simulate(const SystemState &state, const Vector3D &height, const Vector3D &perturbations_acceleration, const double &time) {

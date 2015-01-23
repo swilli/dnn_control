@@ -10,13 +10,12 @@
 
 class ODESystem {
 public:
-    ODESystem(SampleFactory &sample_factory, const Asteroid &asteroid, SensorSimulator *sensor_simulator, Controller *controller, const double &spacecraft_specific_impulse, const double &perturbation_noise, const double &engine_noise);
+    ODESystem(const SampleFactory &sample_factory, const Asteroid &asteroid, const double &spacecraft_specific_impulse, const double &perturbation_noise, const double &engine_noise, SensorSimulator *sensor_simulator, Controller *controller);
+    ODESystem(const ODESystem &other);
+
     ~ODESystem();
 
     void operator () (const SystemState &state, SystemState &d_state_dt, const double &time);
-
-    void SetThrust(const Vector3D &thrust);
-    Vector3D PerturbationsAcceleration() const;
 
     class Exception {};
     class OutOfFuelException : public Exception {};
@@ -30,7 +29,7 @@ private:
     Vector3D thrust_;
     Vector3D perturbations_acceleration_;
 
-    SampleFactory &sample_factory_;
+    SampleFactory sample_factory_;
 
     const Asteroid &asteroid_;
 

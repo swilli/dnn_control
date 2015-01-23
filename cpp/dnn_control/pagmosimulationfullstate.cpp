@@ -15,7 +15,7 @@ PaGMOSimulationFullState::PaGMOSimulationFullState(const PaGMOSimulationFullStat
     sample_factory_ = other.sample_factory_;
     asteroid_ = other.asteroid_;
     if (other.sensor_simulator_ != NULL) {
-        sensor_simulator_ = new SensorSimulatorFullState(sample_factory_, *other.sensor_simulator_);
+        sensor_simulator_ = new SensorSimulatorFullState(*other.sensor_simulator_);
     } else {
         sensor_simulator_ = NULL;
     }
@@ -60,7 +60,7 @@ PaGMOSimulationFullState& PaGMOSimulationFullState::operator=(const PaGMOSimulat
             delete sensor_simulator_;
         }
         if (other.sensor_simulator_ != NULL) {
-            sensor_simulator_ = new SensorSimulatorFullState(sample_factory_, *other.sensor_simulator_);
+            sensor_simulator_ = new SensorSimulatorFullState(*other.sensor_simulator_);
         } else {
             sensor_simulator_ = NULL;
         }
@@ -79,6 +79,9 @@ PaGMOSimulationFullState& PaGMOSimulationFullState::operator=(const PaGMOSimulat
 
 boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > PaGMOSimulationFullState::Evaluate() {
     sample_factory_.SetSeed(random_seed_);
+    if (sensor_simulator_ != NULL) {
+        sensor_simulator_->SetSampleFactory(sample_factory_);
+    }
 
     std::vector<double> time_points;
     std::vector<double> evaluated_masses;
@@ -93,7 +96,7 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     typedef odeint::modified_controlled_runge_kutta<ErrorStepper> ControlledStepper;
     ControlledStepper controlled_stepper;
 
-    ODESystem sys(sample_factory_, asteroid_, sensor_simulator_, controller_, spacecraft_specific_impulse_, perturbation_noise_, engine_noise_);
+    ODESystem sys(sample_factory_, asteroid_, spacecraft_specific_impulse_, perturbation_noise_, engine_noise_, sensor_simulator_, controller_);
 
     try {
         integrate_adaptive(controlled_stepper , sys, system_state, 0.0, simulation_time_, minimum_step_size_, collector);
@@ -108,7 +111,9 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
 
 boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > PaGMOSimulationFullState::EvaluateDetailed() {
     sample_factory_.SetSeed(random_seed_);
-
+    if (sensor_simulator_ != NULL) {
+        sensor_simulator_->SetSampleFactory(sample_factory_);
+    }
     std::vector<double> time_points;
     std::vector<double> evaluated_masses;
     std::vector<Vector3D> evaluated_positions;
@@ -118,7 +123,7 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     DataCollector collector(asteroid_, time_points, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities);
     SystemState system_state(initial_system_state_);
 
-    ODESystem sys(sample_factory_, asteroid_, sensor_simulator_, controller_, spacecraft_specific_impulse_, perturbation_noise_, engine_noise_);
+    ODESystem sys(sample_factory_, asteroid_, spacecraft_specific_impulse_, perturbation_noise_, engine_noise_, sensor_simulator_, controller_);
 
     odeint::runge_kutta4<SystemState> stepper;
     try {

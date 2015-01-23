@@ -28,7 +28,7 @@ FixedSimulation& FixedSimulation::operator=(const FixedSimulation &other) {
             delete sensor_simulator_;
         }
         if (other.sensor_simulator_ != NULL) {
-            sensor_simulator_ = other.sensor_simulator_->Clone(sample_factory_);
+            sensor_simulator_ = other.sensor_simulator_->Clone();
         } else {
             sensor_simulator_ = NULL;
         }
@@ -57,7 +57,7 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     DataCollector collector(asteroid_, time_points, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities);
     SystemState system_state(initial_system_state_);
 
-    ODESystem sys(sample_factory_, asteroid_, sensor_simulator_, controller_, spacecraft_specific_impulse_, perturbation_noise_, engine_noise_);
+    ODESystem sys(sample_factory_, asteroid_, spacecraft_specific_impulse_, perturbation_noise_, engine_noise_, sensor_simulator_, controller_);
 
     odeint::runge_kutta4<SystemState> stepper;
     try {

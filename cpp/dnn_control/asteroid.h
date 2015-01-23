@@ -36,9 +36,6 @@ public:
     boost::tuple<Vector3D, Vector3D> AngularVelocityAndAccelerationAtTime(const double &time) const;
 
     // Computes the distance "distance" and orthogonal projection of a position "position" outside the asteroid onto the asteroid's surface "point" in asteroid centered RF
-    boost::tuple<Vector3D, double> NearestPointOnSurfaceToPositionImpl2(const Vector3D &position) const;
-
-    // Computes the distance "distance" and orthogonal projection of a position "position" outside the asteroid onto the asteroid's surface "point" in asteroid centered RF
     boost::tuple<Vector3D, double> NearestPointOnSurfaceToPosition(const Vector3D &position) const;
 
     // Returns the euler angles (theta, psi, phi) in an inertial reference frame where the axis coalign with the rotating body frame in the beginning
@@ -124,10 +121,6 @@ private:
 
     // True if momentum_pow2_ < energy_mul2_ * inertia_[1]
     bool inversion_;
-
-    // The poygon points
-    unsigned int num_points_;
-    std::vector<Vector3D> points_;
 };
 
 #endif // ASTEROID_H

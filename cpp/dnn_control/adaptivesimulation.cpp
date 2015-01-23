@@ -30,7 +30,7 @@ AdaptiveSimulation& AdaptiveSimulation::operator=(const AdaptiveSimulation &othe
             delete sensor_simulator_;
         }
         if (other.sensor_simulator_ != NULL) {
-            sensor_simulator_ = other.sensor_simulator_->Clone(sample_factory_);
+            sensor_simulator_ = other.sensor_simulator_->Clone();
         } else {
             sensor_simulator_ = NULL;
         }
@@ -63,7 +63,7 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     typedef odeint::modified_controlled_runge_kutta<ErrorStepper> ControlledStepper;
     ControlledStepper controlled_stepper;
 
-    ODESystem sys(sample_factory_, asteroid_, sensor_simulator_, controller_, spacecraft_specific_impulse_, perturbation_noise_, engine_noise_);
+    ODESystem sys(sample_factory_, asteroid_, spacecraft_specific_impulse_, perturbation_noise_, engine_noise_, sensor_simulator_, controller_);
 
     try {
         integrate_adaptive(controlled_stepper , sys, system_state, 0.0, simulation_time_, minimum_step_size_, collector);

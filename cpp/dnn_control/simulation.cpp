@@ -66,7 +66,7 @@ Simulation::Simulation(const Simulation &other) {
     sample_factory_ = other.sample_factory_;
     asteroid_ = other.asteroid_;
     if (other.sensor_simulator_ != NULL) {
-        sensor_simulator_ = other.sensor_simulator_->Clone(sample_factory_);
+        sensor_simulator_ = other.sensor_simulator_->Clone();
     } else {
         sensor_simulator_ = NULL;
     }
@@ -90,4 +90,3 @@ Simulation::~Simulation() {
 Asteroid &Simulation::AsteroidOfSystem() {
     return asteroid_;
 }
-

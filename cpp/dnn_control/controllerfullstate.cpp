@@ -11,8 +11,8 @@ ControllerFullState::ControllerFullState(const double &maximum_thrust, const Vec
 
     latest_control_action_ = 0.0;
 
-    coef_integral_ = 0.0;
-    coef_derivative_ = 0.0;
+    coef_integral_ = 4.0;
+    coef_derivative_ = 5.0;
     coef_proportional_ = 0.0;
 }
 
