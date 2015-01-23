@@ -2,11 +2,14 @@
 #include "constants.h"
 #include "utility.h"
 
+#include <algorithm>
+#include <set>
+#include <math.h>
 #include <gsl/gsl_poly.h>
 #include <gsl/gsl_sf_ellint.h>
 #include <gsl/gsl_sf_elljac.h>
 
-#include <math.h>
+#include <iostream>
 
 Asteroid::Asteroid() {
 
@@ -70,6 +73,29 @@ Asteroid::Asteroid(const Vector3D &semi_axis, const double &density, const Vecto
     elliptic_modulus_ = (inertia[1] - inertia[0]) * (energy_mul2_ * inertia[2] - momentum_pow2_) / ((inertia[2] - inertia[1]) * (momentum_pow2_ - energy_mul2_ * inertia[0]));
 
     mass_gravitational_constant_ = mass_ * kGravitationalConstant;
+
+    num_points_ = 20;
+    polygon_dpi_ = kPi / 2.0 / (num_points_-1);
+    std::set<std::vector<double> > configurations;
+    for (unsigned int i = 0; i < num_points_; ++i) {
+        for (unsigned int j = 0; j < num_points_; ++j) {
+            const double u = i * polygon_dpi_;
+            const double v = j * polygon_dpi_;
+            std::vector<double> cur_conf(3);
+            cur_conf[0] = cos(u) * sin(v);
+            cur_conf[1] = sin(u) * sin(v);
+            cur_conf[2] =  cos(v);
+            if (configurations.find(cur_conf) == configurations.end()) {
+                configurations.insert(cur_conf);
+                const Vector3D point = {semi_axis_[0] * cur_conf[0],
+                                    semi_axis_[1] * cur_conf[1],
+                                    semi_axis_[2] * cur_conf[2]};
+
+                std::vector<unsigned int> indices = {i,j};
+                points_.push_back(std::make_pair(point, indices));
+            }
+        }
+    }
 }
 
 Vector3D Asteroid::SemiAxis() const {
@@ -98,6 +124,10 @@ double Asteroid::EvaluatePointWithStandardEquation(const Vector3D &position) con
         result += position[i] * position[i] / semi_axis_pow2_[i];
     }
     return result;
+}
+
+bool Asteroid::SortMinimumZ(const Vector3D &first, const Vector3D &second) {
+    return first[2] < second[2];
 }
 
 Vector3D Asteroid::GravityAccelerationAtPosition(const Vector3D &position) const {
@@ -169,7 +199,7 @@ boost::tuple<Vector3D, Vector3D> Asteroid::AngularVelocityAndAccelerationAtTime(
     return make_tuple(velocity, acceleration);
 }
 
-boost::tuple<Vector3D, double> Asteroid::NearestPointOnSurfaceToPosition(const Vector3D &position) const {
+boost::tuple<Vector3D, double> Asteroid::NearestPointOnSurfaceToPositionImpl2(const Vector3D &position) const {
     Vector3D signs;
     Vector3D abs_position;
 
@@ -195,6 +225,179 @@ boost::tuple<Vector3D, double> Asteroid::NearestPointOnSurfaceToPosition(const V
     const double distance = sqrt(result);
 
     return make_tuple(point, distance);
+}
+
+boost::tuple<Vector3D, double> Asteroid::NearestPointOnSurfaceToPosition(const Vector3D &position) const {
+    Vector3D signs;
+    Vector3D abs_position;
+
+    // Project point to first quadrant, keep in mind the original point signs
+    for (unsigned int i = 0; i < 3; ++i) {
+        signs[i] = (position[i] >= 0.0 ? 1.0 : -1.0);
+        abs_position[i] = signs[i] * position[i];
+    }
+
+    const unsigned int num_points = points_.size();
+
+    double min_distance = 1e20;
+    std::vector<unsigned> min_conf;
+    Vector3D point0;
+    for (unsigned int i = 0; i < num_points; ++i) {
+        const std::pair<Vector3D, std::vector<unsigned int> > &cur_pos = points_.at(i);
+        const Vector3D &cur_point = cur_pos.first;
+        const double dist = VectorNorm(VectorSub(cur_point, abs_position));
+        if (dist < min_distance) {
+            min_distance = dist;
+            min_conf = cur_pos.second;
+            point0 = cur_point;
+        }
+    }
+
+    Vector3D point1, point2;
+    const unsigned int index_i = min_conf[0];
+    const unsigned int index_j = min_conf[1];
+
+    // Check z
+
+    if (index_j > 0) {
+        // Check x and y
+        if (index_i < (num_points_ - 1)) {
+            const unsigned int i_up = index_i;
+            const unsigned int j_up = index_j - 1;
+            const unsigned int i_right = index_i + 1;
+            const unsigned int j_right = index_j;
+            double u = i_up * polygon_dpi_;
+            double v = j_up * polygon_dpi_;
+            point1 = {semi_axis_[0] * cos(u) * sin(v),
+                                semi_axis_[1] *sin(u) * sin(v),
+                                semi_axis_[2] * cos(v)};
+            u = i_right * polygon_dpi_;
+            v = j_right * polygon_dpi_;
+            point2 = {semi_axis_[0] * cos(u) * sin(v),
+                                    semi_axis_[1] *sin(u) * sin(v),
+                                    semi_axis_[2] * cos(v)};
+        } else {
+            const unsigned int i_up = index_i;
+            const unsigned int j_up = index_j - 1;
+            const unsigned int i_left = index_i - 1;
+            const unsigned int j_left = index_j;
+            double u = i_up * polygon_dpi_;
+            double v = j_up * polygon_dpi_;
+            point1 = {semi_axis_[0] * cos(u) * sin(v),
+                                semi_axis_[1] *sin(u) * sin(v),
+                                semi_axis_[2] * cos(v)};
+            u = i_left * polygon_dpi_;
+            v = j_left * polygon_dpi_;
+            point2 = {semi_axis_[0] * cos(u) * sin(v),
+                                    semi_axis_[1] *sin(u) * sin(v),
+                                    semi_axis_[2] * cos(v)};
+        }
+    } else {
+        // Check x and y
+        if (index_i < (num_points_ - 1)) {
+            const unsigned int i_up = index_i;
+            const unsigned int j_up = index_j + 1;
+            const unsigned int i_right = index_i + 1;
+            const unsigned int j_right = index_j + 1;
+            double u = i_up * polygon_dpi_;
+            double v = j_up * polygon_dpi_;
+            point1 = {semi_axis_[0] * cos(u) * sin(v),
+                                semi_axis_[1] *sin(u) * sin(v),
+                                semi_axis_[2] * cos(v)};
+            u = i_right * polygon_dpi_;
+            v = j_right * polygon_dpi_;
+            point2 = {semi_axis_[0] * cos(u) * sin(v),
+                                    semi_axis_[1] *sin(u) * sin(v),
+                                    semi_axis_[2] * cos(v)};
+        } else {
+            const unsigned int i_up = index_i;
+            const unsigned int j_up = index_j + 1;
+            const unsigned int i_left = index_i - 1;
+            const unsigned int j_left = index_j + 1;
+            double u = i_up * polygon_dpi_;
+            double v = j_up * polygon_dpi_;
+            point1 = {semi_axis_[0] * cos(u) * sin(v),
+                                semi_axis_[1] *sin(u) * sin(v),
+                                semi_axis_[2] * cos(v)};
+            u = i_left * polygon_dpi_;
+            v = j_left * polygon_dpi_;
+            point2 = {semi_axis_[0] * cos(u) * sin(v),
+                                    semi_axis_[1] *sin(u) * sin(v),
+                                    semi_axis_[2] * cos(v)};
+        }
+    }
+
+    const Vector3D &point_10 = {point1[0] - point0[0], point1[1] - point0[1], point1[2] - point0[2]};
+    const Vector3D &point_20 = {point2[0] - point0[0], point2[1] - point0[1], point2[2] - point0[2]};
+
+    Vector3D plane_normal = VectorCrossProduct(point_10, point_20);
+    const double coef_plane_norm = 1.0 / VectorNorm(plane_normal);
+    plane_normal[0] *= coef_plane_norm;
+    plane_normal[1] *= coef_plane_norm;
+    plane_normal[2] *= coef_plane_norm;
+
+    Vector3D tmp = VectorSub(abs_position, point0);
+    const double distance = VectorDotProduct(plane_normal, tmp);
+
+    double coeftmp_norm = 1.0 / VectorNorm(tmp);
+    tmp[0] *= coeftmp_norm;
+    tmp[1] *= coeftmp_norm;
+    tmp[2] *= coeftmp_norm;
+
+    Vector3D point = {abs_position[0] - distance * plane_normal[0], abs_position[1] - distance * plane_normal[1], abs_position[2] - distance * plane_normal[2]};
+
+    // Project point from first quadrant back to original quadrant
+    point[0] *= signs[0];
+    point[1] *= signs[1];
+    point[2] *= signs[2];
+
+    return make_tuple(point, (distance < 0.0 ? -distance : distance));
+
+    /*std::vector<std::pair<double, unsigned int> > nearest_neigh(num_points, std::make_pair(0.0, 0));
+    for (unsigned int i = 0; i < num_points; ++i) {
+        nearest_neigh.at(i) = std::make_pair(VectorNorm(VectorSub(abs_position, points_.at(i))), i);
+    }
+    sort(nearest_neigh.begin(), nearest_neigh.end());
+
+    std::vector<Vector3D> plane_points(3);
+    plane_points[0] = points_.at(nearest_neigh.at(0).second);
+    plane_points[1] = points_.at(nearest_neigh.at(1).second);
+    plane_points[2] = points_.at(nearest_neigh.at(2).second);
+
+    std::cout << VectorToString(abs_position) << std::endl;
+    for (unsigned int i = 0; i < 3; ++i) {
+        std::cout << VectorToString(plane_points[i]) << std::endl;
+    }
+    sort(plane_points.begin(), plane_points.end(), SortMinimumZ);
+
+    const Vector3D &point_21 = {plane_points[1][0] - plane_points[0][0], plane_points[1][1] - plane_points[0][1], plane_points[1][2] - plane_points[0][2]};
+    const Vector3D &point_31 = {plane_points[2][0] - plane_points[0][0], plane_points[2][1] - plane_points[0][1], plane_points[2][2] - plane_points[0][2]};
+
+    Vector3D plane_normal = VectorCrossProduct(point_31, point_21);
+    const double coef_plane_norm = 1.0 / VectorNorm(plane_normal);
+
+    plane_normal[0] *= coef_plane_norm;
+    plane_normal[1] *= coef_plane_norm;
+    plane_normal[2] *= coef_plane_norm;
+
+    Vector3D tmp = VectorSub(abs_position, points_.at(nearest_neigh.at(0).second));
+    double distance = VectorDotProduct(plane_normal, tmp);
+    distance = (distance < 0.0 ? -distance : distance);
+
+    double coeftmp_norm = 1.0 / VectorNorm(tmp);
+    tmp[0] *= coeftmp_norm;
+    tmp[1] *= coeftmp_norm;
+    tmp[2] *= coeftmp_norm;
+
+    Vector3D point = {abs_position[0] - distance * plane_normal[0], abs_position[1] - distance * plane_normal[1], abs_position[2] - distance * plane_normal[2]};
+
+    // Project point from first quadrant back to original quadrant
+    point[0] *= signs[0];
+    point[1] *= signs[1];
+    point[2] *= signs[2];
+
+    return make_tuple(point, distance);
+    */
 }
 
 Vector2D Asteroid::ConstructorAngularVelocitiesXZ() const {

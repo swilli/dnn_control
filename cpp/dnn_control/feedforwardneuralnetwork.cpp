@@ -6,8 +6,7 @@ FeedForwardNeuralNetwork::FeedForwardNeuralNetwork(const unsigned int &dim_input
     const double init_weights = 1.0 / size_weights;
     weights_ = std::vector<double>(size_weights, init_weights);
 
-    const double init_hidden = 1.0 / dim_hidden;
-    hidden_ = std::vector<double>(dim_hidden, init_hidden);
+    hidden_ = std::vector<double>(dim_hidden, 0.0);
 }
 
 FeedForwardNeuralNetwork::~FeedForwardNeuralNetwork() {

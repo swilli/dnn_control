@@ -7,7 +7,7 @@ ControllerNeuralNetwork::ControllerNeuralNetwork(const double &maximum_thrust, c
 }
 
 ControllerNeuralNetwork::ControllerNeuralNetwork(const double &maximum_thrust, const unsigned int &num_hidden, const std::vector<double> &weights) : Controller(kDimensions, maximum_thrust), neural_network_(kDimensions, num_hidden, 3) {
-    neural_network_.SetWeights(weights);
+    SetWeights(weights);
 }
 
 ControllerNeuralNetwork::~ControllerNeuralNetwork() {

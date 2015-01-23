@@ -30,12 +30,12 @@ private:
     Vector3D thrust_;
     Vector3D perturbations_acceleration_;
 
-    const Asteroid &asteroid_;
-
     SampleFactory &sample_factory_;
 
-    Controller *controller_;
+    const Asteroid &asteroid_;
+
     SensorSimulator *sensor_simulator_;
+    Controller *controller_;
 };
 
 #endif // ODESYSTEMCONTROLLED_H

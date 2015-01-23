@@ -35,37 +35,45 @@ inline Vector3D VectorSub(const Vector3D &first, const Vector3D &second) {
     return result;
 }
 
-inline double VectorNorm(const Vector3D &v) {
+inline double VectorNorm(const Vector3D &vector) {
     double result = 0.0;
     for (unsigned int i = 0; i < 3; ++i) {
-        result += v[i] * v[i];
+        result += vector[i] * vector[i];
     }
     return sqrt(result);
 }
 
-inline double VectorNorm(const Vector2D &v) {
+inline double VectorNorm(const Vector2D &vector) {
     double result = 0.0;
     for (unsigned int i = 0; i < 2; ++i) {
-        result += v[i] * v[i];
+        result += vector[i] * vector[i];
     }
     return sqrt(result);
 }
 
-inline std::string VectorToString(const Vector3D &v) {
+inline std::string VectorToString(const Vector3D &vector) {
     std::ostringstream oss;
-    oss << "(";
-    oss << v[0] << ",";
-    oss << v[1] << ",";
-    oss << v[2] << ")";
+    oss << "[";
+    oss << vector[0] << ",";
+    oss << vector[1] << ",";
+    oss << vector[2] << "]";
     return oss.str();
 }
 
-inline std::string VectorToString(const Vector2D &v) {
+inline std::string VectorToString(const Vector2D &vector) {
     std::ostringstream oss;
-    oss << "(";
-    oss << v[0] << ",";
-    oss << v[1] << ")";
+    oss << "[";
+    oss << vector[0] << ",";
+    oss << vector[1] << "]";
     return oss.str();
+}
+
+inline double VectorDotProduct(const Vector3D &first, const Vector3D &second) {
+    return first[0] * second[0] + first[1] * second[1] + first[2] * second[2];
+}
+
+inline double VectorDotProduct(const Vector2D &first, const Vector2D &second) {
+    return first[0] * second[0] + first[1] * second[1];
 }
 
 #endif // VECTOR_H

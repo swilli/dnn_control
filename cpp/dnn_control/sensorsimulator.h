@@ -27,16 +27,15 @@ public:
     unsigned int Dimensions() const;
 
 protected:
-    SensorNoiseConfiguration noise_configuration_;
+    // How large is the sensor data space
+    unsigned int dimensions_;
 
     SampleFactory &sample_factory_;
 
     // The system's asteroid
     const Asteroid asteroid_;
 
-    // How large is the sensor data space
-    unsigned int dimensions_;
-
+    SensorNoiseConfiguration noise_configuration_;
 };
 
 #endif // SENSORSIMULATOR_H

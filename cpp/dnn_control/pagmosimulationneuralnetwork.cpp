@@ -1,10 +1,10 @@
-#include "pagmosimulation.h"
+#include "pagmosimulationneuralnetwork.h"
 #include "utility.h"
 #include "datacollector.h"
 #include "odeint.h"
 #include "modifiedcontrolledrungekutta.h"
 
-PaGMOSimulation::PaGMOSimulation(const PaGMOSimulation &other) {
+PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const PaGMOSimulationNeuralNetwork &other) {
     random_seed_ = other.random_seed_;
     hidden_nodes_ = other.hidden_nodes_;
     simulation_time_ = other.simulation_time_;
@@ -28,16 +28,27 @@ PaGMOSimulation::PaGMOSimulation(const PaGMOSimulation &other) {
     initial_system_state_ = other.initial_system_state_;
 }
 
-PaGMOSimulation::PaGMOSimulation(const unsigned int &random_seed,  const double &simulation_time) : random_seed_(random_seed), sample_factory_(SampleFactory(random_seed)), simulation_time_(simulation_time)  {
+PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &random_seed, const double &simulation_time) : random_seed_(random_seed),  simulation_time_(simulation_time), sample_factory_(SampleFactory(random_seed)) {
+    hidden_nodes_ = 6;
     Init();
 }
 
-PaGMOSimulation::PaGMOSimulation(const unsigned int &random_seed, const double &simulation_time, const std::vector<double> &neural_network_weights) : random_seed_(random_seed), sample_factory_(SampleFactory(random_seed)), simulation_time_(simulation_time) {
+PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &random_seed,  const double &simulation_time, const unsigned int &hidden_nodes) : random_seed_(random_seed), hidden_nodes_(hidden_nodes), simulation_time_(simulation_time), sample_factory_(SampleFactory(random_seed)) {
+    Init();
+}
+
+PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &random_seed, const double &simulation_time, const std::vector<double> &neural_network_weights) : random_seed_(random_seed),  simulation_time_(simulation_time), sample_factory_(SampleFactory(random_seed)) {
+    hidden_nodes_ = 6;
     Init();
     controller_->SetWeights(neural_network_weights);
 }
 
-PaGMOSimulation::~PaGMOSimulation() {
+PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &random_seed, const double &simulation_time, const std::vector<double> &neural_network_weights, const unsigned int &hidden_nodes) : random_seed_(random_seed),  hidden_nodes_(hidden_nodes), simulation_time_(simulation_time), sample_factory_(SampleFactory(random_seed)) {
+    Init();
+    controller_->SetWeights(neural_network_weights);
+}
+
+PaGMOSimulationNeuralNetwork::~PaGMOSimulationNeuralNetwork() {
     if (controller_ != NULL) {
         delete controller_;
     }
@@ -46,7 +57,7 @@ PaGMOSimulation::~PaGMOSimulation() {
     }
 }
 
-PaGMOSimulation& PaGMOSimulation::operator=(const PaGMOSimulation &other) {
+PaGMOSimulationNeuralNetwork& PaGMOSimulationNeuralNetwork::operator=(const PaGMOSimulationNeuralNetwork &other) {
     if (&other != this) {
         random_seed_ = other.random_seed_;
         hidden_nodes_ = other.hidden_nodes_;
@@ -79,7 +90,7 @@ PaGMOSimulation& PaGMOSimulation::operator=(const PaGMOSimulation &other) {
     return *this;
 }
 
-boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > PaGMOSimulation::Evaluate() {
+boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > PaGMOSimulationNeuralNetwork::Evaluate() {
     sample_factory_.SetSeed(random_seed_);
 
     std::vector<double> time_points;
@@ -87,9 +98,8 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     std::vector<Vector3D> evaluated_positions;
     std::vector<Vector3D> evaluated_velocities;
     std::vector<Vector3D> evaluated_heights;
-    std::vector<Vector3D> evaluated_angular_velocities;
 
-    DataCollector collector(asteroid_, time_points, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities, evaluated_angular_velocities);
+    DataCollector collector(asteroid_, time_points, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities, false);
     SystemState system_state(initial_system_state_);
 
     typedef odeint::runge_kutta_cash_karp54<SystemState> ErrorStepper;
@@ -106,10 +116,10 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
         //std::cout << "The spacecraft is out of fuel." << std::endl;
     }
 
-    return boost::make_tuple(time_points, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities, evaluated_angular_velocities);
+    return boost::make_tuple(time_points, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities);
 }
 
-boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > PaGMOSimulation::EvaluateDetailed() {
+boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > PaGMOSimulationNeuralNetwork::EvaluateDetailed() {
     sample_factory_.SetSeed(random_seed_);
 
     std::vector<double> time_points;
@@ -117,9 +127,8 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     std::vector<Vector3D> evaluated_positions;
     std::vector<Vector3D> evaluated_velocities;
     std::vector<Vector3D> evaluated_heights;
-    std::vector<Vector3D> evaluated_angular_velocities;
 
-    DataCollector collector(asteroid_, time_points, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities, evaluated_angular_velocities);
+    DataCollector collector(asteroid_, time_points, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities);
     SystemState system_state(initial_system_state_);
 
     ODESystem sys(sample_factory_, asteroid_, sensor_simulator_, controller_, spacecraft_specific_impulse_, perturbation_noise_, engine_noise_);
@@ -133,28 +142,26 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
         //std::cout << "The spacecraft is out of fuel." << std::endl;
     }
 
-    return boost::make_tuple(time_points, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities, evaluated_angular_velocities);
+    return boost::make_tuple(time_points, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities);
 }
 
-double PaGMOSimulation::FixedStepSize() const {
+double PaGMOSimulationNeuralNetwork::FixedStepSize() const {
     return fixed_step_size_;
 }
 
-double PaGMOSimulation::MinimumStepSize() const {
+double PaGMOSimulationNeuralNetwork::MinimumStepSize() const {
     return minimum_step_size_;
 }
 
-unsigned int PaGMOSimulation::ControllerNeuralNetworkSize() const {
+unsigned int PaGMOSimulationNeuralNetwork::ControllerNeuralNetworkSize() const {
     return controller_->NeuralNetworkSize();
 }
 
-Asteroid& PaGMOSimulation::AsteroidOfSystem() {
+Asteroid& PaGMOSimulationNeuralNetwork::AsteroidOfSystem() {
     return asteroid_;
 }
 
-void PaGMOSimulation::Init() {
-    hidden_nodes_ = 6;
-
+void PaGMOSimulationNeuralNetwork::Init() {
     minimum_step_size_ = 0.1;
     fixed_step_size_ = 0.1;
 
@@ -175,12 +182,11 @@ void PaGMOSimulation::Init() {
     // random
     const Vector3D spacecraft_position = sample_factory_.SamplePointOutSideEllipsoid(semi_axis, 1.1, 4.0);
 
-
-    const double norm_position = VectorNorm(spacecraft_position);
     const Vector3D angular_velocity = boost::get<0>(asteroid_.AngularVelocityAndAccelerationAtTime(0.0));
     Vector3D spacecraft_velocity = VectorCrossProduct(angular_velocity, spacecraft_position);
 
     // orbit
+    //const double norm_position = VectorNorm(spacecraft_position);
     //spacecraft_velocity[0] = -spacecraft_velocity[0]; spacecraft_velocity[1] = -spacecraft_velocity[1] + sqrt(asteroid_.MassGravitationalConstant() / norm_position); spacecraft_velocity[2] = -spacecraft_velocity[2];
 
     // no velocity
@@ -204,7 +210,6 @@ void PaGMOSimulation::Init() {
     initial_system_state_[6] = spacecraft_mass;
 
     if (sensor_simulator_->Dimensions() != controller_->Dimensions()) {
-        std::cout << "sensor simulator - controller dimension mismatch" << std::endl;
-        exit(EXIT_FAILURE);
+        throw SizeMismatchException();
     }
 }

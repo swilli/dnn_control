@@ -14,9 +14,12 @@ public:
 
     virtual ~Simulation();
 
-    virtual boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> >  Evaluate() = 0;
+    virtual boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> >  Evaluate() = 0;
 
     Asteroid& AsteroidOfSystem();
+
+    class Exception {};
+    class SizeMismatchException : public Exception {};
 
 protected:
     unsigned int random_seed_;

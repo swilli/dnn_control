@@ -1,6 +1,7 @@
 #include "adaptivesimulation.h"
 #include "fixedsimulation.h"
-#include "pagmosimulation.h"
+#include "pagmosimulationneuralnetwork.h"
+#include "pagmosimulationfullstate.h"
 #include "filewriter.h"
 #include "samplefactory.h"
 
@@ -8,40 +9,88 @@
 
 #define FULL_STATE_CONTROLLED                                                 0
 
-#define GENERATE_SENSOR_DATA_FILES                                       0
+#define GENERATE_SENSOR_DATA_FILES                                            0
 #define NUM_SENSOR_DATA_FILES                                                 5
-#define PATH_TO_SENSOR_DATA_FOLDER                                      "../../../data/"
+#define PATH_TO_SENSOR_DATA_FOLDER                                            "../../../data/"
 
-#define CREATE_RANDOM_VISUALIZATION_FILE                            1
-#define PATH_TO_RANDOM_VISUALIZATION_FILE                          "../../../results/visualization.txt"
+#define CREATE_RANDOM_VISUALIZATION_FILE                                      1
+#define PATH_TO_RANDOM_VISUALIZATION_FILE                                     "../../../results/visualization.txt"
 
-static const std::vector<double> weights = {43.9777381, 7.790147644, -46.03367053, 8.472116331, -6.540703234, -25.17279439, -54.62108151, 32.84404501, 22.28317739, 28.18680844, 70.56850145, -3.455183223, 68.06356974, 15.63936738, -47.93488463, 1.012026265, -3.359601348, 24.69321623, -22.62783262, 16.4700738, -8.86097869, 20.05772462, -25.55834141, 0.7551885126, 33.73260706, -45.40106986, -82.62362607, 10.94507782, 23.1903436, 31.07965466, 59.81531571, -54.46535077, -24.14960921, 16.55465426, -37.41702812, 41.14145006, -72.43622751, 34.17680551, 50.86402751, 48.43881957, 1.374996017, 14.76514405, 30.59705202, 23.72827023, -14.95927914, -18.05289073, -17.48653955, 31.19970141, -24.19757218, 15.11896867, 2.674090929, -3.38367809, 24.00465369, -36.49751495, -38.21373213, 50.89167418, -83.62861425, 47.80219177, 24.4605401, -8.983465051, 5.832324082, -29.27200923, -33.66491327, 20.68867005, -36.65737209, -10.50887239, 0.3990891023, 11.72340484, -10.54546159, 28.82811704, -16.07991016, 41.05847102, 12.11291604, -7.519902895, 55.20745744};
+static const std::vector<double> weights = {-0.34105, -0.63153, -0.21013, -4.4611, 3.1548, -2.8539, -3.3003, -1.1532, 1.2563, -0.61968, 1.3154, 2.5086, 2.6536, 3.2999, 0.29513, -0.33427, 2.3713, -1.0736, 5.4118, 1.6048, -1.7567, -0.087932, -0.46124, 0.80393, 3.6069, 0.76005, -0.97259, 0.40637, -5.605, 0.99282, 0.75947, 5.5112, -1.1204, -3.2563, 0.58268, 3.6061, 0.74423, 1.0826};
+
 
 int main(int argc, char *argv[]) {
     srand(time(0));
 
-    PaGMOSimulation sim(rand(), 86400.0); // weights);
-    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > r1 = sim.EvaluateDetailed();
-    const std::vector<Vector3D> &r1pos = boost::get<2>(r1);
-    const std::vector<Vector3D> &r1hei = boost::get<3>(r1);
-    const std::vector<Vector3D> &r1omg = boost::get<5>(r1);
 
-    FileWriter writer;
-    writer.CreateVisualizationFile(PATH_TO_RANDOM_VISUALIZATION_FILE, 1.0 / sim.FixedStepSize(), sim.AsteroidOfSystem(), r1pos, r1hei);
 
     /*
-
-    const unsigned int num_tests = 1000;
-    double t = 0.0;
-    const unsigned int dim = PaGMOSimulation(rand()).ControllerNeuralNetworkSize();
+    unsigned int num_tests = 1000;
+    double error = 0.0;
     for (unsigned int i = 0; i < num_tests; ++i) {
-        const clock_t begin = clock();
+        // TODO
+        const unsigned int current_seed = 486749345;//rand();
+        std::cout << "current seed: " << current_seed << std::endl;
+        SampleFactory sample_factory(current_seed);
+        const Vector3D semi_axis = {sample_factory.SampleUniform(8000.0, 12000.0), sample_factory.SampleUniform(4000.0, 7500.0), sample_factory.SampleUniform(1000.0, 3500.0)};
+        const double density = sample_factory.SampleUniform(1500.0, 3000.0);
+        Vector2D angular_velocity_xz = {sample_factory.SampleSign() * sample_factory.SampleUniform(0.0002, 0.0008), sample_factory.SampleSign() * sample_factory.SampleUniform(0.0002, 0.0008)};
+        const double time_bias = sample_factory.SampleUniform(0.0, 12.0 * 60 * 60);
+        Asteroid asteroid(semi_axis, density, angular_velocity_xz, time_bias);
+
+        const Vector3D position = sample_factory.SamplePointOutSideEllipsoid(asteroid.SemiAxis(), 1.1, 4.0);
+
+        boost::tuple<Vector3D, double> result = asteroid.NearestPointOnSurfaceToPosition(position);
+        boost::tuple<Vector3D, double> result_impl2 = asteroid.NearestPointOnSurfaceToPositionImpl2(position);
+        const Vector3D spos = boost::get<0>(result);
+        const double dist = boost::get<1>(result);
+        const Vector3D spos_impl2 = boost::get<0>(result_impl2);
+        const double dist_impl2 = boost::get<1>(result_impl2);
+        double cur_error = VectorNorm(VectorSub(spos_impl2, spos));
+        if (isnan(cur_error) || cur_error > 100.0) {
+            std::cout << "wtf" << std::endl;
+        }
+        error += cur_error;
+    }
+    error /= num_tests;
+    std::cout << error << std::endl;
+    return 0;
+
+    */
+
+    std::vector<double> zero_weights(weights.size(), 0.0);
+    PaGMOSimulationNeuralNetwork nn_sim(rand(), 86400.0, zero_weights, 5);
+    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > r1 = nn_sim.EvaluateDetailed();
+    const std::vector<Vector3D> &r1pos = boost::get<2>(r1);
+    const std::vector<Vector3D> &r1hei = boost::get<3>(r1);
+
+    FileWriter writer;
+    writer.CreateVisualizationFile(PATH_TO_RANDOM_VISUALIZATION_FILE, 1.0 / nn_sim.FixedStepSize(), nn_sim.AsteroidOfSystem(), r1pos, r1hei);
+
+
+    /*
+    PaGMOSimulationFullState pid_sim(rand(), 24.0 * 60.0 * 60.0, {0.20663, 10, 0.0});
+    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > r1 = pid_sim.EvaluateDetailed();
+    const std::vector<Vector3D> &r1pos = boost::get<2>(r1);
+    const std::vector<Vector3D> &r1hei = boost::get<3>(r1);
+
+    FileWriter writer;
+    writer.CreateVisualizationFile(PATH_TO_RANDOM_VISUALIZATION_FILE, 1.0 / pid_sim.FixedStepSize(), pid_sim.AsteroidOfSystem(), r1pos, r1hei);
+
+    */
+
+    /*
+    const unsigned int num_tests = 100;
+    double t = 0.0;
+    const unsigned int dim = PaGMOSimulationNeuralNetwork(rand(), 86400.0).ControllerNeuralNetworkSize();
+    for (unsigned int i = 0; i < num_tests; ++i) {
         std::vector<double> x(dim, 0.0);
         for (unsigned int j = 0; j < dim; ++j) {
             x[j] = (double) rand() / (double) INT_MAX;
         }
-        PaGMOSimulation p_sim(rand(), x);
-        const boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<double> > a_result = p_sim.Evaluate();
+        const clock_t begin = clock();
+        PaGMOSimulationNeuralNetwork p_sim(rand(), 6.0 * 60.0 * 60.0, x);
+        const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > a_result = p_sim.Evaluate();
         const clock_t end = clock();
         const double simulated_time = boost::get<0>(a_result).back();
         const double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
@@ -50,31 +99,33 @@ int main(int argc, char *argv[]) {
     }
     std::cout << "mean: " << t / num_tests << std::endl;
     return 0;
-
+    */
 
     /* Copy constructor & assignment operator test */
 
-    /*PaGMOSimulation s1(500);
-    PaGMOSimulation s2(0);
+    /*
+     *
+    PaGMOSimulationNeuralNetwork s1(500, 86400.0);
+    PaGMOSimulationNeuralNetwork s2(0, 86400.0);
     s2.Evaluate();
-    PaGMOSimulation s4(s2);
+    PaGMOSimulationNeuralNetwork s4(s2);
     {
-        PaGMOSimulation s3(0);
+        PaGMOSimulationNeuralNetwork s3(0, 86400.0);
         s1 = s3;
     }
 
-    const boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<double> > r1 = s1.EvaluateDetailed();
-    const boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<double> > r2 = s2.EvaluateDetailed();
-    const boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<double> > r4 = s4.EvaluateDetailed();
+    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > r1 = s1.EvaluateDetailed();
+    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > r2 = s2.EvaluateDetailed();
+    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > r4 = s4.EvaluateDetailed();
 
-    const std::vector<Vector3D> &r1pos = boost::get<1>(r1);
-    const std::vector<Vector3D> &r1hei = boost::get<2>(r1);
+    const std::vector<Vector3D> &r1pos = boost::get<2>(r1);
+    const std::vector<Vector3D> &r1hei = boost::get<3>(r1);
 
-    const std::vector<Vector3D> &r2pos = boost::get<1>(r2);
-    const std::vector<Vector3D> &r2hei = boost::get<2>(r2);
+    const std::vector<Vector3D> &r2pos = boost::get<2>(r2);
+    const std::vector<Vector3D> &r2hei = boost::get<3>(r2);
 
-    const std::vector<Vector3D> &r4pos = boost::get<1>(r4);
-    const std::vector<Vector3D> &r4hei = boost::get<2>(r4);
+    const std::vector<Vector3D> &r4pos = boost::get<2>(r4);
+    const std::vector<Vector3D> &r4hei = boost::get<3>(r4);
 
     const Vector3D r1p = r1pos.back();
     const Vector3D r2p = r2pos.back();

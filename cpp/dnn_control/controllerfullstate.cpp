@@ -11,9 +11,9 @@ ControllerFullState::ControllerFullState(const double &maximum_thrust, const Vec
 
     latest_control_action_ = 0.0;
 
-    constant_integral_ = 0.0;
-    constant_derivative_ = 5;
-    constant_proportional_ = 4;
+    coef_integral_ = 0.0;
+    coef_derivative_ = 0.0;
+    coef_proportional_ = 0.0;
 }
 
 ControllerFullState::~ControllerFullState() {
@@ -24,6 +24,12 @@ Controller *ControllerFullState::Clone() const {
     return static_cast<Controller*>(new ControllerFullState(*this));
 }
 
+void ControllerFullState::SetCoefficients(const double &coef_proportional, const double &coef_derivative, const double &coef_integral) {
+    coef_proportional_ = coef_proportional;
+    coef_derivative_ = coef_derivative;
+    coef_integral_ = coef_integral;
+}
+
 Vector3D ControllerFullState::GetThrustForSensorData(const SensorData &sensor_data) {
     Vector3D thrust;
     const double control_interval = (sensor_data[7] - latest_control_action_);
@@ -31,7 +37,7 @@ Vector3D ControllerFullState::GetThrustForSensorData(const SensorData &sensor_da
         const double error = target_position_[i] - sensor_data[i];
         const double derivative = (control_interval > 0.0 ? (error - previous_error_[i]) / control_interval : 0.0);
         integral_[i] += error * control_interval;
-        double t = constant_proportional_ * error + constant_derivative_ * derivative + constant_integral_ * integral_[i];
+        double t = coef_proportional_ * error + coef_derivative_ * derivative + coef_integral_ * integral_[i];
         if (t > maximum_thrust_) {
             t = maximum_thrust_;
         } else if (t < -maximum_thrust_) {

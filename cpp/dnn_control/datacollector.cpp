@@ -1,8 +1,8 @@
 #include "datacollector.h"
 
 
-DataCollector::DataCollector(Asteroid &asteroid, std::vector<double> &simulated_time, std::vector<double> &masses, std::vector<Vector3D> &positions, std::vector<Vector3D> &heights, std::vector<Vector3D> &velocities, std::vector<Vector3D> &angular_velocities) :
-    asteroid_(asteroid), time_points_(simulated_time), masses_(masses), positions_(positions), heights_(heights), velocities_(velocities), angular_velocities_(angular_velocities) {
+DataCollector::DataCollector(Asteroid &asteroid, std::vector<double> &simulated_time, std::vector<double> &masses, std::vector<Vector3D> &positions, std::vector<Vector3D> &heights, std::vector<Vector3D> &velocities, const bool &collect_height) :
+    time_points_(simulated_time), masses_(masses), positions_(positions), heights_(heights), velocities_(velocities), asteroid_(asteroid), collect_height_(collect_height) {
 
 }
 
@@ -20,21 +20,18 @@ void DataCollector::operator ()(const SystemState &system_state, const double &c
 
     // Get spacecraft position
     const Vector3D position = {system_state[0], system_state[1], system_state[2]};
+    positions_.push_back(position);
 
     // Get spacecraft velocity
     const Vector3D velocity = {system_state[3], system_state[4], system_state[5]};
+    velocities_.push_back(velocity);
 
 
     // Compute height
-    const Vector3D surf_pos = boost::get<0>(asteroid_.NearestPointOnSurfaceToPosition(position));
-    const Vector3D height = {position[0] - surf_pos[0], position[1] - surf_pos[1], position[2] - surf_pos[2]};
-
-    // Get angular velocity
-    const Vector3D angular_velocity = boost::get<0>(asteroid_.AngularVelocityAndAccelerationAtTime(current_time));
-
-    positions_.push_back(position);
-    heights_.push_back(height);
-    velocities_.push_back(velocity);
-    angular_velocities_.push_back(angular_velocity);
+    if (collect_height_) {
+        const Vector3D surf_pos = boost::get<0>(asteroid_.NearestPointOnSurfaceToPosition(position));
+        const Vector3D height = {position[0] - surf_pos[0], position[1] - surf_pos[1], position[2] - surf_pos[2]};
+        heights_.push_back(height);
+    }
 }
 

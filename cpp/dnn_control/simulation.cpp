@@ -5,7 +5,7 @@
 #include "controllerfullstate.h"
 #include "sensorsimulatorfullstate.h"
 
-Simulation::Simulation(const unsigned int &random_seed) : sensor_simulator_(NULL), controller_(NULL), random_seed_(random_seed), sample_factory_(SampleFactory(random_seed)) {
+Simulation::Simulation(const unsigned int &random_seed) : random_seed_(random_seed), sample_factory_(SampleFactory(random_seed)), sensor_simulator_(NULL), controller_(NULL) {
     simulation_time_ = 24.0 * 60.0 * 60.0;
 
     const Vector3D semi_axis = {sample_factory_.SampleUniform(8000.0, 12000.0), sample_factory_.SampleUniform(4000.0, 7500.0), sample_factory_.SampleUniform(1000.0, 3500.0)};
@@ -53,8 +53,7 @@ Simulation::Simulation(const unsigned int &random_seed) : sensor_simulator_(NULL
     initial_system_state_[6] = spacecraft_mass;
 
     if (sensor_simulator_ != NULL && controller_  != NULL && sensor_simulator_->Dimensions() != controller_->Dimensions()) {
-        std::cout << "sensor simulator - controller dimension mismatch" << std::endl;
-        exit(EXIT_FAILURE);
+        throw SizeMismatchException();
     }
 }
 

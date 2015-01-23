@@ -108,8 +108,8 @@ public:
             const error_checker_type &error_checker = error_checker_type( ) ,
             const stepper_type &stepper = stepper_type( )
     )
-    : m_stepper( stepper ) , m_error_checker( error_checker )
-    { }
+    : m_stepper( stepper ) , m_error_checker( error_checker ),  m_max_rel_error( 0.0 )
+    {}
 
 
 
@@ -480,7 +480,7 @@ public:
     )
     : m_stepper( stepper ) , m_error_checker( error_checker ) ,
       m_first_call( true )
-    { }
+    {}
 
     /*
      * Version 1 : try_step( sys , x , t , dt )

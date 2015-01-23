@@ -15,14 +15,16 @@ public:
     // thrust = F(sensor_data), whereas F can be eg., a PD controller, some RL solution, a NN, ...
     virtual Vector3D GetThrustForSensorData(const SensorData &sensor_data);
 
+    void SetCoefficients(const double &coef_proportional, const double &coef_derivative, const double &coef_integral);
+
 private:
     double latest_control_action_;
 
-    double constant_proportional_;
+    double coef_proportional_;
 
-    double constant_derivative_;
+    double coef_derivative_;
 
-    double constant_integral_;
+    double coef_integral_;
 
     Vector3D target_position_;
 

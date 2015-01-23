@@ -4,6 +4,7 @@
 #include "vector.h"
 
 #include <boost/tuple/tuple.hpp>
+#include <map>
 
 class Asteroid {
     /*
@@ -33,6 +34,9 @@ public:
 
     // Computes w ("velocity") and d/dt ("acceleration") w of the asteroid rotating RF at time "time"
     boost::tuple<Vector3D, Vector3D> AngularVelocityAndAccelerationAtTime(const double &time) const;
+
+    // Computes the distance "distance" and orthogonal projection of a position "position" outside the asteroid onto the asteroid's surface "point" in asteroid centered RF
+    boost::tuple<Vector3D, double> NearestPointOnSurfaceToPositionImpl2(const Vector3D &position) const;
 
     // Computes the distance "distance" and orthogonal projection of a position "position" outside the asteroid onto the asteroid's surface "point" in asteroid centered RF
     boost::tuple<Vector3D, double> NearestPointOnSurfaceToPosition(const Vector3D &position) const;
@@ -66,6 +70,8 @@ public:
     class InvalidParametersException: public Exception {};
 
 private:
+    static bool SortMinimumZ(const Vector3D &first, const Vector3D &second);
+
     // Helper function for NearestPointOnSurfaceToPosition since we assume a symmetric ellipsoid. Position "position" has to be in first quadrant.
     Vector3D NearestPointOnEllipsoidFirstQuadrant(const Vector3D &position) const;
 
@@ -118,6 +124,13 @@ private:
 
     // True if momentum_pow2_ < energy_mul2_ * inertia_[1]
     bool inversion_;
+
+    // The polygon resolution of the asteroid
+    double polygon_dpi_;
+
+    // The poygon points
+    unsigned int num_points_;
+    std::vector< std::pair<Vector3D, std::vector<unsigned int> > > points_;
 };
 
 #endif // ASTEROID_H

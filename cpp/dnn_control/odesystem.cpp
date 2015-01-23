@@ -32,14 +32,14 @@ void ODESystem::operator ()(const SystemState &state, SystemState &d_state_dt, c
 
     Vector3D position;
     Vector3D velocity;
-    for(unsigned int i = 0; i < 3; ++i) {
+    for (unsigned int i = 0; i < 3; ++i) {
         position[i] = state[i];
         velocity[i] = state[3+i];
     }
 
     // Compute height
-    const Vector3D surf_pos = boost::get<0>(asteroid_.NearestPointOnSurfaceToPosition(position));
-    const Vector3D height = {position[0] - surf_pos[0], position[1] - surf_pos[1], position[2] - surf_pos[2]};
+    //const Vector3D surf_pos = boost::get<0>(asteroid_.NearestPointOnSurfaceToPosition(position));
+    //const Vector3D height = {position[0] - surf_pos[0], position[1] - surf_pos[1], position[2] - surf_pos[2]};
 
     // Fg
     const Vector3D gravity_acceleration = asteroid_.GravityAccelerationAtPosition(position);
@@ -54,18 +54,18 @@ void ODESystem::operator ()(const SystemState &state, SystemState &d_state_dt, c
     if (sensor_simulator_ != NULL && controller_ != NULL) {
         if (time - latest_control_input_time_ >= min_control_interval_) {
             latest_control_input_time_ = time;
-            const SensorData sensor_data = sensor_simulator_->Simulate(state, height, perturbations_acceleration_, time);
+            const SensorData sensor_data = sensor_simulator_->Simulate(state, {0.0, 0.0, 0.0}, perturbations_acceleration_, time);
             thrust_ = controller_->GetThrustForSensorData(sensor_data);
-            for(unsigned int i = 0; i < 3; ++i) {
+            for (unsigned int i = 0; i < 3; ++i) {
                 thrust_acceleration[i] = thrust_[i] * coef_mass;
             }
         } else {
-            for(unsigned int i = 0; i < 3; ++i) {
+            for (unsigned int i = 0; i < 3; ++i) {
                 thrust_acceleration[i] = thrust_[i] * coef_mass;
             }
         }
     } else {
-        for(unsigned int i = 0; i < 3; ++i) {
+        for (unsigned int i = 0; i < 3; ++i) {
             thrust_acceleration[i] = 0.0;
         }
     }
