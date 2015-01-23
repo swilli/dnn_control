@@ -125,12 +125,9 @@ private:
     // True if momentum_pow2_ < energy_mul2_ * inertia_[1]
     bool inversion_;
 
-    // The polygon resolution of the asteroid
-    double polygon_dpi_;
-
     // The poygon points
     unsigned int num_points_;
-    std::vector< std::pair<Vector3D, std::vector<unsigned int> > > points_;
+    std::vector<Vector3D> points_;
 };
 
 #endif // ASTEROID_H

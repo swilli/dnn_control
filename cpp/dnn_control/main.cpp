@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
     double error = 0.0;
     for (unsigned int i = 0; i < num_tests; ++i) {
         // TODO
-        const unsigned int current_seed = 486749345;//rand();
+        const unsigned int current_seed = rand();
         std::cout << "current seed: " << current_seed << std::endl;
         SampleFactory sample_factory(current_seed);
         const Vector3D semi_axis = {sample_factory.SampleUniform(8000.0, 12000.0), sample_factory.SampleUniform(4000.0, 7500.0), sample_factory.SampleUniform(1000.0, 3500.0)};
