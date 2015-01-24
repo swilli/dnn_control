@@ -23,7 +23,7 @@ unsigned int SampleFactory::SampleRandomInteger() {
 }
 
 unsigned int SampleFactory::SampleRandomInteger(const double &time, const int &dim) {
-    const std::vector<double> key = {time, dim};
+    const std::vector<double> key = {time, (double) dim};
     unsigned int sample = 0;
     if (integer_history_.find(key) == integer_history_.end()) {
         sample = SampleRandomInteger();
@@ -39,7 +39,7 @@ double SampleFactory::SampleUniform(const double &minimum, const double &maximum
 }
 
 double SampleFactory::SampleUniform(const double &time, const double &minimum, const double &maximum, const int &dim) {
-    std::vector<double> key = {time, dim, minimum, maximum};
+    std::vector<double> key = {time, (double) dim, minimum, maximum};
     double sample = 0.0;
     if (uniform_history_.find(key) == uniform_history_.end()) {
         sample = SampleUniform(minimum, maximum);
@@ -55,7 +55,7 @@ double SampleFactory::SampleNormal(const double &mean, const double &variance) {
 }
 
 double SampleFactory::SampleNormal(const double &time, const double &mean, const double &variance, const int &dim) {
-    std::vector<double> key = {time, dim, mean, variance};
+    std::vector<double> key = {time, (double) dim, mean, variance};
     double sample = 0.0;
     if (normal_history_.find(key) == normal_history_.end()) {
         sample = SampleNormal(mean, variance);
@@ -75,7 +75,7 @@ double SampleFactory::SampleSign() {
 }
 
 double SampleFactory::SampleSign(const double &time, const int &dim) {
-    const std::vector<double> key = {time, dim};
+    const std::vector<double> key = {time, (double) dim};
     double sample = 0.0;
     if (sign_history_.find(key) == sign_history_.end()) {
         sample = SampleSign();
