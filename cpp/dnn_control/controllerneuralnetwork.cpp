@@ -2,20 +2,18 @@
 
 const unsigned int ControllerNeuralNetwork::kDimensions = 3;
 
-ControllerNeuralNetwork::ControllerNeuralNetwork(const double &maximum_thrust, const unsigned int &num_hidden) : Controller(kDimensions, maximum_thrust), neural_network_(kDimensions, num_hidden, 3) {
+ControllerNeuralNetwork::ControllerNeuralNetwork(const double &maximum_thrust, const unsigned int &num_hidden)
+    : Controller(kDimensions, maximum_thrust), neural_network_(dimensions_, num_hidden, 3) {
 
 }
 
-ControllerNeuralNetwork::ControllerNeuralNetwork(const double &maximum_thrust, const unsigned int &num_hidden, const std::vector<double> &weights) : Controller(kDimensions, maximum_thrust), neural_network_(kDimensions, num_hidden, 3) {
+ControllerNeuralNetwork::ControllerNeuralNetwork(const double &maximum_thrust, const unsigned int &num_hidden, const std::vector<double> &weights)
+    : Controller(kDimensions, maximum_thrust), neural_network_(dimensions_, num_hidden, 3) {
     SetWeights(weights);
 }
 
 ControllerNeuralNetwork::~ControllerNeuralNetwork() {
 
-}
-
-Controller *ControllerNeuralNetwork::Clone() const {
-    return static_cast<Controller*>(new ControllerNeuralNetwork(*this));
 }
 
 Vector3D ControllerNeuralNetwork::GetThrustForSensorData(const SensorData &sensor_data) {

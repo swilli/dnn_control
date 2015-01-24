@@ -2,31 +2,25 @@
 #define PAGMOSIMULATIONFULLSTATE_H
 
 #include "vector.h"
-#include "samplefactory.h"
 #include "asteroid.h"
-#include "odesystem.h"
-#include "sensorsimulatorfullstate.h"
-#include "controllerfullstate.h"
+#include "systemstate.h"
 
 #include <boost/tuple/tuple.hpp>
 
-class PaGMOSimulationFullState
-{
+class PaGMOSimulationFullState {
 public:
-    PaGMOSimulationFullState(const PaGMOSimulationFullState &other);
-
     PaGMOSimulationFullState(const unsigned int &random_seed, const double &simulation_time);
     PaGMOSimulationFullState(const unsigned int &random_seed, const double &simulation_time, const std::vector<double> &pid_coefficients);
 
     virtual ~PaGMOSimulationFullState();
 
-    PaGMOSimulationFullState& operator=(const PaGMOSimulationFullState &other);
 
     boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > Evaluate();
 
     boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > EvaluateDetailed();
 
     double FixedStepSize() const;
+
     double MinimumStepSize() const;
 
     Asteroid& AsteroidOfSystem();
@@ -51,15 +45,15 @@ private:
 
     double spacecraft_specific_impulse_;
 
-    SampleFactory sample_factory_;
+    double spacecraft_maximum_thrust_;
 
     Asteroid asteroid_;
 
-    SensorSimulatorFullState *sensor_simulator_;
-
-    ControllerFullState *controller_;
-
     SystemState initial_system_state_;
+
+    Vector3D target_position_;
+
+    std::vector<double> full_state_coefficients_;
 };
 
 #endif // PAGMOSIMULATIONFULLSTATE_H

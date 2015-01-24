@@ -2,7 +2,8 @@
 
 const unsigned int ControllerFullState::kDimensions = 8;
 
-ControllerFullState::ControllerFullState(const double &maximum_thrust, const Vector3D &target_position) : Controller(kDimensions, maximum_thrust) {
+ControllerFullState::ControllerFullState(const double &maximum_thrust, const Vector3D &target_position)
+    : Controller(kDimensions, maximum_thrust) {
     for (unsigned int i = 0; i < 3; ++i) {
         target_position_[i] = target_position[i];
         previous_error_[i] = 0.0;
@@ -18,10 +19,6 @@ ControllerFullState::ControllerFullState(const double &maximum_thrust, const Vec
 
 ControllerFullState::~ControllerFullState() {
 
-}
-
-Controller *ControllerFullState::Clone() const {
-    return static_cast<Controller*>(new ControllerFullState(*this));
 }
 
 void ControllerFullState::SetCoefficients(const double &coef_proportional, const double &coef_derivative, const double &coef_integral) {

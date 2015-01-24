@@ -1,8 +1,8 @@
 #include "datacollector.h"
 
 
-DataCollector::DataCollector(Asteroid &asteroid, std::vector<double> &simulated_time, std::vector<double> &masses, std::vector<Vector3D> &positions, std::vector<Vector3D> &heights, std::vector<Vector3D> &velocities, const bool &collect_height) :
-    time_points_(simulated_time), masses_(masses), positions_(positions), heights_(heights), velocities_(velocities), asteroid_(asteroid), collect_height_(collect_height) {
+DataCollector::DataCollector(const Asteroid &asteroid, std::vector<double> &simulated_time, std::vector<double> &masses, std::vector<Vector3D> &positions, std::vector<Vector3D> &heights, std::vector<Vector3D> &velocities, const bool &collect_height)
+    : time_points_(simulated_time), masses_(masses), positions_(positions), heights_(heights), velocities_(velocities), asteroid_(asteroid), collect_height_(collect_height) {
 
 }
 

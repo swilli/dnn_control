@@ -22,14 +22,26 @@ static const std::vector<double> weights = {-0.34105, -0.63153, -0.21013, -4.461
 int main(int argc, char *argv[]) {
     srand(time(0));
 
+    /*
+    PaGMOSimulationNeuralNetwork pid_sim(0, 86400.0);
+    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > r1 = pid_sim.EvaluateDetailed();
+    const std::vector<Vector3D> &r1pos = boost::get<2>(r1);
+    const std::vector<Vector3D> &r1hei = boost::get<3>(r1);
+
+    FileWriter writer;
+    writer.CreateVisualizationFile(PATH_TO_RANDOM_VISUALIZATION_FILE, 1.0 / pid_sim.FixedStepSize(), pid_sim.AsteroidOfSystem(), r1pos, r1hei);
+
+    return 0;
+
+    */
 
     /*
 
-    std::vector<double> zero_weights(weights.size(), 0.0);
+    std::vector<double> zero_weights(weights.size(), 1.0 / weights.size());
     PaGMOSimulationNeuralNetwork nn_sim(rand(), 86400.0, zero_weights, 5);
     clock_t begin,end;
     begin = clock();
-    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > r1 = nn_sim.EvaluateDetailed();
+    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > r1 = nn_sim.Evaluate();
     end = clock();
     double secs = double (end - begin) / CLOCKS_PER_SEC;
     const std::vector<double> &times = boost::get<0>(r1);
@@ -39,62 +51,9 @@ int main(int argc, char *argv[]) {
     const std::vector<Vector3D> &r1hei = boost::get<3>(r1);
 
     FileWriter writer;
-    writer.CreateVisualizationFile(PATH_TO_RANDOM_VISUALIZATION_FILE, 1.0 / nn_sim.FixedStepSize(), nn_sim.AsteroidOfSystem(), r1pos, r1hei);
-
-    */
-
-    /*unsigned int num_tests = 10000;
-    double error = 0.0;
-    clock_t begin,end;
-    double time_org = 0.0;
-    double time_impl2 = 0.0;
-    for (unsigned int i = 0; i < num_tests; ++i) {
-        // TODO
-        const unsigned int current_seed = rand();
-        //std::cout << "current seed: " << current_seed << std::endl;
-        SampleFactory sample_factory(current_seed);
-        const Vector3D semi_axis = {sample_factory.SampleUniform(8000.0, 12000.0), sample_factory.SampleUniform(4000.0, 7500.0), sample_factory.SampleUniform(1000.0, 3500.0)};
-        const double density = sample_factory.SampleUniform(1500.0, 3000.0);
-        Vector2D angular_velocity_xz = {sample_factory.SampleSign() * sample_factory.SampleUniform(0.0002, 0.0008), sample_factory.SampleSign() * sample_factory.SampleUniform(0.0002, 0.0008)};
-        const double time_bias = sample_factory.SampleUniform(0.0, 12.0 * 60 * 60);
-        Asteroid asteroid(semi_axis, density, angular_velocity_xz, time_bias);
-
-        const Vector3D position = sample_factory.SamplePointOutSideEllipsoid(asteroid.SemiAxis(), 1.1, 4.0);
-
-        begin = clock();
-        boost::tuple<Vector3D, double> result_impl2 = asteroid.NearestPointOnSurfaceToPositionImpl2(position);
-        end = clock();
-        time_impl2 += double (end - begin) / CLOCKS_PER_SEC;
-
-        begin = clock();
-        boost::tuple<Vector3D, double> result = asteroid.NearestPointOnSurfaceToPosition(position);
-        end = clock();
-        time_org += double (end - begin) / CLOCKS_PER_SEC;
-
-        const Vector3D spos = boost::get<0>(result);
-        const double dist = boost::get<1>(result);
-        const Vector3D spos_impl2 = boost::get<0>(result_impl2);
-        const double dist_impl2 = boost::get<1>(result_impl2);
-        double cur_error = VectorNorm(VectorSub(spos_impl2, spos));
-        error += cur_error;
-    }
-    error /= num_tests;
-    std::cout << error << std::endl;
-    std::cout << time_org / time_impl2 << std::endl;
-    return 0;
-
-    */
+    //writer.CreateVisualizationFile(PATH_TO_RANDOM_VISUALIZATION_FILE, 1.0 / nn_sim.FixedStepSize(), nn_sim.AsteroidOfSystem(), r1pos, r1hei);
 
 
-
-
-    /*PaGMOSimulationFullState pid_sim(0, 24.0 * 60.0 * 60.0, {0.20663, 10, 0.0});
-    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > r1 = pid_sim.EvaluateDetailed();
-    const std::vector<Vector3D> &r1pos = boost::get<2>(r1);
-    const std::vector<Vector3D> &r1hei = boost::get<3>(r1);
-
-    FileWriter writer;
-    writer.CreateVisualizationFile(PATH_TO_RANDOM_VISUALIZATION_FILE, 1.0 / pid_sim.FixedStepSize(), pid_sim.AsteroidOfSystem(), r1pos, r1hei);
     */
 
 
@@ -124,7 +83,7 @@ int main(int argc, char *argv[]) {
     /* Copy constructor & assignment operator test */
 
     /*
-     *
+
     PaGMOSimulationNeuralNetwork s1(500, 86400.0);
     PaGMOSimulationNeuralNetwork s2(0, 86400.0);
     s2.Evaluate();
@@ -134,9 +93,9 @@ int main(int argc, char *argv[]) {
         s1 = s3;
     }
 
-    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > r1 = s1.EvaluateDetailed();
-    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > r2 = s2.EvaluateDetailed();
-    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > r4 = s4.EvaluateDetailed();
+    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > r1 = s1.EvaluateDetailed();
+    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > r2 = s2.EvaluateDetailed();
+    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > r4 = s4.EvaluateDetailed();
 
     const std::vector<Vector3D> &r1pos = boost::get<2>(r1);
     const std::vector<Vector3D> &r1hei = boost::get<3>(r1);
@@ -159,6 +118,7 @@ int main(int argc, char *argv[]) {
 
     */
 
+
     /*
     FixedSimulation sim(0);
     const boost::tuple<std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D> > f_result = sim.Evaluate();
@@ -171,16 +131,15 @@ int main(int argc, char *argv[]) {
 
     */
 
-
     double error = 0.0;
-    const unsigned int num_tests = 10;
+    const unsigned int num_tests = 100;
 
-    PaGMOSimulationFullState p_sim(0, 12.0 * 60.0 * 60.0);
+    PaGMOSimulationFullState p_sim(0, 24.0 * 60.0 * 60.0);
     for (unsigned int i = 0; i < num_tests; ++i) {
         const unsigned int random_seed = rand();
         std::cout << "test " << (i + 1) << ", current seed: " << random_seed << std::endl;
 
-        p_sim = PaGMOSimulationFullState(random_seed, 86400.0);
+        p_sim = PaGMOSimulationFullState(random_seed, 86400.0, {4.0, 5.0, 0.0});
         p_sim = p_sim;
         std::cout << "running fixed ... " << std::endl;
         clock_t begin = clock();
@@ -212,7 +171,7 @@ int main(int argc, char *argv[]) {
     std::cout << "error: " << error / (double) num_tests << std::endl;
     std::cout << "done" << std::endl;
 
-
+    return 0;
 
     /*
     double error = 0.0;

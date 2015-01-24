@@ -12,8 +12,6 @@ public:
     Controller(const unsigned int &dimensions, const double &maximum_thrust);
     virtual ~Controller();
 
-    virtual Controller* Clone() const = 0;
-
     // thrust = F(sensor_data), whereas F can be eg., a PD controller, some RL solution, a NN, ...
     virtual Vector3D GetThrustForSensorData(const SensorData &sensor_data) = 0;
 

@@ -3,8 +3,16 @@
 
 #include "vector.h"
 
+#include <boost/functional/hash.hpp>
 #include <boost/random.hpp>
+#include <unordered_map>
 
+template <typename Container> // we can make this generic for any container [1]
+struct container_hash {
+    std::size_t operator()(Container const& c) const {
+        return boost::hash_range(c.begin(), c.end());
+    }
+};
 
 class SampleFactory {
 public:
@@ -12,16 +20,19 @@ public:
     SampleFactory(const unsigned int &seed);
     ~SampleFactory();
 
-    // The underlying RNG
-    boost::mt19937& RandomNumberGenerator();
+    unsigned int SampleRandomInteger();
+    unsigned int SampleRandomInteger(const double &time, const int &dim=-1);
 
     // X ~ U(minimum, maximum)
     double SampleUniform(const double &minimum, const double &maximum);
+    double SampleUniform(const double &time, const double &minimum, const double &maximum, const int &dim=-1);
 
     double SampleNormal(const double &mean, const double &variance);
+    double SampleNormal(const double &time, const double &mean, const double &variance, const int &dim=-1);
 
     // X ~ U({-1,1})
     double SampleSign();
+    double SampleSign(const double &time, const int &dim=-1);
 
     // Returns a point point, whereas
     // semi_axis_[0] * cos(u) * sin(v) < point[0] < semi_axis[0] * band_width_scale * cos(u) * sin(v)
@@ -35,6 +46,11 @@ private:
     boost::mt19937 generator_;
     boost::random::uniform_real_distribution<> uniform_distribution_;
     boost::random::normal_distribution<> normal_distribution_;
+
+    std::unordered_map<std::vector<double>, double, container_hash<std::vector<double> > > uniform_history_;
+    std::unordered_map<std::vector<double>, double, container_hash<std::vector<double> > > normal_history_;
+    std::unordered_map<std::vector<double>, double, container_hash<std::vector<double> > > sign_history_;
+    std::unordered_map<std::vector<double>, double, container_hash<std::vector<double> > > integer_history_;
 };
 
 #endif // SAMPLEFACTORY_H

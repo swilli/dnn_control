@@ -3,50 +3,26 @@
 #include "odeint.h"
 #include "odesystem.h"
 
-FixedSimulation::FixedSimulation(const unsigned int &random_seed) : Simulation(random_seed) {
+// DEFINE SENSORSIMULATOR AND CONTROLLER HERE
+#include "sensorsimulatorfullstate.h"
+#include "controllerfullstate.h"
+
+FixedSimulation::FixedSimulation(const unsigned int &random_seed)
+    : Simulation(random_seed) {
     fixed_step_size_ = 0.1;
 }
 
-FixedSimulation::FixedSimulation(const FixedSimulation &other) : Simulation(other) {
-    fixed_step_size_ = other.fixed_step_size_;
-}
-
 FixedSimulation::~FixedSimulation() {
-}
 
-FixedSimulation& FixedSimulation::operator=(const FixedSimulation &other) {
-    if (&other != this) {
-        random_seed_ = other.random_seed_;
-        simulation_time_ = other.simulation_time_;
-        engine_noise_ = other.engine_noise_;
-        perturbation_noise_ = other.perturbation_noise_;
-        spacecraft_specific_impulse_ = other.spacecraft_specific_impulse_;
-        sample_factory_ = other.sample_factory_;
-        asteroid_ = other.asteroid_;
-        fixed_step_size_ = other.fixed_step_size_;
-        if (sensor_simulator_ != NULL) {
-            delete sensor_simulator_;
-        }
-        if (other.sensor_simulator_ != NULL) {
-            sensor_simulator_ = other.sensor_simulator_->Clone();
-        } else {
-            sensor_simulator_ = NULL;
-        }
-        if (controller_ != NULL) {
-            delete controller_;
-        }
-        if (other.controller_ != NULL) {
-            controller_ = other.controller_->Clone();
-        } else {
-            controller_ = NULL;
-        }
-        initial_system_state_ = other.initial_system_state_;
-    }
-    return *this;
 }
 
 boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > FixedSimulation::Evaluate() {
-    sample_factory_.SetSeed(random_seed_);
+    SampleFactory sample_factory(random_seed_);
+    SampleFactory sf_sensor_simulator(sample_factory.SampleRandomInteger());
+    SampleFactory sf_odesystem(sample_factory.SampleRandomInteger());
+
+    SensorSimulatorFullState sensor_simulator(sf_sensor_simulator, asteroid_);
+    ControllerFullState controller(spacecraft_maximum_thrust_, target_position_);
 
     std::vector<double> time_points;
     std::vector<double> evaluated_masses;
@@ -57,7 +33,8 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     DataCollector collector(asteroid_, time_points, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities);
     SystemState system_state(initial_system_state_);
 
-    ODESystem sys(sample_factory_, asteroid_, spacecraft_specific_impulse_, perturbation_noise_, engine_noise_, sensor_simulator_, controller_);
+
+    ODESystem sys(sf_odesystem, asteroid_, sensor_simulator, controller, spacecraft_specific_impulse_, perturbation_noise_, engine_noise_);
 
     odeint::runge_kutta4<SystemState> stepper;
     try {

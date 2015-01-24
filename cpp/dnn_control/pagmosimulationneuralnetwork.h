@@ -2,19 +2,13 @@
 #define PAGMOSIMULATIONNEURALNETWORK_H
 
 #include "vector.h"
-#include "samplefactory.h"
 #include "asteroid.h"
-#include "odesystem.h"
-#include "sensorsimulatorneuralnetwork.h"
-#include "controllerneuralnetwork.h"
+#include "systemstate.h"
 
 #include <boost/tuple/tuple.hpp>
 
-class PaGMOSimulationNeuralNetwork
-{
+class PaGMOSimulationNeuralNetwork {
 public:
-    PaGMOSimulationNeuralNetwork(const PaGMOSimulationNeuralNetwork &other);
-
     PaGMOSimulationNeuralNetwork(const unsigned int &random_seed, const double &simulation_time);
     PaGMOSimulationNeuralNetwork(const unsigned int &random_seed, const double &simulation_time, const unsigned int &hidden_nodes);
     PaGMOSimulationNeuralNetwork(const unsigned int &random_seed, const double &simulation_time, const std::vector<double> &neural_network_weights);
@@ -22,13 +16,13 @@ public:
 
     virtual ~PaGMOSimulationNeuralNetwork();
 
-    PaGMOSimulationNeuralNetwork& operator=(const PaGMOSimulationNeuralNetwork &other);
 
     boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > Evaluate();
 
     boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > EvaluateDetailed();
 
     double FixedStepSize() const;
+
     double MinimumStepSize() const;
 
     unsigned int ControllerNeuralNetworkSize() const;
@@ -57,15 +51,15 @@ private:
 
     double spacecraft_specific_impulse_;
 
-    SampleFactory sample_factory_;
+    double spacecraft_maximum_thrust_;
 
     Asteroid asteroid_;
 
-    SensorSimulatorNeuralNetwork *sensor_simulator_;
-
-    ControllerNeuralNetwork *controller_;
-
     SystemState initial_system_state_;
+
+    Vector3D target_position_;
+
+    std::vector<double> neural_network_weights_;
 };
 
 #endif // PAGMOSIMULATIONNEURALNETWORK_H

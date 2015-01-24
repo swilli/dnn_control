@@ -10,15 +10,14 @@ class SensorSimulatorFullState : public SensorSimulator {
 public:
     static const unsigned int kDimensions;
 
-    SensorSimulatorFullState(SampleFactory sample_factory, const Asteroid &asteroid, const SensorNoiseConfiguration &configuration);
-    SensorSimulatorFullState(const SensorSimulatorFullState &other);
+    SensorSimulatorFullState(SampleFactory &sample_factory, const Asteroid &asteroid);
 
     virtual ~SensorSimulatorFullState();
 
-    virtual SensorSimulator* Clone() const;
-
     virtual SensorData Simulate(const SystemState &state, const Vector3D  &, const Vector3D &, const double &time);
 
+private:
+    std::vector<double> noise_configuration_;
 };
 
 #endif // FULLSTATESENSORSIMULATOR_H

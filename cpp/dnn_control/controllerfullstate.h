@@ -10,8 +10,6 @@ public:
     ControllerFullState(const double &maximum_thrust, const Vector3D &target_position);
     virtual ~ControllerFullState();
 
-    virtual Controller* Clone() const;
-
     // thrust = F(sensor_data), whereas F can be eg., a PD controller, some RL solution, a NN, ...
     virtual Vector3D GetThrustForSensorData(const SensorData &sensor_data);
 

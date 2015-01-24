@@ -13,8 +13,6 @@ public:
 
     virtual ~ControllerNeuralNetwork();
 
-    virtual Controller* Clone() const;
-
     // thrust = F(sensor_data), whereas F can be eg., a PD controller, some RL solution, a NN, ...
     virtual Vector3D GetThrustForSensorData(const SensorData &sensor_data);
 

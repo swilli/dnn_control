@@ -6,11 +6,9 @@
 class FixedSimulation : public Simulation {
 public:
     FixedSimulation(const unsigned int &random_seed);
-    FixedSimulation(const FixedSimulation &other);
 
     virtual ~FixedSimulation();
 
-    FixedSimulation& operator=(const FixedSimulation &other);
 
     virtual boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > Evaluate();
 

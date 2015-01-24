@@ -3,14 +3,11 @@
 
 #include "samplefactory.h"
 #include "asteroid.h"
-#include "sensorsimulator.h"
-#include "controller.h"
 #include "systemstate.h"
 
 class Simulation {
 public:
     Simulation(const unsigned int &random_seed);
-    Simulation(const Simulation &other);
 
     virtual ~Simulation();
 
@@ -24,6 +21,8 @@ public:
 protected:
     unsigned int random_seed_;
 
+    Asteroid asteroid_;
+
     double simulation_time_;
 
     double perturbation_noise_;
@@ -32,14 +31,11 @@ protected:
 
     double spacecraft_specific_impulse_;
 
-    SampleFactory sample_factory_;
-
-    Asteroid asteroid_;
-
-    SensorSimulator *sensor_simulator_;
-    Controller *controller_;
+    double spacecraft_maximum_thrust_;
 
     SystemState initial_system_state_;
+
+    Vector3D target_position_;
 };
 
 #endif // SIMULATION_H

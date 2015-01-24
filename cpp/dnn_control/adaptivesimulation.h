@@ -6,12 +6,9 @@
 class AdaptiveSimulation : public Simulation {
 public:
     AdaptiveSimulation(const unsigned int &random_seed);
-    AdaptiveSimulation(const AdaptiveSimulation &other);
 
     virtual ~AdaptiveSimulation();
 
-
-    AdaptiveSimulation& operator=(const AdaptiveSimulation &other);
 
     virtual boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> >  Evaluate();
 
