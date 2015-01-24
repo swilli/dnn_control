@@ -51,11 +51,23 @@ int main(int argc, char *argv[]) {
     const std::vector<Vector3D> &r1hei = boost::get<3>(r1);
 
     FileWriter writer;
-    //writer.CreateVisualizationFile(PATH_TO_RANDOM_VISUALIZATION_FILE, 1.0 / nn_sim.FixedStepSize(), nn_sim.AsteroidOfSystem(), r1pos, r1hei);
-
+    writer.CreateVisualizationFile(PATH_TO_RANDOM_VISUALIZATION_FILE, 1.0 / nn_sim.FixedStepSize(), nn_sim.AsteroidOfSystem(), r1pos, r1hei);
 
     */
 
+    /*
+    PaGMOSimulationFullState sim(rand(), 86400.0, {0.0, 0.0, 0.0});
+    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = sim.EvaluateDetailed();
+    const std::vector<Vector3D> &pos = boost::get<2>(result);
+    const std::vector<Vector3D> &hei = boost::get<3>(result);
+
+    FileWriter writer;
+    writer.CreateVisualizationFile(PATH_TO_RANDOM_VISUALIZATION_FILE, 1.0 / sim.FixedStepSize(), sim.AsteroidOfSystem(), pos, hei);
+
+
+    return 0;
+
+    */
 
     /*
     const unsigned int num_tests = 100;
@@ -139,7 +151,7 @@ int main(int argc, char *argv[]) {
         const unsigned int random_seed = rand();
         std::cout << "test " << (i + 1) << ", current seed: " << random_seed << std::endl;
 
-        p_sim = PaGMOSimulationFullState(random_seed, 86400.0, {4.0, 5.0, 0.0});
+        p_sim = PaGMOSimulationFullState(random_seed, 86400.0, {0.0, 0.0, 0.0});
         p_sim = p_sim;
         std::cout << "running fixed ... " << std::endl;
         clock_t begin = clock();

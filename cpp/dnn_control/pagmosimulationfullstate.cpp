@@ -130,10 +130,10 @@ void PaGMOSimulationFullState::Init() {
 
 
     // orbit
-    //const Vector3D spacecraft_position = {sample_factory_.SampleUniform(4.0, 6.0) * semi_axis[0], 0.0, 0.0};
+    const Vector3D spacecraft_position = {sample_factory.SampleUniform(4.0, 6.0) * semi_axis[0], 0.0, 0.0};
 
     // random
-    const Vector3D spacecraft_position = sample_factory.SamplePointOutSideEllipsoid(semi_axis, 1.1, 4.0);
+    //const Vector3D spacecraft_position = sample_factory.SamplePointOutSideEllipsoid(semi_axis, 1.1, 4.0);
 
     target_position_ = spacecraft_position;
 
@@ -141,11 +141,11 @@ void PaGMOSimulationFullState::Init() {
     Vector3D spacecraft_velocity = VectorCrossProduct(angular_velocity, spacecraft_position);
 
     // orbit
-    //const double norm_position = VectorNorm(spacecraft_position);
-    //spacecraft_velocity[0] = -spacecraft_velocity[0]; spacecraft_velocity[1] = -spacecraft_velocity[1] + sqrt(asteroid_.MassGravitationalConstant() / norm_position); spacecraft_velocity[2] = -spacecraft_velocity[2];
+    const double norm_position = VectorNorm(spacecraft_position);
+    spacecraft_velocity[0] = -spacecraft_velocity[0]; spacecraft_velocity[1] = -spacecraft_velocity[1] + sqrt(asteroid_.MassGravitationalConstant() / norm_position); spacecraft_velocity[2] = -spacecraft_velocity[2];
 
     // no velocity
-    spacecraft_velocity[0] *= -1; spacecraft_velocity[1] *= -1; spacecraft_velocity[2] *= -1;
+    //spacecraft_velocity[0] *= -1; spacecraft_velocity[1] *= -1; spacecraft_velocity[2] *= -1;
 
     perturbation_noise_ = 1e-7;
     engine_noise_ = 0.05;
