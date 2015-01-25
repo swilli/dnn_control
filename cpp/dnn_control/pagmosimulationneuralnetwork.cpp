@@ -10,7 +10,7 @@
 
 PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &random_seed, const double &simulation_time)
     : random_seed_(random_seed),  simulation_time_(simulation_time) {
-    hidden_nodes_ = 6;
+    hidden_nodes_ = 10;
     Init();
 }
 
@@ -21,7 +21,7 @@ PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &r
 
 PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &random_seed, const double &simulation_time, const std::vector<double> &neural_network_weights)
     : random_seed_(random_seed),  simulation_time_(simulation_time) {
-    hidden_nodes_ = 6;
+    hidden_nodes_ = 10;
     neural_network_weights_ = neural_network_weights;
     Init();
 }

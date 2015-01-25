@@ -14,7 +14,7 @@ FIND_LIBRARY(GSL_GSL_LIBRARY NAMES gsl)
 FIND_LIBRARY(GSL_GSLCBLAS_LIBRARY NAMES gslcblas)
 FIND_LIBRARY(PAGMO_LIBRARY NAMES pagmo)
 FIND_LIBRARY(BOOST_SYSTEM_LIBRARY NAMES boost_system)
-FIND_LIBRARY(BOOST_PYTHON_LIBRARY NAMES boost_python)
+FIND_LIBRARY(BOOST_PYTHON_LIBRARY NAMES boost_python3)
 FIND_LIBRARY(F2C_LIBRARY NAMES f2c)
 
 FIND_PATH(GSL_INCLUDE_DIR NAMES gsl/gsl_version.h)
@@ -53,6 +53,7 @@ SET(MANDATORY_LIBRARIES ${MANDATORY_LIBRARIES} ${GSL_GSL_LIBRARY} ${GSL_GSLCBLAS
 INCLUDE_DIRECTORIES("${GSL_INCLUDE_DIR} ${PAGMO_INCLUDE_DIR}")
 
 # 5 - Define the target and linked libraries
-add_executable(main main.cpp asteroid.cpp simulation.cpp adaptivesimulation.cpp fixedsimulation.cpp pagmosimulation.cpp odesystem.cpp utility.cpp filewriter.cpp samplefactory.cpp datacollector.cpp feedforwardneuralnetwork.cpp sensorsimulator.cpp controller.cpp controllerfullstate.cpp controllerneuralnetwork.cpp sensorsimulatorfullstate.cpp sensorsimulatorneuralnetwork.cpp ) 
+add_executable(main main.cpp asteroid.cpp simulation.cpp adaptivesimulation.cpp fixedsimulation.cpp pagmosimulationfullstate.cpp 
+pagmosimulationneuralnetwork.cpp odesystem.cpp utility.cpp filewriter.cpp samplefactory.cpp datacollector.cpp feedforwardneuralnetwork.cpp sensorsimulator.cpp controller.cpp controllerfullstate.cpp controllerneuralnetwork.cpp sensorsimulatorfullstate.cpp sensorsimulatorneuralnetwork.cpp ) 
 TARGET_LINK_LIBRARIES(main ${MANDATORY_LIBRARIES})
 

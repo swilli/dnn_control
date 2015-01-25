@@ -16,24 +16,23 @@
 #define CREATE_RANDOM_VISUALIZATION_FILE                                      1
 #define PATH_TO_RANDOM_VISUALIZATION_FILE                                     "../../../results/visualization.txt"
 
-static const std::vector<double> weights = {-0.34105, -0.63153, -0.21013, -4.4611, 3.1548, -2.8539, -3.3003, -1.1532, 1.2563, -0.61968, 1.3154, 2.5086, 2.6536, 3.2999, 0.29513, -0.33427, 2.3713, -1.0736, 5.4118, 1.6048, -1.7567, -0.087932, -0.46124, 0.80393, 3.6069, 0.76005, -0.97259, 0.40637, -5.605, 0.99282, 0.75947, 5.5112, -1.1204, -3.2563, 0.58268, 3.6061, 0.74423, 1.0826};
-
+static const std::vector<double> weights = {2.0265e-316, 6.9483e-310, -2.8118, 0.7502, 1.0965, -1.4687, 0.089297, 0.61147, -2.5362, -1.3803, -1.1204, -0.96183, -0.60804, 0.54146, -1.8596, 0.09163, 0.16093, 1.0272, -0.81006, -0.84041, -1.6257, 1.1091, 0.29541, 0.3173, -1.4341, -1.2566, -0.5318, -0.82395, -0.037266, 3.1756, 0.75006, 1.0821, 1.2641, 2.9441, 0.15292, 0.014959, 0.053071, 0.062749, 0.054537, -0.35081, 0.31024, 0.21875, 1.3239, -1.1156, 0.64877, 0.29212, 0.38048, 0.043356, 0.54404, 1.2707, -0.10552, -0.34132, -0.037371, 2.775, 0.28651, 0.087201, -0.01899, -0.98907, 1.3143, 0.061669, -2.5496, 0.81079, 0.29934, 0.98034, 0.28801, -0.56325, -0.73541, -0.39743, 3.0504, -2.9222, 1.5968, 0.2934, 4.5375e-320};
 
 int main(int argc, char *argv[]) {
     srand(time(0));
 
-    /*
-    PaGMOSimulationNeuralNetwork pid_sim(0, 86400.0);
-    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > r1 = pid_sim.EvaluateDetailed();
+
+    PaGMOSimulationNeuralNetwork sim(rand(), 86400.0, weights);
+    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > r1 = sim.EvaluateDetailed();
     const std::vector<Vector3D> &r1pos = boost::get<2>(r1);
     const std::vector<Vector3D> &r1hei = boost::get<3>(r1);
 
     FileWriter writer;
-    writer.CreateVisualizationFile(PATH_TO_RANDOM_VISUALIZATION_FILE, 1.0 / pid_sim.FixedStepSize(), pid_sim.AsteroidOfSystem(), r1pos, r1hei);
+    writer.CreateVisualizationFile(PATH_TO_RANDOM_VISUALIZATION_FILE, 1.0 / sim.FixedStepSize(), sim.AsteroidOfSystem(), r1pos, r1hei);
 
     return 0;
 
-    */
+
 
     /*
 

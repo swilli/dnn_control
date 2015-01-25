@@ -25,6 +25,10 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     SensorSimulatorFullState sensor_simulator(sf_sensor_simulator, asteroid_);
     ControllerFullState controller(spacecraft_maximum_thrust_, target_position_);
 
+    if (sensor_simulator.Dimensions() != controller.Dimensions()) {
+        throw SizeMismatchException();
+    }
+
     std::vector<double> time_points;
     std::vector<double> evaluated_masses;
     std::vector<Vector3D> evaluated_positions;
