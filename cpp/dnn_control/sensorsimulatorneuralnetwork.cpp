@@ -15,7 +15,8 @@ SensorData SensorSimulatorNeuralNetwork::Simulate(const SystemState &state, cons
     SensorData sensor_data(dimensions_, 0.0);
 
     for (unsigned int i = 0; i < 3; ++i) {
-        sensor_data[i] = target_position_[i] - state[i]; // + state[i] * sample_factory_.SampleNormal(time, 0.0, sensor_noise_configuration_.at(i), i);
+        sensor_data[i] = target_position_[i] - state[i];
+        //sensor_data[i] = sensor_data[i] + sensor_data[i] * sample_factory_.SampleNormal(time, 0.0, noise_configuration_.at(i), i);
     }
 
     return sensor_data;

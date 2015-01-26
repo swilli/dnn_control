@@ -135,7 +135,8 @@ void PaGMOSimulationNeuralNetwork::Init() {
     minimum_step_size_ = 0.1;
     fixed_step_size_ = 0.1;
 
-    SampleFactory sample_factory(random_seed_);
+    const unsigned int fixed_seed = 123;
+    SampleFactory sample_factory(fixed_seed);
 
     const Vector3D semi_axis = {sample_factory.SampleUniform(8000.0, 12000.0), sample_factory.SampleUniform(4000.0, 7500.0), sample_factory.SampleUniform(1000.0, 3500.0)};
     const double density = sample_factory.SampleUniform(1500.0, 3000.0);

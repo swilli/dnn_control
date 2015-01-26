@@ -179,28 +179,47 @@ int main(int argc, char *argv[]) {
 
     */
 
+
     /*
     const unsigned int num_tests = 100;
-    double t = 0.0;
-    const unsigned int dim = PaGMOSimulationNeuralNetwork(rand(), 86400.0).ControllerNeuralNetworkSize();
+    double t_adapt = 0.0;
+    double s_adapt = 0.0;
+    double t_fixed = 0.0;
+    double s_fixed = 0.0;
+    double error = 0.0;
     for (unsigned int i = 0; i < num_tests; ++i) {
-        std::vector<double> x(dim, 0.0);
-        for (unsigned int j = 0; j < dim; ++j) {
-            x[j] = (double) rand() / (double) INT_MAX;
-        }
-        const clock_t begin = clock();
-        PaGMOSimulationNeuralNetwork p_sim(rand(), 3.0 * 60.0 * 60.0, x);
-        const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > a_result = p_sim.Evaluate();
-        const clock_t end = clock();
-        const double simulated_time = boost::get<0>(a_result).back();
-        const double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
-        t += elapsed_secs;
-        std::cout << simulated_time << " seconds simulation time took " << elapsed_secs << " real time to compute (x" << simulated_time/elapsed_secs << ")." << std::endl;
+        std::cout << i << std::endl;
+        PaGMOSimulationNeuralNetwork p_sim(rand(), 6.0 * 60.0 * 60.0, kNeuralNetworkWeights);
+        clock_t begin = clock();
+        boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = p_sim.Evaluate();
+        clock_t end = clock();
+        double simulated_time = boost::get<0>(result).back();
+        double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+        double speedup = simulated_time/elapsed_secs;
+        const Vector3D p_adapt = boost::get<2>(result).back();
+        t_adapt += elapsed_secs;
+        s_adapt += speedup;
+
+        begin = clock();
+        result = p_sim.EvaluateDetailed();
+        end = clock();
+        simulated_time = boost::get<0>(result).back();
+        elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+        speedup = simulated_time/elapsed_secs;
+        const Vector3D p_fixed = boost::get<2>(result).back();
+        t_fixed += elapsed_secs;
+        s_fixed += speedup;
+
+        error =+ VectorNorm(VectorSub(p_adapt, p_fixed));
     }
-    std::cout << "mean: " << t / num_tests << std::endl;
+    std::cout << "mean sim time adapt: " << t_adapt / num_tests << std::endl;
+    std::cout << "mean speedup adapt: " << s_adapt / num_tests << std::endl;
+    std::cout << "mean sim time fixed: " << t_fixed / num_tests << std::endl;
+    std::cout << "mean speedup fixed: " << s_fixed / num_tests << std::endl;
+    std::cout << "mean error: " << error / num_tests << std::endl;
     return 0;
 
-    */
+
 
     /* Copy constructor & assignment operator test */
 
