@@ -67,8 +67,6 @@ public:
     class InvalidParametersException: public Exception {};
 
 private:
-    static bool SortMinimumZ(const Vector3D &first, const Vector3D &second);
-
     // Helper function for NearestPointOnSurfaceToPosition since we assume a symmetric ellipsoid. Position "position" has to be in first quadrant.
     Vector3D NearestPointOnEllipsoidFirstQuadrant(const Vector3D &position) const;
 

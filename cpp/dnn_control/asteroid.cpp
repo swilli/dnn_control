@@ -103,10 +103,6 @@ double Asteroid::EvaluatePointWithStandardEquation(const Vector3D &position) con
     return result;
 }
 
-bool Asteroid::SortMinimumZ(const Vector3D &first, const Vector3D &second) {
-    return first[2] < second[2];
-}
-
 Vector3D Asteroid::GravityAccelerationAtPosition(const Vector3D &position) const {
     Vector3D acceleration = {0.0, 0.0, 0.0};
 

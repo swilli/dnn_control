@@ -19,6 +19,8 @@ public:
 
     boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > EvaluateDetailed();
 
+    boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > EvaluateImpl2();
+
     double FixedStepSize() const;
 
     double MinimumStepSize() const;
@@ -46,6 +48,8 @@ private:
     double spacecraft_specific_impulse_;
 
     double spacecraft_maximum_thrust_;
+
+    double interaction_interval_;
 
     Asteroid asteroid_;
 

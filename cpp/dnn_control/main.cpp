@@ -6,7 +6,7 @@
 #include "hoveringproblem.h"
 
 #include <pagmo/src/pagmo.h>
-#include <pagmo/src/problem/spheres.h>
+
 
 #define FULL_STATE_CONTROLLED                                                 0
 
@@ -129,13 +129,14 @@ static void TrainNeuralNetworkController() {
 int main(int argc, char *argv[]) {
     srand(time(0));
 
-    TrainNeuralNetworkController();
+    //TrainNeuralNetworkController();
 
-    return 0;
+    //return 0;
 
     /*
+
     PaGMOSimulationNeuralNetwork sim(rand(), 86400.0, kNeuralNetworkWeights);
-    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > r1 = sim.EvaluateDetailed();
+    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > r1 = sim.EvaluateImpl2();
     const std::vector<Vector3D> &r1pos = boost::get<2>(r1);
     const std::vector<Vector3D> &r1hei = boost::get<3>(r1);
 
@@ -143,7 +144,22 @@ int main(int argc, char *argv[]) {
     writer.CreateVisualizationFile(PATH_TO_RANDOM_VISUALIZATION_FILE, 1.0 / sim.FixedStepSize(), sim.AsteroidOfSystem(), r1pos, r1hei);
 
     return 0;
+
     */
+
+
+    PaGMOSimulationFullState sim(rand(), 86400.0, {0.0, 0.0, 0.0});
+    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = sim.EvaluateImpl2();
+    const std::vector<Vector3D> &pos = boost::get<2>(result);
+    const std::vector<Vector3D> &hei = boost::get<3>(result);
+
+    FileWriter writer;
+    writer.CreateVisualizationFile(PATH_TO_RANDOM_VISUALIZATION_FILE, 1.0 / sim.FixedStepSize(), sim.AsteroidOfSystem(), pos, hei);
+
+
+    return 0;
+
+
 
     /*
 
@@ -165,19 +181,7 @@ int main(int argc, char *argv[]) {
 
     */
 
-    /*
-    PaGMOSimulationFullState sim(rand(), 86400.0, {0.0, 0.0, 0.0});
-    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = sim.EvaluateDetailed();
-    const std::vector<Vector3D> &pos = boost::get<2>(result);
-    const std::vector<Vector3D> &hei = boost::get<3>(result);
 
-    FileWriter writer;
-    writer.CreateVisualizationFile(PATH_TO_RANDOM_VISUALIZATION_FILE, 1.0 / sim.FixedStepSize(), sim.AsteroidOfSystem(), pos, hei);
-
-
-    return 0;
-
-    */
 
 
     /*

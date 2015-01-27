@@ -7,6 +7,7 @@
 #include "sensorsimulatorneuralnetwork.h"
 #include "controllerneuralnetwork.h"
 #include "odesystem.h"
+#include "odesystemimpl2.h"
 
 PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &random_seed, const double &simulation_time)
     : random_seed_(random_seed),  simulation_time_(simulation_time) {
@@ -72,7 +73,7 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
         //std::cout << "The spacecraft crashed into the asteroid's surface." << std::endl;
     } catch (const ODESystem::Exception &exception) {
         //std::cout << "The spacecraft is out of fuel." << std::endl;
-   }
+    }
 
     return boost::make_tuple(time_points, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities);
 }
@@ -115,6 +116,82 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     return boost::make_tuple(time_points, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities);
 }
 
+boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > PaGMOSimulationNeuralNetwork::EvaluateImpl2() {
+    typedef odeint::runge_kutta_cash_karp54<SystemState> ErrorStepper;
+    typedef odeint::modified_controlled_runge_kutta<ErrorStepper> ControlledStepper;
+
+    SampleFactory sample_factory(random_seed_);
+    SampleFactory sf_sensor_simulator(sample_factory.SampleRandomInteger());
+    SampleFactory sf_odesystem(sample_factory.SampleRandomInteger());
+
+    SensorSimulatorNeuralNetwork sensor_simulator(sf_sensor_simulator, asteroid_, target_position_);
+    ControllerNeuralNetwork controller(spacecraft_maximum_thrust_, hidden_nodes_);
+    if (neural_network_weights_.size()) {
+        controller.SetWeights(neural_network_weights_);
+    }
+
+    if (sensor_simulator.Dimensions() != controller.Dimensions()) {
+        throw SizeMismatchException();
+    }
+
+    std::vector<double> time_points;
+    std::vector<double> evaluated_masses;
+    std::vector<Vector3D> evaluated_positions;
+    std::vector<Vector3D> evaluated_velocities;
+    std::vector<Vector3D> evaluated_heights;
+
+    DataCollector collector(asteroid_, time_points, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities);
+
+    SystemState system_state(initial_system_state_);
+
+    Vector3D perturbations_acceleration;
+    for (unsigned int i = 0; i < 3; ++i) {
+        perturbations_acceleration[i] = sample_factory.SampleNormal(0.0,perturbation_noise_);
+    }
+
+    double current_time = 0.0;
+    try {
+        while (current_time + interaction_interval_ <= simulation_time_) {
+            ControlledStepper controlled_stepper;
+            const Vector3D position = {system_state[0], system_state[1], system_state[2]};
+            const Vector3D surf_pos = boost::get<0>(asteroid_.NearestPointOnSurfaceToPosition(position));
+            const Vector3D height = {position[0] - surf_pos[0], position[1] - surf_pos[1], position[2] - surf_pos[2]};
+            const SensorData sensor_data = sensor_simulator.Simulate(system_state, height, perturbations_acceleration, current_time);
+            const Vector3D thrust = controller.GetThrustForSensorData(sensor_data);
+            const double engine_noise = sample_factory.SampleNormal(0.0, engine_noise_);
+
+            ODESystemImpl2 sys(asteroid_, perturbations_acceleration, thrust, spacecraft_specific_impulse_, engine_noise);
+
+            integrate_adaptive(controlled_stepper, sys, system_state, current_time, current_time + interaction_interval_, minimum_step_size_, collector);
+
+            current_time += interaction_interval_;
+        }
+        if (current_time < simulation_time_) {
+            const double remaining_time = simulation_time_ - current_time;
+            ControlledStepper controlled_stepper;
+            const Vector3D position = {system_state[0], system_state[1], system_state[2]};
+            const Vector3D surf_pos = boost::get<0>(asteroid_.NearestPointOnSurfaceToPosition(position));
+            const Vector3D height = {position[0] - surf_pos[0], position[1] - surf_pos[1], position[2] - surf_pos[2]};
+            const SensorData sensor_data = sensor_simulator.Simulate(system_state, height, perturbations_acceleration, current_time);
+            const Vector3D thrust = controller.GetThrustForSensorData(sensor_data);
+            const double engine_noise = sample_factory.SampleNormal(0.0, engine_noise_);
+
+            ODESystemImpl2 sys(asteroid_, perturbations_acceleration, thrust, spacecraft_specific_impulse_, engine_noise);
+
+            integrate_adaptive(controlled_stepper, sys, system_state, current_time, current_time + remaining_time, minimum_step_size_, collector);
+
+            current_time += interaction_interval_;
+        }
+
+    } catch (const Asteroid::Exception &exception) {
+        //std::cout << "The spacecraft crashed into the asteroid's surface." << std::endl;
+    } catch (const ODESystemImpl2::Exception &exception) {
+        //std::cout << "The spacecraft is out of fuel." << std::endl;
+    }
+
+    return boost::make_tuple(time_points, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities);
+}
+
 double PaGMOSimulationNeuralNetwork::FixedStepSize() const {
     return fixed_step_size_;
 }
@@ -134,9 +211,9 @@ Asteroid& PaGMOSimulationNeuralNetwork::AsteroidOfSystem() {
 void PaGMOSimulationNeuralNetwork::Init() {
     minimum_step_size_ = 0.1;
     fixed_step_size_ = 0.1;
+    interaction_interval_ = 10.0;
 
-    const unsigned int fixed_seed = 123;
-    SampleFactory sample_factory(fixed_seed);
+    SampleFactory sample_factory(random_seed_);
 
     const Vector3D semi_axis = {sample_factory.SampleUniform(8000.0, 12000.0), sample_factory.SampleUniform(4000.0, 7500.0), sample_factory.SampleUniform(1000.0, 3500.0)};
     const double density = sample_factory.SampleUniform(1500.0, 3000.0);
