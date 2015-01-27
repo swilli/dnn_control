@@ -21,9 +21,13 @@ public:
 
     boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > EvaluateImpl2();
 
+    boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > EvaluateDetailedImpl2();
+
     double FixedStepSize() const;
 
     double MinimumStepSize() const;
+
+    double InteractionInterval() const;
 
     Asteroid& AsteroidOfSystem();
 

@@ -17,7 +17,7 @@
 #define CREATE_RANDOM_VISUALIZATION_FILE                                      1
 #define PATH_TO_RANDOM_VISUALIZATION_FILE                                     "../../../results/visualization.txt"
 
-static const std::vector<double> kNeuralNetworkWeights = {1.7155e-316, 6.9241e-310, -0.34328, -0.54135, 1.2588, 2.8036, 0.42375, 0.095438, 0.48603, 0.49549, -0.65822, 0.97229, -1.0406, 1.07, 3.896, -2.2481, 0.56217, -1.3897, -1.907, -0.20802, 0.94625, 0.44178, -0.42128, -2.0324, 1.8544, -4.6004, -3.5685, -0.40046, 2.6175, 1.9754, -0.15344, -1.7887, 0.63218, 0.51374, 0.4772, -1.0495, 0.17629, 1.3393, -0.47461, -1.2806, 0.91916, 2.3008, -0.13527, 1.8101, -1.8351, 0.95626, 0.53205, -1.6253, -0.93287, -0.32118, -0.064858, 1.4332, -0.39046, -3.3944, -0.32661, 1.4399, 0.044268, 1.0597, 1.9545, 0.21722, -0.96814, -1.3985, 2.8423, -3.0192, 0.48894, 0.55649, 1.0055, -0.043197, -0.44853, -1.0296, -0.373, -1.8348, 3.0751e-320};
+static const std::vector<double> kNeuralNetworkWeights = {-0.34105, -0.63153, -0.21013, -4.4611, 3.1548, -2.8539, -3.3003, -1.1532, 1.2563, -0.61968, 1.3154, 2.5086, 2.6536, 3.2999, 0.29513, -0.33427, 2.3713, -1.0736, 5.4118, 1.6048, -1.7567, -0.087932, -0.46124, 0.80393, 3.6069, 0.76005, -0.97259, 0.40637, -5.605, 0.99282, 0.75947, 5.5112, -1.1204, -3.2563, 0.58268, 3.6061, 0.74423, 1.0826};
 
 static const std::vector<double> kCoefficientsFullState = {0.23, 20.0, 0.0};
 
@@ -133,10 +133,65 @@ int main(int argc, char *argv[]) {
 
     //return 0;
 
+
+
+    const unsigned int num_tests = 100;
+    double t_adapt = 0.0;
+    double s_adapt = 0.0;
+    double t_fixed = 0.0;
+    double s_fixed = 0.0;
+    double error = 0.0;
+    double sim_time = 0.0;
+    for (unsigned int i = 0; i < num_tests; ++i) {
+        std::cout << i << std::endl;
+        PaGMOSimulationFullState sim(rand(), 24.0 * 60.0 * 60.0, {4.0, 20.0, 0.0});
+        clock_t begin = clock();
+        boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = sim.EvaluateImpl2();
+        clock_t end = clock();
+        double simulated_time = boost::get<0>(result).back();
+        double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+        double speedup = simulated_time/elapsed_secs;
+        const std::vector<Vector3D> p_adapt = boost::get<2>(result);
+        t_adapt += elapsed_secs;
+        s_adapt += speedup;
+
+        begin = clock();
+        result = sim.EvaluateDetailedImpl2();
+        end = clock();
+        simulated_time = boost::get<0>(result).back();
+        sim_time += simulated_time;
+        elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+        speedup = simulated_time/elapsed_secs;
+        const std::vector<Vector3D> p_fixed = boost::get<2>(result);
+        t_fixed += elapsed_secs;
+        s_fixed += speedup;
+        double cur_error = 0.0;
+        const unsigned int f_size = p_fixed.size();
+        const unsigned int a_size = p_adapt.size();
+        const unsigned int min_size = (f_size < a_size ? f_size : a_size);
+        if (min_size != f_size || min_size != a_size) {
+            std::cout << "f_size: " << f_size << " a_size: " << a_size << std::endl;
+        }
+        for (unsigned int j  = 0; j < min_size;  ++j) {
+            cur_error += VectorNorm(VectorSub(p_adapt.at(j), p_fixed.at(j)));
+        }
+        cur_error /= min_size;
+        error += cur_error;
+    }
+    std::cout << "mean real sim time: " << sim_time / num_tests << std::endl;
+    std::cout << "mean sim time adapt: " << t_adapt / num_tests << std::endl;
+    std::cout << "mean speedup adapt: " << s_adapt / num_tests << std::endl;
+    std::cout << "mean sim time fixed: " << t_fixed / num_tests << std::endl;
+    std::cout << "mean speedup fixed: " << s_fixed / num_tests << std::endl;
+    std::cout << "mean error: " << error / num_tests << std::endl;
+    return 0;
+
     /*
 
-    PaGMOSimulationNeuralNetwork sim(rand(), 86400.0, kNeuralNetworkWeights);
-    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > r1 = sim.EvaluateImpl2();
+
+
+    PaGMOSimulationNeuralNetwork sim(rand(), 86400.0, kNeuralNetworkWeights, 5);
+    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > r1 = sim.EvaluateDetailed();
     const std::vector<Vector3D> &r1pos = boost::get<2>(r1);
     const std::vector<Vector3D> &r1hei = boost::get<3>(r1);
 
@@ -146,19 +201,21 @@ int main(int argc, char *argv[]) {
     return 0;
 
     */
+/*
 
 
-    PaGMOSimulationFullState sim(rand(), 86400.0, {0.0, 0.0, 0.0});
+    const unsigned int seed = 666;
+    PaGMOSimulationFullState sim(seed, 24.0 * 60.0 * 60.0, {0.0, 0.0, 0.0}); //{4.0, 20.0, 0.0});
     const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = sim.EvaluateImpl2();
     const std::vector<Vector3D> &pos = boost::get<2>(result);
     const std::vector<Vector3D> &hei = boost::get<3>(result);
 
     FileWriter writer;
-    writer.CreateVisualizationFile(PATH_TO_RANDOM_VISUALIZATION_FILE, 1.0 / sim.FixedStepSize(), sim.AsteroidOfSystem(), pos, hei);
-
+    writer.CreateVisualizationFile(PATH_TO_RANDOM_VISUALIZATION_FILE, 1.0 / sim.InteractionInterval(), sim.AsteroidOfSystem(), pos, hei);
 
     return 0;
 
+*/
 
 
     /*
@@ -227,20 +284,20 @@ int main(int argc, char *argv[]) {
 
     /* Copy constructor & assignment operator test */
 
-    /*
 
-    PaGMOSimulationNeuralNetwork s1(500, 86400.0);
-    PaGMOSimulationNeuralNetwork s2(0, 86400.0);
+    /*
+    PaGMOSimulationFullState s1(500, 86400.0);
+    PaGMOSimulationFullState s2(0, 86400.0);
     s2.Evaluate();
-    PaGMOSimulationNeuralNetwork s4(s2);
+    PaGMOSimulationFullState s4(s2);
     {
-        PaGMOSimulationNeuralNetwork s3(0, 86400.0);
+        PaGMOSimulationFullState s3(0, 86400.0);
         s1 = s3;
     }
 
-    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > r1 = s1.EvaluateDetailed();
-    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > r2 = s2.EvaluateDetailed();
-    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > r4 = s4.EvaluateDetailed();
+    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > r1 = s1.EvaluateDetailedImpl2();
+    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > r2 = s2.EvaluateDetailedImpl2();
+    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > r4 = s4.EvaluateDetailedImpl2();
 
     const std::vector<Vector3D> &r1pos = boost::get<2>(r1);
     const std::vector<Vector3D> &r1hei = boost::get<3>(r1);
