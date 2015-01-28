@@ -11,7 +11,7 @@ ODESystem::ODESystem(SampleFactory &sample_factory, const Asteroid &asteroid, Se
 
     for (unsigned int i = 0; i < 3; ++i) {
         thrust_[i] = 0.0;
-        perturbations_acceleration_[i] = sample_factory_.SampleNormal(0.0, perturbation_noise);
+        perturbations_acceleration_[i] = 0.0; //sample_factory_.SampleNormal(0.0, perturbation_noise);
     }
 }
 
@@ -31,6 +31,8 @@ ODESystem::~ODESystem() {
 }
 
 void ODESystem::operator ()(const SystemState &state, SystemState &d_state_dt, const double &time) {
+    //std::cout << time << std::endl;
+
     const double mass = state[6];
     // check if spacecraft is out of fuel
     if (mass <= 0.0) {

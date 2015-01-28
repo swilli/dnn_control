@@ -1,5 +1,6 @@
 #include "odesystemimpl2.h"
 #include "constants.h"
+#include <iostream>
 
 ODESystemImpl2::ODESystemImpl2(const Asteroid &asteroid, const Vector3D &perturbations_acceleration, const Vector3D &thrust, const double &spacecraft_specific_impulse, const double &engine_noise)
     : asteroid_(asteroid) {
@@ -22,6 +23,8 @@ ODESystemImpl2::~ODESystemImpl2() {
 }
 
 void ODESystemImpl2::operator ()(const SystemState &state, SystemState &d_state_dt, const double &time) {
+    //std::cout << time << std::endl;
+
     const double mass = state[6];
     // check if spacecraft is out of fuel
     if (mass <= 0.0) {

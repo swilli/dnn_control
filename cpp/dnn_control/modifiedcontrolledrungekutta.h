@@ -27,7 +27,6 @@
 
 #include "asteroid.h"
 
-const static double kMaximumRelativeError = 1.0;
 const static double kMaximumTimeStep = 86400.0;
 const static double kMaximumCollisionTimeStep = 0.1;
 
@@ -292,7 +291,7 @@ public:
 
         m_max_rel_error = m_error_checker.error( m_stepper.algebra() , in , dxdt , m_xerr.m_v , dt );
 
-        if( m_max_rel_error > kMaximumRelativeError)
+        if( m_max_rel_error > 1.0)
         {
             // error too large - decrease dt ,limit scaling factor to 0.2 and reset state
             dt *= max BOOST_PREVENT_MACRO_SUBSTITUTION ( static_cast<value_type>( static_cast<value_type>(9)/static_cast<value_type>(10) *

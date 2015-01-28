@@ -7,6 +7,8 @@
 
 #include <boost/tuple/tuple.hpp>
 
+//#define TEST_FOR_ORBIT
+
 class PaGMOSimulationFullState {
 public:
     PaGMOSimulationFullState(const unsigned int &random_seed, const double &simulation_time);
@@ -35,6 +37,16 @@ public:
     class SizeMismatchException : public Exception {};
 
 private:
+    class Observer {
+    public:
+        Observer(double &time) : time_(time){}
+        void operator () (const SystemState &system_state , const double &current_time) {
+            time_ = current_time;
+        }
+    private:
+        double &time_;
+    };
+
     void Init();
 
     unsigned int random_seed_;

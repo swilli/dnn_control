@@ -11,6 +11,9 @@ DataCollector::~DataCollector() {
 }
 
 void DataCollector::operator ()(const SystemState &system_state, const double &current_time) {
+    if (fmod(current_time, 20.0)) {
+        return;
+    }
     // Get current time
     time_points_.push_back(current_time);
 
