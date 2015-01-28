@@ -1,29 +1,22 @@
 #include "odesystem.h"
 #include "constants.h"
 
-ODESystem::ODESystem(SampleFactory &sample_factory, const Asteroid &asteroid, SensorSimulator &sensor_simulator, Controller &controller, const double &spacecraft_specific_impulse, const double &perturbation_noise, const double &engine_noise)
-    : sample_factory_(sample_factory), asteroid_(asteroid), sensor_simulator_(sensor_simulator), controller_(controller) {
-
-    engine_noise_ = engine_noise;
+ODESystem::ODESystem(const Asteroid &asteroid, const Vector3D &perturbations_acceleration, const Vector3D &thrust, const double &spacecraft_specific_impulse, const double &spacecraft_minimum_mass, const double &engine_noise)
+    : asteroid_(asteroid) {
+    perturbations_acceleration_ = perturbations_acceleration;
+    thrust_ = thrust;
     spacecraft_specific_impulse_ = spacecraft_specific_impulse;
-    latest_control_input_time_ = 0.0;
-    min_control_interval_ = 0.2;
-
-    for (unsigned int i = 0; i < 3; ++i) {
-        thrust_[i] = 0.0;
-        perturbations_acceleration_[i] = 0.0; //sample_factory_.SampleNormal(0.0, perturbation_noise);
-    }
+    spacecraft_minimum_mass_ = spacecraft_minimum_mass;
+    engine_noise_ = engine_noise;
 }
 
 ODESystem::ODESystem(const ODESystem &other)
-    : sample_factory_(other.sample_factory_), asteroid_(other.asteroid_), sensor_simulator_(other.sensor_simulator_), controller_(other.controller_) {
-
-    engine_noise_ = other.engine_noise_;
-    spacecraft_specific_impulse_ = other.spacecraft_specific_impulse_;
-    latest_control_input_time_ = other.latest_control_input_time_;
-    min_control_interval_ = other.min_control_interval_;
-    thrust_ = other.thrust_;
+    : asteroid_(other.asteroid_) {
     perturbations_acceleration_ = other.perturbations_acceleration_;
+    thrust_ = other.thrust_;
+    spacecraft_specific_impulse_ = other.spacecraft_specific_impulse_;
+    spacecraft_minimum_mass_ = other.spacecraft_minimum_mass_;
+    engine_noise_ = other.engine_noise_;
 }
 
 ODESystem::~ODESystem() {
@@ -31,11 +24,9 @@ ODESystem::~ODESystem() {
 }
 
 void ODESystem::operator ()(const SystemState &state, SystemState &d_state_dt, const double &time) {
-    //std::cout << time << std::endl;
-
     const double mass = state[6];
     // check if spacecraft is out of fuel
-    if (mass <= 0.0) {
+    if (mass <= spacecraft_minimum_mass_) {
         throw OutOfFuelException();
     }
 
@@ -49,10 +40,6 @@ void ODESystem::operator ()(const SystemState &state, SystemState &d_state_dt, c
         velocity[i] = state[3+i];
     }
 
-    // Compute height
-    const Vector3D surf_pos = boost::get<0>(asteroid_.NearestPointOnSurfaceToPosition(position));
-    const Vector3D height = {position[0] - surf_pos[0], position[1] - surf_pos[1], position[2] - surf_pos[2]};
-
     // Fg
     const Vector3D gravity_acceleration = asteroid_.GravityAccelerationAtPosition(position);
 
@@ -63,17 +50,8 @@ void ODESystem::operator ()(const SystemState &state, SystemState &d_state_dt, c
 
     // Fc
     Vector3D thrust_acceleration;
-    if (time - latest_control_input_time_ >= min_control_interval_) {
-        latest_control_input_time_ = time;
-        const SensorData sensor_data = sensor_simulator_.Simulate(state, height, perturbations_acceleration_, time);
-        thrust_ = controller_.GetThrustForSensorData(sensor_data);
-        for (unsigned int i = 0; i < 3; ++i) {
-            thrust_acceleration[i] = thrust_[i] * coef_mass;
-        }
-    } else {
-        for (unsigned int i = 0; i < 3; ++i) {
-            thrust_acceleration[i] = thrust_[i] * coef_mass;
-        }
+    for (unsigned int i = 0; i < 3; ++i) {
+        thrust_acceleration[i] = thrust_[i] * coef_mass;
     }
 
     // w' x r
@@ -96,5 +74,6 @@ void ODESystem::operator ()(const SystemState &state, SystemState &d_state_dt, c
                 - coriolis_acceleration[i] - euler_acceleration[i] - centrifugal_acceleration[i];
     }
 
-    d_state_dt[6] = -sqrt(thrust_[0] * thrust_[0] + thrust_[1] * thrust_[1] + thrust_[2] * thrust_[2]) / ((spacecraft_specific_impulse_ + spacecraft_specific_impulse_ * sample_factory_.SampleNormal(time, 0.0, engine_noise_)) * kEarthAcceleration);
+    d_state_dt[6] = -sqrt(thrust_[0] * thrust_[0] + thrust_[1] * thrust_[1] + thrust_[2] * thrust_[2]) / ((spacecraft_specific_impulse_ + spacecraft_specific_impulse_ * engine_noise_) * kEarthAcceleration);
 }
+

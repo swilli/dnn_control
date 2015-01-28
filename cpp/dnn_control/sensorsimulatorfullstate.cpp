@@ -3,7 +3,7 @@
 const unsigned int SensorSimulatorFullState::kDimensions = 8;
 
 SensorSimulatorFullState::SensorSimulatorFullState(SampleFactory &sample_factory, const Asteroid &asteroid)
-    : SensorSimulator(kDimensions, sample_factory, asteroid), noise_configuration_(dimensions_, 0.05) {
+    : SensorSimulator(kDimensions, sample_factory, asteroid), noise_configuration_(dimensions_, 1e-20) {
 
 }
 

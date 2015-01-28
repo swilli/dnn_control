@@ -3,7 +3,7 @@
 const unsigned int SensorSimulatorNeuralNetwork::kDimensions = 3;
 
 SensorSimulatorNeuralNetwork::SensorSimulatorNeuralNetwork(SampleFactory &sample_factory, const Asteroid &asteroid, const Vector3D &target_position)
-    : SensorSimulator(kDimensions, sample_factory, asteroid), noise_configuration_(dimensions_, 0.05) {
+    : SensorSimulator(kDimensions, sample_factory, asteroid), noise_configuration_(dimensions_, 1e-20) {
     target_position_ = target_position;
 }
 

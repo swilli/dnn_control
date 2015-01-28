@@ -22,48 +22,12 @@ unsigned int SampleFactory::SampleRandomInteger() {
     return generator_();
 }
 
-unsigned int SampleFactory::SampleRandomInteger(const double &time, const int &dim) {
-    const std::vector<double> key = {time, (double) dim};
-    unsigned int sample = 0;
-    if (integer_history_.find(key) == integer_history_.end()) {
-        sample = SampleRandomInteger();
-        integer_history_[key] = sample;
-    } else {
-        sample = integer_history_[key];
-    }
-    return sample;
-}
-
 double SampleFactory::SampleUniform(const double &minimum, const double &maximum) {
     return minimum + (maximum - minimum) * uniform_distribution_(generator_);
 }
 
-double SampleFactory::SampleUniform(const double &time, const double &minimum, const double &maximum, const int &dim) {
-    std::vector<double> key = {time, (double) dim, minimum, maximum};
-    double sample = 0.0;
-    if (uniform_history_.find(key) == uniform_history_.end()) {
-        sample = SampleUniform(minimum, maximum);
-        uniform_history_[key] = sample;
-    } else {
-        sample = uniform_history_[key];
-    }
-    return sample;
-}
-
 double SampleFactory::SampleNormal(const double &mean, const double &variance) {
     return normal_distribution_(generator_) * variance + mean;
-}
-
-double SampleFactory::SampleNormal(const double &time, const double &mean, const double &variance, const int &dim) {
-    std::vector<double> key = {time, (double) dim, mean, variance};
-    double sample = 0.0;
-    if (normal_history_.find(key) == normal_history_.end()) {
-        sample = SampleNormal(mean, variance);
-        normal_history_[key] = sample;
-    } else {
-        sample = normal_history_[key];
-    }
-    return sample;
 }
 
 double SampleFactory::SampleSign() {
@@ -72,18 +36,6 @@ double SampleFactory::SampleSign() {
     } else {
         return -1.0;
     }
-}
-
-double SampleFactory::SampleSign(const double &time, const int &dim) {
-    const std::vector<double> key = {time, (double) dim};
-    double sample = 0.0;
-    if (sign_history_.find(key) == sign_history_.end()) {
-        sample = SampleSign();
-        sign_history_[key] = sample;
-    } else {
-        sample = sign_history_[key];
-    }
-    return sample;
 }
 
 Vector3D SampleFactory::SamplePointOutSideEllipsoid(const Vector3D &semi_axis, const double &min_scale, const double &max_scale) {

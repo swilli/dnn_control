@@ -1,9 +1,11 @@
 #ifndef SIMULATION_H
 #define SIMULATION_H
 
-#include "samplefactory.h"
 #include "asteroid.h"
+#include "vector.h"
 #include "systemstate.h"
+
+#define SIM_TEST_FOR_ORBIT  0
 
 class Simulation {
 public:
@@ -19,6 +21,16 @@ public:
     class SizeMismatchException : public Exception {};
 
 protected:
+    class Observer {
+    public:
+        Observer(double &time) : time_(time){}
+        void operator () (const SystemState &, const double &current_time) {
+            time_ = current_time;
+        }
+    private:
+        double &time_;
+    };
+
     unsigned int random_seed_;
 
     Asteroid asteroid_;
@@ -31,11 +43,17 @@ protected:
 
     double spacecraft_specific_impulse_;
 
+    double spacecraft_minimum_mass_;
+
     double spacecraft_maximum_thrust_;
+
+    double interaction_interval_;
 
     SystemState initial_system_state_;
 
     Vector3D target_position_;
+
+    std::vector<double> controller_parameters_;
 };
 
 #endif // SIMULATION_H

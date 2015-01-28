@@ -7,7 +7,7 @@
 
 #include <boost/tuple/tuple.hpp>
 
-//#define TEST_FOR_ORBIT
+#define PSFS_TEST_FOR_ORBIT     0
 
 class PaGMOSimulationFullState {
 public:
@@ -20,10 +20,6 @@ public:
     boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > Evaluate();
 
     boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > EvaluateDetailed();
-
-    boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > EvaluateImpl2();
-
-    boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > EvaluateDetailedImpl2();
 
     double FixedStepSize() const;
 
@@ -40,7 +36,7 @@ private:
     class Observer {
     public:
         Observer(double &time) : time_(time){}
-        void operator () (const SystemState &system_state , const double &current_time) {
+        void operator () (const SystemState &, const double &current_time) {
             time_ = current_time;
         }
     private:
@@ -62,6 +58,8 @@ private:
     double perturbation_noise_;
 
     double spacecraft_specific_impulse_;
+
+    double spacecraft_minimum_mass_;
 
     double spacecraft_maximum_thrust_;
 

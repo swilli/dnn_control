@@ -7,6 +7,8 @@
 
 #include <boost/tuple/tuple.hpp>
 
+#define PSNN_TEST_FOR_ORBIT     0
+
 class PaGMOSimulationNeuralNetwork {
 public:
     PaGMOSimulationNeuralNetwork(const unsigned int &random_seed, const double &simulation_time);
@@ -21,11 +23,12 @@ public:
 
     boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > EvaluateDetailed();
 
-    boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > EvaluateImpl2();
 
     double FixedStepSize() const;
 
     double MinimumStepSize() const;
+
+    double InteractionInterval() const;
 
     unsigned int ControllerNeuralNetworkSize() const;
 
@@ -35,11 +38,21 @@ public:
     class SizeMismatchException : public Exception {};
 
 private:
+    class Observer {
+    public:
+        Observer(double &time) : time_(time){}
+        void operator () (const SystemState &, const double &current_time) {
+            time_ = current_time;
+        }
+    private:
+        double &time_;
+    };
+
     void Init();
 
     unsigned int random_seed_;
 
-    unsigned int hidden_nodes_;
+    unsigned int neural_network_hidden_nodes_;
 
     double simulation_time_;
 
@@ -52,6 +65,8 @@ private:
     double perturbation_noise_;
 
     double spacecraft_specific_impulse_;
+
+    double spacecraft_minimum_mass_;
 
     double spacecraft_maximum_thrust_;
 
