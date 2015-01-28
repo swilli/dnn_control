@@ -3,9 +3,11 @@
 
 #include "vector.h"
 
+
 class UtilityException {};
 class PositionInsideEllipsoidException : public UtilityException {};
 class PositionInsideEllipseException : public UtilityException {};
+
 
 //double BisectEllipsoid(const Vector3D &semi_axis_mul_pos, const Vector3D &semi_axis_pow2);
 

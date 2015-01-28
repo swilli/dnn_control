@@ -1,5 +1,4 @@
 #include "simulation.h"
-#include "utility.h"
 
 Simulation::Simulation(const unsigned int &random_seed) : random_seed_(random_seed) {
     simulation_time_ = 24.0 * 60.0 * 60.0;

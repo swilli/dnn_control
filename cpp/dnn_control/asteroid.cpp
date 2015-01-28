@@ -1,6 +1,5 @@
 #include "asteroid.h"
 #include "constants.h"
-#include "utility.h"
 
 #include <algorithm>
 #include <set>
@@ -101,6 +100,58 @@ double Asteroid::EvaluatePointWithStandardEquation(const Vector3D &position) con
         result += position[i] * position[i] / semi_axis_pow2_[i];
     }
     return result;
+}
+
+double Asteroid::NewtonRaphsonEllipse(const Vector2D &semi_axis_mul_pos, const Vector2D &semi_axis_pow2) {
+    const double tolerance = 1e-3;
+    double root = 0.0;
+    double old_root = root;
+    double error = 0.0;
+    do {
+        old_root = root;
+        double f_root = 0.0;
+        for (unsigned int i = 0; i < 2; ++i) {
+            f_root += (semi_axis_mul_pos[i] / (root + semi_axis_pow2[i])) * (semi_axis_mul_pos[i] / (root + semi_axis_pow2[i]));
+        }
+        f_root -= 1.0;
+        double df_root = 0.0;
+        for (unsigned int i = 0; i < 2; ++i) {
+            df_root += (semi_axis_mul_pos[i] * semi_axis_mul_pos[i]) * (-2.0) / ((root + semi_axis_pow2[i]) * (root + semi_axis_pow2[i]) * (root + semi_axis_pow2[i]));
+        }
+        root = root - f_root/df_root;
+        error = root - old_root;
+        error = (error < 0.0 ? -error : error);
+        if (isinf(root) || isnan(root)) {
+            throw PositionInsideException();
+        }
+    } while (error > tolerance);
+    return root;
+}
+
+double Asteroid::NewtonRaphsonEllipsoid(const Vector3D &semi_axis_mul_pos, const Vector3D &semi_axis_pow2) {
+    const double tolerance = 1e-3;
+    double root = 0.0;
+    double old_root = root;
+    double error = 0.0;
+    do {
+        old_root = root;
+        double f_root = 0.0;
+        for (unsigned int i = 0; i < 3; ++i) {
+            f_root += (semi_axis_mul_pos[i] / (root + semi_axis_pow2[i])) * (semi_axis_mul_pos[i] / (root + semi_axis_pow2[i]));
+        }
+        f_root -= 1.0;
+        double df_root = 0.0;
+        for (unsigned int i = 0; i < 3; ++i) {
+            df_root += (semi_axis_mul_pos[i] * semi_axis_mul_pos[i]) * (-2.0) / ((root + semi_axis_pow2[i]) * (root + semi_axis_pow2[i]) * (root + semi_axis_pow2[i]));
+        }
+        root = root - f_root/df_root;
+        error = root - old_root;
+        error = (error < 0.0 ? -error : error);
+        if (isinf(root) || isnan(root)) {
+            throw PositionInsideException();
+        }
+    } while (error > tolerance);
+    return root;
 }
 
 Vector3D Asteroid::GravityAccelerationAtPosition(const Vector3D &position) const {
@@ -213,12 +264,7 @@ Vector3D Asteroid::NearestPointOnEllipsoidFirstQuadrant(const Vector3D &position
             if (position[0] > 0.0) {
                 // Perform bisection to find the root (David Eberly eq (26))
                 Vector3D semi_axis_mul_pos = {semi_axis_[0] * position[0], semi_axis_[1] * position[1], semi_axis_[2] * position[2]};
-                double time = 0.0;
-                try {
-                    time = NewtonRaphsonEllipsoid(semi_axis_mul_pos, semi_axis_pow2_);
-                } catch (const UtilityException &exception) {
-                    throw PositionInsideException();
-                }
+                const double time = NewtonRaphsonEllipsoid(semi_axis_mul_pos, semi_axis_pow2_);
                 point[0] = semi_axis_pow2_[0] * position[0] / (time + semi_axis_pow2_[0]);
                 point[1] = semi_axis_pow2_[1] * position[1] / (time + semi_axis_pow2_[1]);
                 point[2] = semi_axis_pow2_[2] * position[2] / (time + semi_axis_pow2_[2]);
@@ -291,12 +337,7 @@ Vector2D Asteroid::NearestPointOnEllipseFirstQuadrant(const Vector2D &semi_axis,
         if (position[0] > 0.0) {
             // Perform bisection to find the root (David Eberly eq (11))
             Vector2D semi_axis_mul_pos = {semi_axis_[0] * position[0], semi_axis_[1] * position[1]};
-            double time = 0.0;
-            try {
-                time = NewtonRaphsonEllipse(semi_axis_mul_pos, semi_axis_pow2);
-            } catch (const UtilityException &exception) {
-                throw PositionInsideException();
-            }
+            const double time = NewtonRaphsonEllipse(semi_axis_mul_pos, semi_axis_pow2);
             point[0] = semi_axis_pow2[0] * position[0] / (time + semi_axis_pow2[0]);
             point[1] = semi_axis_pow2[1] * position[1] / (time + semi_axis_pow2[1]);
         } else {

@@ -67,6 +67,10 @@ public:
     class InvalidParametersException: public Exception {};
 
 private:
+    // Helper functions for NearestPointOnSurfaceToPosition
+    static double NewtonRaphsonEllipse(const Vector2D &semi_axis_mul_pos, const Vector2D &semi_axis_pow2);
+    static double NewtonRaphsonEllipsoid(const Vector3D &semi_axis_mul_pos, const Vector3D &semi_axis_pow2);
+
     // Helper function for NearestPointOnSurfaceToPosition since we assume a symmetric ellipsoid. Position "position" has to be in first quadrant.
     Vector3D NearestPointOnEllipsoidFirstQuadrant(const Vector3D &position) const;
 

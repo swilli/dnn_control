@@ -1,5 +1,4 @@
 #include "odesystem.h"
-#include "utility.h"
 #include "constants.h"
 
 ODESystem::ODESystem(SampleFactory &sample_factory, const Asteroid &asteroid, SensorSimulator &sensor_simulator, Controller &controller, const double &spacecraft_specific_impulse, const double &perturbation_noise, const double &engine_noise)

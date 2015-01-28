@@ -1,5 +1,4 @@
 #include "pagmosimulationneuralnetwork.h"
-#include "utility.h"
 #include "datacollector.h"
 #include "odeint.h"
 #include "modifiedcontrolledrungekutta.h"

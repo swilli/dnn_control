@@ -141,3 +141,4 @@ double NewtonRaphsonEllipse(const Vector2D &semi_axis_mul_pos, const Vector2D &s
     } while (error > tolerance);
     return root;
 }
+
