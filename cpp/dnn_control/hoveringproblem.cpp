@@ -81,12 +81,12 @@ void hovering_problem::objfun_impl(fitness_vector &f, const decision_vector &x) 
         //}
         //obj_val /= num_samples - 1;
 
-        // Method 4 : Compare mean distance to target point, but don't take into consideration the first half of the positions
-        const unsigned int num_samples_half = num_samples / 2;
-        for (unsigned int i = num_samples_half; i < num_samples; ++i) {
+        // Method 4 : Compare mean distance to target point, but don't take into consideration some amount of starting positions
+        const unsigned int start_index = num_samples * 0.1;
+        for (unsigned int i = start_index; i < num_samples; ++i) {
             obj_val += VectorNorm(VectorSub(position_begin, positions.at(i)));
         }
-        obj_val /= (num_samples - num_samples_half);
+        obj_val /= (num_samples - start_index);
 
         f[0] += obj_val;
     }

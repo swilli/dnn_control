@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
     TrainNeuralNetworkController();
     return 0;
 
-    //LeastSquaresPolicyIteration();
+    //TrainLeastSquaresPolicyController();
     //return 0;
 
     /*

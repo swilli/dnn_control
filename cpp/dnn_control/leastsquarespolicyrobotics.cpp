@@ -263,7 +263,7 @@ static void TestPolicy(const unsigned int &seed, const eigen::VectorXd &weights,
     std::cout << "done." << std::endl;
 }
 
-void TrainLeastSquaresPolicy(const unsigned int &random_seed) {
+void TrainLeastSquaresPolicyController(const unsigned int &random_seed) {
     Init();
     const unsigned int num_samples = 1000;
     const unsigned int num_steps = 300;
