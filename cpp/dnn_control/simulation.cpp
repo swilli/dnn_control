@@ -5,7 +5,7 @@ Simulation::Simulation(const unsigned int &random_seed) : random_seed_(random_se
     simulation_time_ = 24.0 * 60.0 * 60.0;
     interaction_interval_ = 2.5;
 
-    SampleFactory sample_factory(random_seed);
+    SampleFactory sample_factory(random_seed_);
 
     const Vector3D semi_axis = {sample_factory.SampleUniform(8000.0, 12000.0), sample_factory.SampleUniform(4000.0, 7500.0), sample_factory.SampleUniform(1000.0, 3500.0)};
     const double density = sample_factory.SampleUniform(1500.0, 3000.0);
@@ -17,6 +17,10 @@ Simulation::Simulation(const unsigned int &random_seed) : random_seed_(random_se
     spacecraft_minimum_mass_ = spacecraft_mass * 0.5;
     spacecraft_maximum_thrust_ = 21.0;
     spacecraft_specific_impulse_ = 200.0;
+    spacecraft_engine_noise_ = 0.05;
+
+    perturbation_mean_ = 1e-9;
+    perturbation_noise_ = 1e-11;
 
 #if SIM_TEST_FOR_ORBIT == 1
     // orbit
@@ -54,9 +58,6 @@ Simulation::Simulation(const unsigned int &random_seed) : random_seed_(random_se
     // no velocity
     spacecraft_velocity[0] *= -1; spacecraft_velocity[1] *= -1; spacecraft_velocity[2] *= -1;
 #endif
-
-    perturbation_noise_ = 1e-7;
-    engine_noise_ = 0.05;
 
     for (unsigned int i = 0; i < 3; ++i) {
         initial_system_state_[i] = spacecraft_position[i];

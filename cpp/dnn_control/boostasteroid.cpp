@@ -17,12 +17,12 @@ BoostAsteroid::~BoostAsteroid() {
     delete asteroid_cpp_;
 }
 
-bp::list BoostAsteroid::GravityAtPosition(const bp::list &position) const {
+bp::list BoostAsteroid::GravityAccelerationAtPosition(const bp::list &position) const {
     const Vector3D position_cpp = {bp::extract<double>(position[0]),
         bp::extract<double>(position[1]),
         bp::extract<double>(position[2])};
 
-    const Vector3D gravity = asteroid_cpp_->GravityAtPosition(position_cpp);
+    const Vector3D gravity = asteroid_cpp_->GravityAccelerationAtPosition(position_cpp);
 
     bp::list gravity_py;
     gravity_py.append(gravity[0]);
@@ -79,7 +79,7 @@ bp::list BoostAsteroid::SemiAxis() const {
 BOOST_PYTHON_MODULE(boost_asteroid)
 {
     bp::class_<BoostAsteroid>("BoostAsteroid", bp::init<const bp::list &, const double &, const bp::list &, const double &>())
-            .def("gravity_at_position", &BoostAsteroid::GravityAtPosition)
+            .def("gravity_acceleration_at_position", &BoostAsteroid::GravityAccelerationAtPosition)
             .def("angular_velocity_and_acceleration_at_time", &BoostAsteroid::AngularVelocityAndAccelerationAtTime)
             .def("nearest_point_on_surface_to_position", &BoostAsteroid::NearestPointOnSurfaceToPosition)
             .def("semi_axis", &BoostAsteroid::SemiAxis)

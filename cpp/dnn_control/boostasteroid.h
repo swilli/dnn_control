@@ -10,7 +10,7 @@ public:
     BoostAsteroid(const bp::list &semi_axis, const double &density, const bp::list &angular_velocity_xz, const double &time_bias);
     ~BoostAsteroid();
     
-    bp::list GravityAtPosition(const bp::list &position) const;
+    bp::list GravityAccelerationAtPosition(const bp::list &position) const;
 
     bp::tuple AngularVelocityAndAccelerationAtTime(const double &time) const;
 

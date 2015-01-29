@@ -33,13 +33,7 @@ protected:
 
     unsigned int random_seed_;
 
-    Asteroid asteroid_;
-
-    double simulation_time_;
-
-    double perturbation_noise_;
-
-    double engine_noise_;
+    double spacecraft_engine_noise_;
 
     double spacecraft_specific_impulse_;
 
@@ -47,7 +41,15 @@ protected:
 
     double spacecraft_maximum_thrust_;
 
+    double simulation_time_;
+
     double interaction_interval_;
+
+    double perturbation_mean_;
+
+    double perturbation_noise_;
+
+    Asteroid asteroid_;
 
     SystemState initial_system_state_;
 

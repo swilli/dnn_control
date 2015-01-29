@@ -1,141 +1,33 @@
 #include "adaptivesimulation.h"
 #include "fixedsimulation.h"
+
 #include "pagmosimulationneuralnetwork.h"
 #include "pagmosimulationfullstate.h"
+
 #include "filewriter.h"
-#include "hoveringproblem.h"
 
-#include <pagmo/src/pagmo.h>
+#include "leastsquarespolicyrobotics.h"
+#include "evolutionaryrobotics.h"
 
-
-#define FULL_STATE_CONTROLLED                                                 0
-
-#define GENERATE_SENSOR_DATA_FILES                                            0
-#define NUM_SENSOR_DATA_FILES                                                 5
-#define PATH_TO_SENSOR_DATA_FOLDER                                            "../../../data/"
-
-#define CREATE_RANDOM_VISUALIZATION_FILE                                      1
-#define PATH_TO_RANDOM_VISUALIZATION_FILE                                     "../../../results/visualization.txt"
-
-static const std::vector<double> kNeuralNetworkWeights = {1.9553e-316, 6.9137e-310, -0.93266, 4.0626, -1.2813, -0.51397, 0.94032, -2.127, -0.49828, -0.50481, -0.98998, 0.86332, 0.37184, -0.18348, -0.82298, 1.0489, -3.0394, -2.9267, 0.063299, 0.52416, -1.6857, 6.0819, 1.7586, 0.58106, -0.83634, -1.8815, 0.45007, 0.88294, 1.6995, -0.62604, -4.9109, 8.8053, -0.89257, 3.8656, -1.8332, -1.5893, 0.85274, -3.5222};
+#define PATH_TO_RANDOM_VISUALIZATION_FILE       "../../../results/visualization.txt"
 
 static const std::vector<double> kCoefficientsFullState = {0.23, 20.0, 0.0};
 
-static unsigned int ArchipelagoChampionID(pagmo::archipelago archi) {
-    double min = archi.get_island(0)->get_population().champion().f[0];
-    unsigned int idx = 0;
-    for (unsigned int i = 1; i < archi.get_size(); ++i) {
-        double cur = archi.get_island(i)->get_population().champion().f[0];
-        if (cur < min) {
-            min = cur;
-            idx = i;
-        }
-    }
-    return idx;
-}
+static const std::vector<double> kNeuralNetworkWeights = {1.377e-316, 6.9045e-310, -1.7081, -1.1781, -4.1861, -2.7489, 0.46035, -1.5998, -4.9522, 2.3298, -0.34779, -0.46235, -0.081595, -3.6957, 0.29397, -1.0165, -0.52857, 3.8154, -1.6354, 1.0388, 0.011579, 0.68291, -0.019078, 3.2934, -1.1648, 0.22767, 2.9433, -4.146, 0.77223, -2.3125, 0.11529, -1.4199, 0.38583, -0.27888, -2.2943, 0.2622, -1.4018, 1.3162};
 
-static void TrainNeuralNetworkController() {
-    // Training configuration
-    const unsigned int num_generations = 1000;
-    const unsigned int population_size = 100;
-    const unsigned int num_islands = 4;
-    const double simulation_time = 1.0 * 60.0 * 60.0;
-    const unsigned int num_evaluations = 8;
-    const unsigned int num_hidden_neurons = 5;
-
-    std::cout << std::setprecision(5);
-
-    // Buffer
-    std::vector<double> buff;
-    // We instantiate a PSO algorithm capable of coping with stochastic prolems
-    pagmo::algorithm::pso_generational algo(1,0.7298,2.05,2.05,0.05);
-
-    // This instantiates the spheres problem
-    std::cout << "Initializing ....";
-
-    pagmo::archipelago archi = pagmo::archipelago(pagmo::topology::fully_connected());
-
-    for (unsigned int j = 0;j < num_islands; ++j) {
-        std::cout << " [" << j;
-        fflush(stdout);
-        pagmo::problem::hovering_problem prob(rand(), num_evaluations, simulation_time, num_hidden_neurons);
-        //pagmo::problem::spheres prob;
-        // This instantiates a population within the original bounds (-1,1)
-        pagmo::population pop_temp(prob, population_size);
-
-        // We make the bounds larger to allow neurons weights to grow
-        prob.set_bounds(-20,20);
-
-        // We create an empty population on the new prolem (-10,10)
-        pagmo::population pop(prob);
-
-        // And we fill it up with (-1,1) individuals having zero velocities
-        pagmo::decision_vector v(prob.get_dimension(),0);
-        for (unsigned int i = 0; i < population_size; ++i) {
-            pop.push_back(pop_temp.get_individual(i).cur_x);
-            pop.set_v(i,v);
-        }
-        archi.push_back(pagmo::island(algo,pop));
-        std::cout << "]";
-        fflush(stdout);
-    }
-
-    std::cout << " done" << std::endl << "Evolving ..." << std::endl;
-    fflush(stdout);
-
-    //Evolution is here started on the archipelago
-    for (unsigned int i = 0; i< num_generations; ++i){
-        int idx = ArchipelagoChampionID(archi);
-        double best_f = archi.get_island(idx)->get_population().champion().f[0];
-
-        if (i<50) {
-            buff.push_back(best_f);
-        }
-        else {
-            (buff[i%50] = best_f);
-        }
-        double mean = 0.0;
-        mean = std::accumulate(buff.begin(),buff.end(),mean);
-        mean /= (double)buff.size();
-
-        time_t rawtime;
-        struct tm *timeinfo;
-        time(&rawtime);
-        timeinfo = localtime(&rawtime);
-
-        std::cout << std::endl << asctime(timeinfo) << "gen: "<< std::setw(12) << i << std::setw(12) <<
-                     best_f << std::setw(12) <<
-                     archi.get_island(idx)->get_population().mean_velocity() << std::setw(12) <<
-                     mean <<	 std::endl << "[";
-        const pagmo::decision_vector &weights = archi.get_island(idx)->get_population().champion().x;
-        for (unsigned int i = 0; i < weights.size() -1; ++i) {
-            std::cout << weights[i] << ", ";
-        }
-        std::cout << weights.back() << "]" << std::endl;
-        fflush(stdout);
-        archi.evolve(1);
-    }
-
-    const unsigned int idx = ArchipelagoChampionID(archi);
-    std::cout << "and the winner is ......" << "\n";
-    const pagmo::decision_vector &weights = archi.get_island(idx)->get_population().champion().x;
-    for (unsigned int i = 0; i < weights.size() -1; ++i) {
-        std::cout << weights[i] << ", ";
-    }
-    std::cout << weights.back() << "]" << std::endl;
-
-}
 
 int main(int argc, char *argv[]) {
     srand(time(0));
 
-    //TrainNeuralNetworkController();
+    TrainNeuralNetworkController();
+    return 0;
 
+    //LeastSquaresPolicyIteration();
     //return 0;
 
-
-    PaGMOSimulationNeuralNetwork sim(rand(), 6.0 * 60.0 * 60.0, 5, kNeuralNetworkWeights);
-    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > r1 = sim.Evaluate();
+    /*
+    PaGMOSimulationNeuralNetwork sim(rand(), 1.0 * 60.0 * 60.0, 5, kNeuralNetworkWeights);
+    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > r1 = sim.EvaluateAdaptive();
     const std::vector<Vector3D> &r1pos = boost::get<2>(r1);
     const std::vector<Vector3D> &r1hei = boost::get<3>(r1);
 
@@ -143,7 +35,7 @@ int main(int argc, char *argv[]) {
     writer.CreateVisualizationFile(PATH_TO_RANDOM_VISUALIZATION_FILE, 1.0 / sim.InteractionInterval(), sim.AsteroidOfSystem(), r1pos, r1hei);
 
     return 0;
-
+    */
 
     /*
     const unsigned int num_tests = 100;
@@ -214,25 +106,17 @@ int main(int argc, char *argv[]) {
     */
 
 
-
-
-
-
-
-
     /*
-    const unsigned int seed = 1446312582;
-    PaGMOSimulationFullState sim(seed, 24.0 * 60.0 * 60.0, {4.0, 20.0, 0.0});
-    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = sim.Evaluate();
+    PaGMOSimulationFullState sim(rand(), 24.0 * 60.0 * 60.0, {4.0, 20.0, 0.0});
+    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = sim.EvaluateAdaptive();
     const std::vector<Vector3D> &pos = boost::get<2>(result);
     const std::vector<Vector3D> &hei = boost::get<3>(result);
 
     FileWriter writer;
     writer.CreateVisualizationFile(PATH_TO_RANDOM_VISUALIZATION_FILE, 1.0 / sim.InteractionInterval(), sim.AsteroidOfSystem(), pos, hei);
 
-    */
     return 0;
-
+    */
 
 
     /*

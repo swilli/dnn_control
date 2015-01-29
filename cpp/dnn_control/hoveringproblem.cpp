@@ -46,7 +46,7 @@ void hovering_problem::objfun_impl(fitness_vector &f, const decision_vector &x) 
         // Neural Network simulation
         PaGMOSimulationNeuralNetwork simulation(current_seed, m_simulation_time, m_n_hidden_neurons, x);
 
-        const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = simulation.Evaluate();
+        const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = simulation.EvaluateAdaptive();
         const std::vector<double> &times = boost::get<0>(result);
         const std::vector<double> &masses = boost::get<1>(result);
         const std::vector<Vector3D> &positions = boost::get<2>(result);
@@ -60,7 +60,7 @@ void hovering_problem::objfun_impl(fitness_vector &f, const decision_vector &x) 
         double time_diff = times.back() - m_simulation_time;
         time_diff = (time_diff < 0.0 ? -time_diff : time_diff);
         if (time_diff > 0.1) {
-            obj_val += 1e4;
+            obj_val += 1e5;
         }
 
         // Method 1 : Compare start and ending position and velocity
@@ -70,16 +70,23 @@ void hovering_problem::objfun_impl(fitness_vector &f, const decision_vector &x) 
 
 
         // Method 2 : Compare mean distance to target point
-        for (unsigned int i = 1; i < num_samples; ++i) {
-            obj_val += VectorNorm(VectorSub(position_begin, positions.at(i)));
-        }
-        obj_val /= num_samples - 1;
+        //for (unsigned int i = 1; i < num_samples; ++i) {
+        //    obj_val += VectorNorm(VectorSub(position_begin, positions.at(i)));
+        //}
+        //obj_val /= num_samples - 1;
 
         // Method 3 : Compare mean distance to target point, also consider velocity
         //for (unsigned int i = 1; i < num_samples; ++i) {
         //	obj_val += VectorNorm(VectorSub(position_begin, positions.at(i))) + VectorNorm(velocities.at(i));
         //}
         //obj_val /= num_samples - 1;
+
+        // Method 4 : Compare mean distance to target point, but don't take into consideration the first half of the positions
+        const unsigned int num_samples_half = num_samples / 2;
+        for (unsigned int i = num_samples_half; i < num_samples; ++i) {
+            obj_val += VectorNorm(VectorSub(position_begin, positions.at(i)));
+        }
+        obj_val /= (num_samples - num_samples_half);
 
         f[0] += obj_val;
     }

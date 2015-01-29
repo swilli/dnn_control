@@ -21,7 +21,7 @@ PaGMOSimulationFullState::~PaGMOSimulationFullState() {
 
 }
 
-boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > PaGMOSimulationFullState::Evaluate() {
+boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > PaGMOSimulationFullState::EvaluateAdaptive() {
     typedef odeint::runge_kutta_cash_karp54<SystemState> ErrorStepper;
     typedef odeint::modified_controlled_runge_kutta<ErrorStepper> ControlledStepper;
 
@@ -48,11 +48,6 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
 
     SystemState system_state(initial_system_state_);
 
-    Vector3D perturbations_acceleration;
-    for (unsigned int i = 0; i < 3; ++i) {
-        perturbations_acceleration[i] = sample_factory.SampleNormal(0.0, perturbation_noise_);
-    }
-
     double current_time = 0.0;
     double current_time_observer = 0.0;
     Observer observer(current_time_observer);
@@ -73,9 +68,14 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
             evaluated_velocities[iteration] = velocity;
             evaluated_heights[iteration] = height;
 
+            Vector3D perturbations_acceleration;
+            for (unsigned int i = 0; i < 3; ++i) {
+                perturbations_acceleration[i] = mass * sample_factory.SampleNormal(perturbation_mean_, perturbation_noise_);
+            }
+
             const SensorData sensor_data = sensor_simulator.Simulate(system_state, height, perturbations_acceleration, current_time);
             const Vector3D thrust = controller.GetThrustForSensorData(sensor_data);
-            const double engine_noise = sample_factory.SampleNormal(0.0, engine_noise_);
+            const double engine_noise = sample_factory.SampleNormal(0.0, spacecraft_engine_noise_);
 
             ODESystem ode_system(asteroid_, perturbations_acceleration, thrust, spacecraft_specific_impulse_, spacecraft_minimum_mass_, engine_noise);
 
@@ -116,7 +116,7 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     return boost::make_tuple(evaluated_times, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities);
 }
 
-boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > PaGMOSimulationFullState::EvaluateDetailed() {
+boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > PaGMOSimulationFullState::EvaluateFixed() {
     SampleFactory sample_factory(random_seed_);
     SampleFactory sf_sensor_simulator(sample_factory.SampleRandomInteger());
 
@@ -138,11 +138,6 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
 
     SystemState system_state(initial_system_state_);
 
-    Vector3D perturbations_acceleration;
-    for (unsigned int i = 0; i < 3; ++i) {
-        perturbations_acceleration[i] = sample_factory.SampleNormal(0.0, perturbation_noise_);
-    }
-
     double current_time = 0.0;
     double engine_noise = 0.0;
     Vector3D thrust = {0.0, 0.0, 0.0};
@@ -163,9 +158,14 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
             evaluated_velocities.push_back(velocity);
             evaluated_heights.push_back(height);
 
+            Vector3D perturbations_acceleration;
+            for (unsigned int i = 0; i < 3; ++i) {
+                perturbations_acceleration[i] = mass * sample_factory.SampleNormal(perturbation_mean_, perturbation_noise_);
+            }
+
             const SensorData sensor_data = sensor_simulator.Simulate(system_state, height, perturbations_acceleration, current_time);
             thrust = controller.GetThrustForSensorData(sensor_data);
-            engine_noise = sample_factory.SampleNormal(0.0, engine_noise_);
+            engine_noise = sample_factory.SampleNormal(0.0, spacecraft_engine_noise_);
             ODESystem ode_system(asteroid_, perturbations_acceleration, thrust, spacecraft_specific_impulse_, spacecraft_minimum_mass_, engine_noise);
             for (unsigned int i = 0; i < num_steps; ++i) {
                 stepper.do_step(ode_system, system_state, current_time, fixed_step_size_);
@@ -210,11 +210,14 @@ void PaGMOSimulationFullState::Init() {
     const double time_bias = sample_factory.SampleUniform(0.0, 12.0 * 60 * 60);
     asteroid_ = Asteroid(semi_axis, density, angular_velocity_xz, time_bias);
 
-    const double spacecraft_mass = sample_factory.SampleUniform(450.0, 500.0);
-    spacecraft_minimum_mass_ = spacecraft_mass * 0.5;
+    spacecraft_mass_ = sample_factory.SampleUniform(450.0, 500.0);
+    spacecraft_minimum_mass_ = spacecraft_mass_ * 0.5;
     spacecraft_maximum_thrust_ = 21.0;
     spacecraft_specific_impulse_ = 200.0;
+    spacecraft_engine_noise_ = 0.05;
 
+    perturbation_mean_ = 1e-9;
+    perturbation_noise_ = 1e-11;
 
 #if PSFS_TEST_FOR_ORBIT == 1
     // orbit
@@ -253,12 +256,9 @@ void PaGMOSimulationFullState::Init() {
     spacecraft_velocity[0] *= -1; spacecraft_velocity[1] *= -1; spacecraft_velocity[2] *= -1;
 #endif
 
-    perturbation_noise_ = 1e-7;
-    engine_noise_ = 0.05;
-
     for (unsigned int i = 0; i < 3; ++i) {
         initial_system_state_[i] = spacecraft_position[i];
         initial_system_state_[3+i] = spacecraft_velocity[i];
     }
-    initial_system_state_[6] = spacecraft_mass;
+    initial_system_state_[6] = spacecraft_mass_;
 }

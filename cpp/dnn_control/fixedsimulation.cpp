@@ -37,10 +37,6 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
 
     SystemState system_state(initial_system_state_);
 
-    Vector3D perturbations_acceleration;
-    for (unsigned int i = 0; i < 3; ++i) {
-        perturbations_acceleration[i] = sample_factory.SampleNormal(0.0, perturbation_noise_);
-    }
 
     double current_time = 0.0;
     double engine_noise = 0.0;
@@ -62,9 +58,14 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
             evaluated_velocities.push_back(velocity);
             evaluated_heights.push_back(height);
 
+            Vector3D perturbations_acceleration;
+            for (unsigned int i = 0; i < 3; ++i) {
+                perturbations_acceleration[i] = mass * sample_factory.SampleNormal(perturbation_mean_, perturbation_noise_);
+            }
+
             const SensorData sensor_data = sensor_simulator.Simulate(system_state, height, perturbations_acceleration, current_time);
             thrust = controller.GetThrustForSensorData(sensor_data);
-            engine_noise = sample_factory.SampleNormal(0.0, engine_noise_);
+            engine_noise = sample_factory.SampleNormal(0.0, spacecraft_engine_noise_);
             ODESystem ode_system(asteroid_, perturbations_acceleration, thrust, spacecraft_specific_impulse_, spacecraft_minimum_mass_, engine_noise);
             for (unsigned int i = 0; i < num_steps; ++i) {
                 stepper.do_step(ode_system, system_state, current_time, fixed_step_size_);

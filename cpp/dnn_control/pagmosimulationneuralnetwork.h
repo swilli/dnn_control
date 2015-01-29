@@ -19,9 +19,9 @@ public:
     virtual ~PaGMOSimulationNeuralNetwork();
 
 
-    boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > Evaluate();
+    boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > EvaluateAdaptive();
 
-    boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > EvaluateDetailed();
+    boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > EvaluateFixed();
 
 
     double FixedStepSize() const;
@@ -56,21 +56,25 @@ private:
 
     double simulation_time_;
 
+    double interaction_interval_;
+
     double minimum_step_size_;
 
     double fixed_step_size_;
 
-    double engine_noise_;
-
-    double perturbation_noise_;
+    double spacecraft_engine_noise_;
 
     double spacecraft_specific_impulse_;
+
+    double spacecraft_mass_;
 
     double spacecraft_minimum_mass_;
 
     double spacecraft_maximum_thrust_;
 
-    double interaction_interval_;
+    double perturbation_mean_;
+
+    double perturbation_noise_;
 
     Asteroid asteroid_;
 
