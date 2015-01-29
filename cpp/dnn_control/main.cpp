@@ -17,7 +17,7 @@
 #define CREATE_RANDOM_VISUALIZATION_FILE                                      1
 #define PATH_TO_RANDOM_VISUALIZATION_FILE                                     "../../../results/visualization.txt"
 
-static const std::vector<double> kNeuralNetworkWeights = {-0.34105, -0.63153, -0.21013, -4.4611, 3.1548, -2.8539, -3.3003, -1.1532, 1.2563, -0.61968, 1.3154, 2.5086, 2.6536, 3.2999, 0.29513, -0.33427, 2.3713, -1.0736, 5.4118, 1.6048, -1.7567, -0.087932, -0.46124, 0.80393, 3.6069, 0.76005, -0.97259, 0.40637, -5.605, 0.99282, 0.75947, 5.5112, -1.1204, -3.2563, 0.58268, 3.6061, 0.74423, 1.0826};
+static const std::vector<double> kNeuralNetworkWeights = {1.9553e-316, 6.9137e-310, -0.93266, 4.0626, -1.2813, -0.51397, 0.94032, -2.127, -0.49828, -0.50481, -0.98998, 0.86332, 0.37184, -0.18348, -0.82298, 1.0489, -3.0394, -2.9267, 0.063299, 0.52416, -1.6857, 6.0819, 1.7586, 0.58106, -0.83634, -1.8815, 0.45007, 0.88294, 1.6995, -0.62604, -4.9109, 8.8053, -0.89257, 3.8656, -1.8332, -1.5893, 0.85274, -3.5222};
 
 static const std::vector<double> kCoefficientsFullState = {0.23, 20.0, 0.0};
 
@@ -37,9 +37,9 @@ static unsigned int ArchipelagoChampionID(pagmo::archipelago archi) {
 static void TrainNeuralNetworkController() {
     // Training configuration
     const unsigned int num_generations = 1000;
-    const unsigned int population_size = 80;
+    const unsigned int population_size = 100;
     const unsigned int num_islands = 4;
-    const double simulation_time = 6.0 * 60.0 * 60.0;
+    const double simulation_time = 1.0 * 60.0 * 60.0;
     const unsigned int num_evaluations = 8;
     const unsigned int num_hidden_neurons = 5;
 
@@ -129,9 +129,20 @@ static void TrainNeuralNetworkController() {
 int main(int argc, char *argv[]) {
     srand(time(0));
 
-    TrainNeuralNetworkController();
+    //TrainNeuralNetworkController();
 
     //return 0;
+
+
+    PaGMOSimulationNeuralNetwork sim(rand(), 6.0 * 60.0 * 60.0, 5, kNeuralNetworkWeights);
+    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > r1 = sim.Evaluate();
+    const std::vector<Vector3D> &r1pos = boost::get<2>(r1);
+    const std::vector<Vector3D> &r1hei = boost::get<3>(r1);
+
+    FileWriter writer;
+    writer.CreateVisualizationFile(PATH_TO_RANDOM_VISUALIZATION_FILE, 1.0 / sim.InteractionInterval(), sim.AsteroidOfSystem(), r1pos, r1hei);
+
+    return 0;
 
 
     /*
@@ -203,20 +214,11 @@ int main(int argc, char *argv[]) {
     */
 
 
-    /*
 
 
-    PaGMOSimulationNeuralNetwork sim(rand(), 86400.0, kNeuralNetworkWeights, 5);
-    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > r1 = sim.Evaluate();
-    const std::vector<Vector3D> &r1pos = boost::get<2>(r1);
-    const std::vector<Vector3D> &r1hei = boost::get<3>(r1);
 
-    FileWriter writer;
-    writer.CreateVisualizationFile(PATH_TO_RANDOM_VISUALIZATION_FILE, 1.0 / sim.InteractionInterval(), sim.AsteroidOfSystem(), r1pos, r1hei);
 
-    return 0;
 
-    */
 
     /*
     const unsigned int seed = 1446312582;

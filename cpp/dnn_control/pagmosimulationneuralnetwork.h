@@ -14,7 +14,7 @@ public:
     PaGMOSimulationNeuralNetwork(const unsigned int &random_seed, const double &simulation_time);
     PaGMOSimulationNeuralNetwork(const unsigned int &random_seed, const double &simulation_time, const unsigned int &hidden_nodes);
     PaGMOSimulationNeuralNetwork(const unsigned int &random_seed, const double &simulation_time, const std::vector<double> &neural_network_weights);
-    PaGMOSimulationNeuralNetwork(const unsigned int &random_seed, const double &simulation_time, const std::vector<double> &neural_network_weights, const unsigned int &hidden_nodes);
+    PaGMOSimulationNeuralNetwork(const unsigned int &random_seed, const double &simulation_time, const unsigned int &hidden_nodes, const std::vector<double> &neural_network_weights);
 
     virtual ~PaGMOSimulationNeuralNetwork();
 

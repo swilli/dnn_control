@@ -19,7 +19,7 @@ PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &r
 }
 
 PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &random_seed, const double &simulation_time, const std::vector<double> &neural_network_weights)
-    : random_seed_(random_seed),  simulation_time_(simulation_time) {
+    : random_seed_(random_seed), simulation_time_(simulation_time) {
     neural_network_hidden_nodes_ = 10;
 #if PSNN_TEST_FOR_ORBIT == 0
     neural_network_weights_ = neural_network_weights;
@@ -27,8 +27,8 @@ PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &r
     Init();
 }
 
-PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &random_seed, const double &simulation_time, const std::vector<double> &neural_network_weights, const unsigned int &hidden_nodes)
-    : random_seed_(random_seed),  neural_network_hidden_nodes_(hidden_nodes), simulation_time_(simulation_time) {
+PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &random_seed, const double &simulation_time, const unsigned int &hidden_nodes, const std::vector<double> &neural_network_weights)
+    : random_seed_(random_seed), neural_network_hidden_nodes_(hidden_nodes), simulation_time_(simulation_time) {
 #if PSNN_TEST_FOR_ORBIT == 0
     neural_network_weights_ = neural_network_weights;
 #endif
@@ -222,7 +222,7 @@ Asteroid& PaGMOSimulationNeuralNetwork::AsteroidOfSystem() {
 void PaGMOSimulationNeuralNetwork::Init() {
     minimum_step_size_ = 0.1;
     fixed_step_size_ = 0.1;
-    interaction_interval_ = 2.5;
+    interaction_interval_ = 1.0;
 
     SampleFactory sample_factory(random_seed_);
 
