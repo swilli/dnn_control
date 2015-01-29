@@ -200,7 +200,7 @@ Asteroid& PaGMOSimulationFullState::AsteroidOfSystem() {
 void PaGMOSimulationFullState::Init() {
     minimum_step_size_ = 0.1;
     fixed_step_size_ = 0.1;
-    interaction_interval_ = 2.5;
+    interaction_interval_ = 1.0;
 
     SampleFactory sample_factory(random_seed_);
 

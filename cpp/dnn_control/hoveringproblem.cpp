@@ -44,7 +44,7 @@ void hovering_problem::objfun_impl(fitness_vector &f, const decision_vector &x) 
         double obj_val = 0.0;
 
         // Neural Network simulation
-        PaGMOSimulationNeuralNetwork simulation(current_seed, m_simulation_time, x, m_n_hidden_neurons);
+        PaGMOSimulationNeuralNetwork simulation(current_seed, m_simulation_time, m_n_hidden_neurons, x);
 
         const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = simulation.Evaluate();
         const std::vector<double> &times = boost::get<0>(result);
