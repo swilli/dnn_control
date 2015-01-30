@@ -270,7 +270,7 @@ void TrainLeastSquaresPolicyController(const unsigned int &random_seed) {
     const unsigned int test_time = 24.0 * 60.0 * 60.0;
 
     const double gamma = 0.9;
-    const double epsilon = 1e-20;
+    const double epsilon = 1e-10;
 
     SampleFactory sample_factory(random_seed);
     LSPISimulator simulator(sample_factory.SampleRandomInteger());

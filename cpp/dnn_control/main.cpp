@@ -13,20 +13,19 @@
 
 static const std::vector<double> kCoefficientsFullState = {0.23, 20.0, 0.0};
 
-static const std::vector<double> kNeuralNetworkWeights = {1.377e-316, 6.9045e-310, -1.7081, -1.1781, -4.1861, -2.7489, 0.46035, -1.5998, -4.9522, 2.3298, -0.34779, -0.46235, -0.081595, -3.6957, 0.29397, -1.0165, -0.52857, 3.8154, -1.6354, 1.0388, 0.011579, 0.68291, -0.019078, 3.2934, -1.1648, 0.22767, 2.9433, -4.146, 0.77223, -2.3125, 0.11529, -1.4199, 0.38583, -0.27888, -2.2943, 0.2622, -1.4018, 1.3162};
-
+static const std::vector<double> kNeuralNetworkWeights = {1.1766e-316, 6.9253e-310, -1.9081, 0.5625, -0.84873, -2.1146, 1.1819, 2.6101, 0.90883, -0.52211, 1.8263, 3.1043, -1.8223, 9.6215, -1.6733, 0.47405, 1.6611, -0.43678, 3.0001, 2.2057, -0.50223, -0.44105, -3.1127, -1.4893, 9.3085, 0.85572, -0.43381, -1.6715, 1.9155, -0.35597, -0.5436, 6.3562, -4.5865, -0.35748, 0.42207, 7.3426, 1.6541, 1.0102};
 
 int main(int argc, char *argv[]) {
     srand(time(0));
 
-    TrainNeuralNetworkController();
-    return 0;
+    //TrainNeuralNetworkController();
+    //return 0;
 
     //TrainLeastSquaresPolicyController();
     //return 0;
 
-    /*
-    PaGMOSimulationNeuralNetwork sim(rand(), 1.0 * 60.0 * 60.0, 5, kNeuralNetworkWeights);
+
+    PaGMOSimulationNeuralNetwork sim(rand(), 24.0 * 60.0 * 60.0, 5, kNeuralNetworkWeights);
     const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > r1 = sim.EvaluateAdaptive();
     const std::vector<Vector3D> &r1pos = boost::get<2>(r1);
     const std::vector<Vector3D> &r1hei = boost::get<3>(r1);
@@ -35,7 +34,7 @@ int main(int argc, char *argv[]) {
     writer.CreateVisualizationFile(PATH_TO_RANDOM_VISUALIZATION_FILE, 1.0 / sim.InteractionInterval(), sim.AsteroidOfSystem(), r1pos, r1hei);
 
     return 0;
-    */
+
 
     /*
     const unsigned int num_tests = 100;
