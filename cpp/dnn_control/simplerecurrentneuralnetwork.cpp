@@ -1,25 +1,19 @@
-#include "feedforwardneuralnetwork.h"
+#include "simplerecurrentneuralnetwork.h"
 #include <cmath>
 
-FeedForwardNeuralNetwork::FeedForwardNeuralNetwork(const unsigned int &dim_input, const unsigned int &dim_hidden, const unsigned int &dim_output)
-    : NeuralNetwork ((dim_input + 1) * dim_hidden + (dim_hidden + 1) * dim_output), dim_input_(dim_input), dim_hidden_(dim_hidden), dim_output_(dim_output) {
+SimpleRecurrentNeuralNetwork::SimpleRecurrentNeuralNetwork(const unsigned int &dim_input, const unsigned int &dim_hidden, const unsigned int &dim_output)
+    : NeuralNetwork((dim_input + 1) * dim_hidden + (dim_hidden + 1) * dim_output), dim_input_(dim_input), dim_hidden_(dim_hidden), dim_output_(dim_output) {
 
     weights_ = std::vector<double>(size_, 0.0);
     hidden_ = std::vector<double>(dim_hidden, 0.0);
+    context_ = std::vector<double>(dim_hidden, 0.0);
 }
 
-FeedForwardNeuralNetwork::~FeedForwardNeuralNetwork() {
+SimpleRecurrentNeuralNetwork::~SimpleRecurrentNeuralNetwork() {
 
 }
 
-void FeedForwardNeuralNetwork::SetWeights(const std::vector<double> &weights) {
-    if (size_ != weights.size()) {
-        throw SizeMismatchException();
-    }
-    weights_ = weights;
-}
-
-std::vector<double> FeedForwardNeuralNetwork::Evaluate(const std::vector<double> &input) {
+std::vector<double> SimpleRecurrentNeuralNetwork::Evaluate(const std::vector<double> &input) {
     std::vector<double> output(dim_output_, 0.0);
 
     // Offset for the weights to the output nodes
@@ -36,8 +30,14 @@ std::vector<double> FeedForwardNeuralNetwork::Evaluate(const std::vector<double>
             hidden_[i] += weights_[ji] * input[j];
         }
 
+        // Add the context: the output of the hidden layer in the evaluation before
+        hidden_[i] += context_[i];
+
         // Apply the transfer function (a sigmoid with output in [0,1])
         hidden_[i] = 1.0 / (1.0 + std::exp(-hidden_[i]));
+
+        // Store the computed output value in the context
+        context_[i] = hidden_[i];
     }
 
     // generate values for the output nodes
@@ -58,3 +58,9 @@ std::vector<double> FeedForwardNeuralNetwork::Evaluate(const std::vector<double>
     return output;
 }
 
+void SimpleRecurrentNeuralNetwork::SetWeights(const std::vector<double> &weights) {
+    if (size_ != weights.size()) {
+        throw SizeMismatchException();
+    }
+    weights_ = weights;
+}

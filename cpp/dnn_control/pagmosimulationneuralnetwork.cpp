@@ -1,11 +1,10 @@
 #include "pagmosimulationneuralnetwork.h"
 #include "odeint.h"
 #include "modifiedcontrolledrungekutta.h"
+#include "odesystem.h"
 #include "samplefactory.h"
 #include "sensorsimulatorneuralnetwork.h"
 #include "controllerneuralnetwork.h"
-#include "odesystem.h"
-
 
 PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &random_seed, const double &simulation_time)
     : PaGMOSimulation(random_seed, simulation_time) {
@@ -46,6 +45,7 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
 
     SensorSimulatorNeuralNetwork sensor_simulator(sf_sensor_simulator, asteroid_, target_position_);
     ControllerNeuralNetwork controller(spacecraft_maximum_thrust_, neural_network_hidden_nodes_);
+
     if (simulation_parameters_.size()) {
         controller.SetWeights(simulation_parameters_);
     }
@@ -138,6 +138,7 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
 
     SensorSimulatorNeuralNetwork sensor_simulator(sf_sensor_simulator, asteroid_, target_position_);
     ControllerNeuralNetwork controller(spacecraft_maximum_thrust_, neural_network_hidden_nodes_);
+
     if (simulation_parameters_.size()) {
         controller.SetWeights(simulation_parameters_);
     }

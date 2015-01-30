@@ -27,6 +27,13 @@ void TrainNeuralNetworkController() {
 
     std::cout << std::setprecision(5);
 
+    std::cout << "number of generations: " << num_generations << std::endl;
+    std::cout << "population size: " << population_size << std::endl;
+    std::cout << "number of islands: " << num_islands << std::endl;
+    std::cout << "simulation time: " << simulation_time << std::endl;
+    std::cout << "number of evaluations: " << num_evaluations << std::endl;
+    std::cout << "number of hidden neurons: " << num_hidden_neurons << std::endl << std::endl;
+
     // Buffer
     std::vector<double> buff;
     // We instantiate a PSO algorithm capable of coping with stochastic prolems
@@ -84,7 +91,6 @@ void TrainNeuralNetworkController() {
         struct tm *timeinfo;
         time(&rawtime);
         timeinfo = localtime(&rawtime);
-
         std::cout << std::endl << asctime(timeinfo) << "gen: "<< std::setw(12) << i << std::setw(12) <<
                      best_f << std::setw(12) <<
                      archi.get_island(idx)->get_population().mean_velocity() << std::setw(12) <<

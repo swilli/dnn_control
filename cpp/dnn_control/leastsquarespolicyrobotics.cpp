@@ -9,6 +9,8 @@
 #include <boost/tuple/tuple.hpp>
 #include <iomanip>
 
+#define LSPI_TEST_OUTPUT_FILE   "../../../results/visualization_lspi.txt"
+
 namespace eigen = Eigen;
 
 static const double kSpacecraftMaximumThrust = 21.0;
@@ -236,7 +238,7 @@ static void TestPolicy(const unsigned int &seed, const eigen::VectorXd &weights,
     for (unsigned int i = 0; i < num_steps; ++i) {
         const Vector3D position = {state[0], state[1], state[2]};
         const Vector3D surface_point = boost::get<0>(simulator.AsteroidOfSystem().NearestPointOnSurfaceToPosition(position));
-        const Vector3D height = {position[0] - surface_point[0],position[1] - surface_point[1],position[2] - surface_point[2]};
+        const Vector3D height = {position[0] - surface_point[0], position[1] - surface_point[1], position[2] - surface_point[2]};
 
         positions.push_back(position);
         heights.push_back(height);
@@ -256,7 +258,7 @@ static void TestPolicy(const unsigned int &seed, const eigen::VectorXd &weights,
 
     std::cout << "done." << std::endl << "writing result to file ... ";
     FileWriter writer;
-    writer.CreateVisualizationFile("../../../results/states.txt", simulator.InteractionInterval(), asteroid, positions, heights);
+    writer.CreateVisualizationFile(LSPI_TEST_OUTPUT_FILE, simulator.InteractionInterval(), asteroid, positions, heights);
     std::cout << "done." << std::endl;
 }
 
