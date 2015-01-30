@@ -88,6 +88,15 @@ void hovering_problem::objfun_impl(fitness_vector &f, const decision_vector &x) 
         }
         obj_val /= (num_samples - start_index);
 
+        // Method 5 : Compare mean distance to target point, but don't take into consideration some amount of starting positions.
+        // Additionally, take into consideration total fuel consumption
+        //const unsigned int start_index = num_samples * 0.1;
+        //for (unsigned int i = start_index; i < num_samples; ++i) {
+        //   obj_val += VectorNorm(VectorSub(position_begin, positions.at(i)));
+        //}
+        //obj_val /= (num_samples - start_index);
+        //obj_val += 1.0 / (masses.back() - simulation.SpacecraftMinimumMass() + 0.001);
+
         f[0] += obj_val;
     }
     f[0] /= m_n_evaluations;

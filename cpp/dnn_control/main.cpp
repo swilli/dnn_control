@@ -1,6 +1,3 @@
-#include "adaptivesimulation.h"
-#include "fixedsimulation.h"
-
 #include "pagmosimulationneuralnetwork.h"
 #include "pagmosimulationfullstate.h"
 
@@ -26,7 +23,7 @@ int main(int argc, char *argv[]) {
 
 
     PaGMOSimulationNeuralNetwork sim(rand(), 24.0 * 60.0 * 60.0, 5, kNeuralNetworkWeights);
-    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > r1 = sim.EvaluateAdaptive();
+    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > r1 = sim.EvaluateFixed();
     const std::vector<Vector3D> &r1pos = boost::get<2>(r1);
     const std::vector<Vector3D> &r1hei = boost::get<3>(r1);
 
@@ -35,6 +32,19 @@ int main(int argc, char *argv[]) {
 
     return 0;
 
+
+
+    /*
+    PaGMOSimulationFullState sim(rand(), 24.0 * 60.0 * 60.0, {4.0, 20.0, 0.0});
+    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = sim.EvaluateFixed();
+    const std::vector<Vector3D> &pos = boost::get<2>(result);
+    const std::vector<Vector3D> &hei = boost::get<3>(result);
+
+    FileWriter writer;
+    writer.CreateVisualizationFile(PATH_TO_RANDOM_VISUALIZATION_FILE, 1.0 / sim.InteractionInterval(), sim.AsteroidOfSystem(), pos, hei);
+
+    return 0;
+    */
 
     /*
     const unsigned int num_tests = 100;
@@ -102,19 +112,6 @@ int main(int argc, char *argv[]) {
     std::cout << "mean error a-fi: " << error_a_fi / num_tests << std::endl;
     return 0;
 
-    */
-
-
-    /*
-    PaGMOSimulationFullState sim(rand(), 24.0 * 60.0 * 60.0, {4.0, 20.0, 0.0});
-    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = sim.EvaluateAdaptive();
-    const std::vector<Vector3D> &pos = boost::get<2>(result);
-    const std::vector<Vector3D> &hei = boost::get<3>(result);
-
-    FileWriter writer;
-    writer.CreateVisualizationFile(PATH_TO_RANDOM_VISUALIZATION_FILE, 1.0 / sim.InteractionInterval(), sim.AsteroidOfSystem(), pos, hei);
-
-    return 0;
     */
 
 

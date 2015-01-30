@@ -21,10 +21,13 @@ ControllerFullState::~ControllerFullState() {
 
 }
 
-void ControllerFullState::SetCoefficients(const double &coef_proportional, const double &coef_derivative, const double &coef_integral) {
-    coef_proportional_ = coef_proportional;
-    coef_derivative_ = coef_derivative;
-    coef_integral_ = coef_integral;
+void ControllerFullState::SetCoefficients(const std::vector<double> &pid_coefficients) {
+    if (pid_coefficients.size() != 3) {
+        throw SizeMismatchException();
+    }
+    coef_proportional_ = pid_coefficients[0];
+    coef_derivative_ = pid_coefficients[1];
+    coef_integral_ = pid_coefficients[2];
 }
 
 Vector3D ControllerFullState::GetThrustForSensorData(const SensorData &sensor_data) {

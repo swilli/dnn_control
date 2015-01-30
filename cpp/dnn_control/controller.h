@@ -17,6 +17,10 @@ public:
 
     unsigned int Dimensions() const;
 
+
+    class Exception {};
+    class SizeMismatchException : public Exception {};
+
 protected:
     // How large can the sensor space be
     unsigned int dimensions_;

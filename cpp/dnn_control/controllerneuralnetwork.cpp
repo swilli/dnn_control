@@ -26,7 +26,11 @@ Vector3D ControllerNeuralNetwork::GetThrustForSensorData(const SensorData &senso
 }
 
 void ControllerNeuralNetwork::SetWeights(const std::vector<double> &weights) {
-    neural_network_.SetWeights(weights);
+    try {
+        neural_network_.SetWeights(weights);
+    } catch (const FeedForwardNeuralNetwork::Exception &exception) {
+        throw SizeMismatchException();
+    }
 }
 
 unsigned int ControllerNeuralNetwork::NeuralNetworkSize() const {
