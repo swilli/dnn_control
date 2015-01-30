@@ -10,8 +10,7 @@
 
 static const std::vector<double> kCoefficientsFullState = {0.23, 20.0, 0.0};
 
-static const std::vector<double> kNeuralNetworkWeights = {1.3769e-316, 1.3769e-316, -1.4997, -1.4028, -3.6423, -4.5382, 0.46621, -1.4305, -3.0975, 2.8622, -0.31512, -0.79845, -1.0701, -3.8045, -0.020363, -0.31689, -0.21776, 2.3386, -0.45324, 1.3082, 0.17283, 0.67699, -0.11443, 3.1427, -1.2213, 0.2929, 3.1017, -5.5922, 1.8411, -1.7218, 0.27266, -1.5263, 0.49166, -0.21149, -2.2762, 0.113, -1.7788, 1.3463};
-
+static const std::vector<double> kNeuralNetworkWeights = {1.1766e-316, 6.9253e-310, -1.438, 0.43602, 0.38078, -1.2483, 1.1286, 2.4808, -0.72018, -0.50478, 1.8844, 3.1059, -1.039, 8.7869, 0.051462, 0.55927, 1.3421, -0.55188, 3.4221, 2.306, -0.34023, -0.67931, -2.6608, -0.5734, 9.5294, 0.85054, -0.50207, -1.6504, 1.9612, -0.43479, -0.57579, 5.6999, -4.6683, -0.49779, -0.074518, 7.2534, 1.4, -0.051087};
 
 int main(int argc, char *argv[]) {
     srand(time(0));
@@ -19,11 +18,12 @@ int main(int argc, char *argv[]) {
     //TrainNeuralNetworkController();
     //return 0;
 
+    //TestPolicySolution();
     TrainLeastSquaresPolicyController();
     return 0;
 
-
-    PaGMOSimulationNeuralNetwork sim(rand(), 1.0 * 60.0 * 60.0, 5, kNeuralNetworkWeights);
+    /*
+    PaGMOSimulationNeuralNetwork sim(rand(), 24.0 * 60.0 * 60.0, 5, kNeuralNetworkWeights);
     const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > r1 = sim.EvaluateAdaptive();
     const std::vector<Vector3D> &r1pos = boost::get<2>(r1);
     const std::vector<Vector3D> &r1hei = boost::get<3>(r1);
@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
 
     return 0;
 
-
+    */
 
     /*
     PaGMOSimulationFullState sim(rand(), 24.0 * 60.0 * 60.0, {4.0, 20.0, 0.0});

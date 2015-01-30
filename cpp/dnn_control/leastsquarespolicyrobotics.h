@@ -3,4 +3,6 @@
 
 void TrainLeastSquaresPolicyController(const unsigned int &random_seed=0);
 
+void TestPolicySolution();
+
 #endif // LEASTSQUARESPOLICYROBOTICS_H
