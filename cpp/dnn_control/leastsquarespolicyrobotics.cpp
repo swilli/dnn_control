@@ -115,21 +115,18 @@ static eigen::VectorXd LSTDQ(SampleFactory &sample_factory, const std::vector<Sa
 }
 
 static eigen::VectorXd LSPI(SampleFactory &sample_factory, const std::vector<Sample> &samples, const double &gamma, const double &epsilon, const eigen::VectorXd &initial_weights) {
-    unsigned int iteration = 0;
-
     eigen::VectorXd w_prime(initial_weights);
     eigen::VectorXd w;
 
-    double val_norm = 1.0;
-    while (val_norm > epsilon) {
-        std::cout << "iteration " << iteration++ << ". Norm : " << val_norm << std::endl;
+    double val_norm = 0.0;
+    unsigned int iteration = 0;
+    do {
         flush(std::cout);
         w = w_prime;
         w_prime = LSTDQ(sample_factory, samples, gamma, w);
         val_norm = (w - w_prime).norm();
-    }
-
-    std::cout << "iteration " << iteration++ << ". Norm : " << val_norm << std::endl;
+        std::cout << "iteration " << iteration++ << ". Norm : " << val_norm << std::endl;
+    } while (val_norm > epsilon);
 
     return w;
 }
