@@ -5,13 +5,13 @@
 #define NN_TYPE_ESRN      1
 #define NN_TYPE_CTRNN   2
 
-#define NEURAL_NETWORK_TYPE NN_TYPE_ESRN
+#define NEURAL_NETWORK_TYPE     NN_TYPE_FFNN
 
 #include "controller.h"
 
-#if (NEURAL_NETWORK_TYPE == NN_TYPE_FFNN)
+#if NEURAL_NETWORK_TYPE == NN_TYPE_FFNN
 #include "feedforwardneuralnetwork.h"
-#elif (NEURAL_NETWORK_TYPE == NN_TYPE_ESRN)
+#elif NEURAL_NETWORK_TYPE == NN_TYPE_ESRN
 #include "simplerecurrentneuralnetwork.h"
 #endif
 
@@ -34,9 +34,9 @@ public:
 
 private:
 
-#if (NEURAL_NETWORK_TYPE == NN_TYPE_FFNN)
+#if NEURAL_NETWORK_TYPE == NN_TYPE_FFNN
     FeedForwardNeuralNetwork neural_network_;
-#elif (NEURAL_NETWORK_TYPE == NN_TYPE_ESRN)
+#elif NEURAL_NETWORK_TYPE == NN_TYPE_ESRN
     SimpleRecurrentNeuralNetwork neural_network_;
 #endif
 };

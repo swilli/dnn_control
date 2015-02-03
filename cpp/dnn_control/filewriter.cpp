@@ -18,36 +18,36 @@ void FileWriter::CreateVisualizationFile(const std::string &path_to_file, const 
     file_.close();
 }
 
-void FileWriter::CreateSensorDataFile(const std::string &path_to_file, const double &control_frequency, const double &time, const Asteroid &asteroid, const Vector3D &spacecraft_position, const Vector3D spacecraft_velocity, const double &spacecraft_mass, const double &spacecraft_specific_impulse, const Vector3D &target_position, const std::vector<std::vector<double> > &sensor_data)
+void FileWriter::CreateSensorDataFile(const std::string &path_to_file, const unsigned int &random_seed, const double &interaction_interval, const double &simulation_time, const Asteroid &asteroid,
+                                      const SystemState &system_state, const std::vector<std::vector<double> > &sensor_data)
 {
     const Vector2D angular_velocity = asteroid.ConstructorAngularVelocitiesXZ();
     const Vector3D semi_axis = asteroid.SemiAxis();
     file_.open(path_to_file.c_str());
-    file_ << "# target position: " << target_position[0] << ", " << target_position[1] << ", " << target_position[2] << " m" << std::endl;
-    file_ << "#" << std::endl;
-    file_ << "# control frequency: " << control_frequency << " Hz" << std::endl;
-    file_ << "# simulation time: " << time << " s" << std::endl;
+    file_ << "# interaction interval: " << interaction_interval << " Hz" << std::endl;
+    file_ << "# simulation time: " << simulation_time << " s" << std::endl;
     file_ << "#" << std::endl;
     file_ << "# asteroid:" << std::endl;
     file_ << "#  density: " << asteroid.Density() << " kg/m^3" << std::endl;
     file_ << "#  time bias: " << asteroid.TimeBias() << " s" << std::endl;
     file_ << "#  semi axis: " << semi_axis[0] << ",\t" << semi_axis[1] << ",\t" << semi_axis[2] <<" m" << std::endl;
-    file_ << "#  angular velocity: " << angular_velocity[0] << ", " << angular_velocity[1] << " 1/s" << std::endl;
+    file_ << "#  angular velocity x,z: " << angular_velocity[0] << ", " << angular_velocity[1] << " 1/s" << std::endl;
     file_ << "#" << std::endl;
     file_ << "# spacecraft:" << std::endl;
-    file_ << "#  mass: " << spacecraft_mass << " kg" << std::endl;
-    file_ << "#  specific impulse: " << spacecraft_specific_impulse << " s" << std::endl;
-    file_ << "#  position: " << spacecraft_position[0] << ", " << spacecraft_position[1] << ", " << spacecraft_position[2] << " m" << std::endl;
-    file_ << "#  velocity: " << spacecraft_velocity[0] << ", " << spacecraft_velocity[1] << ", " << spacecraft_velocity[2] << " m/s" << std::endl;
+    file_ << "#  mass: " << system_state[6] << " kg" << std::endl;
+    file_ << "#  position: " << system_state[0] << ", " << system_state[1] << ", " << system_state[2] << " m" << std::endl;
+    file_ << "#  velocity: " << system_state[3] << ", " << system_state[4] << ", " << system_state[5] << " m/s" << std::endl;
     file_ << "#" << std::endl;
+
     for (unsigned int i = 0; i < sensor_data.size(); ++i) {
-        const std::vector<double> &data = sensor_data.at(i);
+        const SensorData &data = sensor_data.at(i);
         file_ << data[0];
         for (unsigned int j = 1; j < data.size(); ++j) {
             file_ << ", " << data[j];
         }
         file_ << std::endl;
     }
+
     file_.close();
 }
 

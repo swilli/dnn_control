@@ -1,7 +1,17 @@
 #include "evolutionaryrobotics.h"
 #include "hoveringproblem.h"
+#include "samplefactory.h"
 
-#include <pagmo/src/pagmo.h>
+
+
+
+// Training configuration
+static const unsigned int num_generations = 1000;
+static const unsigned int population_size = 100;
+static const unsigned int num_islands = 4;
+static const double simulation_time = 6.0 * 60.0 * 60.0;
+static const unsigned int num_evaluations = 4;
+static const unsigned int num_hidden_neurons = 5;
 
 static unsigned int ArchipelagoChampionID(pagmo::archipelago archi) {
     double min = archi.get_island(0)->get_population().champion().f[0];
@@ -17,14 +27,6 @@ static unsigned int ArchipelagoChampionID(pagmo::archipelago archi) {
 }
 
 void TrainNeuralNetworkController() {
-    // Training configuration
-    const unsigned int num_generations = 1000;
-    const unsigned int population_size = 100;
-    const unsigned int num_islands = 4;
-    const double simulation_time = 1.0 * 60.0 * 60.0;
-    const unsigned int num_evaluations = 4;
-    const unsigned int num_hidden_neurons = 5;
-
     std::cout << std::setprecision(5);
 
     std::cout << "number of generations: " << num_generations << std::endl;
@@ -74,7 +76,7 @@ void TrainNeuralNetworkController() {
 
     //Evolution is here started on the archipelago
     for (unsigned int i = 0; i< num_generations; ++i){
-        int idx = ArchipelagoChampionID(archi);
+        const unsigned int idx = ArchipelagoChampionID(archi);
         double best_f = archi.get_island(idx)->get_population().champion().f[0];
 
         if (i<50) {
@@ -95,7 +97,7 @@ void TrainNeuralNetworkController() {
                      best_f << std::setw(12) <<
                      archi.get_island(idx)->get_population().mean_velocity() << std::setw(12) <<
                      mean <<	 std::endl << "[";
-        const pagmo::decision_vector &weights = archi.get_island(idx)->get_population().champion().x;
+        const pagmo::decision_vector weights = archi.get_island(idx)->get_population().champion().x;
         for (unsigned int i = 0; i < weights.size() -1; ++i) {
             std::cout << weights[i] << ", ";
         }
@@ -105,11 +107,30 @@ void TrainNeuralNetworkController() {
     }
 
     const unsigned int idx = ArchipelagoChampionID(archi);
-    std::cout << "and the winner is ......" << "\n";
-    const pagmo::decision_vector &weights = archi.get_island(idx)->get_population().champion().x;
+    std::cout << std::endl << "and the winner is ......" << std::endl << "[";
+    const pagmo::decision_vector weights = archi.get_island(idx)->get_population().champion().x;
     for (unsigned int i = 0; i < weights.size() -1; ++i) {
         std::cout << weights[i] << ", ";
     }
     std::cout << weights.back() << "]" << std::endl;
 
+}
+
+
+void TestNeuralNetworkController(const pagmo::decision_vector &champion) {
+    const unsigned int num_tests = 1;
+    double mean_fitness = 0.0;
+
+    for (unsigned int i = 0; i < num_tests; ++i) {
+#ifdef PROBLEM_FIXED_SEED
+        pagmo::problem::hovering_problem prob(PROBLEM_FIXED_SEED, num_evaluations, simulation_time, num_hidden_neurons);
+#else
+        pagmo::problem::hovering_problem prob(rand(), num_evaluations, simulation_time, num_hidden_neurons);
+#endif
+
+        pagmo::fitness_vector fitness = prob.objfun(champion);
+        mean_fitness += fitness[0];
+    }
+    mean_fitness /= (double) num_tests;
+    std::cout << "mean fitness of chapmion: " << mean_fitness << std::endl;
 }

@@ -4,20 +4,28 @@
 #include "vector.h"
 #include "asteroid.h"
 #include "systemstate.h"
+#include "sensorsimulator.h"
 
 #include <boost/tuple/tuple.hpp>
 
-#define PS_TEST_FOR_ORBIT   0
+#define PS_ORBITAL_INITIAL_CONDITIONS   false
 
 class PaGMOSimulation {
 public:
     PaGMOSimulation(const unsigned int &random_seed, const double &simulation_time);
     virtual ~PaGMOSimulation();
 
-    virtual boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > EvaluateAdaptive() = 0;
+    virtual boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > EvaluateAdaptive() = 0;
 
-    virtual boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > EvaluateFixed() = 0;
+    virtual boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > EvaluateFixed() = 0;
 
+    virtual std::vector<SensorData> GenerateSensorDataSet();
+
+    unsigned int RandomSeed() const;
+
+    SystemState InitialSystemState() const;
+
+    double SimulationTime() const;
 
     double FixedStepSize() const;
 
@@ -27,9 +35,11 @@ public:
 
     Asteroid& AsteroidOfSystem();
 
-    double SpacecraftMass() const;
+    double SpacecraftMaximumMass() const;
 
     double SpacecraftMinimumMass() const;
+
+    double SpacecraftSpecificImpulse() const;
 
     class Exception {};
     class SizeMismatchException : public Exception {};
@@ -61,7 +71,7 @@ protected:
 
     double spacecraft_specific_impulse_;
 
-    double spacecraft_mass_;
+    double spacecraft_maximum_mass_;
 
     double spacecraft_minimum_mass_;
 

@@ -1,6 +1,4 @@
 #include "hoveringproblem.h"
-#include "pagmosimulationfullstate.h"
-#include "pagmosimulationneuralnetwork.h"
 
 namespace pagmo { namespace problem {
 
@@ -10,7 +8,6 @@ hovering_problem::hovering_problem(const unsigned int &seed, const unsigned int 
 
     set_lb(-1);
     set_ub(1);
-
 }
 
 hovering_problem::hovering_problem(const hovering_problem &other)
@@ -29,77 +26,36 @@ base_ptr hovering_problem::clone() const {
 }
 
 void hovering_problem::objfun_impl(fitness_vector &f, const decision_vector &x) const {
+#ifdef PROBLEM_FIXED_SEED
+    // Neural Network simulation
+    PaGMOSimulationNeuralNetwork simulation(PROBLEM_FIXED_SEED, m_simulation_time, m_n_hidden_neurons, x);
+    f[0] = single_fitness(simulation);
+#else
     f[0] = 0.0;
+
     // Make sure the pseudorandom sequence will always be the same
     m_drng.seed(m_seed);
 
-    // Set the ffnn weights from x, by accounting for symmetries in neurons weights
-    //set_nn_weights(x);
 
     for (unsigned int count = 0; count < m_n_evaluations; count++) {
 
         // Creates the initial conditions at random, based on the current seed
         const unsigned int current_seed = m_drng();
 
-        double obj_val = 0.0;
-
         // Neural Network simulation
         PaGMOSimulationNeuralNetwork simulation(current_seed, m_simulation_time, m_n_hidden_neurons, x);
 
-        const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = simulation.EvaluateAdaptive();
-        const std::vector<double> &times = boost::get<0>(result);
-        const std::vector<double> &masses = boost::get<1>(result);
-        const std::vector<Vector3D> &positions = boost::get<2>(result);
-        const std::vector<Vector3D> &velocities = boost::get<4>(result);
+        const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = simulation.EvaluateAdaptive();
+        const std::vector<double> &evaluated_times = boost::get<0>(result);
+        const std::vector<double> &evaluated_masses = boost::get<1>(result);
+        const std::vector<Vector3D> &evaluated_positions = boost::get<2>(result);
+        const std::vector<Vector3D> &evaluated_velocities = boost::get<4>(result);
+        const std::vector<Vector3D> &evaluated_angular_velocities = boost::get<5>(result);
 
-        const Vector3D &position_begin = positions[0];
-
-        const unsigned int num_samples = times.size();
-
-        // punish unfinished simulations (crash / out of fuel)
-        double time_diff = times.back() - m_simulation_time;
-        time_diff = (time_diff < 0.0 ? -time_diff : time_diff);
-        if (time_diff > 0.1) {
-            obj_val += 1e5;
-        }
-
-        // Method 1 : Compare start and ending position and velocity
-        // const Vector3D &position_end = positions.back();
-        // const Vector3D &velocity_end = velocities.back();
-        // obj_val += VectorNorm(VectorSub(position_begin, position_end)) + VectorNorm(velocity_end);
-
-
-        // Method 2 : Compare mean distance to target point
-        //for (unsigned int i = 1; i < num_samples; ++i) {
-        //    obj_val += VectorNorm(VectorSub(position_begin, positions.at(i)));
-        //}
-        //obj_val /= num_samples - 1;
-
-        // Method 3 : Compare mean distance to target point, also consider velocity
-        //for (unsigned int i = 1; i < num_samples; ++i) {
-        //	obj_val += VectorNorm(VectorSub(position_begin, positions.at(i))) + VectorNorm(velocities.at(i));
-        //}
-        //obj_val /= num_samples - 1;
-
-        // Method 4 : Compare mean distance to target point, but don't take into consideration some amount of starting positions
-        const unsigned int start_index = num_samples * 0.1;
-        for (unsigned int i = start_index; i < num_samples; ++i) {
-            obj_val += VectorNorm(VectorSub(position_begin, positions.at(i)));
-        }
-        obj_val /= (num_samples - start_index);
-
-        // Method 5 : Compare mean distance to target point, but don't take into consideration some amount of starting positions.
-        // Additionally, take into consideration total fuel consumption
-        //const unsigned int start_index = num_samples * 0.1;
-        //for (unsigned int i = start_index; i < num_samples; ++i) {
-        //   obj_val += VectorNorm(VectorSub(position_begin, positions.at(i)));
-        //}
-        //obj_val /= (num_samples - start_index);
-        //obj_val += 1.0 / (masses.back() - simulation.SpacecraftMinimumMass() + 0.001);
-
-        f[0] += obj_val;
+        f[0] += single_fitness(evaluated_times, evaluated_masses, evaluated_positions, evaluated_velocities, evaluated_angular_velocities);
     }
     f[0] /= m_n_evaluations;
+#endif
 }
 
 std::string hovering_problem::human_readable_extra() const {
@@ -109,6 +65,95 @@ std::string hovering_problem::human_readable_extra() const {
     oss << "\tSample Size: " << m_n_evaluations << '\n';
     oss << "\tHidden Neurons: " << m_n_hidden_neurons << '\n';
     return oss.str();
+}
+
+double hovering_problem::single_fitness(PaGMOSimulationNeuralNetwork &simulation) const {
+    double fitness = 0.0;
+
+    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = simulation.EvaluateAdaptive();
+    const std::vector<double> &evaluated_times = boost::get<0>(result);
+    const std::vector<double> &evaluated_masses = boost::get<1>(result);
+    const std::vector<Vector3D> &evaluated_positions = boost::get<2>(result);
+    const std::vector<Vector3D> &evaluated_velocities = boost::get<4>(result);
+    const std::vector<Vector3D> &evaluated_angular_velocities = boost::get<5>(result);
+
+    const unsigned int num_samples = evaluated_times.size();
+
+    // The target position
+    const Vector3D &position_begin = evaluated_positions[0];
+
+    // punish unfinished simulations (crash / out of fuel)
+    double time_diff = evaluated_times.back() - m_simulation_time;
+    time_diff = (time_diff < 0.0 ? -time_diff : time_diff);
+    if (time_diff > 0.1) {
+        fitness += 1e30;
+    }
+
+#if OBJECTIVE_FUNCTION_METHOD == OBJ_FUN_METHOD_1
+    // Method 1 : Compare start and ending position and velocity
+    const Vector3D &position_end = evaluated_positions.back();
+    const Vector3D &velocity_end = evaluated_velocities.back();
+    const Vector3D &zero_velocity = VectorSub({0.0, 0.0, 0.0}, VectorCrossProduct(evaluated_angular_velocities.back(), position_end));
+    fitness += VectorNorm(VectorSub(position_begin, position_end)) + VectorNorm(VectorSub(zero_velocity, velocity_end));
+
+#elif OBJECTIVE_FUNCTION_METHOD == OBJ_FUN_METHOD_2
+    // Method 2 : Compare mean distance to target point
+    for (unsigned int i = 1; i < num_samples; ++i) {
+        fitness += VectorNorm(VectorSub(position_begin, evaluated_positions.at(i)));
+    }
+    fitness /= num_samples - 1;
+
+#elif OBJECTIVE_FUNCTION_METHOD == OBJ_FUN_METHOD_3
+    // Method 3 : Compare mean distance to target point, also consider velocity
+    for (unsigned int i = 1; i < num_samples; ++i) {
+        const Vector3D &zero_velocity = VectorSub({0.0, 0.0, 0.0}, VectorCrossProduct(evaluated_angular_velocities.at(i), evaluated_positions.at(i)));
+        fitness += VectorNorm(VectorSub(position_begin, evaluated_positions.at(i))) + VectorNorm(VectorSub(zero_velocity, evaluated_velocities.at(i)));
+    }
+    fitness /= num_samples - 1;
+
+#elif OBJECTIVE_FUNCTION_METHOD == OBJ_FUN_METHOD_4
+    // Method 4 : Compare mean distance to target point, but don't take into consideration some amount of starting positions
+    const unsigned int start_index = num_samples * 0.1;
+    for (unsigned int i = start_index; i < num_samples; ++i) {
+        fitness += VectorNorm(VectorSub(position_begin, evaluated_positions.at(i)));
+    }
+    fitness /= (num_samples - start_index);
+
+#elif OBJECTIVE_FUNCTION_METHOD == OBJ_FUN_METHOD_5
+    // Method 5 : Compare mean distance to target point, but don't take into consideration some amount of starting positions.
+    // Additionally, take into consideration total fuel consumption
+    const unsigned int start_index = num_samples * 0.1;
+    for (unsigned int i = start_index; i < num_samples; ++i) {
+        fitness += VectorNorm(VectorSub(position_begin, evaluated_positions.at(i)));
+    }
+    fitness /= (num_samples - start_index);
+    fitness += 1.0 / (evaluated_masses.back() - simulation.SpacecraftMinimumMass() + 0.001);
+
+#elif OBJECTIVE_FUNCTION_METHOD == OBJ_FUN_METHOD_6
+    // Method 6 : Compare mean distance to target point, also consider velocity, but don't take into consideration some amount of starting positions.
+    const unsigned int start_index = num_samples * 0.01;
+    for (unsigned int i = start_index; i < num_samples; ++i) {
+        const Vector3D &zero_velocity = VectorSub({0.0, 0.0, 0.0}, VectorCrossProduct(evaluated_angular_velocities.at(i), evaluated_positions.at(i)));
+        const Vector3D &p = evaluated_positions.at(i);
+        const Vector3D &v = evaluated_velocities.at(i);
+        fitness += VectorNorm(VectorSub(position_begin, p)) + VectorNorm(VectorSub(zero_velocity, v));
+    }
+    fitness /= num_samples - start_index;
+
+#elif OBJECTIVE_FUNCTION_METHOD == OBJ_FUN_METHOD_7
+    // Method 7 : Compare mean distance to target point, also consider velocity, punish later offsets more
+    for (unsigned int i = 1; i < num_samples; ++i) {
+        const Vector3D &zero_velocity = VectorSub({0.0, 0.0, 0.0}, VectorCrossProduct(evaluated_angular_velocities.at(i), evaluated_positions.at(i)));
+        const Vector3D &p = evaluated_positions.at(i);
+        const Vector3D &v = evaluated_velocities.at(i);
+        fitness += i * (VectorNorm(VectorSub(position_begin, p)) + VectorNorm(VectorSub(zero_velocity, v)));
+    }
+    fitness /= num_samples - 1;
+
+#elif OBJECTIVE_FUNCTION_METHOD ==  OBJ_FUN_METHOD_8
+#endif
+
+    return fitness;
 }
 
 hovering_problem::~hovering_problem() {

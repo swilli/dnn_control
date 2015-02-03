@@ -13,16 +13,14 @@ PaGMOSimulationFullState::PaGMOSimulationFullState(const unsigned int &random_se
 
 PaGMOSimulationFullState::PaGMOSimulationFullState(const unsigned int &random_seed, const double &simulation_time, const std::vector<double> &pid_coefficients)
     : PaGMOSimulation(random_seed, simulation_time) {
-#if PS_TEST_FOR_ORBIT == 0
     simulation_parameters_ = pid_coefficients;
-#endif
 }
 
 PaGMOSimulationFullState::~PaGMOSimulationFullState() {
 
 }
 
-boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > PaGMOSimulationFullState::EvaluateAdaptive() {
+boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > PaGMOSimulationFullState::EvaluateAdaptive() {
     typedef odeint::runge_kutta_cash_karp54<SystemState> ErrorStepper;
     typedef odeint::modified_controlled_runge_kutta<ErrorStepper> ControlledStepper;
 
@@ -48,8 +46,12 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     std::vector<Vector3D> evaluated_positions(num_iterations + 1);
     std::vector<Vector3D> evaluated_velocities(num_iterations + 1);
     std::vector<Vector3D> evaluated_heights(num_iterations + 1);
+    std::vector<Vector3D> evaluated_angular_velocities(num_iterations + 1);
 
     SystemState system_state(initial_system_state_);
+
+    Vector3D perturbations_acceleration;
+    Vector3D thrust;
 
     double current_time = 0.0;
     double current_time_observer = 0.0;
@@ -65,19 +67,22 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
             const Vector3D &surf_pos = boost::get<0>(asteroid_.NearestPointOnSurfaceToPosition(position));
             const Vector3D &height = {position[0] - surf_pos[0], position[1] - surf_pos[1], position[2] - surf_pos[2]};
 
+            const Vector3D &angular_velocity = boost::get<0>(asteroid_.AngularVelocityAndAccelerationAtTime(current_time));
+
             evaluated_times[iteration] = current_time;
             evaluated_masses[iteration] = mass;
             evaluated_positions[iteration] = position;
             evaluated_velocities[iteration] = velocity;
             evaluated_heights[iteration] = height;
+            evaluated_angular_velocities[iteration] = angular_velocity;
 
-            Vector3D perturbations_acceleration;
             for (unsigned int i = 0; i < 3; ++i) {
                 perturbations_acceleration[i] = mass * sample_factory.SampleNormal(perturbation_mean_, perturbation_noise_);
             }
 
             const SensorData sensor_data = sensor_simulator.Simulate(system_state, height, perturbations_acceleration, current_time);
-            const Vector3D thrust = controller.GetThrustForSensorData(sensor_data);
+            thrust = controller.GetThrustForSensorData(sensor_data);
+
             const double engine_noise = sample_factory.SampleNormal(0.0, spacecraft_engine_noise_);
 
             ODESystem ode_system(asteroid_, perturbations_acceleration, thrust, spacecraft_specific_impulse_, spacecraft_minimum_mass_, engine_noise);
@@ -101,6 +106,7 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
         evaluated_positions.resize(new_size);
         evaluated_velocities.resize(new_size);
         evaluated_heights.resize(new_size);
+        evaluated_angular_velocities.resize(new_size);
     }
 
     const Vector3D &position = {system_state[0], system_state[1], system_state[2]};
@@ -110,16 +116,19 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     const Vector3D &surf_pos = boost::get<0>(asteroid_.NearestPointOnSurfaceToPosition(position));
     const Vector3D &height = {position[0] - surf_pos[0], position[1] - surf_pos[1], position[2] - surf_pos[2]};
 
+    const Vector3D &angular_velocity = boost::get<0>(asteroid_.AngularVelocityAndAccelerationAtTime(current_time_observer));
+
     evaluated_times.back() = current_time_observer;
     evaluated_masses.back() = mass;
     evaluated_positions.back() = position;
     evaluated_velocities.back() = velocity;
     evaluated_heights.back() = height;
+    evaluated_angular_velocities.back() = angular_velocity;
 
-    return boost::make_tuple(evaluated_times, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities);
+    return boost::make_tuple(evaluated_times, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities, evaluated_angular_velocities);
 }
 
-boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > PaGMOSimulationFullState::EvaluateFixed() {
+boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > PaGMOSimulationFullState::EvaluateFixed() {
     SampleFactory sample_factory(random_seed_);
     SampleFactory sf_sensor_simulator(sample_factory.SampleRandomInteger());
 
@@ -140,12 +149,14 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     std::vector<Vector3D> evaluated_positions;
     std::vector<Vector3D> evaluated_velocities;
     std::vector<Vector3D> evaluated_heights;
+    std::vector<Vector3D> evaluated_angular_velocities;
 
     SystemState system_state(initial_system_state_);
 
+    Vector3D perturbations_acceleration;
+    Vector3D thrust;
+
     double current_time = 0.0;
-    double engine_noise = 0.0;
-    Vector3D thrust = {0.0, 0.0, 0.0};
     const unsigned int num_steps = interaction_interval_ / fixed_step_size_;
     odeint::runge_kutta4<SystemState> stepper;
     try {
@@ -157,21 +168,26 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
             const Vector3D &surf_pos = boost::get<0>(asteroid_.NearestPointOnSurfaceToPosition(position));
             const Vector3D &height = {position[0] - surf_pos[0], position[1] - surf_pos[1], position[2] - surf_pos[2]};
 
+            const Vector3D &angular_velocity = boost::get<0>(asteroid_.AngularVelocityAndAccelerationAtTime(current_time));
+
             evaluated_times.push_back(current_time);
             evaluated_masses.push_back(mass);
             evaluated_positions.push_back(position);
             evaluated_velocities.push_back(velocity);
             evaluated_heights.push_back(height);
+            evaluated_angular_velocities.push_back(angular_velocity);
 
-            Vector3D perturbations_acceleration;
             for (unsigned int i = 0; i < 3; ++i) {
                 perturbations_acceleration[i] = mass * sample_factory.SampleNormal(perturbation_mean_, perturbation_noise_);
             }
 
             const SensorData sensor_data = sensor_simulator.Simulate(system_state, height, perturbations_acceleration, current_time);
             thrust = controller.GetThrustForSensorData(sensor_data);
-            engine_noise = sample_factory.SampleNormal(0.0, spacecraft_engine_noise_);
+
+            const double engine_noise = sample_factory.SampleNormal(0.0, spacecraft_engine_noise_);
+
             ODESystem ode_system(asteroid_, perturbations_acceleration, thrust, spacecraft_specific_impulse_, spacecraft_minimum_mass_, engine_noise);
+
             for (unsigned int i = 0; i < num_steps; ++i) {
                 stepper.do_step(ode_system, system_state, current_time, fixed_step_size_);
                 current_time += fixed_step_size_;
@@ -183,5 +199,5 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
         //std::cout << "The spacecraft is out of fuel." << std::endl;
     }
 
-    return boost::make_tuple(evaluated_times, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities);
+    return boost::make_tuple(evaluated_times, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities, evaluated_angular_velocities);
 }
