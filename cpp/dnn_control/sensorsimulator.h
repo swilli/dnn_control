@@ -28,10 +28,14 @@ protected:
     // How large is the sensor data space
     unsigned int dimensions_;
 
+    // The underlying random sample factory
     SampleFactory &sample_factory_;
 
     // The system's asteroid
     const Asteroid &asteroid_;
+
+    // The noise configuration for every sensor dimension
+    std::vector<double> noise_configurations_;
 };
 
 #endif // SENSORSIMULATOR_H

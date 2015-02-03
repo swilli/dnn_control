@@ -26,8 +26,8 @@ double SampleFactory::SampleUniform(const double &minimum, const double &maximum
     return minimum + (maximum - minimum) * uniform_distribution_(generator_);
 }
 
-double SampleFactory::SampleNormal(const double &mean, const double &variance) {
-    return normal_distribution_(generator_) * variance + mean;
+double SampleFactory::SampleNormal(const double &mean, const double &standard_deviation) {
+    return normal_distribution_(generator_) * standard_deviation + mean;
 }
 
 double SampleFactory::SampleSign() {

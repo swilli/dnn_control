@@ -16,7 +16,6 @@ public:
 
 private:
     Vector3D target_position_;
-    std::vector<double> noise_configuration_;
 };
 
 #endif // SENSORSIMULATORNEURALNETWORK_H

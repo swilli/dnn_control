@@ -4,7 +4,7 @@ const unsigned int SensorSimulatorAutoencoder::kDimensions = SSAE_DATA_DIMENSION
 
 SensorSimulatorAutoencoder::SensorSimulatorAutoencoder(SampleFactory &sample_factory, const Asteroid &asteroid)
     : SensorSimulator(kDimensions, sample_factory, asteroid),
-      sensor_maximum_absolute_ranges_(SSAE_DATA_DIMENSIONS, 10.0) {
+      sensor_maximum_absolute_ranges_(SSAE_DATA_DIMENSIONS, 0.025) {
 
     noise_configurations_ = std::vector<double>(SSAE_DATA_DIMENSIONS * SSAE_DATA_MULTIPLIER, 0.05);
     sensor_values_cache_ = std::vector<double>(SSAE_DATA_DIMENSIONS * SSAE_DATA_MULTIPLIER * SSAE_DATA_HISTORY, 0.0);

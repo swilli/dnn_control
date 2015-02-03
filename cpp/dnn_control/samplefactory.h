@@ -15,7 +15,7 @@ public:
     // X ~ U(minimum, maximum)
     double SampleUniform(const double &minimum, const double &maximum);
 
-    double SampleNormal(const double &mean, const double &variance);
+    double SampleNormal(const double &mean, const double &standard_deviation);
 
     // X ~ U({-1,1})
     double SampleSign();

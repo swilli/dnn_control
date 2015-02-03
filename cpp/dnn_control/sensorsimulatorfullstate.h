@@ -15,9 +15,6 @@ public:
     virtual ~SensorSimulatorFullState();
 
     virtual SensorData Simulate(const SystemState &state, const Vector3D  &, const Vector3D &, const double &time);
-
-private:
-    std::vector<double> noise_configuration_;
 };
 
 #endif // FULLSTATESENSORSIMULATOR_H
