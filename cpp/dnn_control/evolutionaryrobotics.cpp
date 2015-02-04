@@ -98,9 +98,9 @@ void TrainNeuralNetworkController() {
         struct tm *timeinfo;
         time(&rawtime);
         timeinfo = localtime(&rawtime);
-        std::cout << std::endl << asctime(timeinfo) << "gen: "<< std::setw(12) << i << std::setw(12) <<
-                     best_f << std::setw(12) <<
-                     archi.get_island(idx)->get_population().mean_velocity() << std::setw(12) <<
+        std::cout << std::endl << asctime(timeinfo) << "gen: "<< std::setw(20) << i << std::setw(20) <<
+                     best_f << std::setw(20) <<
+                     archi.get_island(idx)->get_population().mean_velocity() << std::setw(20) <<
                      mean <<	 std::endl << "[";
         const pagmo::decision_vector weights = archi.get_island(idx)->get_population().champion().x;
         for (unsigned int i = 0; i < weights.size() -1; ++i) {

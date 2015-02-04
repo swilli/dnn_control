@@ -59,7 +59,8 @@ boost::tuple<SystemState, bool> LSPISimulator::NextState(const SystemState &stat
         //std::cout << "The spacecraft is out of fuel." << std::endl;
         exception_thrown = true;
     }
-    return make_tuple(state_copy, exception_thrown);
+
+    return boost::make_tuple(state_copy, exception_thrown);
 }
 
 Asteroid &LSPISimulator::AsteroidOfSystem() {
