@@ -11,12 +11,6 @@ namespace pagmo { namespace problem {
 
 class __PAGMO_VISIBLE hovering_problem : public base_stochastic {
 public:
-    // Make sure it matches the sensor's class "kDimensions" constant
-    static const unsigned int n_sensor_dimensions = 3;
-
-    // Make sure it machtes the output of the controller's "GetThrustForSensorData" function
-    static const unsigned int n_control_dimensions = 3;
-
     hovering_problem(const unsigned int &seed=0, const unsigned int &n_evaluations=5, const double &simulation_time=60.0, const unsigned int &n_hidden_neurons=10);
 
     hovering_problem(const hovering_problem &other);

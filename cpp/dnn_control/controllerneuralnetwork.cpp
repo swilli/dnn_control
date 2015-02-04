@@ -7,12 +7,12 @@ const unsigned int ControllerNeuralNetwork::kDimensions = 3;
 #endif
 
 ControllerNeuralNetwork::ControllerNeuralNetwork(const double &maximum_thrust, const unsigned int &num_hidden)
-    : Controller(kDimensions, maximum_thrust), neural_network_(dimensions_, num_hidden, 3) {
+    : Controller(kDimensions, NeuralNetwork::TotalSizeForNetworkConfiguration({std::make_pair(kDimensions, true), std::make_pair(num_hidden , true), std::make_pair(3 , false)}), maximum_thrust), neural_network_(dimensions_, num_hidden, 3) {
 
 }
 
 ControllerNeuralNetwork::ControllerNeuralNetwork(const double &maximum_thrust, const unsigned int &num_hidden, const std::vector<double> &weights)
-    : Controller(kDimensions, maximum_thrust), neural_network_(dimensions_, num_hidden, 3) {
+    : Controller(kDimensions, NeuralNetwork::TotalSizeForNetworkConfiguration({std::make_pair(kDimensions, true), std::make_pair(num_hidden , true), std::make_pair(3 , false)}), maximum_thrust), neural_network_(dimensions_, num_hidden, 3) {
     SetWeights(weights);
 }
 
@@ -30,13 +30,9 @@ Vector3D ControllerNeuralNetwork::GetThrustForSensorData(const SensorData &senso
 }
 
 void ControllerNeuralNetwork::SetWeights(const std::vector<double> &weights) {
-    try {
+    if (weights.size() == number_of_parameters_) {
         neural_network_.SetWeights(weights);
-    } catch (const NeuralNetwork::Exception &exception) {
+    } else {
         throw SizeMismatchException();
     }
-}
-
-unsigned int ControllerNeuralNetwork::NeuralNetworkSize() const {
-    return neural_network_.Size();
 }

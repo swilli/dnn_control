@@ -14,6 +14,8 @@ public:
 
     unsigned int Size() const;
 
+    static unsigned int TotalSizeForNetworkConfiguration(const std::vector<std::pair<unsigned int, bool> > &layer_configurations);
+
     class Exception {};
     class SizeMismatchException : public Exception {};
 

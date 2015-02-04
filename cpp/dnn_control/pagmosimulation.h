@@ -17,11 +17,15 @@ public:
 
     virtual boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > EvaluateFixed() = 0;
 
+    virtual unsigned int ChromosomeSize() const = 0;
+
     virtual std::vector<SensorData> GenerateSensorDataSet();
 
-    unsigned int RandomSeed() const;
-
     SystemState InitialSystemState() const;
+
+    Asteroid& AsteroidOfSystem();
+
+    unsigned int RandomSeed() const;
 
     double SimulationTime() const;
 
@@ -30,8 +34,6 @@ public:
     double MinimumStepSize() const;
 
     double InteractionInterval() const;
-
-    Asteroid& AsteroidOfSystem();
 
     double SpacecraftMaximumMass() const;
 

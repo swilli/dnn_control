@@ -200,3 +200,7 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     return boost::make_tuple(evaluated_times, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities);
 }
 
+unsigned int PaGMOSimulationNeuralNetwork::ChromosomeSize() const {
+    return ControllerNeuralNetwork(spacecraft_maximum_thrust_, neural_network_hidden_nodes_).NumberOfParameters();
+}
+

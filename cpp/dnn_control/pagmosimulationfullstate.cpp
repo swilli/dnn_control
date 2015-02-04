@@ -8,7 +8,6 @@
 
 PaGMOSimulationFullState::PaGMOSimulationFullState(const unsigned int &random_seed, const double &simulation_time)
     : PaGMOSimulation(random_seed, simulation_time) {
-
 }
 
 PaGMOSimulationFullState::PaGMOSimulationFullState(const unsigned int &random_seed, const double &simulation_time, const std::vector<double> &pid_coefficients)
@@ -190,4 +189,8 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     }
 
     return boost::make_tuple(evaluated_times, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities);
+}
+
+unsigned int PaGMOSimulationFullState::ChromosomeSize() const {
+    return ControllerFullState(spacecraft_maximum_thrust_, target_position_).NumberOfParameters();
 }

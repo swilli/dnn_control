@@ -14,6 +14,8 @@ public:
     virtual boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > EvaluateAdaptive();
 
     virtual boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > EvaluateFixed();
+
+    virtual unsigned int ChromosomeSize() const;
 };
 
 #endif // PAGMOSIMULATIONFULLSTATE_H

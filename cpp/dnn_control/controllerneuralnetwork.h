@@ -10,8 +10,6 @@
 #include "simplerecurrentneuralnetwork.h"
 #endif
 
-#define CNN_WITH_VELOCITY   true
-
 class ControllerNeuralNetwork : public Controller {
 public:
     static const unsigned int kDimensions;
@@ -25,8 +23,6 @@ public:
     virtual Vector3D GetThrustForSensorData(const SensorData &sensor_data);
 
     void SetWeights(const std::vector<double> &weights);
-
-    unsigned int NeuralNetworkSize() const;
 
 private:
 

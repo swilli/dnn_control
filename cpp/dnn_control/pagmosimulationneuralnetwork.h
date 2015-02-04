@@ -19,6 +19,8 @@ public:
 
     virtual boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > EvaluateFixed();
 
+    virtual unsigned int ChromosomeSize() const;
+
 private:
     unsigned int neural_network_hidden_nodes_;
 };

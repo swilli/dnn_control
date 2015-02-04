@@ -18,7 +18,7 @@
 #define HP_FIXED_SEED  1990
 
 // Class ODESystem configs
-#define ODES_FUEL_ENABLED   true
+#define ODES_FUEL_ENABLED   false
 
 // Class PaGMOSimulation configs
 #define PGMOS_IC_INERTIAL_ZERO_VELOCITY      0
@@ -28,7 +28,7 @@
 #define PGMOS_INITIAL_CONDITION_TYPE  PGMOS_IC_BODY_ZERO_VELOCITY
 
 // Class SensorSimulatorNeuralNetwork configs
-#define SSNN_WITH_VELOCITY  true
+#define SSNN_WITH_VELOCITY  false
 
 // Class ControllerNeuralNetwork configs
 #define CNN_NN_TYPE_FFNN    0
@@ -36,6 +36,7 @@
 #define CNN_NN_TYPE_CTRNN   2
 
 #define CNN_NEURAL_NETWORK_TYPE     CNN_NN_TYPE_FFNN
+#define CNN_WITH_VELOCITY   false
 
 // Class SensorSimulatorAutoencoder configs
 #define SSA_DATA_DIMENSIONS  5

@@ -7,7 +7,7 @@
 static const unsigned int num_generations = 1000;
 static const unsigned int population_size = 100;
 static const unsigned int num_islands = 4;
-static const double simulation_time = 6.0 * 60.0 * 60.0;
+static const double simulation_time = 1.0 * 60.0 * 60.0;
 static const unsigned int num_evaluations = 4;
 static const unsigned int num_hidden_neurons = 5;
 

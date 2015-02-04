@@ -15,8 +15,7 @@
 
 static const std::vector<double> kCoefficientsFullState = {0.23, 20.0, 0.0};
 
-static const std::vector<double> kNeuralNetworkWeights = {0.89798, -0.415, 0.084039, 1.1862, -0.83101, 0.47893, 0.45705, 0.16327, -0.38428, 0.41187, -0.74136, 0.81434, -1.1134, 0.5856, 0.98433, 0.36189, -1.2375, 0.19966, 0.069088, -0.89775, 0.13693, -0.45325, 0.11821, 0.77681, 0.099581, 0.64476, 0.18468, 0.1509, -0.91832, -1.5505, 2.3519, 0.25251, -0.88181, 0.84041, 0.72225, 0.78651, 0.19477, -1.5432};
-
+static const std::vector<double> kNeuralNetworkWeights = {-1.0672, 0.13979, 2.1067, -0.20102, 0.52098, -0.78585, -0.066772, 0.96568, 0.018958, 0.96521, 0.6068, 0.22374, -0.41811, -0.21874, 1.5097, 0.77907, 0.48897, 0.50875, -0.14106, -0.29031, -0.38713, -0.033473, -0.11569, 0.47037, -0.12335, 0.30375, -0.10434, -0.62524, -1.1841, 0.91164, 1.1475, 0.18504, 0.083605, -0.15385, 0.75888, -0.44345, 0.12587, -0.5552};
 
 
 int main(int argc, char *argv[]) {
@@ -38,9 +37,7 @@ int main(int argc, char *argv[]) {
     //return 0;
 
 
-
-
-    PaGMOSimulationNeuralNetwork sim(1990, 24.0 * 60.0 * 60.0);
+    PaGMOSimulationNeuralNetwork sim(1990, 24.0 * 60.0 * 60.0, 5, kNeuralNetworkWeights);
     const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > r1 = sim.EvaluateAdaptive();
     const std::vector<Vector3D> &r1pos = boost::get<2>(r1);
     const std::vector<Vector3D> &r1hei = boost::get<3>(r1);
@@ -198,10 +195,8 @@ int main(int argc, char *argv[]) {
 
 
 
-    /* Copy constructor & assignment operator test */
+    /* Copy constructor & assignment operator test
 
-
-    /*
     PaGMOSimulationFullState s1(500, 86400.0);
     PaGMOSimulationFullState s2(0, 86400.0);
     s2.Evaluate();
@@ -235,8 +230,6 @@ int main(int argc, char *argv[]) {
     return 0;
 
     */
-
-
 
     return 0;
 }

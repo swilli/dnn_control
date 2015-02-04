@@ -3,7 +3,7 @@
 const unsigned int ControllerFullState::kDimensions = 8;
 
 ControllerFullState::ControllerFullState(const double &maximum_thrust, const Vector3D &target_position)
-    : Controller(kDimensions, maximum_thrust) {
+    : Controller(kDimensions, 3, maximum_thrust) {
     for (unsigned int i = 0; i < 3; ++i) {
         target_position_[i] = target_position[i];
         previous_error_[i] = 0.0;
@@ -22,7 +22,7 @@ ControllerFullState::~ControllerFullState() {
 }
 
 void ControllerFullState::SetCoefficients(const std::vector<double> &pid_coefficients) {
-    if (pid_coefficients.size() != 3) {
+    if (pid_coefficients.size() != number_of_parameters_) {
         throw SizeMismatchException();
     }
     coef_proportional_ = pid_coefficients[0];
