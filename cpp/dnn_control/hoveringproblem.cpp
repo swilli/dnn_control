@@ -26,9 +26,9 @@ base_ptr hovering_problem::clone() const {
 }
 
 void hovering_problem::objfun_impl(fitness_vector &f, const decision_vector &x) const {
-#ifdef PROBLEM_FIXED_SEED
+#ifdef HP_FIXED_SEED
     // Neural Network simulation
-    PaGMOSimulationNeuralNetwork simulation(PROBLEM_FIXED_SEED, m_simulation_time, m_n_hidden_neurons, x);
+    PaGMOSimulationNeuralNetwork simulation(HP_FIXED_SEED, m_simulation_time, m_n_hidden_neurons, x);
     f[0] = single_fitness(simulation);
 #else
     f[0] = 0.0;
@@ -88,20 +88,20 @@ double hovering_problem::single_fitness(PaGMOSimulationNeuralNetwork &simulation
         fitness += 1e30;
     }
 
-#if OBJECTIVE_FUNCTION_METHOD == OBJ_FUN_METHOD_1
+#if HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_1
     // Method 1 : Compare start and ending position and velocity
     const Vector3D &position_end = evaluated_positions.back();
     const Vector3D &velocity_end = evaluated_velocities.back();
     fitness += VectorNorm(VectorSub(position_begin, position_end)) + VectorNorm(velocity_end);
 
-#elif OBJECTIVE_FUNCTION_METHOD == OBJ_FUN_METHOD_2
+#elif HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_2
     // Method 2 : Compare mean distance to target point
     for (unsigned int i = 1; i < num_samples; ++i) {
         fitness += VectorNorm(VectorSub(position_begin, evaluated_positions.at(i)));
     }
     fitness /= num_samples - 1;
 
-#elif OBJECTIVE_FUNCTION_METHOD == OBJ_FUN_METHOD_3
+#elif HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_3
     // Method 3 : Compare mean distance to target point, also consider velocity
     for (unsigned int i = 1; i < num_samples; ++i) {
         fitness += VectorNorm(VectorSub(position_begin, evaluated_positions.at(i))) + VectorNorm(evaluated_velocities.at(i));

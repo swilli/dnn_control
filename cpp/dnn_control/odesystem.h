@@ -5,8 +5,6 @@
 #include "systemstate.h"
 #include "asteroid.h"
 
-#define ODESYS_FUEL_ENABLED true
-
 class ODESystem {
 public:
     ODESystem(const Asteroid &asteroid, const Vector3D &perturbations_acceleration, const Vector3D &thrust, const double &spacecraft_specific_impulse, const double &spacecraft_minimum_mass, const double &engine_noise);

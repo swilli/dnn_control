@@ -122,8 +122,8 @@ void TestNeuralNetworkController(const pagmo::decision_vector &champion) {
     double mean_fitness = 0.0;
 
     for (unsigned int i = 0; i < num_tests; ++i) {
-#ifdef PROBLEM_FIXED_SEED
-        pagmo::problem::hovering_problem prob(PROBLEM_FIXED_SEED, num_evaluations, simulation_time, num_hidden_neurons);
+#ifdef HP_FIXED_SEED
+        pagmo::problem::hovering_problem prob(HP_FIXED_SEED, num_evaluations, simulation_time, num_hidden_neurons);
 #else
         pagmo::problem::hovering_problem prob(rand(), num_evaluations, simulation_time, num_hidden_neurons);
 #endif

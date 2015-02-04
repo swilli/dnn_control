@@ -1,5 +1,6 @@
 #include "odesystem.h"
 #include "constants.h"
+#include "configuration.h"
 
 ODESystem::ODESystem(const Asteroid &asteroid, const Vector3D &perturbations_acceleration, const Vector3D &thrust, const double &spacecraft_specific_impulse, const double &spacecraft_minimum_mass, const double &engine_noise)
     : asteroid_(asteroid) {
@@ -74,7 +75,7 @@ void ODESystem::operator ()(const SystemState &state, SystemState &d_state_dt, c
                 - coriolis_acceleration[i] - euler_acceleration[i] - centrifugal_acceleration[i];
     }
 
-#if ODESYS_FUEL_ENABLED
+#if ODES_FUEL_ENABLED
     d_state_dt[6] = -sqrt(thrust_[0] * thrust_[0] + thrust_[1] * thrust_[1] + thrust_[2] * thrust_[2]) / ((spacecraft_specific_impulse_ + spacecraft_specific_impulse_ * engine_noise_) * kEarthAcceleration);
 #else
     d_state_dt[6] = 0.0;

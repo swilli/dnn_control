@@ -2,21 +2,10 @@
 #define HOVERINGPROBLEM_H
 
 #include "pagmosimulationneuralnetwork.h"
+#include "configuration.h"
 
 #include <pagmo/src/problem/base_stochastic.h>
 #include <boost/serialization/access.hpp>
-
-#define OBJ_FUN_METHOD_1    1   // Compare start and ending position and velocity.
-#define OBJ_FUN_METHOD_2    2   // Compare mean distance to target point.
-#define OBJ_FUN_METHOD_3    3   // Compare mean distance to target point, also consider velocity.
-#define OBJ_FUN_METHOD_4    4   // Compare mean distance to target point, but don't take into consideration some amount of starting positions.
-#define OBJ_FUN_METHOD_5    5   // Compare mean distance to target point, but don't take into consideration some amount of starting positions. Additionally, take into consideration total fuel consumption.
-#define OBJ_FUN_METHOD_6    6   // Compare mean distance to target point, also consider velocity, but don't take into consideration some amount of starting positions.
-#define OBJ_FUN_METHOD_7    7   // Compare mean distance to target point, also consider velocity, punish later offsets more.
-
-#define OBJECTIVE_FUNCTION_METHOD  OBJ_FUN_METHOD_3
-
-#define PROBLEM_FIXED_SEED  1990
 
 namespace pagmo { namespace problem {
 

@@ -1,9 +1,7 @@
 #include "asteroid.h"
 #include "constants.h"
 
-#include <algorithm>
-#include <set>
-#include <math.h>
+#include <cmath>
 #include <gsl/gsl_poly.h>
 #include <gsl/gsl_sf_ellint.h>
 #include <gsl/gsl_sf_elljac.h>

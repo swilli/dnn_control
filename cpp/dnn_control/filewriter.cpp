@@ -19,7 +19,7 @@ void FileWriter::CreateVisualizationFile(const std::string &path_to_file, const 
 }
 
 void FileWriter::CreateSensorDataFile(const std::string &path_to_file, const unsigned int &random_seed, const double &interaction_interval, const double &simulation_time, const Asteroid &asteroid,
-                                      const SystemState &system_state, const std::vector<std::vector<double> > &sensor_data)
+                                      const SystemState &system_state, const std::vector<SensorData> &sensor_data)
 {
     const Vector2D angular_velocity = asteroid.ConstructorAngularVelocitiesXZ();
     const Vector3D semi_axis = asteroid.SemiAxis();

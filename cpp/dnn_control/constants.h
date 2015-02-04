@@ -1,7 +1,7 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#include <math.h>
+#include <cmath>
 
 // G
 const double kGravitationalConstant = 6.6695e-11;  // [Nm^2/kg^2]

@@ -27,7 +27,6 @@
 
 #include "asteroid.h"
 
-const static double kMaximumTimeStep = 86400.0;
 const static double kMaximumCollisionTimeStep = 0.1;
 
 namespace boost {
@@ -313,7 +312,6 @@ public:
                 dt *= static_cast<value_type>(9)/static_cast<value_type>(10) * pow( m_max_rel_error ,
                                                                                     static_cast<value_type>(-1) / m_stepper.stepper_order() );
 
-                dt = (dt > kMaximumTimeStep ? kMaximumTimeStep : dt);
                 return success;
             }
             else

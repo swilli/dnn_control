@@ -8,12 +8,6 @@
 
 #include <boost/tuple/tuple.hpp>
 
-#define PS_IC_INERTIAL_ZERO_VELOCITY      0
-#define PS_IC_BODY_ZERO_VELOCITY          1
-#define PS_IC_INERTIAL_ORBITAL_VELOCITY   2
-
-#define PS_INITIAL_CONDITION_TYPE  PS_IC_BODY_ZERO_VELOCITY
-
 class PaGMOSimulation {
 public:
     PaGMOSimulation(const unsigned int &random_seed, const double &simulation_time);

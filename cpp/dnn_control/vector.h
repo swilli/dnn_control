@@ -2,7 +2,7 @@
 #define VECTOR_H
 
 #include <boost/array.hpp>
-#include <math.h>
+#include <cmath>
 #include <sstream>
 
 typedef boost::array<double,3> Vector3D;

@@ -3,11 +3,6 @@
 
 #include "sensorsimulator.h"
 
-#define SSAE_DATA_DIMENSIONS  5
-#define SSAE_DATA_MULTIPLIER  3
-#define SSAE_DATA_HISTORY     3
-
-
 class SensorSimulatorAutoencoder : public SensorSimulator {
 public:
     static const unsigned int kDimensions;

@@ -4,7 +4,6 @@
 #include "vector.h"
 
 #include <boost/tuple/tuple.hpp>
-#include <map>
 
 class Asteroid {
     /*

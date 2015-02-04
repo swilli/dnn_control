@@ -2,6 +2,7 @@
 #define SAMPLEFACTORY_H
 
 #include "vector.h"
+
 #include <boost/random.hpp>
 
 class SampleFactory {

@@ -3,6 +3,7 @@
 #include "odeint.h"
 #include "modifiedcontrolledrungekutta.h"
 #include "odesystem.h"
+#include "configuration.h"
 
 // Include here sensor simulator for which you want to produce sensor data
 #include "sensorsimulatorautoencoder.h"
@@ -144,7 +145,7 @@ void PaGMOSimulation::Init() {
     perturbation_mean_ = 1e-9;
     perturbation_noise_ = 1e-11;
 
-#if PS_INITIAL_CONDITION_TYPE == PS_IC_INERTIAL_ORBITAL_VELOCITY
+#if PGMOS_INITIAL_CONDITION_TYPE == PGMOS_IC_INERTIAL_ORBITAL_VELOCITY
     // higher for orbit, so we don't crash into the asteroid
     const Vector3D spacecraft_position = sample_factory.SamplePointOutSideEllipsoid(semi_axis, 2.0, 4.0);
 #else
@@ -155,7 +156,7 @@ void PaGMOSimulation::Init() {
     target_position_ = spacecraft_position;
 
 
-#if PS_INITIAL_CONDITION_TYPE == PS_IC_INERTIAL_ORBITAL_VELOCITY
+#if PGMOS_INITIAL_CONDITION_TYPE == PGMOS_IC_INERTIAL_ORBITAL_VELOCITY
     // orbital velocity in inertial frame
     const Vector3D angular_velocity = boost::get<0>(asteroid_.AngularVelocityAndAccelerationAtTime(0.0));
     Vector3D spacecraft_velocity = VectorCrossProduct(angular_velocity, spacecraft_position);
@@ -178,14 +179,14 @@ void PaGMOSimulation::Init() {
     spacecraft_velocity[1] = -spacecraft_velocity[1] + orth_pos[1] * magn_orbital_vel;
     spacecraft_velocity[2] = -spacecraft_velocity[2] + orth_pos[2] * magn_orbital_vel;
 
-#elif PS_INITIAL_CONDITION_TYPE == PS_IC_INERTIAL_ZERO_VELOCITY
+#elif PGMOS_INITIAL_CONDITION_TYPE == PGMOS_IC_INERTIAL_ZERO_VELOCITY
     // zero velocity in inertial frame
     const Vector3D angular_velocity = boost::get<0>(asteroid_.AngularVelocityAndAccelerationAtTime(0.0));
     Vector3D spacecraft_velocity = VectorCrossProduct(angular_velocity, spacecraft_position);
 
     spacecraft_velocity[0] *= -1; spacecraft_velocity[1] *= -1; spacecraft_velocity[2] *= -1;
 
-#elif PS_INITIAL_CONDITION_TYPE == PS_IC_BODY_ZERO_VELOCITY
+#elif PGMOS_INITIAL_CONDITION_TYPE == PGMOS_IC_BODY_ZERO_VELOCITY
     // zero velocity in body frame
     const Vector3D spacecraft_velocity = {0.0, 0.0, 0.0};
 #endif

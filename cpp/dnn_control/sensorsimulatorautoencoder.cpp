@@ -1,13 +1,14 @@
 #include "sensorsimulatorautoencoder.h"
+#include "configuration.h"
 
-const unsigned int SensorSimulatorAutoencoder::kDimensions = SSAE_DATA_DIMENSIONS * SSAE_DATA_MULTIPLIER * SSAE_DATA_HISTORY;
+const unsigned int SensorSimulatorAutoencoder::kDimensions = SSA_DATA_DIMENSIONS * SSA_DATA_MULTIPLIER * SSA_DATA_HISTORY;
 
 SensorSimulatorAutoencoder::SensorSimulatorAutoencoder(SampleFactory &sample_factory, const Asteroid &asteroid)
     : SensorSimulator(kDimensions, sample_factory, asteroid),
-      sensor_maximum_absolute_ranges_(SSAE_DATA_DIMENSIONS, 0.025) {
+      sensor_maximum_absolute_ranges_(SSA_DATA_DIMENSIONS, 0.025) {
 
-    noise_configurations_ = std::vector<double>(SSAE_DATA_DIMENSIONS * SSAE_DATA_MULTIPLIER, 0.05);
-    sensor_values_cache_ = std::vector<double>(SSAE_DATA_DIMENSIONS * SSAE_DATA_MULTIPLIER * SSAE_DATA_HISTORY, 0.0);
+    noise_configurations_ = std::vector<double>(SSA_DATA_DIMENSIONS * SSA_DATA_MULTIPLIER, 0.05);
+    sensor_values_cache_ = std::vector<double>(SSA_DATA_DIMENSIONS * SSA_DATA_MULTIPLIER * SSA_DATA_HISTORY, 0.0);
     cache_index_ = 0;
     first_simulation_ = true;
 }
@@ -25,7 +26,7 @@ void SensorSimulatorAutoencoder::Reset() {
 SensorData SensorSimulatorAutoencoder::Simulate(const SystemState &state, const Vector3D &height, const Vector3D &perturbations_acceleration, const double &time) {
     SensorData sensor_data(dimensions_, 0.0);
 
-    std::vector<double> sensor_seed(SSAE_DATA_DIMENSIONS, 0.0);
+    std::vector<double> sensor_seed(SSA_DATA_DIMENSIONS, 0.0);
 
     const Vector3D position = {state[0], state[1], state[2]};
     const Vector3D velocity = {state[3], state[4], state[5]};
@@ -73,9 +74,9 @@ SensorData SensorSimulatorAutoencoder::Simulate(const SystemState &state, const 
     }
 
     // Every initial sensor value gets tripled and added with normal distributed noise
-    std::vector<double> sensor_duplicates(SSAE_DATA_DIMENSIONS * SSAE_DATA_MULTIPLIER, 0.0);
-    for (unsigned int i = 0; i < SSAE_DATA_DIMENSIONS * SSAE_DATA_MULTIPLIER; ++i) {
-        const unsigned int sensor_data_index = i % SSAE_DATA_DIMENSIONS;
+    std::vector<double> sensor_duplicates(SSA_DATA_DIMENSIONS * SSA_DATA_MULTIPLIER, 0.0);
+    for (unsigned int i = 0; i < SSA_DATA_DIMENSIONS * SSA_DATA_MULTIPLIER; ++i) {
+        const unsigned int sensor_data_index = i % SSA_DATA_DIMENSIONS;
         sensor_duplicates[i] = sensor_seed[sensor_data_index] + sensor_seed[sensor_data_index] * sample_factory_.SampleNormal(0.0, noise_configurations_.at(i));
 
         // Normalize between [0,1]
@@ -91,27 +92,27 @@ SensorData SensorSimulatorAutoencoder::Simulate(const SystemState &state, const 
     if (first_simulation_) {
         first_simulation_ = false;
         // Assume spacecraft was standing still at current location with no sensor noise...
-        for (unsigned int i = 0; i < SSAE_DATA_DIMENSIONS * SSAE_DATA_MULTIPLIER * SSAE_DATA_HISTORY; ++i) {
-            sensor_values_cache_[i] = sensor_duplicates[i % (SSAE_DATA_DIMENSIONS * SSAE_DATA_MULTIPLIER)];
+        for (unsigned int i = 0; i < SSA_DATA_DIMENSIONS * SSA_DATA_MULTIPLIER * SSA_DATA_HISTORY; ++i) {
+            sensor_values_cache_[i] = sensor_duplicates[i % (SSA_DATA_DIMENSIONS * SSA_DATA_MULTIPLIER)];
         }
     } else {
        // write new sensor values at correct place
         const int cache_index = cache_index_;
-        int start_index = cache_index - (SSAE_DATA_DIMENSIONS * SSAE_DATA_MULTIPLIER);
+        int start_index = cache_index - (SSA_DATA_DIMENSIONS * SSA_DATA_MULTIPLIER);
         if (start_index < 0) {
-            start_index = (SSAE_DATA_DIMENSIONS*SSAE_DATA_MULTIPLIER*SSAE_DATA_HISTORY) - (SSAE_DATA_DIMENSIONS * SSAE_DATA_MULTIPLIER);
+            start_index = (SSA_DATA_DIMENSIONS*SSA_DATA_MULTIPLIER*SSA_DATA_HISTORY) - (SSA_DATA_DIMENSIONS * SSA_DATA_MULTIPLIER);
         }
-        for (unsigned int i = 0; i < SSAE_DATA_DIMENSIONS * SSAE_DATA_MULTIPLIER; ++i) {
+        for (unsigned int i = 0; i < SSA_DATA_DIMENSIONS * SSA_DATA_MULTIPLIER; ++i) {
             sensor_values_cache_[start_index +i] = sensor_duplicates[i];
         }
     }
 
-    for (unsigned int i = 0; i < SSAE_DATA_DIMENSIONS*SSAE_DATA_MULTIPLIER*SSAE_DATA_HISTORY; ++i) {
-        sensor_data[(SSAE_DATA_DIMENSIONS*SSAE_DATA_MULTIPLIER*SSAE_DATA_HISTORY - 1) - i] = sensor_values_cache_[(cache_index_ + i) % (SSAE_DATA_DIMENSIONS*SSAE_DATA_MULTIPLIER*SSAE_DATA_HISTORY)];
+    for (unsigned int i = 0; i < SSA_DATA_DIMENSIONS*SSA_DATA_MULTIPLIER*SSA_DATA_HISTORY; ++i) {
+        sensor_data[(SSA_DATA_DIMENSIONS*SSA_DATA_MULTIPLIER*SSA_DATA_HISTORY - 1) - i] = sensor_values_cache_[(cache_index_ + i) % (SSA_DATA_DIMENSIONS*SSA_DATA_MULTIPLIER*SSA_DATA_HISTORY)];
     }
 
-    cache_index_ += SSAE_DATA_DIMENSIONS*SSAE_DATA_MULTIPLIER;
-    if (cache_index_ == (SSAE_DATA_DIMENSIONS*SSAE_DATA_MULTIPLIER*SSAE_DATA_HISTORY)) {
+    cache_index_ += SSA_DATA_DIMENSIONS*SSA_DATA_MULTIPLIER;
+    if (cache_index_ == (SSA_DATA_DIMENSIONS*SSA_DATA_MULTIPLIER*SSA_DATA_HISTORY)) {
         cache_index_ = 0;
     }
 
