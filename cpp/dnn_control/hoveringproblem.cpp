@@ -2,8 +2,6 @@
 
 namespace pagmo { namespace problem {
 
-static unsigned int constructor_calls = 0;
-
 hovering_problem::hovering_problem(const unsigned int &seed, const unsigned int &n_evaluations, const double &simulation_time, const unsigned int &n_hidden_neurons)
     : base_stochastic(PaGMOSimulationNeuralNetwork(0, 0.0, n_hidden_neurons).ChromosomeSize(), seed),
       m_n_evaluations(n_evaluations), m_n_hidden_neurons(n_hidden_neurons), m_simulation_time(simulation_time) {

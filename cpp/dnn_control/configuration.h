@@ -1,6 +1,9 @@
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
 
+#include <iostream>
+#include <iomanip>
+
 /*
  * GLOBAL CONFIGURATION FILE FOR ALL AVAILABLE COMPILE TIME OPTIONS
  */
@@ -18,7 +21,7 @@
 #define HP_FIXED_SEED  1990
 
 // Class ODESystem configs
-#define ODES_FUEL_ENABLED   false
+#define ODES_FUEL_ENABLED   true
 
 // Class PaGMOSimulation configs
 #define PGMOS_IC_INERTIAL_ZERO_VELOCITY      0
@@ -42,5 +45,29 @@
 #define SSA_DATA_DIMENSIONS  5
 #define SSA_DATA_MULTIPLIER  3
 #define SSA_DATA_HISTORY     3
+
+// Output configs
+#define PATH_TO_RANDOM_VISUALIZATION_FILE   "../../../results/visualization.txt"
+#define PATH_TO_SENSOR_DATA_FOLDER  "/home/willist/Documents/data/"
+
+inline void Configuration() {
+    std::cout << "PaGMOSimulation global configuration" << std::endl;
+    std::cout << "HP_OBJECTIVE_FUNCTION_METHOD   " << HP_OBJECTIVE_FUNCTION_METHOD << std::endl;
+#ifdef HP_FIXED_SEED
+    std::cout << "HP_FIXED_SEED   " << HP_FIXED_SEED << std::endl;
+#else
+    std::cout << "HP_FIXED_SEED   undefined" << std::endl;
+#endif
+    std::cout << "ODES_FUEL_ENABLED   " << ODES_FUEL_ENABLED << std::endl;
+    std::cout << "PGMOS_INITIAL_CONDITION_TYPE   " << PGMOS_INITIAL_CONDITION_TYPE << std::endl;
+    std::cout << "SSNN_WITH_VELOCITY   " << SSNN_WITH_VELOCITY << std::endl;
+    std::cout << "CNN_NEURAL_NETWORK_TYPE   " << CNN_NEURAL_NETWORK_TYPE << std::endl;
+    std::cout << "CNN_WITH_VELOCITY   " << CNN_WITH_VELOCITY << std::endl;
+    std::cout << "SSA_DATA_DIMENSIONS   " << SSA_DATA_DIMENSIONS << std::endl;
+    std::cout << "SSA_DATA_MULTIPLIER   " << SSA_DATA_MULTIPLIER << std::endl;
+    std::cout << "SSA_DATA_HISTORY   " << SSA_DATA_HISTORY << std::endl;
+    std::cout << "PATH_TO_RANDOM_VISUALIZATION_FILE   " << PATH_TO_RANDOM_VISUALIZATION_FILE << std::endl;
+    std::cout << "PATH_TO_SENSOR_DATA_FOLDER   " << PATH_TO_SENSOR_DATA_FOLDER << std::endl;
+}
 
 #endif // CONFIGURATION_H

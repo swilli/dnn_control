@@ -1,3 +1,4 @@
+#include "configuration.h"
 #include "pagmosimulationneuralnetwork.h"
 #include "pagmosimulationfullstate.h"
 
@@ -8,17 +9,13 @@
 
 #include "sensordatagenerator.h"
 
-#define PATH_TO_RANDOM_VISUALIZATION_FILE                     "../../../results/visualization.txt"
-#define PATH_TO_SENSOR_DATA_FOLDER                            "/home/willist/Documents/data/"
-
-
-
 static const std::vector<double> kCoefficientsFullState = {0.23, 20.0, 0.0};
 
-static const std::vector<double> kNeuralNetworkWeights = {-1.0672, 0.13979, 2.1067, -0.20102, 0.52098, -0.78585, -0.066772, 0.96568, 0.018958, 0.96521, 0.6068, 0.22374, -0.41811, -0.21874, 1.5097, 0.77907, 0.48897, 0.50875, -0.14106, -0.29031, -0.38713, -0.033473, -0.11569, 0.47037, -0.12335, 0.30375, -0.10434, -0.62524, -1.1841, 0.91164, 1.1475, 0.18504, 0.083605, -0.15385, 0.75888, -0.44345, 0.12587, -0.5552};
+static const std::vector<double> kNeuralNetworkWeights = {-0.2434, -0.047018, -0.46219, 0.65756, 0.7051, -1.2172, 0.78654, -0.29724, -0.037517, 0.038738, -0.97016, 1.1793, 0.01815, -0.34686, 0.41471, -0.016628, 1.5745, -0.53104, -0.69594, 0.017365, 0.75491, 0.48443, -0.54952, -0.42715, 0.28907, -0.76067, 0.060973, -0.16548, -0.31261, -0.51953, 1.7732, -0.47567, -0.22854, 0.2201, -0.3684, 0.0028005, 1.0421, -0.17154};
 
 
 int main(int argc, char *argv[]) {
+    Configuration();
     srand(time(0));
 
     //TestNeuralNetworkController(kNeuralNetworkWeights);
