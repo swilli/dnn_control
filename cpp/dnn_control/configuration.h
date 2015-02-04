@@ -31,7 +31,7 @@
 #define PGMOS_INITIAL_CONDITION_TYPE  PGMOS_IC_BODY_ZERO_VELOCITY
 
 // Class SensorSimulatorNeuralNetwork configs
-#define SSNN_WITH_VELOCITY  false
+#define SSNN_WITH_VELOCITY  true
 
 // Class ControllerNeuralNetwork configs
 #define CNN_NN_TYPE_FFNN    0
@@ -39,16 +39,17 @@
 #define CNN_NN_TYPE_CTRNN   2
 
 #define CNN_NEURAL_NETWORK_TYPE     CNN_NN_TYPE_FFNN
-#define CNN_WITH_VELOCITY   false
+#define CNN_WITH_VELOCITY   true
 
 // Class SensorSimulatorAutoencoder configs
 #define SSA_DATA_DIMENSIONS  5
 #define SSA_DATA_MULTIPLIER  3
 #define SSA_DATA_HISTORY     3
 
-// Output configs
-#define PATH_TO_RANDOM_VISUALIZATION_FILE   "../../../results/visualization.txt"
-#define PATH_TO_SENSOR_DATA_FOLDER  "/home/willist/Documents/data/"
+
+static inline std::string ToString(const bool &value) {
+    return (value ? "true" : "false");
+}
 
 inline void Configuration() {
     std::cout << "PaGMOSimulation global configuration" << std::endl;
@@ -58,16 +59,15 @@ inline void Configuration() {
 #else
     std::cout << "HP_FIXED_SEED   undefined" << std::endl;
 #endif
-    std::cout << "ODES_FUEL_ENABLED   " << ODES_FUEL_ENABLED << std::endl;
+    std::cout << "ODES_FUEL_ENABLED   " << ToString(ODES_FUEL_ENABLED) << std::endl;
     std::cout << "PGMOS_INITIAL_CONDITION_TYPE   " << PGMOS_INITIAL_CONDITION_TYPE << std::endl;
-    std::cout << "SSNN_WITH_VELOCITY   " << SSNN_WITH_VELOCITY << std::endl;
+    std::cout << "SSNN_WITH_VELOCITY   " << ToString(SSNN_WITH_VELOCITY) << std::endl;
     std::cout << "CNN_NEURAL_NETWORK_TYPE   " << CNN_NEURAL_NETWORK_TYPE << std::endl;
-    std::cout << "CNN_WITH_VELOCITY   " << CNN_WITH_VELOCITY << std::endl;
+    std::cout << "CNN_WITH_VELOCITY   " << ToString(CNN_WITH_VELOCITY) << std::endl;
     std::cout << "SSA_DATA_DIMENSIONS   " << SSA_DATA_DIMENSIONS << std::endl;
     std::cout << "SSA_DATA_MULTIPLIER   " << SSA_DATA_MULTIPLIER << std::endl;
     std::cout << "SSA_DATA_HISTORY   " << SSA_DATA_HISTORY << std::endl;
-    std::cout << "PATH_TO_RANDOM_VISUALIZATION_FILE   " << PATH_TO_RANDOM_VISUALIZATION_FILE << std::endl;
-    std::cout << "PATH_TO_SENSOR_DATA_FOLDER   " << PATH_TO_SENSOR_DATA_FOLDER << std::endl;
+    std::cout << std::endl;
 }
 
 #endif // CONFIGURATION_H

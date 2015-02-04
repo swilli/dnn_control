@@ -1,7 +1,7 @@
 #include "evolutionaryrobotics.h"
 #include "hoveringproblem.h"
 #include "samplefactory.h"
-
+#include "configuration.h"
 
 // Training configuration
 static const unsigned int num_generations = 1000;
@@ -9,7 +9,7 @@ static const unsigned int population_size = 100;
 static const unsigned int num_islands = 4;
 static const double simulation_time = 1.0 * 60.0 * 60.0;
 static const unsigned int num_evaluations = 4;
-static const unsigned int num_hidden_neurons = 5;
+static const unsigned int num_hidden_neurons = 6;
 
 
 
@@ -27,13 +27,18 @@ static unsigned int ArchipelagoChampionID(pagmo::archipelago archi) {
 }
 
 void TrainNeuralNetworkController() {
-    std::cout << std::setprecision(5);
+    std::cout << std::setprecision(10);
 
+    std::cout << "Evolutionary training configuration" << std::endl;
     std::cout << "number of generations: " << num_generations << std::endl;
     std::cout << "population size: " << population_size << std::endl;
     std::cout << "number of islands: " << num_islands << std::endl;
     std::cout << "simulation time: " << simulation_time << std::endl;
+#ifdef HP_FIXED_SEED
+    std::cout << "number of evaluations: 1" << std::endl;
+#else
     std::cout << "number of evaluations: " << num_evaluations << std::endl;
+#endif
     std::cout << "number of hidden neurons: " << num_hidden_neurons << std::endl << std::endl;
 
     // Buffer
@@ -117,20 +122,23 @@ void TrainNeuralNetworkController() {
 }
 
 
-void TestNeuralNetworkController(const pagmo::decision_vector &champion) {
-    const unsigned int num_tests = 1;
+void TestNeuralNetworkController(const pagmo::decision_vector &controller_parameters) {
     double mean_fitness = 0.0;
 
-    for (unsigned int i = 0; i < num_tests; ++i) {
-#ifdef HP_FIXED_SEED
-        pagmo::problem::hovering_problem prob(HP_FIXED_SEED, num_evaluations, simulation_time, num_hidden_neurons);
-#else
-        pagmo::problem::hovering_problem prob(rand(), num_evaluations, simulation_time, num_hidden_neurons);
-#endif
+    SampleFactory sample_factory;
 
-        pagmo::fitness_vector fitness = prob.objfun(champion);
+#ifdef HP_FIXED_SEED
+    mean_fitness = pagmo::problem::hovering_problem(sample_factory.SampleRandomInteger(), num_evaluations, simulation_time, num_hidden_neurons).objfun(controller_parameters)[0];
+
+#else
+    const unsigned int num_tests = 100;
+    for (unsigned int i = 0; i < num_tests; ++i) {
+        pagmo::problem::hovering_problem prob(sample_factory.SampleRandomInteger(), num_evaluations, simulation_time, num_hidden_neurons);
+        pagmo::fitness_vector fitness = prob.objfun(controller_parameters);
         mean_fitness += fitness[0];
     }
-    mean_fitness /= (double) num_tests;
+    mean_fitness /= num_tests;
+#endif
+
     std::cout << "mean fitness of chapmion: " << mean_fitness << std::endl;
 }

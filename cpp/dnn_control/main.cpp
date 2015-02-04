@@ -9,16 +9,18 @@
 
 #include "sensordatagenerator.h"
 
+#define PATH_TO_RANDOM_VISUALIZATION_FILE        "../../../results/visualization.txt"
+#define PATH_TO_SENSOR_DATA_FOLDER               "/home/willist/Documents/data/"
+
 static const std::vector<double> kCoefficientsFullState = {0.23, 20.0, 0.0};
 
-static const std::vector<double> kNeuralNetworkWeights = {-0.2434, -0.047018, -0.46219, 0.65756, 0.7051, -1.2172, 0.78654, -0.29724, -0.037517, 0.038738, -0.97016, 1.1793, 0.01815, -0.34686, 0.41471, -0.016628, 1.5745, -0.53104, -0.69594, 0.017365, 0.75491, 0.48443, -0.54952, -0.42715, 0.28907, -0.76067, 0.060973, -0.16548, -0.31261, -0.51953, 1.7732, -0.47567, -0.22854, 0.2201, -0.3684, 0.0028005, 1.0421, -0.17154};
-
+static const std::vector<double> kNeuralNetworkWeights = {-0.03908182635, -0.4898621125, -0.2889419543, 0.2077476529, -0.7601010585, 0.05548811748, 0.4157221963, 0.924115466, 0.7754551447, -0.1688594616, 0.8416943662, -0.1738026929, -0.1919724639, 0.1567232997, 0.4804205743, -0.9484035352, -0.1344675124, 0.5269472161, 0.5114305066, 0.3138624521, 0.1752219194, -0.6849030248, -0.4826307257, 0.8611052843, -0.6360475857, 0.7104956106, -0.9530694382, 0.5516731659, -0.2215772644, 0.2321233475, 0.5653431298, 0.6396675766, -0.05010659648, 0.6512627765, 0.5476710389, 0.01537482378, 0.4801415494, 0.08471112443, -0.3595873737, -0.7550328832, -0.7603645732, -0.8845867759, 0.3514311457, -0.1472281049, 0.6036450988, -0.1163581922, -0.8682911307, 0.5452495781, 0.8409870664, -0.1146850759, -0.6865718461, -0.453570266, 0.4212945557, 0.3241011479, 0.3803946302, 0.3147740703, -0.6594984741, 0.9249404767, 0.9417139126, 0.1055521016, -0.8851119327, 0.5820506637, 0.4867371798};
 
 int main(int argc, char *argv[]) {
     Configuration();
     srand(time(0));
 
-    //TestNeuralNetworkController(kNeuralNetworkWeights);
+    TestNeuralNetworkController(kNeuralNetworkWeights);
     //return 0;
 
     //TrainNeuralNetworkController();
@@ -34,7 +36,7 @@ int main(int argc, char *argv[]) {
     //return 0;
 
 
-    PaGMOSimulationNeuralNetwork sim(1990, 24.0 * 60.0 * 60.0, 5, kNeuralNetworkWeights);
+    PaGMOSimulationNeuralNetwork sim(1990, 24.0 * 60.0 * 60.0, 6, kNeuralNetworkWeights);
     const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > r1 = sim.EvaluateAdaptive();
     const std::vector<Vector3D> &r1pos = boost::get<2>(r1);
     const std::vector<Vector3D> &r1hei = boost::get<3>(r1);

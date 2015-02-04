@@ -24,6 +24,7 @@ void FileWriter::CreateSensorDataFile(const std::string &path_to_file, const uns
     const Vector2D angular_velocity = asteroid.ConstructorAngularVelocitiesXZ();
     const Vector3D semi_axis = asteroid.SemiAxis();
     file_.open(path_to_file.c_str());
+    file_ << "# random seed: " << random_seed << std::endl;
     file_ << "# interaction interval: " << interaction_interval << " Hz" << std::endl;
     file_ << "# simulation time: " << simulation_time << " s" << std::endl;
     file_ << "#" << std::endl;

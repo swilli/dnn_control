@@ -2,7 +2,6 @@
 #define HOVERINGPROBLEM_H
 
 #include "pagmosimulationneuralnetwork.h"
-#include "configuration.h"
 
 #include <pagmo/src/problem/base_stochastic.h>
 #include <boost/serialization/access.hpp>
