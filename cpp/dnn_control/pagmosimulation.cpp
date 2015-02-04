@@ -120,7 +120,6 @@ std::vector<SensorData> PaGMOSimulation::GenerateSensorDataSet() {
     evaluated_sensor_values.back() = sensor_simulator.Simulate(system_state, height, perturbations_acceleration, current_time_observer);
 
     return evaluated_sensor_values;
-
 }
 
 void PaGMOSimulation::Init() {
@@ -145,8 +144,8 @@ void PaGMOSimulation::Init() {
     perturbation_mean_ = 1e-9;
     perturbation_noise_ = 1e-11;
 
-#if PS_ORBITAL_INITIAL_CONDITIONS == true
-    // orbit
+#if PS_INITIAL_CONDITION_TYPE == PS_IC_INERTIAL_ORBITAL_VELOCITY
+    // higher for orbit, so we don't crash into the asteroid
     const Vector3D spacecraft_position = sample_factory.SamplePointOutSideEllipsoid(semi_axis, 2.0, 4.0);
 #else
     // random
@@ -155,11 +154,12 @@ void PaGMOSimulation::Init() {
 
     target_position_ = spacecraft_position;
 
+
+#if PS_INITIAL_CONDITION_TYPE == PS_IC_INERTIAL_ORBITAL_VELOCITY
+    // orbital velocity in inertial frame
     const Vector3D angular_velocity = boost::get<0>(asteroid_.AngularVelocityAndAccelerationAtTime(0.0));
     Vector3D spacecraft_velocity = VectorCrossProduct(angular_velocity, spacecraft_position);
 
-#if PS_ORBITAL_INITIAL_CONDITIONS == true
-    // orbital velocity
     const double norm_position = VectorNorm(spacecraft_position);
     const double magn_orbital_vel = sqrt(asteroid_.MassGravitationalConstant() / norm_position);
     Vector3D orth_pos = {sample_factory.SampleSign(), sample_factory.SampleSign(),  sample_factory.SampleSign()};
@@ -177,9 +177,17 @@ void PaGMOSimulation::Init() {
     spacecraft_velocity[0] = -spacecraft_velocity[0] + orth_pos[0] * magn_orbital_vel;
     spacecraft_velocity[1] = -spacecraft_velocity[1] + orth_pos[1] * magn_orbital_vel;
     spacecraft_velocity[2] = -spacecraft_velocity[2] + orth_pos[2] * magn_orbital_vel;
-#else
-    // no velocity
+
+#elif PS_INITIAL_CONDITION_TYPE == PS_IC_INERTIAL_ZERO_VELOCITY
+    // zero velocity in inertial frame
+    const Vector3D angular_velocity = boost::get<0>(asteroid_.AngularVelocityAndAccelerationAtTime(0.0));
+    Vector3D spacecraft_velocity = VectorCrossProduct(angular_velocity, spacecraft_position);
+
     spacecraft_velocity[0] *= -1; spacecraft_velocity[1] *= -1; spacecraft_velocity[2] *= -1;
+
+#elif PS_INITIAL_CONDITION_TYPE == PS_IC_BODY_ZERO_VELOCITY
+    // zero velocity in body frame
+    const Vector3D spacecraft_velocity = {0.0, 0.0, 0.0};
 #endif
 
     for (unsigned int i = 0; i < 3; ++i) {

@@ -16,17 +16,6 @@ inline Vector3D VectorCrossProduct(const Vector3D &vector_u, const Vector3D &vec
     return result;
 }
 
-inline void VectorCopy3D(const Vector3D &from, Vector3D &to) {
-    to[0] = from[0];
-    to[1] = from[1];
-    to[2] = from[2];
-}
-
-inline void VectorCopy2D(const Vector2D &from, Vector2D &to) {
-    to[0] = from[0];
-    to[1] = from[1];
-}
-
 inline Vector3D VectorSub(const Vector3D &first, const Vector3D &second) {
     Vector3D result;
     result[0] = first[0] - second[0];

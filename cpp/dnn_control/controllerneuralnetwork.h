@@ -1,8 +1,8 @@
 #ifndef CONTROLLERNEURALNETWORK_H
 #define CONTROLLERNEURALNETWORK_H
 
-#define NN_TYPE_FFNN      0
-#define NN_TYPE_ESRN      1
+#define NN_TYPE_FFNN    0
+#define NN_TYPE_ESRN    1
 #define NN_TYPE_CTRNN   2
 
 #define NEURAL_NETWORK_TYPE     NN_TYPE_FFNN

@@ -8,14 +8,14 @@
 
 #include "sensordatagenerator.h"
 
-#define PATH_TO_RANDOM_VISUALIZATION_FILE                "../../../results/visualization.txt"
+#define PATH_TO_RANDOM_VISUALIZATION_FILE                     "../../../results/visualization.txt"
 #define PATH_TO_SENSOR_DATA_FOLDER                            "/home/willist/Documents/data/"
 
 
 
 static const std::vector<double> kCoefficientsFullState = {0.23, 20.0, 0.0};
 
-static const std::vector<double> kNeuralNetworkWeights = {1.8304, 1.0529, -0.70848, -0.022057, -0.13478, 0.028731, -0.46383, -0.46224, 1.4739, 0.45693, 0.19294, 0.62196, -0.050692, -0.44013, -0.12876, 0.10281, 1.1024, 0.43655, -0.14853, 0.71233, 0.14438, 0.60309, -0.5988, 0.15644, -0.88074, -0.023182, 0.50473, -0.97397, -0.20883, -0.2325, -0.60403, 0.14915, -0.53324, 0.070257, -0.15145, 0.94402, 0.60149, -0.49164};
+static const std::vector<double> kNeuralNetworkWeights = {-0.76338, 1.4658, 0.68769, 1.4578, -0.36397, -0.69839, 0.49544, 0.88471, 0.043313, -0.38536, -0.78278, 1.6292, -0.019258, 0.013375, 1.0883, -0.85665, 1.8069, -0.18266, -1.8761, 1.106, -0.27423, 0.21068, -0.79098, 0.23843, 0.43435, 0.018621, 0.12077, 0.057763, 0.47033, -0.17744, 0.033455, -0.66555, -0.33851, 0.80338, 1.2021, 0.20756, -1.3791, 0.49122};
 
 
 
@@ -25,8 +25,8 @@ int main(int argc, char *argv[]) {
     //TestNeuralNetworkController(kNeuralNetworkWeights);
     //return 0;
 
-    TrainNeuralNetworkController();
-    return 0;
+    //TrainNeuralNetworkController();
+    //return 0;
 
     //TestPolicySolution();
     //TrainLeastSquaresPolicyController();
@@ -39,9 +39,9 @@ int main(int argc, char *argv[]) {
 
 
 
-    /*
+
     PaGMOSimulationNeuralNetwork sim(1990, 24.0 * 60.0 * 60.0, 5, kNeuralNetworkWeights);
-    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > r1 = sim.EvaluateAdaptive();
+    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > r1 = sim.EvaluateAdaptive();
     const std::vector<Vector3D> &r1pos = boost::get<2>(r1);
     const std::vector<Vector3D> &r1hei = boost::get<3>(r1);
 
@@ -49,11 +49,12 @@ int main(int argc, char *argv[]) {
     writer.CreateVisualizationFile(PATH_TO_RANDOM_VISUALIZATION_FILE, 1.0 / sim.InteractionInterval(), sim.AsteroidOfSystem(), r1pos, r1hei);
 
     return 0;
-    */
+
+
 
 
     /*
-    PaGMOSimulationFullState sim(rand(), 24.0 * 60.0 * 60.0, {4.0, 20.0, 0.0});
+    PaGMOSimulationFullState sim(1990, 24.0 * 60.0 * 60.0, {4.0, 20.0, 0.0});
     const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = sim.EvaluateFixed();
     const std::vector<Vector3D> &pos = boost::get<2>(result);
     const std::vector<Vector3D> &hei = boost::get<3>(result);

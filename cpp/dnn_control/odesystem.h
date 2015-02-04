@@ -5,7 +5,7 @@
 #include "systemstate.h"
 #include "asteroid.h"
 
-#define ODESYS_FUEL_ENABLED
+#define ODESYS_FUEL_ENABLED true
 
 class ODESystem {
 public:

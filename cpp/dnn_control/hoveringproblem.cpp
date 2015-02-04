@@ -70,12 +70,11 @@ std::string hovering_problem::human_readable_extra() const {
 double hovering_problem::single_fitness(PaGMOSimulationNeuralNetwork &simulation) const {
     double fitness = 0.0;
 
-    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = simulation.EvaluateAdaptive();
+    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = simulation.EvaluateAdaptive();
     const std::vector<double> &evaluated_times = boost::get<0>(result);
     const std::vector<double> &evaluated_masses = boost::get<1>(result);
     const std::vector<Vector3D> &evaluated_positions = boost::get<2>(result);
     const std::vector<Vector3D> &evaluated_velocities = boost::get<4>(result);
-    const std::vector<Vector3D> &evaluated_angular_velocities = boost::get<5>(result);
 
     const unsigned int num_samples = evaluated_times.size();
 
@@ -93,8 +92,7 @@ double hovering_problem::single_fitness(PaGMOSimulationNeuralNetwork &simulation
     // Method 1 : Compare start and ending position and velocity
     const Vector3D &position_end = evaluated_positions.back();
     const Vector3D &velocity_end = evaluated_velocities.back();
-    const Vector3D &zero_velocity = VectorSub({0.0, 0.0, 0.0}, VectorCrossProduct(evaluated_angular_velocities.back(), position_end));
-    fitness += VectorNorm(VectorSub(position_begin, position_end)) + VectorNorm(VectorSub(zero_velocity, velocity_end));
+    fitness += VectorNorm(VectorSub(position_begin, position_end)) + VectorNorm(velocity_end);
 
 #elif OBJECTIVE_FUNCTION_METHOD == OBJ_FUN_METHOD_2
     // Method 2 : Compare mean distance to target point
@@ -106,8 +104,7 @@ double hovering_problem::single_fitness(PaGMOSimulationNeuralNetwork &simulation
 #elif OBJECTIVE_FUNCTION_METHOD == OBJ_FUN_METHOD_3
     // Method 3 : Compare mean distance to target point, also consider velocity
     for (unsigned int i = 1; i < num_samples; ++i) {
-        const Vector3D &zero_velocity = VectorSub({0.0, 0.0, 0.0}, VectorCrossProduct(evaluated_angular_velocities.at(i), evaluated_positions.at(i)));
-        fitness += VectorNorm(VectorSub(position_begin, evaluated_positions.at(i))) + VectorNorm(VectorSub(zero_velocity, evaluated_velocities.at(i)));
+        fitness += VectorNorm(VectorSub(position_begin, evaluated_positions.at(i))) + VectorNorm(evaluated_velocities.at(i));
     }
     fitness /= num_samples - 1;
 
@@ -133,20 +130,18 @@ double hovering_problem::single_fitness(PaGMOSimulationNeuralNetwork &simulation
     // Method 6 : Compare mean distance to target point, also consider velocity, but don't take into consideration some amount of starting positions.
     const unsigned int start_index = num_samples * 0.01;
     for (unsigned int i = start_index; i < num_samples; ++i) {
-        const Vector3D &zero_velocity = VectorSub({0.0, 0.0, 0.0}, VectorCrossProduct(evaluated_angular_velocities.at(i), evaluated_positions.at(i)));
         const Vector3D &p = evaluated_positions.at(i);
         const Vector3D &v = evaluated_velocities.at(i);
-        fitness += VectorNorm(VectorSub(position_begin, p)) + VectorNorm(VectorSub(zero_velocity, v));
+        fitness += VectorNorm(VectorSub(position_begin, p)) + VectorNorm(v);
     }
     fitness /= num_samples - start_index;
 
 #elif OBJECTIVE_FUNCTION_METHOD == OBJ_FUN_METHOD_7
     // Method 7 : Compare mean distance to target point, also consider velocity, punish later offsets more
     for (unsigned int i = 1; i < num_samples; ++i) {
-        const Vector3D &zero_velocity = VectorSub({0.0, 0.0, 0.0}, VectorCrossProduct(evaluated_angular_velocities.at(i), evaluated_positions.at(i)));
         const Vector3D &p = evaluated_positions.at(i);
         const Vector3D &v = evaluated_velocities.at(i);
-        fitness += i * (VectorNorm(VectorSub(position_begin, p)) + VectorNorm(VectorSub(zero_velocity, v)));
+        fitness += i * (VectorNorm(VectorSub(position_begin, p)) + VectorNorm(v));
     }
     fitness /= num_samples - 1;
 
