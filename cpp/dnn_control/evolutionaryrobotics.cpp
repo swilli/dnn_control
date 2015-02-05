@@ -1,6 +1,7 @@
 #include "evolutionaryrobotics.h"
 #include "hoveringproblem.h"
 #include "samplefactory.h"
+#include "filewriter.h"
 #include "configuration.h"
 
 // Training configuration
@@ -122,10 +123,13 @@ void TrainNeuralNetworkController() {
 }
 
 
-void TestNeuralNetworkController(const pagmo::decision_vector &controller_parameters) {
-    double mean_fitness = 0.0;
+void TestNeuralNetworkController() {
+    const pagmo::decision_vector &controller_parameters = {1.139453374, -0.5035586702, 11.83837624, -0.9314071541, -2.35407996, 0.833989195, -8.985921616, -1.043738767, -2.776785005, -10.22947939, 0.4796012886, -3.150659766, -14.13180575, -0.1625557165, 2.645001955, 0.5260188324, 2.110138671, 1.412664598, -3.365195982, -1.177259109, -1.564083124, -0.05350921614, 3.481537105, 4.797028985, 1.13560567, 0.7365295729, -0.5853098727, -0.7883426354, -1.025992628, 6.183600503, -15.56626127, -12.74000029, 3.143713937, -5.515504565, 1.522294359, 1.619518748, 1.265833975, -2.500423808, 0.1574967832, 4.704057427, -4.804911663, 2.075984812, -1.765734238, -1.513891454, -1.877287754, -0.09109732109, 0.7385496744, 1.454737143, 3.170372551, -0.2155375387, 2.253057173, -2.024282433, -0.4122590442, 1.991515282, -0.4001789465, -1.689672235, 0.08195932494, -2.396089453, 0.6537027275, 2.080296207, 0.2556261137, -1.086728015, -0.2556162367};
 
     SampleFactory sample_factory;
+
+
+    double mean_fitness = 0.0;
 
 #ifdef HP_FIXED_SEED
     mean_fitness = pagmo::problem::hovering_problem(sample_factory.SampleRandomInteger(), num_evaluations, simulation_time, num_hidden_neurons).objfun(controller_parameters)[0];
@@ -141,4 +145,22 @@ void TestNeuralNetworkController(const pagmo::decision_vector &controller_parame
 #endif
 
     std::cout << "mean fitness of chapmion: " << mean_fitness << std::endl;
+
+#ifdef HP_FIXED_SEED
+    PaGMOSimulationNeuralNetwork sim(HP_FIXED_SEED, 24.0 * 60.0 * 60.0, 6, controller_parameters);
+#else
+    PaGMOSimulationNeuralNetwork sim(sample_factory.SampleRandomInteger(), 86400.0, num_hidden_neurons, controller_parameters);
+#endif
+
+    std::cout << "testing neuro controller ... ";
+    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > r1 = sim.EvaluateAdaptive();
+    std::cout << "done." << std::endl << "writing result to file ... ";
+
+    const std::vector<Vector3D> &positions = boost::get<2>(r1);
+    const std::vector<Vector3D> &heights = boost::get<3>(r1);
+
+    FileWriter writer;
+    writer.CreateVisualizationFile(PATH_TO_NEURO_VISUALIZATION_FILE, 1.0 / sim.InteractionInterval(), sim.AsteroidOfSystem(), positions, heights);
+    std::cout << "done." << std::endl;
+
 }

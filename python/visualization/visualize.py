@@ -15,7 +15,7 @@ examples:
 import sys
 from boost_asteroid import boost_asteroid
 Asteroid = boost_asteroid.BoostAsteroid
-from visual import ellipsoid, box, rate, color, vector, arrow, scene, sphere, label
+from visual import ellipsoid, box, rate, color, vector, arrow, scene, sphere, label, text
 from numpy.linalg import norm, det
 from time import sleep
 from numpy import array, eye, dot, linspace
@@ -31,6 +31,8 @@ if len(sys.argv) > 2:
 
 if len(sys.argv) > 3:
     reference_frame = str(sys.argv[3])
+
+print("preparing data... ")
 
 result_file = open(file_name, 'r')
 
@@ -133,6 +135,12 @@ def q2av(q):
 
 previous_angle = 0.0
 previous_axis = (0.0, 0.0, 0.0)
+
+
+
+print("ready. click to start visualization...")
+scene.waitfor('click')
+
 for i in range(1, len(states)):
     rate(speedup * frequency)
 

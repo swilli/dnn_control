@@ -46,6 +46,12 @@
 #define SSA_DATA_MULTIPLIER  3
 #define SSA_DATA_HISTORY     3
 
+// Other stuff configs, not relevant for simulation
+
+#define PATH_TO_NEURO_VISUALIZATION_FILE   "../../../results/visualization_neuro.txt"
+#define PATH_TO_LSPI_VISUALIZATION_FILE   "../../../results/visualization_lspi.txt"
+#define PATH_TO_SENSOR_DATA_FOLDER  "/home/willist/Documents/data/"
+
 
 static inline std::string ToString(const bool &value) {
     return (value ? "true" : "false");

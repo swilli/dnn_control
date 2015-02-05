@@ -16,17 +16,17 @@ LSPISimulator::LSPISimulator(const unsigned int &random_seed)
     const double time_bias = sample_factory_.SampleUniform(0.0, 12.0 * 60 * 60);
     asteroid_ = Asteroid(semi_axis, density, angular_velocity_xz, time_bias);
 
+    spacecraft_maximum_mass_ = sample_factory_.SampleUniform(450.0, 500.0);
+    spacecraft_minimum_mass_ = spacecraft_maximum_mass_ * 0.5;
     spacecraft_maximum_thrust_ = 21.0;
     spacecraft_specific_impulse_ = 200.0;
-    spacecraft_minimum_mass_ = 225.0;
     spacecraft_engine_noise_ = 0.05;
 
     perturbation_mean_ = 1e-9;
     perturbation_noise_ = 1e-11;
 }
 
-LSPISimulator::~LSPISimulator()
-{
+LSPISimulator::~LSPISimulator() {
 
 }
 
@@ -65,6 +65,10 @@ boost::tuple<SystemState, bool> LSPISimulator::NextState(const SystemState &stat
 
 Asteroid &LSPISimulator::AsteroidOfSystem() {
     return asteroid_;
+}
+
+SampleFactory &LSPISimulator::GetSampleFactory() {
+    return sample_factory_;
 }
 
 double LSPISimulator::InteractionInterval() const {

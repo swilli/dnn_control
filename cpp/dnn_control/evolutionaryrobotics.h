@@ -5,6 +5,6 @@
 
 void TrainNeuralNetworkController();
 
-void TestNeuralNetworkController(const pagmo::decision_vector &controller_parameters);
+void TestNeuralNetworkController();
 
 #endif // EVOLUTIONARYROBOTICS_H

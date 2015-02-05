@@ -17,6 +17,8 @@ public:
 
     Asteroid &AsteroidOfSystem();
 
+    SampleFactory &GetSampleFactory();
+
     double InteractionInterval() const;
 
 private:
@@ -41,6 +43,8 @@ private:
     double spacecraft_maximum_thrust_;
 
     double spacecraft_minimum_mass_;
+
+    double spacecraft_maximum_mass_;
 
     double perturbation_mean_;
 
