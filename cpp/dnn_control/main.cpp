@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
     //return 0;
 
     //TrainNeuralNetworkController();
-    // return 0;
+    //return 0;
 
     //TestLeastSquaresPolicyController(1990);
     //return 0;
@@ -31,6 +31,7 @@ int main(int argc, char *argv[]) {
     //generator.Generate(100,rand());
     //return 0;
 
+    /*
     PaGMOSimulationFullState sim(1990, 24.0 * 60.0 * 60.0, {4.0, 20.0, 0.0});
     const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = sim.EvaluateFixed();
     const std::vector<Vector3D> &pos = boost::get<2>(result);
@@ -40,7 +41,7 @@ int main(int argc, char *argv[]) {
     writer.CreateVisualizationFile(PATH_TO_NEURO_VISUALIZATION_FILE, sim.ControlFrequency(), sim.AsteroidOfSystem(), pos, hei);
 
     return 0;
-
+    */
 
     /*
     const unsigned int num_tests = 100;

@@ -133,7 +133,7 @@ void PaGMOSimulation::Init() {
 
     const Vector3D semi_axis = {sample_factory.SampleUniform(8000.0, 12000.0), sample_factory.SampleUniform(4000.0, 7500.0), sample_factory.SampleUniform(1000.0, 3500.0)};
     const double density = sample_factory.SampleUniform(1500.0, 3000.0);
-    Vector2D angular_velocity_xz = {sample_factory.SampleSign() * sample_factory.SampleUniform(0.0002, 0.0008), sample_factory.SampleSign() * sample_factory.SampleUniform(0.0002, 0.0008)};
+    const Vector2D angular_velocity_xz = {sample_factory.SampleSign() * sample_factory.SampleUniform(0.0002, 0.0008), sample_factory.SampleSign() * sample_factory.SampleUniform(0.0002, 0.0008)};
     const double time_bias = sample_factory.SampleUniform(0.0, 12.0 * 60 * 60);
     asteroid_ = Asteroid(semi_axis, density, angular_velocity_xz, time_bias);
 
