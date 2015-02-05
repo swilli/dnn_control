@@ -17,8 +17,8 @@ int main(int argc, char *argv[]) {
     //TestNeuralNetworkController();
     //return 0;
 
-    //TrainNeuralNetworkController();
-    //return 0;
+    TrainNeuralNetworkController();
+    return 0;
 
     //TestLeastSquaresPolicyController(1990);
     //return 0;
@@ -174,7 +174,7 @@ int main(int argc, char *argv[]) {
     std::cout << "mean error: " << error / num_tests << std::endl;
     return 0;
 
-
+    */
 
     /* Copy constructor & assignment operator test
 

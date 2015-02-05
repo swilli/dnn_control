@@ -21,6 +21,8 @@ public:
 
     virtual std::vector<SensorData> GenerateSensorDataSet();
 
+    Vector3D TargetPosition() const;
+
     SystemState InitialSystemState() const;
 
     Asteroid& AsteroidOfSystem();

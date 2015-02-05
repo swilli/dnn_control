@@ -124,6 +124,10 @@ std::vector<SensorData> PaGMOSimulation::GenerateSensorDataSet() {
     return evaluated_sensor_values;
 }
 
+Vector3D PaGMOSimulation::TargetPosition() const {
+    return target_position_;
+}
+
 void PaGMOSimulation::Init() {
     minimum_step_size_ = 0.1;
     fixed_step_size_ = 0.1;
@@ -146,7 +150,7 @@ void PaGMOSimulation::Init() {
     perturbation_mean_ = 1e-9;
     perturbation_noise_ = 1e-11;
 
-#if PGMOS_INITIAL_CONDITION_TYPE == PGMOS_IC_INERTIAL_ORBITAL_VELOCITY
+#if PGMOS_IC_VELOCITY_TYPE == PGMOS_IC_INERTIAL_ORBITAL_VELOCITY
     // higher for orbit, so we don't crash into the asteroid
     const Vector3D spacecraft_position = sample_factory.SamplePointOutSideEllipsoid(semi_axis, 2.0, 4.0);
 #else
@@ -154,10 +158,18 @@ void PaGMOSimulation::Init() {
     const Vector3D spacecraft_position = sample_factory.SamplePointOutSideEllipsoid(semi_axis, 1.1, 4.0);
 #endif
 
+#if PGMOS_IC_POSITION_OFFSET_ENABLED
+    // spacecraft has uniformly distributed offset to target position
+    for (unsigned int i = 0 ; i < 3; ++i) {
+        target_position_[i] = spacecraft_position[i] + sample_factory.SampleUniform(-3.0, 3.0);
+    }
+#else
+    // spacecraft starts at target position
     target_position_ = spacecraft_position;
+#endif
 
 
-#if PGMOS_INITIAL_CONDITION_TYPE == PGMOS_IC_INERTIAL_ORBITAL_VELOCITY
+#if PGMOS_IC_VELOCITY_TYPE == PGMOS_IC_INERTIAL_ORBITAL_VELOCITY
     // orbital velocity in inertial frame
     const Vector3D angular_velocity = boost::get<0>(asteroid_.AngularVelocityAndAccelerationAtTime(0.0));
     Vector3D spacecraft_velocity = VectorCrossProduct(angular_velocity, spacecraft_position);
@@ -180,16 +192,23 @@ void PaGMOSimulation::Init() {
     spacecraft_velocity[1] = -spacecraft_velocity[1] + orth_pos[1] * magn_orbital_vel;
     spacecraft_velocity[2] = -spacecraft_velocity[2] + orth_pos[2] * magn_orbital_vel;
 
-#elif PGMOS_INITIAL_CONDITION_TYPE == PGMOS_IC_INERTIAL_ZERO_VELOCITY
+#elif PGMOS_IC_VELOCITY_TYPE == PGMOS_IC_INERTIAL_ZERO_VELOCITY
     // zero velocity in inertial frame
     const Vector3D angular_velocity = boost::get<0>(asteroid_.AngularVelocityAndAccelerationAtTime(0.0));
     Vector3D spacecraft_velocity = VectorCrossProduct(angular_velocity, spacecraft_position);
 
     spacecraft_velocity[0] *= -1; spacecraft_velocity[1] *= -1; spacecraft_velocity[2] *= -1;
 
-#elif PGMOS_INITIAL_CONDITION_TYPE == PGMOS_IC_BODY_ZERO_VELOCITY
+#elif PGMOS_IC_VELOCITY_TYPE == PGMOS_IC_BODY_ZERO_VELOCITY
     // zero velocity in body frame
     const Vector3D spacecraft_velocity = {0.0, 0.0, 0.0};
+
+#elif PGMOS_IC_VELOCITY_TYPE == PGMOS_IC_BODY_RANDOM_VELOCITY
+    // uniformly distributed random velocity in body frame
+    Vector3D spacecraft_velocity;
+    for (unsigned int i = 0 ; i < 3; ++i) {
+        spacecraft_velocity[i] = sample_factory.SampleUniform(-0.3, 0.3);
+    }
 #endif
 
     for (unsigned int i = 0; i < 3; ++i) {

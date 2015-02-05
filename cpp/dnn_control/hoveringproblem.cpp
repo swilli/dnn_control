@@ -72,7 +72,7 @@ double hovering_problem::single_fitness(PaGMOSimulationNeuralNetwork &simulation
     const unsigned int num_samples = evaluated_times.size();
 
     // The target position
-    const Vector3D &position_begin = evaluated_positions[0];
+    const Vector3D target_position = simulation.TargetPosition();
 
     // punish unfinished simulations (crash / out of fuel)
     double time_diff = evaluated_times.back() - m_simulation_time;
@@ -85,36 +85,36 @@ double hovering_problem::single_fitness(PaGMOSimulationNeuralNetwork &simulation
     // Method 1 : Compare start and ending position and velocity
     const Vector3D &position_end = evaluated_positions.back();
     const Vector3D &velocity_end = evaluated_velocities.back();
-    fitness += VectorNorm(VectorSub(position_begin, position_end)) + VectorNorm(velocity_end);
+    fitness += VectorNorm(VectorSub(target_position, position_end)) + VectorNorm(velocity_end);
 
 #elif HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_2
     // Method 2 : Compare mean distance to target point
-    for (unsigned int i = 1; i < num_samples; ++i) {
-        fitness += VectorNorm(VectorSub(position_begin, evaluated_positions.at(i)));
+    for (unsigned int i = 0; i < num_samples; ++i) {
+        fitness += VectorNorm(VectorSub(target_position, evaluated_positions.at(i)));
     }
-    fitness /= num_samples - 1;
+    fitness /= num_samples;
 
 #elif HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_3
     // Method 3 : Compare mean distance to target point, also consider velocity
-    for (unsigned int i = 1; i < num_samples; ++i) {
-        fitness += VectorNorm(VectorSub(position_begin, evaluated_positions.at(i))) + VectorNorm(evaluated_velocities.at(i));
+    for (unsigned int i = 0; i < num_samples; ++i) {
+        fitness += VectorNorm(VectorSub(target_position, evaluated_positions.at(i))) + VectorNorm(evaluated_velocities.at(i));
     }
-    fitness /= num_samples - 1;
+    fitness /= num_samples;
 
 #elif HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_4
     // Method 4 : Compare mean distance to target point, but don't take into consideration some amount of starting positions
-    const unsigned int start_index = num_samples * 0.1;
+    const unsigned int start_index = num_samples * 0.01;
     for (unsigned int i = start_index; i < num_samples; ++i) {
-        fitness += VectorNorm(VectorSub(position_begin, evaluated_positions.at(i)));
+        fitness += VectorNorm(VectorSub(target_position, evaluated_positions.at(i)));
     }
     fitness /= (num_samples - start_index);
 
 #elif HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_5
     // Method 5 : Compare mean distance to target point, but don't take into consideration some amount of starting positions.
     // Additionally, take into consideration total fuel consumption
-    const unsigned int start_index = num_samples * 0.1;
+    const unsigned int start_index = num_samples * 0.01;
     for (unsigned int i = start_index; i < num_samples; ++i) {
-        fitness += VectorNorm(VectorSub(position_begin, evaluated_positions.at(i)));
+        fitness += VectorNorm(VectorSub(target_position, evaluated_positions.at(i)));
     }
     fitness /= (num_samples - start_index);
     fitness += 1.0 / (evaluated_masses.back() - simulation.SpacecraftMinimumMass() + 0.001);
@@ -123,20 +123,16 @@ double hovering_problem::single_fitness(PaGMOSimulationNeuralNetwork &simulation
     // Method 6 : Compare mean distance to target point, also consider velocity, but don't take into consideration some amount of starting positions.
     const unsigned int start_index = num_samples * 0.01;
     for (unsigned int i = start_index; i < num_samples; ++i) {
-        const Vector3D &p = evaluated_positions.at(i);
-        const Vector3D &v = evaluated_velocities.at(i);
-        fitness += VectorNorm(VectorSub(position_begin, p)) + VectorNorm(v);
+        fitness += VectorNorm(VectorSub(target_position, evaluated_positions.at(i))) + VectorNorm(evaluated_velocities.at(i));
     }
     fitness /= num_samples - start_index;
 
 #elif HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_7
     // Method 7 : Compare mean distance to target point, also consider velocity, punish later offsets more
-    for (unsigned int i = 1; i < num_samples; ++i) {
-        const Vector3D &p = evaluated_positions.at(i);
-        const Vector3D &v = evaluated_velocities.at(i);
-        fitness += i * (VectorNorm(VectorSub(position_begin, p)) + VectorNorm(v));
+    for (unsigned int i = 0; i < num_samples; ++i) {
+        fitness += (i + 1) * (VectorNorm(VectorSub(target_position, evaluated_positions.at(i))) + VectorNorm(evaluated_velocities.at(i)));
     }
-    fitness /= num_samples - 1;
+    fitness /= num_samples;
 
 #elif HP_OBJECTIVE_FUNCTION_METHOD ==  HP_OBJ_FUN_METHOD_8
 #endif

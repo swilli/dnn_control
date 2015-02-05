@@ -17,8 +17,8 @@
 #define HP_OBJ_FUN_METHOD_6    6   // Compare mean distance to target point, also consider velocity, but don't take into consideration some amount of starting positions.
 #define HP_OBJ_FUN_METHOD_7    7   // Compare mean distance to target point, also consider velocity, punish later offsets more.
 
-#define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_3
-#define HP_FIXED_SEED  1990
+#define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_6
+//#define HP_FIXED_SEED  1990
 
 // Class ODESystem configs
 #define ODES_FUEL_ENABLED   true
@@ -27,8 +27,10 @@
 #define PGMOS_IC_INERTIAL_ZERO_VELOCITY      0
 #define PGMOS_IC_BODY_ZERO_VELOCITY          1
 #define PGMOS_IC_INERTIAL_ORBITAL_VELOCITY   2
+#define PGMOS_IC_BODY_RANDOM_VELOCITY        3
 
-#define PGMOS_INITIAL_CONDITION_TYPE  PGMOS_IC_BODY_ZERO_VELOCITY
+#define PGMOS_IC_VELOCITY_TYPE  PGMOS_IC_BODY_RANDOM_VELOCITY
+#define PGMOS_IC_POSITION_OFFSET_ENABLED true
 
 // Class SensorSimulatorNeuralNetwork configs
 #define SSNN_WITH_VELOCITY  true
@@ -66,7 +68,8 @@ inline void Configuration() {
     std::cout << "HP_FIXED_SEED   undefined" << std::endl;
 #endif
     std::cout << "ODES_FUEL_ENABLED   " << ToString(ODES_FUEL_ENABLED) << std::endl;
-    std::cout << "PGMOS_INITIAL_CONDITION_TYPE   " << PGMOS_INITIAL_CONDITION_TYPE << std::endl;
+    std::cout << "PGMOS_IC_VELOCITY_TYPE   " << PGMOS_IC_VELOCITY_TYPE << std::endl;
+    std::cout << "PGMOS_IC_POSITION_OFFSET_ENABLED   " << ToString(PGMOS_IC_POSITION_OFFSET_ENABLED) << std::endl;
     std::cout << "SSNN_WITH_VELOCITY   " << ToString(SSNN_WITH_VELOCITY) << std::endl;
     std::cout << "CNN_NEURAL_NETWORK_TYPE   " << CNN_NEURAL_NETWORK_TYPE << std::endl;
     std::cout << "CNN_WITH_VELOCITY   " << ToString(CNN_WITH_VELOCITY) << std::endl;
