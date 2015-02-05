@@ -160,7 +160,7 @@ void TestNeuralNetworkController() {
     const std::vector<Vector3D> &heights = boost::get<3>(r1);
 
     FileWriter writer;
-    writer.CreateVisualizationFile(PATH_TO_NEURO_VISUALIZATION_FILE, 1.0 / sim.InteractionInterval(), sim.AsteroidOfSystem(), positions, heights);
+    writer.CreateVisualizationFile(PATH_TO_NEURO_VISUALIZATION_FILE, sim.ControlFrequency(), sim.AsteroidOfSystem(), positions, heights);
     std::cout << "done." << std::endl;
 
 }

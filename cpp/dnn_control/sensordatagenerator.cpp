@@ -53,7 +53,7 @@ void SensorDataGenerator::Generate(const unsigned int &num_datasets, const unsig
 
         std::cout << "   writing sensor data to file " << path_to_sensor_data_file << " ... ";
         FileWriter writer;
-        writer.CreateSensorDataFile(path_to_sensor_data_file, random_seed, simulation.InteractionInterval(), simulation.SimulationTime(), simulation.AsteroidOfSystem(),
+        writer.CreateSensorDataFile(path_to_sensor_data_file, random_seed, simulation.ControlFrequency(), simulation.SimulationTime(), simulation.AsteroidOfSystem(),
                                     system_state, data_set);
         std::cout << "done." << std::endl;
     }

@@ -33,7 +33,7 @@ public:
 
     double MinimumStepSize() const;
 
-    double InteractionInterval() const;
+    double ControlFrequency() const;
 
     double SpacecraftMaximumMass() const;
 
@@ -61,7 +61,7 @@ protected:
 
     double simulation_time_;
 
-    double interaction_interval_;
+    double control_frequency_;
 
     double minimum_step_size_;
 

@@ -19,7 +19,7 @@ public:
 
     SampleFactory &GetSampleFactory();
 
-    double InteractionInterval() const;
+    double ControlFrequency() const;
 
 private:
     class Observer {
@@ -34,7 +34,7 @@ private:
 
     double minimum_step_size_;
 
-    double interaction_interval_;
+    double control_frequency_;
 
     double spacecraft_engine_noise_;
 

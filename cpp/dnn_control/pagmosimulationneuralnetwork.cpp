@@ -50,7 +50,7 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
         throw SizeMismatchException();
     }
 
-    const unsigned int num_iterations = simulation_time_ / interaction_interval_;
+    const unsigned int num_iterations = simulation_time_ * control_frequency_;
 
     std::vector<double> evaluated_times(num_iterations + 1);
     std::vector<double> evaluated_masses(num_iterations + 1);
@@ -65,6 +65,7 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
 
     double current_time = 0.0;
     double current_time_observer = 0.0;
+    const double dt = 1.0 / control_frequency_;
     Observer observer(current_time_observer);
     unsigned int iteration = 0;
     bool exception_thrown = false;
@@ -95,9 +96,9 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
             ODESystem ode_system(asteroid_, perturbations_acceleration, thrust, spacecraft_specific_impulse_, spacecraft_minimum_mass_, engine_noise);
 
             ControlledStepper controlled_stepper;
-            integrate_adaptive(controlled_stepper, ode_system, system_state, current_time, current_time + interaction_interval_, minimum_step_size_, observer);
+            integrate_adaptive(controlled_stepper, ode_system, system_state, current_time, current_time + dt, minimum_step_size_, observer);
 
-            current_time += interaction_interval_;
+            current_time += dt;
         }
     } catch (const Asteroid::Exception &exception) {
         //std::cout << "The spacecraft crashed into the asteroid's surface." << std::endl;
@@ -159,7 +160,7 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
 
     double current_time = 0.0;
     double engine_noise = 0.0;
-    const unsigned int num_steps = interaction_interval_ / fixed_step_size_;
+    const unsigned int num_steps = 1.0 / (fixed_step_size_ * control_frequency_);
     odeint::runge_kutta4<SystemState> stepper;
     try {
         while (current_time < simulation_time_) {

@@ -8,7 +8,7 @@ LSPISimulator::LSPISimulator(const unsigned int &random_seed)
     : sample_factory_(random_seed) {
 
     minimum_step_size_ = 0.1;
-    interaction_interval_ = 1.0;
+    control_frequency_ = 1.0;
 
     const Vector3D semi_axis = {sample_factory_.SampleUniform(8000.0, 12000.0), sample_factory_.SampleUniform(4000.0, 7500.0), sample_factory_.SampleUniform(1000.0, 3500.0)};
     const double density = sample_factory_.SampleUniform(1500.0, 3000.0);
@@ -50,8 +50,9 @@ boost::tuple<SystemState, bool> LSPISimulator::NextState(const SystemState &stat
     double current_time_observer = 0.0;
     Observer observer(current_time_observer);
     bool exception_thrown = false;
+    const double dt = 1.0 / control_frequency_;
     try {
-        integrate_adaptive(controlled_stepper, ode_system, state_copy, time, time + interaction_interval_, minimum_step_size_, observer);
+        integrate_adaptive(controlled_stepper, ode_system, state_copy, time, time + dt, minimum_step_size_, observer);
     } catch (const Asteroid::Exception &exception) {
         //std::cout << "The spacecraft crashed into the asteroid's surface." << std::endl;
         exception_thrown = true;
@@ -71,7 +72,7 @@ SampleFactory &LSPISimulator::GetSampleFactory() {
     return sample_factory_;
 }
 
-double LSPISimulator::InteractionInterval() const {
-    return interaction_interval_;
+double LSPISimulator::ControlFrequency() const {
+    return control_frequency_;
 }
 

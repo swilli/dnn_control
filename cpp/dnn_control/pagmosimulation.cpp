@@ -25,8 +25,8 @@ double PaGMOSimulation::MinimumStepSize() const {
     return minimum_step_size_;
 }
 
-double PaGMOSimulation::InteractionInterval() const {
-    return interaction_interval_;
+double PaGMOSimulation::ControlFrequency() const {
+    return control_frequency_;
 }
 
 Asteroid &PaGMOSimulation::AsteroidOfSystem() {
@@ -64,7 +64,7 @@ std::vector<SensorData> PaGMOSimulation::GenerateSensorDataSet() {
     SensorSimulatorAutoencoder sensor_simulator(sf_sensor_simulator, asteroid_);
 
 
-    const unsigned int num_iterations = simulation_time_ / interaction_interval_;
+    const unsigned int num_iterations = simulation_time_ * control_frequency_;
     std::vector<SensorData> evaluated_sensor_values(num_iterations + 1);
 
 
@@ -75,6 +75,7 @@ std::vector<SensorData> PaGMOSimulation::GenerateSensorDataSet() {
 
     double current_time = 0.0;
     double current_time_observer = 0.0;
+    const double dt = 1.0 / control_frequency_;
     Observer observer(current_time_observer);
     unsigned int iteration = 0;
     bool exception_thrown = false;
@@ -97,9 +98,9 @@ std::vector<SensorData> PaGMOSimulation::GenerateSensorDataSet() {
             ODESystem ode_system(asteroid_, perturbations_acceleration, thrust, spacecraft_specific_impulse_, spacecraft_minimum_mass_, engine_noise);
 
             ControlledStepper controlled_stepper;
-            integrate_adaptive(controlled_stepper, ode_system, system_state, current_time, current_time + interaction_interval_, minimum_step_size_, observer);
+            integrate_adaptive(controlled_stepper, ode_system, system_state, current_time, current_time + dt, minimum_step_size_, observer);
 
-            current_time += interaction_interval_;
+            current_time += dt;
         }
     } catch (const Asteroid::Exception &exception) {
         //std::cout << "The spacecraft crashed into the asteroid's surface." << std::endl;
@@ -126,7 +127,7 @@ std::vector<SensorData> PaGMOSimulation::GenerateSensorDataSet() {
 void PaGMOSimulation::Init() {
     minimum_step_size_ = 0.1;
     fixed_step_size_ = 0.1;
-    interaction_interval_ = 1.0;
+    control_frequency_ = 1.0;
 
     SampleFactory sample_factory(random_seed_);
 

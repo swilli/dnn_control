@@ -15,7 +15,8 @@ examples:
 import sys
 from boost_asteroid import boost_asteroid
 Asteroid = boost_asteroid.BoostAsteroid
-from visual import ellipsoid, box, rate, color, vector, arrow, scene, sphere, label, text
+from visual import ellipsoid, box, rate, color, vector, arrow, scene, sphere, label, display
+
 from numpy.linalg import norm, det
 from time import sleep
 from numpy import array, eye, dot, linspace
@@ -116,6 +117,7 @@ z_axis_label = label(text='z', pos=z_axis.axis, zoffset=20.0)
 height_label = label(text='nan', pos=height.pos/2.0)
 
 
+
 def q2av(q):
     from math import acos, sqrt
 
@@ -136,13 +138,17 @@ def q2av(q):
 previous_angle = 0.0
 previous_axis = (0.0, 0.0, 0.0)
 
-
+current_time = 0.0
+time_window = display(title='time [s]', x=0, y=0, width=200, height=100)
+time_label = label(text='0.0')
 
 print("ready. click to start visualization...")
 scene.waitfor('click')
 
+dt =  1.0 / frequency
+interval = speedup * frequency
 for i in range(1, len(states)):
-    rate(speedup * frequency)
+    rate(interval)
 
     if reference_frame == "body":
         spacecraft_pos = tuple(states[i][0:3])
@@ -178,5 +184,8 @@ for i in range(1, len(states)):
         previous_angle, previous_axis = q2av(current_quaternion)
 
         asteroid_3d.rotate(angle=previous_angle, axis=previous_axis, origin=(0.0, 0.0, 0.0))
+
+    current_time += dt
+    time_label.text = str(current_time)  
 
 print("done.")
