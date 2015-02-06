@@ -17,11 +17,11 @@ int main(int argc, char *argv[]) {
     //TestNeuralNetworkController(1990);
     //return 0;
 
-    TrainNeuralNetworkController();
-    return 0;
-
-    //TestLeastSquaresPolicyController(1990);
+    //TrainNeuralNetworkController();
     //return 0;
+
+    TestLeastSquaresPolicyController(1990);
+    return 0;
 
     //TrainLeastSquaresPolicyController();
     //return 0;
