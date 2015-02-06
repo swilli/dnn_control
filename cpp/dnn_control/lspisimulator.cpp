@@ -68,7 +68,7 @@ Asteroid &LSPISimulator::AsteroidOfSystem() {
     return asteroid_;
 }
 
-SampleFactory &LSPISimulator::GetSampleFactory() {
+SampleFactory &LSPISimulator::SampleFactoryOfSystem() {
     return sample_factory_;
 }
 

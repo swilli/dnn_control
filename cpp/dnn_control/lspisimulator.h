@@ -17,7 +17,7 @@ public:
 
     Asteroid &AsteroidOfSystem();
 
-    SampleFactory &GetSampleFactory();
+    SampleFactory &SampleFactoryOfSystem();
 
     double ControlFrequency() const;
 

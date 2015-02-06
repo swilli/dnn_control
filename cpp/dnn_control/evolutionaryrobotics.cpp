@@ -123,36 +123,15 @@ void TrainNeuralNetworkController() {
 }
 
 
-void TestNeuralNetworkController() {
+void TestNeuralNetworkController(const unsigned int &random_seed) {
     const pagmo::decision_vector &controller_parameters = {0.1978105894, 1.382211678, 2.276014568, 0.6683596403, 0.3859042599, 2.344483419, -2.264480489, 5.793769836, -0.2330933158, -1.627351593, 0.2208166187, -0.6686395508, 2.981372047, -2.026256274, -0.1550951127, 0.4123616579, -1.728663746, 1.300941408, -0.4339265121, -1.306791986, -0.7133511336, -0.1842525721, 0.07738779019, 0.8667420416, -1.56934758, -0.9145037076, -0.6125364647, -0.638653143, -0.7861275365, -0.7205643259, 1.065781712, -3.415023842, 1.303809701, 0.2379075187, 1.975742981, -0.04073831012, 1.576128779, 1.275048406, 0.06431794331, 2.814600633, -0.4550991784, -0.8682688434, -1.291888243, 0.3716955926, -0.09916130628, -0.4672770932, -1.213621322, -0.3700553088, 4.962021989, -1.368753253, 4.91185464, -0.9716114216, -2.554696074, 1.925727968, -0.5785447512, 0.3314102377, -0.6854279439, 0.5132619396, 0.7264452245, -0.09451854397, -1.38357286, -0.7135350908, 0.8917496877};
 
-
-    SampleFactory sample_factory;
-
-
-    double mean_fitness = 0.0;
-
-#ifdef HP_FIXED_SEED
-    mean_fitness = pagmo::problem::hovering_problem(sample_factory.SampleRandomInteger(), num_evaluations, simulation_time, num_hidden_neurons).objfun(controller_parameters)[0];
-
-#else
-    for (unsigned int i = 0; i < num_evaluations; ++i) {
-        pagmo::problem::hovering_problem prob(sample_factory.SampleRandomInteger(), num_evaluations, simulation_time, num_hidden_neurons);
-        pagmo::fitness_vector fitness = prob.objfun(controller_parameters);
-        mean_fitness += fitness[0];
-    }
-    mean_fitness /= num_evaluations;
-#endif
-
-    std::cout << "mean fitness of chapmion: " << mean_fitness << std::endl;
-
-#ifdef HP_FIXED_SEED
-    PaGMOSimulationNeuralNetwork sim(HP_FIXED_SEED, 24.0 * 60.0 * 60.0, 6, controller_parameters);
-#else
-    PaGMOSimulationNeuralNetwork sim(sample_factory.SampleRandomInteger(), 86400.0, num_hidden_neurons, controller_parameters);
-#endif
+    pagmo::problem::hovering_problem prob(random_seed, num_evaluations, simulation_time, num_hidden_neurons);
+    const double fitness = prob.objfun_seeded(random_seed, controller_parameters)[0];
+    std::cout << "fitness of chapmion: " << fitness << std::endl;
 
     std::cout << "testing neuro controller ... ";
+    PaGMOSimulationNeuralNetwork sim(random_seed, 86400.0, num_hidden_neurons, controller_parameters);
     const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > r1 = sim.EvaluateAdaptive();
     std::cout << "done." << std::endl << "writing result to file ... ";
 

@@ -5,6 +5,6 @@
 
 void TrainNeuralNetworkController();
 
-void TestNeuralNetworkController();
+void TestNeuralNetworkController(const unsigned int &random_seed=0);
 
 #endif // EVOLUTIONARYROBOTICS_H

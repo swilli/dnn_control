@@ -20,6 +20,8 @@ public:
 
     base_ptr clone() const;
 
+    fitness_vector objfun_seeded(const unsigned int &seed, const decision_vector &x) const;
+
 protected:
     void objfun_impl(fitness_vector &f, const decision_vector &x) const;
 

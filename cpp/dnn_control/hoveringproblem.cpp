@@ -26,13 +26,14 @@ base_ptr hovering_problem::clone() const {
     return base_ptr(new hovering_problem(*this));
 }
 
-void hovering_problem::objfun_impl(fitness_vector &f, const decision_vector &x) const {
-    // Neural Network simulation
-#ifdef HP_FIXED_SEED
-    PaGMOSimulationNeuralNetwork simulation(HP_FIXED_SEED, m_simulation_time, m_n_hidden_neurons, x);
+fitness_vector hovering_problem::objfun_seeded(const unsigned int &seed, const decision_vector &x) const {
+    PaGMOSimulationNeuralNetwork simulation(seed, m_simulation_time, m_n_hidden_neurons, x);
+    fitness_vector f(1);
     f[0] = single_fitness(simulation);
+    return f;
+}
 
-#else
+void hovering_problem::objfun_impl(fitness_vector &f, const decision_vector &x) const {
     f[0] = 0.0;
 
     // Make sure the pseudorandom sequence will always be the same
@@ -40,15 +41,14 @@ void hovering_problem::objfun_impl(fitness_vector &f, const decision_vector &x) 
 
     for (unsigned int count = 0; count < m_n_evaluations; count++) {
         // Creates the initial conditions at random, based on the current seed
-        const unsigned int current_seed = m_drng();
+        const double current_seed = m_drng();
+        const unsigned int seed = current_seed;
 
         // Neural Network simulation
-        PaGMOSimulationNeuralNetwork simulation(current_seed, m_simulation_time, m_n_hidden_neurons, x);
+        PaGMOSimulationNeuralNetwork simulation(seed, m_simulation_time, m_n_hidden_neurons, x);
         f[0] += single_fitness(simulation);
     }
-
     f[0] /= m_n_evaluations;
-#endif
 }
 
 std::string hovering_problem::human_readable_extra() const {
