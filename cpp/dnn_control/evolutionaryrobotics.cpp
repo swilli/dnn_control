@@ -5,12 +5,12 @@
 #include "configuration.h"
 
 // Training configuration
-static const unsigned int num_generations = 1000;
-static const unsigned int population_size = 100;
-static const unsigned int num_islands = 4;
-static const double simulation_time = 1.0 * 60.0 * 60.0;
-static const unsigned int num_evaluations = 4;
-static const unsigned int num_hidden_neurons = 6;
+static const unsigned int num_generations = ER_NUM_GENERATIONS;
+static const unsigned int population_size = ER_POPULATION_SIZE;
+static const unsigned int num_islands = ER_NUM_ISLANDS;
+static const double simulation_time = ER_SIMULATION_TIME;
+static const unsigned int num_evaluations = ER_EVALUATIONS;
+static const unsigned int num_hidden_neurons = ER_NUM_HIDDEN_NODES;
 
 
 
@@ -29,18 +29,6 @@ static unsigned int ArchipelagoChampionID(pagmo::archipelago archi) {
 
 void TrainNeuralNetworkController() {
     std::cout << std::setprecision(10);
-
-    std::cout << "Evolutionary training configuration" << std::endl;
-    std::cout << "number of generations: " << num_generations << std::endl;
-    std::cout << "population size: " << population_size << std::endl;
-    std::cout << "number of islands: " << num_islands << std::endl;
-    std::cout << "simulation time: " << simulation_time << std::endl;
-#ifdef HP_FIXED_SEED
-    std::cout << "number of evaluations: 1" << std::endl;
-#else
-    std::cout << "number of evaluations: " << num_evaluations << std::endl;
-#endif
-    std::cout << "number of hidden neurons: " << num_hidden_neurons << std::endl << std::endl;
 
     // Buffer
     std::vector<double> buff;

@@ -8,6 +8,14 @@
  * GLOBAL CONFIGURATION FILE FOR ALL AVAILABLE COMPILE TIME OPTIONS
  */
 
+// Evolutionary Robotics configs
+#define ER_NUM_GENERATIONS  1000
+#define ER_POPULATION_SIZE  100
+#define ER_NUM_ISLANDS  4
+#define ER_SIMULATION_TIME  1.0 * 60.0 * 60.0
+#define ER_EVALUATIONS  4
+#define ER_NUM_HIDDEN_NODES 6
+
 // Class hovering_problem configs
 #define HP_OBJ_FUN_METHOD_1    1   // Compare start and ending position and velocity.
 #define HP_OBJ_FUN_METHOD_2    2   // Compare mean distance to target point.
@@ -17,7 +25,7 @@
 #define HP_OBJ_FUN_METHOD_6    6   // Compare mean distance to target point, also consider velocity, but don't take into consideration some amount of starting positions.
 #define HP_OBJ_FUN_METHOD_7    7   // Compare mean distance to target point, also consider velocity, punish later offsets more.
 
-#define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_3
+#define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_6
 //#define HP_FIXED_SEED  1990
 
 // Class ODESystem configs
@@ -48,12 +56,22 @@
 #define SSA_DATA_MULTIPLIER  3
 #define SSA_DATA_HISTORY     3
 
-// Other stuff configs, not relevant for simulation
+// Least Squares Policy Robotics configs
+#define LSPR_NUM_SAMPLES    1000
+#define LSPR_NUM_STEPS  50
+#define LSPR_GAMMA  0.9
+#define LSPR_EPSILON 1e-10
 
+// Other stuff configs, not relevant for simulation
 #define PATH_TO_NEURO_VISUALIZATION_FILE   "../../../results/visualization_neuro.txt"
 #define PATH_TO_LSPI_VISUALIZATION_FILE   "../../../results/visualization_lspi.txt"
 #define PATH_TO_SENSOR_DATA_FOLDER  "/home/willist/Documents/data/"
 
+
+#ifdef HP_FIXED_SEED
+#undef ER_EVALUATIONS
+#define ER_EVALUATIONS  1
+#endif
 
 static inline std::string ToString(const bool &value) {
     return (value ? "true" : "false");
@@ -61,6 +79,12 @@ static inline std::string ToString(const bool &value) {
 
 inline void Configuration() {
     std::cout << "PaGMOSimulation global configuration" << std::endl;
+    std::cout << "ER_NUM_GENERATIONS   " << ER_NUM_GENERATIONS << std::endl;
+    std::cout << "ER_POPULATION_SIZE   " << ER_POPULATION_SIZE << std::endl;
+    std::cout << "ER_NUM_ISLANDS   " << ER_NUM_ISLANDS << std::endl;
+    std::cout << "ER_SIMULATION_TIME   " << ER_SIMULATION_TIME << std::endl;
+    std::cout << "ER_NUM_HIDDEN_NODES   " << ER_NUM_HIDDEN_NODES << std::endl;
+    std::cout << "ER_EVALUATIONS   " << ER_EVALUATIONS << std::endl;
     std::cout << "HP_OBJECTIVE_FUNCTION_METHOD   " << HP_OBJECTIVE_FUNCTION_METHOD << std::endl;
 #ifdef HP_FIXED_SEED
     std::cout << "HP_FIXED_SEED   " << HP_FIXED_SEED << std::endl;
@@ -76,6 +100,10 @@ inline void Configuration() {
     std::cout << "SSA_DATA_DIMENSIONS   " << SSA_DATA_DIMENSIONS << std::endl;
     std::cout << "SSA_DATA_MULTIPLIER   " << SSA_DATA_MULTIPLIER << std::endl;
     std::cout << "SSA_DATA_HISTORY   " << SSA_DATA_HISTORY << std::endl;
+    std::cout << "LSPR_NUM_SAMPLES   " << LSPR_NUM_SAMPLES << std::endl;
+    std::cout << "LSPR_NUM_STEPS   " << LSPR_NUM_STEPS << std::endl;
+    std::cout << "LSPR_GAMMA   " << LSPR_GAMMA << std::endl;
+    std::cout << "LSPR_EPSILON   " << LSPR_EPSILON << std::endl;
     std::cout << std::endl;
 }
 

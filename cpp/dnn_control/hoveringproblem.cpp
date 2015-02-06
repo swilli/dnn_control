@@ -37,15 +37,19 @@ void hovering_problem::objfun_impl(fitness_vector &f, const decision_vector &x) 
     f[0] = 0.0;
 
     // Make sure the pseudorandom sequence will always be the same
-    m_drng.seed(m_seed);
+    m_urng.seed(m_seed);
 
     for (unsigned int count = 0; count < m_n_evaluations; count++) {
+
         // Creates the initial conditions at random, based on the current seed
-        const double current_seed = m_drng();
-        const unsigned int seed = current_seed;
+#ifdef HP_FIXED_SEED
+        const unsigned int current_seed = HP_FIXED_SEED;
+#else
+        const unsigned int current_seed = m_urng();
+#endif
 
         // Neural Network simulation
-        PaGMOSimulationNeuralNetwork simulation(seed, m_simulation_time, m_n_hidden_neurons, x);
+        PaGMOSimulationNeuralNetwork simulation(current_seed, m_simulation_time, m_n_hidden_neurons, x);
         f[0] += single_fitness(simulation);
     }
     f[0] /= m_n_evaluations;
