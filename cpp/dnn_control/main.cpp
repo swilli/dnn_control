@@ -14,11 +14,11 @@ int main(int argc, char *argv[]) {
     srand(time(0));
     Configuration();
 
-    //TestNeuralNetworkController();
-    //return 0;
-
-    TrainNeuralNetworkController();
+    TestNeuralNetworkController();
     return 0;
+
+    //TrainNeuralNetworkController();
+    //return 0;
 
     //TestLeastSquaresPolicyController(1990);
     //return 0;
