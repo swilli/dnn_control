@@ -22,8 +22,8 @@ LSPISimulator::LSPISimulator(const unsigned int &random_seed)
     spacecraft_specific_impulse_ = 200.0;
     spacecraft_engine_noise_ = 0.05;
 
-    perturbation_mean_ = 1e-4;
-    perturbation_noise_ = 1e-5;
+    perturbation_mean_ = 5.0e-6;
+    perturbation_noise_ = 1.0e-7;
 }
 
 LSPISimulator::~LSPISimulator() {
