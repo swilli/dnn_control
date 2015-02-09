@@ -118,23 +118,27 @@ void TrainNeuralNetworkController() {
 
 
 void TestNeuralNetworkController(const unsigned int &random_seed) {
-    const pagmo::decision_vector &controller_parameters = {-0.747003615, -4.655372696, -5.820524281, 0.4917795358, -10.55576246, -0.7847575396, -3.778163064, 0.01707794801, 2.156707482, -6.186894822, -6.459054113, 6.521388439, -0.9582162699, 2.277597915, -0.3091513314, 0.5313651178, 0.6266070788, -2.264479814, 0.7237817652, -2.189075674, -5.942460416, 0.8335105367, -6.179160576, -4.179755773, -1.268472931, -9.136555202, -3.128254453, 3.209922469, 3.125601262, 0.6768597883, 0.09513850953, 1.557494864, -1.783048039, 11.62262349, 1.92518565, 0.7387033585, -1.259430373, -3.818802523, 3.430180025, 0.06453246724, -13.90993168, 7.293075065, 2.423550511, -8.978639948, 4.835654713, -2.372304393, -6.54246587, 0.8900295273, 4.000157653, 1.3518109, -2.816927661, -3.055357814, 0.08248106602, 2.196977633, 3.739722635, -6.0321973, 2.332685162, -2.354150126, -0.5950197091, -10.14926048, -2.36125312, 2.059603555, 4.018288219};
+    const pagmo::decision_vector &controller_parameters = {1.139195728, -0.5226369611, 11.50837032, -0.9243382034, -2.353741217, 0.8235154027, -8.055780662, -1.043735176, -2.573237816, -9.513282065, 0.4797968306, -3.154748448, -10.5526454, -0.7267928348, 2.644780927, 0.4329906785, 2.089466159, 1.431430092, -3.605546448, -1.177694193, -1.564619942, -0.05351109618, 3.487903231, 4.94242206, 1.135662977, 0.7474408005, -0.5729041083, -0.7939810009, -1.026073727, 6.185496898, -14.56338275, -12.77003101, 3.141353625, -5.512882646, 1.535766781, 1.619485065, 1.269288631, -2.886643146, 0.134244204, 4.712408697, -4.923125927, 2.011897279, -1.766100603, -1.513967254, -1.878922867, -0.09092549268, 0.7385568409, 1.454678353, 3.170376046, -0.215203178, 2.252984266, -2.024107472, -0.4122462115, 1.990177368, -0.4001560543, -1.689947148, 0.08185300814, -2.396049012, 0.6536741258, 2.080319842, 0.2566107572, -1.086708268, -0.2556895039};
 
 
+    std::cout << "checking neuro controller fitness... ";
     pagmo::problem::hovering_problem prob(random_seed, num_evaluations, simulation_time, num_hidden_neurons);
     const double fitness = prob.objfun_seeded(random_seed, controller_parameters)[0];
-    std::cout << "fitness of chapmion: " << fitness << std::endl;
+    std::cout << fitness << std::endl;
 
-    std::cout << "testing neuro controller ... ";
-    PaGMOSimulationNeuralNetwork sim(random_seed, 86400.0, num_hidden_neurons, controller_parameters);
-    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > r1 = sim.EvaluateAdaptive();
-    std::cout << "done." << std::endl << "writing result to file ... ";
+    std::cout << "simulating neuro controller ... ";
+    PaGMOSimulationNeuralNetwork simulation(random_seed, 86400.0, num_hidden_neurons, controller_parameters);
+    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = simulation.EvaluateAdaptive();
+    const std::vector<double> &times = boost::get<0>(result);
+    const std::vector<Vector3D> &positions = boost::get<2>(result);
+    const std::vector<Vector3D> &heights = boost::get<3>(result);
+    const std::vector<Vector3D> &thrusts = boost::get<5>(result);
 
-    const std::vector<Vector3D> &positions = boost::get<2>(r1);
-    const std::vector<Vector3D> &heights = boost::get<3>(r1);
-
-    FileWriter writer;
-    writer.CreateVisualizationFile(PATH_TO_NEURO_VISUALIZATION_FILE, sim.ControlFrequency(), sim.AsteroidOfSystem(), positions, heights);
+    std::cout << "done." << std::endl << "writing visualization file ... ";
+    FileWriter writer_visualization(PATH_TO_NEURO_TRAJECTORY_FILE);
+    writer_visualization.CreateVisualizationFile(simulation.ControlFrequency(), simulation.AsteroidOfSystem(), positions, heights);
+    std::cout << "done." << std::endl << "writing performance file ... ";
+    FileWriter writer_performance(PATH_TO_NEURO_PERFORMANCE_FILE);
+    writer_performance.CreatePerformanceFile(random_seed, simulation.TargetPosition(), times, positions, thrusts);
     std::cout << "done." << std::endl;
-
 }

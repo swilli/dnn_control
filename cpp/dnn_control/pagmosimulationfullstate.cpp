@@ -19,7 +19,7 @@ PaGMOSimulationFullState::~PaGMOSimulationFullState() {
 
 }
 
-boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > PaGMOSimulationFullState::EvaluateAdaptive() {
+boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > PaGMOSimulationFullState::EvaluateAdaptive() {
     typedef odeint::runge_kutta_cash_karp54<SystemState> ErrorStepper;
     typedef odeint::modified_controlled_runge_kutta<ErrorStepper> ControlledStepper;
 
@@ -46,6 +46,7 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     std::vector<Vector3D> evaluated_positions(num_iterations + 1);
     std::vector<Vector3D> evaluated_velocities(num_iterations + 1);
     std::vector<Vector3D> evaluated_heights(num_iterations + 1);
+    std::vector<Vector3D> evaluated_thrusts(num_iterations + 1);
 
     SystemState system_state(initial_system_state_);
 
@@ -67,18 +68,19 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
             const Vector3D &surf_pos = boost::get<0>(asteroid_.NearestPointOnSurfaceToPosition(position));
             const Vector3D &height = {position[0] - surf_pos[0], position[1] - surf_pos[1], position[2] - surf_pos[2]};
 
-            evaluated_times[iteration] = current_time;
-            evaluated_masses[iteration] = mass;
-            evaluated_positions[iteration] = position;
-            evaluated_velocities[iteration] = velocity;
-            evaluated_heights[iteration] = height;
+            evaluated_times.at(iteration) = current_time;
+            evaluated_masses.at(iteration) = mass;
+            evaluated_positions.at(iteration) = position;
+            evaluated_velocities.at(iteration) = velocity;
+            evaluated_heights.at(iteration) = height;
 
             for (unsigned int i = 0; i < 3; ++i) {
-                perturbations_acceleration[i] = mass * sample_factory.SampleNormal(perturbation_mean_, perturbation_noise_);
+                perturbations_acceleration[i] = sample_factory.SampleNormal(perturbation_mean_, perturbation_noise_);
             }
 
             const SensorData sensor_data = sensor_simulator.Simulate(system_state, height, perturbations_acceleration, current_time);
             thrust = controller.GetThrustForSensorData(sensor_data);
+            evaluated_thrusts.at(iteration) = thrust;
 
             const double engine_noise = sample_factory.SampleNormal(0.0, spacecraft_engine_noise_);
 
@@ -103,6 +105,7 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
         evaluated_positions.resize(new_size);
         evaluated_velocities.resize(new_size);
         evaluated_heights.resize(new_size);
+        evaluated_thrusts.resize(new_size);
     }
 
     const Vector3D &position = {system_state[0], system_state[1], system_state[2]};
@@ -117,11 +120,12 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     evaluated_positions.back() = position;
     evaluated_velocities.back() = velocity;
     evaluated_heights.back() = height;
+    evaluated_thrusts.back() = thrust;
 
-    return boost::make_tuple(evaluated_times, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities);
+    return boost::make_tuple(evaluated_times, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities, evaluated_thrusts);
 }
 
-boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > PaGMOSimulationFullState::EvaluateFixed() {
+boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > PaGMOSimulationFullState::EvaluateFixed() {
     SampleFactory sample_factory(random_seed_);
     SampleFactory sf_sensor_simulator(sample_factory.SampleRandomInteger());
 
@@ -143,6 +147,7 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     std::vector<Vector3D> evaluated_positions;
     std::vector<Vector3D> evaluated_velocities;
     std::vector<Vector3D> evaluated_heights;
+    std::vector<Vector3D> evaluated_thrusts;
 
     SystemState system_state(initial_system_state_);
 
@@ -168,11 +173,12 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
             evaluated_heights.push_back(height);
 
             for (unsigned int i = 0; i < 3; ++i) {
-                perturbations_acceleration[i] = mass * sample_factory.SampleNormal(perturbation_mean_, perturbation_noise_);
+                perturbations_acceleration[i] = sample_factory.SampleNormal(perturbation_mean_, perturbation_noise_);
             }
 
             const SensorData sensor_data = sensor_simulator.Simulate(system_state, height, perturbations_acceleration, current_time);
             thrust = controller.GetThrustForSensorData(sensor_data);
+            evaluated_thrusts.push_back(thrust);
 
             const double engine_noise = sample_factory.SampleNormal(0.0, spacecraft_engine_noise_);
 
@@ -189,7 +195,7 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
         //std::cout << "The spacecraft is out of fuel." << std::endl;
     }
 
-    return boost::make_tuple(evaluated_times, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities);
+    return boost::make_tuple(evaluated_times, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities, evaluated_thrusts);
 }
 
 unsigned int PaGMOSimulationFullState::ChromosomeSize() const {

@@ -63,10 +63,10 @@
 #define LSPR_EPSILON 1e-10
 
 // Other stuff configs, not relevant for simulation
-#define PATH_TO_NEURO_VISUALIZATION_FILE   "../../../results/visualization_neuro.txt"
-#define PATH_TO_LSPI_VISUALIZATION_FILE   "../../../results/visualization_lspi.txt"
+#define PATH_TO_NEURO_TRAJECTORY_FILE   "../../../results/trajectory_neuro.txt"
+#define PATH_TO_LSPI_TRAJECTORY_FILE   "../../../results/trajectory_lspi.txt"
+#define PATH_TO_NEURO_PERFORMANCE_FILE  "../../../results/performance_neuro.txt"
 #define PATH_TO_SENSOR_DATA_FOLDER  "/home/willist/Documents/data/"
-
 
 #ifdef HP_FIXED_SEED
 #undef ER_EVALUATIONS

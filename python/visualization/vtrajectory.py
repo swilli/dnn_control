@@ -1,14 +1,14 @@
 '''
 usage:
-./python2.7 visualize.py <data_file> [speedup] [reference frame]
+./python2.7 vtrajectory.py <data_file> [speedup] [reference frame]
 
 default speedup is 400. default reference frame is body.
 
 examples:
-./python2.7 visualize.py visualization.txt 400 body
-./python2.7 visualize.py visualization.txt 1 inertial
-./python2.7 visualize.py visualization.txt 123
-./python2.7 visualize.py visualization.txt
+./python2.7 vtrajectory.py trajectory.txt 400 body
+./python2.7 vtrajectory.py trajectory.txt 1 inertial
+./python2.7 vtrajectory.py trajectory.txt 123
+./python2.7 vtrajectory.py trajectory.txt
 
 '''
 

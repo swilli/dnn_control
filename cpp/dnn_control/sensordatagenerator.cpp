@@ -31,11 +31,10 @@ void SensorDataGenerator::Generate(const unsigned int &num_datasets, const unsig
         time_info = localtime(&raw_time);
 
         if (prefix == "") {
-            strftime(buffer,80,"data_stream_%d_%m_%H_%I_%M_%S_",time_info);
+            strftime(buffer,80,"sensor_stream_%d_%m_%H_%I_%M_%S_",time_info);
         } else{
             path_to_sensor_data_file += prefix;
             strftime(buffer,80,"_%d_%m_%H_%I_%M_%S_",time_info);
-
         }
 
         std::string str(buffer);
@@ -52,9 +51,8 @@ void SensorDataGenerator::Generate(const unsigned int &num_datasets, const unsig
         const SystemState system_state = simulation.InitialSystemState();
 
         std::cout << "   writing sensor data to file " << path_to_sensor_data_file << " ... ";
-        FileWriter writer;
-        writer.CreateSensorDataFile(path_to_sensor_data_file, random_seed, simulation.ControlFrequency(), simulation.SimulationTime(), simulation.AsteroidOfSystem(),
-                                    system_state, data_set);
+        FileWriter writer(path_to_sensor_data_file);
+        writer.CreateSensorDataFile(random_seed, simulation.ControlFrequency(), simulation.SimulationTime(), simulation.AsteroidOfSystem(), system_state, data_set);
         std::cout << "done." << std::endl;
     }
 }

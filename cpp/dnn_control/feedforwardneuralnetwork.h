@@ -6,7 +6,7 @@
 class FeedForwardNeuralNetwork : public NeuralNetwork {
 public:
     FeedForwardNeuralNetwork(const unsigned int &dim_input, const unsigned int &dim_hidden, const unsigned int &dim_output);
-    ~FeedForwardNeuralNetwork();
+    virtual ~FeedForwardNeuralNetwork();
 
 
     virtual std::vector<double> Evaluate(const std::vector<double> &input);

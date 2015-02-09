@@ -6,7 +6,7 @@
 class SimpleRecurrentNeuralNetwork : public NeuralNetwork {
 public:
     SimpleRecurrentNeuralNetwork(const unsigned int &dim_input, const unsigned int &dim_hidden, const unsigned int &dim_output);
-    ~SimpleRecurrentNeuralNetwork();
+    virtual ~SimpleRecurrentNeuralNetwork();
 
 
     virtual std::vector<double> Evaluate(const std::vector<double> &input);

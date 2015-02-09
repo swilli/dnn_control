@@ -22,8 +22,8 @@ LSPISimulator::LSPISimulator(const unsigned int &random_seed)
     spacecraft_specific_impulse_ = 200.0;
     spacecraft_engine_noise_ = 0.05;
 
-    perturbation_mean_ = 1e-9;
-    perturbation_noise_ = 1e-11;
+    perturbation_mean_ = 1e-4;
+    perturbation_noise_ = 1e-5;
 }
 
 LSPISimulator::~LSPISimulator() {
@@ -39,7 +39,7 @@ boost::tuple<SystemState, bool> LSPISimulator::NextState(const SystemState &stat
 
     Vector3D perturbations_acceleration;
     for (unsigned int i = 0; i < 3; ++i) {
-        perturbations_acceleration[i] = mass * sample_factory_.SampleNormal(perturbation_mean_, perturbation_noise_);
+        perturbations_acceleration[i] = sample_factory_.SampleNormal(perturbation_mean_, perturbation_noise_);
     }
 
     const double engine_noise = sample_factory_.SampleNormal(0.0, spacecraft_engine_noise_);

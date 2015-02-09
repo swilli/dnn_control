@@ -147,8 +147,8 @@ void PaGMOSimulation::Init() {
     spacecraft_specific_impulse_ = 200.0;
     spacecraft_engine_noise_ = 0.05;
 
-    perturbation_mean_ = 1e-9;
-    perturbation_noise_ = 1e-11;
+    perturbation_mean_ = 1e-4;
+    perturbation_noise_ = 1e-5;
 
 #if PGMOS_IC_VELOCITY_TYPE == PGMOS_IC_INERTIAL_ORBITAL_VELOCITY
     // higher for orbit, so we don't crash into the asteroid
@@ -217,4 +217,3 @@ void PaGMOSimulation::Init() {
     }
     initial_system_state_[6] = spacecraft_maximum_mass_;
 }
-

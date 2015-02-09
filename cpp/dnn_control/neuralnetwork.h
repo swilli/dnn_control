@@ -6,7 +6,7 @@
 class NeuralNetwork {
 public:
     NeuralNetwork(const unsigned int &size);
-    ~NeuralNetwork();
+    virtual ~NeuralNetwork();
 
     virtual std::vector<double> Evaluate(const std::vector<double> &input) = 0;
 

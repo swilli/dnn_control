@@ -5,8 +5,7 @@ NeuralNetwork::NeuralNetwork(const unsigned int &size)
 
 }
 
-NeuralNetwork::~NeuralNetwork()
-{
+NeuralNetwork::~NeuralNetwork() {
 
 }
 

@@ -3,12 +3,11 @@
 
 #include <string>
 
-class SensorDataGenerator
-{
+class SensorDataGenerator {
 public:
     SensorDataGenerator(const std::string &path_to_output_folder, const double &data_set_time);
 
-    void Generate(const unsigned int &num_datasets, const unsigned int &random_seed=0, const std::string &prefix="sensor_stream");
+    void Generate(const unsigned int &num_datasets, const unsigned int &random_seed, const std::string &prefix="sensor_stream");
 
 private:
     double data_set_time_;
