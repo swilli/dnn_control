@@ -36,9 +36,7 @@ target_position = array([float(value) for value in result_file.readline().split(
 lines = result_file.readlines()
 num_samples = len(lines)
 data = [line.split(',') for line in lines]
-for i in range(num_samples):
-    for j in range(len(data[i])):
-        data[i][j] = float(data[i][j])
+data = [[float(value) for value in line] for line in data]
 
 result_file.close()
 data = array(data)

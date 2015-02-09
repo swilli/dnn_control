@@ -50,9 +50,7 @@ lines = result_file.readlines()
 num_samples = len(lines)
 total_time = num_samples / frequency
 states = [line.split(',') for line in lines]
-for i in range(num_samples):
-    for j in range(len(states[i])):
-        states[i][j] = float(states[i][j])
+states = [[float(value) for value in line] for line in states]
 
 result_file.close()
 
