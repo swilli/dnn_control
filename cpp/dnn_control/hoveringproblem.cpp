@@ -7,8 +7,8 @@ hovering_problem::hovering_problem(const unsigned int &seed, const unsigned int 
     : base_stochastic(PaGMOSimulationNeuralNetwork(0, 0.0, n_hidden_neurons).ChromosomeSize(), seed),
       m_n_evaluations(n_evaluations), m_n_hidden_neurons(n_hidden_neurons), m_simulation_time(simulation_time) {
 
-    set_lb(-1);
-    set_ub(1);
+    set_lb(-1.0);
+    set_ub(1.0);
 }
 
 hovering_problem::hovering_problem(const hovering_problem &other)
@@ -146,6 +146,21 @@ double hovering_problem::single_fitness(PaGMOSimulationNeuralNetwork &simulation
 
 hovering_problem::~hovering_problem() {
 
+}
+
+std::vector<std::pair<unsigned int, double> > hovering_problem::post_evaluate(const decision_vector &x, const unsigned int &num_tests, const unsigned int &seed) const {
+    std::vector<std::pair<unsigned int, double> > result(num_tests, std::make_pair(0, 0.0));
+
+    m_drng.seed(seed);
+
+    for (unsigned int i = 0; i < num_tests; ++i) {
+        const unsigned int current_seed = m_urng();
+        PaGMOSimulationNeuralNetwork simulation(current_seed, m_simulation_time, m_n_hidden_neurons, x);
+        result.at(i).first = current_seed;
+        result.at(i).second = single_fitness(simulation);
+    }
+
+    return result;
 }
 
 }}

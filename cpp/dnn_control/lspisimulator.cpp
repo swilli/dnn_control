@@ -35,7 +35,6 @@ boost::tuple<SystemState, bool> LSPISimulator::NextState(const SystemState &stat
     typedef odeint::modified_controlled_runge_kutta<ErrorStepper> ControlledStepper;
 
     SystemState state_copy(state);
-    const double &mass = state_copy[6];
 
     Vector3D perturbations_acceleration;
     for (unsigned int i = 0; i < 3; ++i) {

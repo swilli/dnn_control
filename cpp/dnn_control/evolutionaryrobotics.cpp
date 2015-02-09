@@ -132,6 +132,7 @@ void TestNeuralNetworkController(const unsigned int &random_seed) {
     const std::vector<double> &times = boost::get<0>(result);
     const std::vector<Vector3D> &positions = boost::get<2>(result);
     const std::vector<Vector3D> &heights = boost::get<3>(result);
+    const std::vector<Vector3D> &velocities = boost::get<4>(result);
     const std::vector<Vector3D> &thrusts = boost::get<5>(result);
 
     std::cout << "done." << std::endl << "writing visualization file ... ";
@@ -139,6 +140,6 @@ void TestNeuralNetworkController(const unsigned int &random_seed) {
     writer_visualization.CreateVisualizationFile(simulation.ControlFrequency(), simulation.AsteroidOfSystem(), positions, heights);
     std::cout << "done." << std::endl << "writing performance file ... ";
     FileWriter writer_performance(PATH_TO_NEURO_PERFORMANCE_FILE);
-    writer_performance.CreatePerformanceFile(random_seed, simulation.TargetPosition(), times, positions, thrusts);
+    writer_performance.CreatePerformanceFile(random_seed, simulation.TargetPosition(), times, positions, velocities, thrusts);
     std::cout << "done." << std::endl;
 }

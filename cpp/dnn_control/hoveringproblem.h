@@ -10,11 +10,13 @@ namespace pagmo { namespace problem {
 
 class __PAGMO_VISIBLE hovering_problem : public base_stochastic {
 public:
-    hovering_problem(const unsigned int &seed=0, const unsigned int &n_evaluations=5, const double &simulation_time=60.0, const unsigned int &n_hidden_neurons=10);
+    hovering_problem(const unsigned int &seed=0, const unsigned int &n_evaluations=4, const double &simulation_time=3600.0, const unsigned int &n_hidden_neurons=6);
 
     hovering_problem(const hovering_problem &other);
 
     ~hovering_problem();
+
+    std::vector<std::pair<unsigned int, double> > post_evaluate(const decision_vector &x, const unsigned int &num_tests=25000, const unsigned int &seed=0) const;
 
     std::string get_name() const;
 
