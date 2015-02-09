@@ -31,8 +31,6 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
 
     if (simulation_parameters_.size()) {
         controller.SetCoefficients(simulation_parameters_);
-    } else {
-        throw SizeMismatchException();
     }
 
     if (sensor_simulator.Dimensions() != controller.Dimensions()) {
@@ -134,8 +132,6 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
 
     if (simulation_parameters_.size()) {
         controller.SetCoefficients(simulation_parameters_);
-    } else {
-        throw SizeMismatchException();
     }
 
     if (sensor_simulator.Dimensions() != controller.Dimensions()) {

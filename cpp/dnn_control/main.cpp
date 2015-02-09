@@ -13,8 +13,8 @@ int main(int argc, char *argv[]) {
     srand(time(0));
     Configuration();
 
-    TestNeuralNetworkController(1990);
-    return 0;
+    //TestNeuralNetworkController(1990);
+    //return 0;
 
     //TrainNeuralNetworkController();
     //return 0;
@@ -28,17 +28,17 @@ int main(int argc, char *argv[]) {
     //SensorDataGenerator generator(PATH_TO_SENSOR_DATA_FOLDER, 6.0 * 60.0 * 60.0);
     //generator.Generate(100, rand());
 
-    /*
-    PaGMOSimulationFullState sim(1990, 24.0 * 60.0 * 60.0, {4.0, 20.0, 0.0});
-    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = sim.EvaluateFixed();
+
+    PaGMOSimulationFullState sim(1990, 24.0 * 60.0 * 60.0);
+    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = sim.EvaluateAdaptive();
     const std::vector<Vector3D> &pos = boost::get<2>(result);
     const std::vector<Vector3D> &hei = boost::get<3>(result);
 
-    FileWriter writer;
-    writer.CreateVisualizationFile(PATH_TO_NEURO_VISUALIZATION_FILE, sim.ControlFrequency(), sim.AsteroidOfSystem(), pos, hei);
+    FileWriter writer(PATH_TO_NEURO_TRAJECTORY_FILE);
+    writer.CreateVisualizationFile(sim.ControlFrequency(), sim.AsteroidOfSystem(), pos, hei);
 
     return 0;
-    */
+
 
 
     /*
