@@ -1,17 +1,18 @@
-from sensor_data_loader import load_sensor_file, load_sensor_files
+from sensor_data_loader import load_sensor_files
 import theano
 import theano.tensor as T
 from theano.tensor.shared_randomstreams import RandomStreams
 import numpy
 import time
 import sys
-import os
+from numpy.linalg import norm
+
 from denoising_autoencoder import DenoisingAutoencoder
 
 learning_rate = 0.1
 training_epochs = 50
-batch_size = 20
-num_hidden_nodes = 5
+batch_size = 100
+num_hidden_nodes = 10
 corruption_level = 0.0
 data_path = "/home/willist/Documents/data/"
 
@@ -40,7 +41,7 @@ da = DenoisingAutoencoder(
     numpy_rng=rng,
     theano_rng=theano_rng,
     input=x,
-    n_visible=45,
+    n_visible=81,
     n_hidden=num_hidden_nodes
 )
 
@@ -79,7 +80,7 @@ training_time = (end_time - start_time)
 
 print >> sys.stderr, ('The training ran for %.2fm' % (training_time / 60.))
 
-sys.exit(0)
+#sys.exit(0)
 
 print da.W.get_value(borrow=True).T
 
@@ -92,4 +93,5 @@ for sample in test_samples:
     print sample
     print s_compr
     print s_decompr
+    print norm(sample - s_decompr)
     print "\n"

@@ -60,9 +60,9 @@ class StackedDenoisingAutoencoder(object):
         self,
         numpy_rng,
         theano_rng=None,
-        n_ins=784,
-        hidden_layers_sizes=[500, 500],
-        n_outs=10,
+        n_ins=81,
+        hidden_layers_sizes=[40, 20],
+        n_outs=5,
         corruption_levels=[0.1, 0.1]
     ):
         """ This class is made to support a variable number of layers.
@@ -326,6 +326,8 @@ class StackedDenoisingAutoencoder(object):
 def test_SdA(finetune_lr=0.1, pretraining_epochs=15,
              pretrain_lr=0.001, training_epochs=1000,
              dataset='mnist.pkl.gz', batch_size=1):
+
+
     """
     Demonstrates how to train and test a stochastic denoising autoencoder.
 
@@ -366,9 +368,9 @@ def test_SdA(finetune_lr=0.1, pretraining_epochs=15,
     # construct the stacked denoising autoencoder class
     sda = StackedDenoisingAutoencoder(
         numpy_rng=numpy_rng,
-        n_ins=28 * 28,
-        hidden_layers_sizes=[1000, 1000, 1000],
-        n_outs=10
+        n_ins=27 * 3,
+        hidden_layers_sizes=[40, 20],
+        n_outs=5
     )
     # end-snippet-3 start-snippet-4
     #########################
