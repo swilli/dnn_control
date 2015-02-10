@@ -37,7 +37,7 @@
 #define PGMOS_IC_INERTIAL_ORBITAL_VELOCITY   2
 #define PGMOS_IC_BODY_RANDOM_VELOCITY        3
 
-#define PGMOS_IC_VELOCITY_TYPE  PGMOS_IC_INERTIAL_ORBITAL_VELOCITY
+#define PGMOS_IC_VELOCITY_TYPE  PGMOS_IC_BODY_RANDOM_VELOCITY
 #define PGMOS_IC_POSITION_OFFSET_ENABLED true
 
 // Class SensorSimulatorNeuralNetwork configs
@@ -57,7 +57,14 @@
 #define SSA_DATA_HISTORY     3
 
 // Least Squares Policy Robotics configs
-#define LSPR_NUM_SAMPLES    1000
+#define LSPR_IC_BODY_ZERO_VELOCITY          0
+#define LSPR_IC_BODY_RANDOM_VELOCITY        1
+
+//#define LSPR_FIXED_SEED     1990
+#define LSPR_IC_VELOCITY_TYPE  LSPR_IC_BODY_RANDOM_VELOCITY
+#define LSPR_IC_POSITION_OFFSET_ENABLED true
+
+#define LSPR_NUM_EPISODES    1000
 #define LSPR_NUM_STEPS  50
 #define LSPR_GAMMA  0.9
 #define LSPR_EPSILON 1e-10
@@ -100,7 +107,17 @@ inline void Configuration() {
     std::cout << "SSA_DATA_DIMENSIONS   " << SSA_DATA_DIMENSIONS << std::endl;
     std::cout << "SSA_DATA_MULTIPLIER   " << SSA_DATA_MULTIPLIER << std::endl;
     std::cout << "SSA_DATA_HISTORY   " << SSA_DATA_HISTORY << std::endl;
-    std::cout << "LSPR_NUM_SAMPLES   " << LSPR_NUM_SAMPLES << std::endl;
+    std::cout << std::endl;
+
+    std::cout << "LSPI global configuration" << std::endl;
+#ifdef LSPR_FIXED_SEED
+    std::cout << "LSPR_FIXED_SEED   " << LSPR_FIXED_SEED << std::endl;
+#else
+    std::cout << "LSPR_FIXED_SEED   undefined" << std::endl;
+#endif
+    std::cout << "LSPR_IC_POSITION_OFFSET_ENABLED   " << ToString(LSPR_IC_POSITION_OFFSET_ENABLED) << std::endl;
+    std::cout << "LSPR_IC_VELOCITY_TYPE   " << LSPR_IC_VELOCITY_TYPE << std::endl;
+    std::cout << "LSPR_NUM_EPISODES   " << LSPR_NUM_EPISODES << std::endl;
     std::cout << "LSPR_NUM_STEPS   " << LSPR_NUM_STEPS << std::endl;
     std::cout << "LSPR_GAMMA   " << LSPR_GAMMA << std::endl;
     std::cout << "LSPR_EPSILON   " << LSPR_EPSILON << std::endl;

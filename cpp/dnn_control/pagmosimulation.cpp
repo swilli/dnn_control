@@ -147,25 +147,26 @@ void PaGMOSimulation::Init() {
     spacecraft_specific_impulse_ = 200.0;
     spacecraft_engine_noise_ = 0.05;
 
-    perturbation_mean_ = 1.0e-6;
-    perturbation_noise_ = 1.0e-7;
+    perturbation_mean_ = 1e-6;
+    perturbation_noise_ = 1e-7;
 
 #if PGMOS_IC_VELOCITY_TYPE == PGMOS_IC_INERTIAL_ORBITAL_VELOCITY
     // higher for orbit, so we don't crash into the asteroid
-    const Vector3D spacecraft_position = sample_factory.SamplePointOutSideEllipsoid(semi_axis, 2.0, 4.0);
+    target_position_ = sample_factory.SamplePointOutSideEllipsoid(semi_axis, 2.0, 4.0);
 #else
     // random
-    const Vector3D spacecraft_position = sample_factory.SamplePointOutSideEllipsoid(semi_axis, 1.1, 4.0);
+    target_position_ = sample_factory.SamplePointOutSideEllipsoid(semi_axis, 1.1, 4.0);
 #endif
 
 #if PGMOS_IC_POSITION_OFFSET_ENABLED
     // spacecraft has uniformly distributed offset to target position
+    Vector3D spacecraft_position;
     for (unsigned int i = 0 ; i < 3; ++i) {
-        target_position_[i] = spacecraft_position[i] + sample_factory.SampleUniform(-3.0, 3.0);
+        spacecraft_position[i] = target_position_[i] + sample_factory.SampleUniform(-3.0, 3.0);
     }
 #else
     // spacecraft starts at target position
-    target_position_ = spacecraft_position;
+    const Vector3D spacecraft_position = target_position_;
 #endif
 
 

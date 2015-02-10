@@ -21,6 +21,8 @@ public:
 
     double ControlFrequency() const;
 
+    double SpacecraftMaximumMass() const;
+
 private:
     class Observer {
     public:
@@ -31,6 +33,8 @@ private:
     private:
         double &time_;
     };
+
+    unsigned int random_seed_;
 
     double minimum_step_size_;
 

@@ -5,7 +5,7 @@
 #include "modifiedcontrolledrungekutta.h"
 
 LSPISimulator::LSPISimulator(const unsigned int &random_seed)
-    : sample_factory_(random_seed) {
+    : random_seed_(random_seed), sample_factory_(random_seed) {
 
     minimum_step_size_ = 0.1;
     control_frequency_ = 1.0;
@@ -22,8 +22,8 @@ LSPISimulator::LSPISimulator(const unsigned int &random_seed)
     spacecraft_specific_impulse_ = 200.0;
     spacecraft_engine_noise_ = 0.05;
 
-    perturbation_mean_ = 1.0e-6;
-    perturbation_noise_ = 1.0e-7;
+    perturbation_mean_ = 1e-6;
+    perturbation_noise_ = 1e-7;
 }
 
 LSPISimulator::~LSPISimulator() {
@@ -73,5 +73,9 @@ SampleFactory &LSPISimulator::SampleFactoryOfSystem() {
 
 double LSPISimulator::ControlFrequency() const {
     return control_frequency_;
+}
+
+double LSPISimulator::SpacecraftMaximumMass() const {
+    return spacecraft_maximum_mass_;
 }
 
