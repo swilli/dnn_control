@@ -32,12 +32,14 @@ SensorData SensorSimulatorAutoencoder::Simulate(const SystemState &state, const 
     const Vector3D velocity = {state[3], state[4], state[5]};
 
     const double norm_height_pow2 = VectorDotProduct(height, height);
-    const double norm_height = sqrt(norm_height_pow2);
+    const double coef_norm_height = 1.0 / sqrt(norm_height_pow2);
 
     const double vel_dot_height = VectorDotProduct(velocity, height);
-    const double scaling = vel_dot_height / norm_height_pow2;
 
-    const Vector3D velocity_vertical = {scaling * height[0], scaling * height[1], scaling * height[2]};
+    const double coef_projection = vel_dot_height / norm_height_pow2;
+
+    const Vector3D normalized_height = {height[0] * coef_norm_height, height[1] * coef_norm_height, height[2] * coef_norm_height};
+    const Vector3D velocity_vertical = {coef_projection * height[0], coef_projection * height[1], coef_projection * height[2]};
     const Vector3D velocity_remaining = {velocity[0] - velocity_vertical[0],
                                          velocity[1] - velocity_vertical[1],
                                          velocity[2] - velocity_vertical[2]};
@@ -45,9 +47,21 @@ SensorData SensorSimulatorAutoencoder::Simulate(const SystemState &state, const 
     const double norm_vel_vert = VectorNorm(velocity_vertical);
     const double norm_vel_rem = VectorNorm(velocity_remaining);
 
-    sensor_seed[0] = norm_vel_vert / norm_height;
-    sensor_seed[1] = norm_vel_rem / norm_height;
+    Vector3D normalized_velocity_remaining;
+    if (norm_vel_rem) {
+        const double coef_vel_rem = 1.0 / norm_vel_rem;
+        normalized_velocity_remaining[0] = velocity_remaining[0] * coef_vel_rem;
+        normalized_velocity_remaining[1] = velocity_remaining[1] * coef_vel_rem;
+        normalized_velocity_remaining[2] = velocity_remaining[2] * coef_vel_rem;
+    }
 
+    const double coef_vert_height = norm_vel_vert * coef_norm_height;
+    const double coef_rem_height = norm_vel_rem * coef_norm_height;
+
+    for (unsigned int i = 0; i < 3; ++i) {
+        sensor_seed[i] = coef_vert_height * normalized_height[i];
+        sensor_seed[3+i] = coef_rem_height * normalized_velocity_remaining[i];
+    }
 
     const Vector3D gravity_acceleration = asteroid_.GravityAccelerationAtPosition(position);
 
@@ -66,7 +80,7 @@ SensorData SensorSimulatorAutoencoder::Simulate(const SystemState &state, const 
     const Vector3D coriolis_acceleration = VectorCrossProduct(tmp, velocity);
 
     for (unsigned int i = 0; i < 3; ++i) {
-        sensor_seed[2+i] = perturbations_acceleration[i]
+        sensor_seed[6+i] = perturbations_acceleration[i]
                 + gravity_acceleration[i]
                 - coriolis_acceleration[i]
                 - euler_acceleration[i]

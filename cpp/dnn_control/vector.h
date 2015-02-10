@@ -40,6 +40,23 @@ inline double VectorNorm(const Vector2D &vector) {
     return sqrt(result);
 }
 
+inline Vector3D VectorNormalize(const Vector3D &vector) {
+    Vector3D result;
+    const double scal_norm = 1.0 / VectorNorm(vector);
+    result[0] = vector[0] * scal_norm;
+    result[1] = vector[1] * scal_norm;
+    result[2] = vector[2] * scal_norm;
+    return result;
+}
+
+inline Vector2D VectorNormalize(const Vector2D &vector) {
+    Vector2D result;
+    const double scal_norm = 1.0 / VectorNorm(vector);
+    result[0] = vector[0] * scal_norm;
+    result[1] = vector[1] * scal_norm;
+    return result;
+}
+
 inline std::string VectorToString(const Vector3D &vector) {
     std::ostringstream oss;
     oss << "[";

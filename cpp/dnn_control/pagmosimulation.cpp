@@ -60,13 +60,10 @@ std::vector<SensorData> PaGMOSimulation::GenerateSensorDataSet() {
     SampleFactory sample_factory(random_seed_);
     SampleFactory sf_sensor_simulator(sample_factory.SampleRandomInteger());
 
-
     SensorSimulatorAutoencoder sensor_simulator(sf_sensor_simulator, asteroid_);
-
 
     const unsigned int num_iterations = simulation_time_ * control_frequency_;
     std::vector<SensorData> evaluated_sensor_values(num_iterations + 1);
-
 
     SystemState system_state(initial_system_state_);
 
@@ -82,13 +79,12 @@ std::vector<SensorData> PaGMOSimulation::GenerateSensorDataSet() {
     try {
         for (iteration = 0; iteration < num_iterations; ++iteration) {
             const Vector3D &position = {system_state[0], system_state[1], system_state[2]};
-            const double &mass = system_state[6];
 
             const Vector3D &surf_pos = boost::get<0>(asteroid_.NearestPointOnSurfaceToPosition(position));
             const Vector3D &height = {position[0] - surf_pos[0], position[1] - surf_pos[1], position[2] - surf_pos[2]};
 
             for (unsigned int i = 0; i < 3; ++i) {
-                perturbations_acceleration[i] = mass * sample_factory.SampleNormal(perturbation_mean_, perturbation_noise_);
+                perturbations_acceleration[i] = sample_factory.SampleNormal(perturbation_mean_, perturbation_noise_);
             }
 
             evaluated_sensor_values[iteration] = sensor_simulator.Simulate(system_state, height, perturbations_acceleration, current_time);
@@ -103,10 +99,10 @@ std::vector<SensorData> PaGMOSimulation::GenerateSensorDataSet() {
             current_time += dt;
         }
     } catch (const Asteroid::Exception &exception) {
-        //std::cout << "The spacecraft crashed into the asteroid's surface." << std::endl;
+        std::cout << "The spacecraft crashed into the asteroid's surface." << std::endl;
         exception_thrown = true;
     } catch (const ODESystem::Exception &exception) {
-        //std::cout << "The spacecraft is out of fuel." << std::endl;
+        std::cout << "The spacecraft is out of fuel." << std::endl;
         exception_thrown = true;
     }
     if (exception_thrown) {
@@ -117,7 +113,6 @@ std::vector<SensorData> PaGMOSimulation::GenerateSensorDataSet() {
 
     const Vector3D &surf_pos = boost::get<0>(asteroid_.NearestPointOnSurfaceToPosition(position));
     const Vector3D &height = {position[0] - surf_pos[0], position[1] - surf_pos[1], position[2] - surf_pos[2]};
-
 
     evaluated_sensor_values.back() = sensor_simulator.Simulate(system_state, height, perturbations_acceleration, current_time_observer);
 

@@ -42,6 +42,7 @@
 
 // Class SensorSimulatorNeuralNetwork configs
 #define SSNN_WITH_VELOCITY  true
+#define SSNN_WITH_NOISE true
 
 // Class ControllerNeuralNetwork configs
 #define CNN_NN_TYPE_FFNN    0
@@ -52,7 +53,7 @@
 #define CNN_WITH_VELOCITY   true
 
 // Class SensorSimulatorAutoencoder configs
-#define SSA_DATA_DIMENSIONS  5
+#define SSA_DATA_DIMENSIONS  9
 #define SSA_DATA_MULTIPLIER  3
 #define SSA_DATA_HISTORY     3
 
@@ -86,22 +87,23 @@ static inline std::string ToString(const bool &value) {
 
 inline void Configuration() {
     std::cout << "PaGMOSimulation global configuration" << std::endl;
-    std::cout << "ER_NUM_GENERATIONS   " << ER_NUM_GENERATIONS << std::endl;
-    std::cout << "ER_POPULATION_SIZE   " << ER_POPULATION_SIZE << std::endl;
     std::cout << "ER_NUM_ISLANDS   " << ER_NUM_ISLANDS << std::endl;
+    std::cout << "ER_POPULATION_SIZE   " << ER_POPULATION_SIZE << std::endl;
+    std::cout << "ER_EVALUATIONS   " << ER_EVALUATIONS << std::endl;
+    std::cout << "ER_NUM_GENERATIONS   " << ER_NUM_GENERATIONS << std::endl;
     std::cout << "ER_SIMULATION_TIME   " << ER_SIMULATION_TIME << std::endl;
     std::cout << "ER_NUM_HIDDEN_NODES   " << ER_NUM_HIDDEN_NODES << std::endl;
-    std::cout << "ER_EVALUATIONS   " << ER_EVALUATIONS << std::endl;
-    std::cout << "HP_OBJECTIVE_FUNCTION_METHOD   " << HP_OBJECTIVE_FUNCTION_METHOD << std::endl;
 #ifdef HP_FIXED_SEED
     std::cout << "HP_FIXED_SEED   " << HP_FIXED_SEED << std::endl;
 #else
     std::cout << "HP_FIXED_SEED   undefined" << std::endl;
 #endif
-    std::cout << "ODES_FUEL_ENABLED   " << ToString(ODES_FUEL_ENABLED) << std::endl;
+    std::cout << "HP_OBJECTIVE_FUNCTION_METHOD   " << HP_OBJECTIVE_FUNCTION_METHOD << std::endl;
     std::cout << "PGMOS_IC_VELOCITY_TYPE   " << PGMOS_IC_VELOCITY_TYPE << std::endl;
     std::cout << "PGMOS_IC_POSITION_OFFSET_ENABLED   " << ToString(PGMOS_IC_POSITION_OFFSET_ENABLED) << std::endl;
+    std::cout << "ODES_FUEL_ENABLED   " << ToString(ODES_FUEL_ENABLED) << std::endl;
     std::cout << "SSNN_WITH_VELOCITY   " << ToString(SSNN_WITH_VELOCITY) << std::endl;
+    std::cout << "SSNN_WITH_NOISE   " << ToString(SSNN_WITH_NOISE) << std::endl;
     std::cout << "CNN_NEURAL_NETWORK_TYPE   " << CNN_NEURAL_NETWORK_TYPE << std::endl;
     std::cout << "CNN_WITH_VELOCITY   " << ToString(CNN_WITH_VELOCITY) << std::endl;
     std::cout << "SSA_DATA_DIMENSIONS   " << SSA_DATA_DIMENSIONS << std::endl;
@@ -110,6 +112,10 @@ inline void Configuration() {
     std::cout << std::endl;
 
     std::cout << "LSPI global configuration" << std::endl;
+    std::cout << "LSPR_NUM_EPISODES   " << LSPR_NUM_EPISODES << std::endl;
+    std::cout << "LSPR_NUM_STEPS   " << LSPR_NUM_STEPS << std::endl;
+    std::cout << "LSPR_GAMMA   " << LSPR_GAMMA << std::endl;
+    std::cout << "LSPR_EPSILON   " << LSPR_EPSILON << std::endl;
 #ifdef LSPR_FIXED_SEED
     std::cout << "LSPR_FIXED_SEED   " << LSPR_FIXED_SEED << std::endl;
 #else
@@ -117,10 +123,6 @@ inline void Configuration() {
 #endif
     std::cout << "LSPR_IC_POSITION_OFFSET_ENABLED   " << ToString(LSPR_IC_POSITION_OFFSET_ENABLED) << std::endl;
     std::cout << "LSPR_IC_VELOCITY_TYPE   " << LSPR_IC_VELOCITY_TYPE << std::endl;
-    std::cout << "LSPR_NUM_EPISODES   " << LSPR_NUM_EPISODES << std::endl;
-    std::cout << "LSPR_NUM_STEPS   " << LSPR_NUM_STEPS << std::endl;
-    std::cout << "LSPR_GAMMA   " << LSPR_GAMMA << std::endl;
-    std::cout << "LSPR_EPSILON   " << LSPR_EPSILON << std::endl;
     std::cout << std::endl;
 }
 
