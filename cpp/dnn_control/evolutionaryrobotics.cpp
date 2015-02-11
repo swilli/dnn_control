@@ -5,12 +5,12 @@
 #include "configuration.h"
 
 // Training configuration
-static const unsigned int num_generations = ER_NUM_GENERATIONS;
-static const unsigned int population_size = ER_POPULATION_SIZE;
-static const unsigned int num_islands = ER_NUM_ISLANDS;
-static const double simulation_time = ER_SIMULATION_TIME;
-static const unsigned int num_evaluations = ER_EVALUATIONS;
-static const unsigned int num_hidden_neurons = ER_NUM_HIDDEN_NODES;
+static const unsigned int kNumGenerations = ER_NUM_GENERATIONS;
+static const unsigned int kPopulationSize = ER_POPULATION_SIZE;
+static const unsigned int kNumIslands = ER_NUM_ISLANDS;
+static const double kSimulationTime = ER_SIMULATION_TIME;
+static const unsigned int kNumEvaluations = ER_EVALUATIONS;
+static const unsigned int kNumHiddenNeurons = ER_NUM_HIDDEN_NODES;
 
 
 
@@ -40,13 +40,13 @@ void TrainNeuralNetworkController() {
 
     pagmo::archipelago archi = pagmo::archipelago(pagmo::topology::fully_connected());
 
-    for (unsigned int j = 0;j < num_islands; ++j) {
+    for (unsigned int j = 0;j < kNumIslands; ++j) {
         std::cout << " [" << j;
         fflush(stdout);
-        pagmo::problem::hovering_problem prob(rand(), num_evaluations, simulation_time, num_hidden_neurons);
+        pagmo::problem::hovering_problem prob(rand(), kNumEvaluations, kSimulationTime, kNumHiddenNeurons);
         //pagmo::problem::spheres prob;
         // This instantiates a population within the original bounds (-1,1)
-        pagmo::population pop_temp(prob, population_size);
+        pagmo::population pop_temp(prob, kPopulationSize);
 
         // We make the bounds larger to allow neurons weights to grow
         prob.set_bounds(-20,20);
@@ -56,7 +56,7 @@ void TrainNeuralNetworkController() {
 
         // And we fill it up with (-1,1) individuals having zero velocities
         pagmo::decision_vector v(prob.get_dimension(),0);
-        for (unsigned int i = 0; i < population_size; ++i) {
+        for (unsigned int i = 0; i < kPopulationSize; ++i) {
             pop.push_back(pop_temp.get_individual(i).cur_x);
             pop.set_v(i,v);
         }
@@ -69,7 +69,7 @@ void TrainNeuralNetworkController() {
     fflush(stdout);
 
     //Evolution is here started on the archipelago
-    for (unsigned int i = 0; i< num_generations; ++i){
+    for (unsigned int i = 0; i< kNumGenerations; ++i){
         const unsigned int idx = ArchipelagoChampionID(archi);
         double best_f = archi.get_island(idx)->get_population().champion().f[0];
 
@@ -123,7 +123,7 @@ void TestNeuralNetworkController(const unsigned int &random_seed) {
 
     std::cout << std::setprecision(10);
 
-    pagmo::problem::hovering_problem prob(random_seed, num_evaluations, simulation_time, num_hidden_neurons);
+    pagmo::problem::hovering_problem prob(random_seed, kNumEvaluations, kSimulationTime, kNumHiddenNeurons);
 
     /*
     std::cout << "checking neuro controller fitness... ";
