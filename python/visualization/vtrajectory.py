@@ -47,12 +47,13 @@ time_bias = sim_params[6]
 asteroid = Asteroid(semi_axis, density, angular_velocity_xz, time_bias)
 
 lines = result_file.readlines()
+result_file.close()
+
 num_samples = len(lines)
 total_time = num_samples / frequency
 states = [line.split(',') for line in lines]
 states = [[float(value) for value in line] for line in states]
 
-result_file.close()
 
 if reference_frame == "inertial":
     def d_dt_q(q, t):

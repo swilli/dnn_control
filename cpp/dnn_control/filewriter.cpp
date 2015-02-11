@@ -52,7 +52,7 @@ void FileWriter::CreateSensorDataFile(const unsigned int &random_seed, const dou
     }
 }
 
-void FileWriter::CreatePerformanceFile(const unsigned int &random_seed, const Vector3D &target_position, const std::vector<double> &times, const std::vector<Vector3D> &positions, const std::vector<Vector3D> &velocities, const std::vector<Vector3D> &thrusts) {
+void FileWriter::CreateEvaluationFile(const unsigned int &random_seed, const Vector3D &target_position, const std::vector<double> &times, const std::vector<Vector3D> &positions, const std::vector<Vector3D> &velocities, const std::vector<Vector3D> &thrusts) {
     file_ << random_seed << std::endl;
     file_ << target_position[0] << ",\t"  << target_position[1] << ",\t"  << target_position[2] << std::endl;
 
@@ -62,5 +62,16 @@ void FileWriter::CreatePerformanceFile(const unsigned int &random_seed, const Ve
         const Vector3D &thrust = thrusts.at(i);
         const Vector3D &velocity = velocities.at(i);
         file_ << time << ",\t" << position[0] << ",\t" << position[1] << ",\t" << position[2] << ",\t" << thrust[0] << ",\t" << thrust[1] << ",\t" << thrust[2] << ",\t" << velocity[0] << ",\t" << velocity[1] << ",\t" << velocity[2] << std::endl;
+    }
+}
+
+void FileWriter::CreatePostEvaluationFile(const std::vector<unsigned int> &random_seeds, const std::vector<std::vector<double> > &fitness) {
+    for(unsigned int i = 0; i < random_seeds.size(); ++i) {
+        const unsigned int seed = random_seeds.at(i);
+        file_ << seed;
+        for (unsigned int j = 0; j < fitness.size(); ++j) {
+            file_ << ",\t" << fitness.at(j).at(i);
+        }
+        file_ << std::endl;
     }
 }

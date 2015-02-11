@@ -42,7 +42,10 @@
 
 // Class SensorSimulatorNeuralNetwork configs
 #define SSNN_WITH_VELOCITY  true
-#define SSNN_WITH_NOISE true
+#define SSNN_WITH_NOISE false
+
+// Class SensorSimulatorFullState configs
+#define SSFS_WITH_NOISE true
 
 // Class ControllerNeuralNetwork configs
 #define CNN_NN_TYPE_FFNN    0
@@ -73,7 +76,8 @@
 // Other stuff configs, not relevant for simulation
 #define PATH_TO_NEURO_TRAJECTORY_FILE   "../../../results/trajectory_neuro.txt"
 #define PATH_TO_LSPI_TRAJECTORY_FILE   "../../../results/trajectory_lspi.txt"
-#define PATH_TO_NEURO_PERFORMANCE_FILE  "../../../results/performance_neuro.txt"
+#define PATH_TO_NEURO_EVALUATION_FILE  "../../../results/evaluation_neuro.txt"
+#define PATH_TO_NEURO_POST_EVALUATION_FILE    "../../../results/post_evaluation_neuro.txt"
 #define PATH_TO_SENSOR_DATA_FOLDER  "/home/willist/Documents/data/"
 
 #ifdef HP_FIXED_SEED
@@ -104,6 +108,7 @@ inline void Configuration() {
     std::cout << "ODES_FUEL_ENABLED   " << ToString(ODES_FUEL_ENABLED) << std::endl;
     std::cout << "SSNN_WITH_VELOCITY   " << ToString(SSNN_WITH_VELOCITY) << std::endl;
     std::cout << "SSNN_WITH_NOISE   " << ToString(SSNN_WITH_NOISE) << std::endl;
+    std::cout << "SSFS_WITH_NOISE   " << ToString(SSFS_WITH_NOISE) << std::endl;
     std::cout << "CNN_NEURAL_NETWORK_TYPE   " << CNN_NEURAL_NETWORK_TYPE << std::endl;
     std::cout << "CNN_WITH_VELOCITY   " << ToString(CNN_WITH_VELOCITY) << std::endl;
     std::cout << "SSA_DATA_DIMENSIONS   " << SSA_DATA_DIMENSIONS << std::endl;

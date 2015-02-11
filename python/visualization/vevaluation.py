@@ -1,13 +1,13 @@
 '''
 usage:
-./python2.7 vperformance.py <data_file> [time] [obj_fun]
+./python2.7 vevaluation.py <data_file> [time] [obj_fun]
 
 default time is 3600, default obj_fun is False
 
 examples:
-./python2.7 vperformance.py performance.txt
-./python2.7 vperformance.py performance.txt 7200.0
-./python2.7 vperformance.py performance.txt 7200.0 true
+./python2.7 vevaluation.py evaluation.txt
+./python2.7 vevaluation.py evaluation.txt 7200.0
+./python2.7 vevaluation.py evaluation.txt 7200.0 true
 '''
 
 import sys
@@ -34,12 +34,13 @@ simulation_seed = int(result_file.readline())
 target_position = array([float(value) for value in result_file.readline().split(',')])
 
 lines = result_file.readlines()
+result_file.close()
+
 num_samples = len(lines)
 data = [line.split(',') for line in lines]
 data = [[float(value) for value in line] for line in data]
-
-result_file.close()
 data = array(data)
+
 times = data[:, 0]
 times = [val for val in times if val <= end_time]
 num_samples = len(times)

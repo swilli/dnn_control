@@ -16,7 +16,7 @@ public:
 
     ~hovering_problem();
 
-    std::vector<std::pair<unsigned int, double> > post_evaluate(const decision_vector &x, const unsigned int &num_tests=25000, const unsigned int &seed=0) const;
+    boost::tuple<std::vector<double>, std::vector<unsigned int> > post_evaluate(const decision_vector &x, const unsigned int &start_seed=0, const std::vector<unsigned int> &random_seeds=std::vector<unsigned int>()) const;
 
     std::string get_name() const;
 

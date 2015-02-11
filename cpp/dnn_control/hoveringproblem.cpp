@@ -148,19 +148,28 @@ hovering_problem::~hovering_problem() {
 
 }
 
-std::vector<std::pair<unsigned int, double> > hovering_problem::post_evaluate(const decision_vector &x, const unsigned int &num_tests, const unsigned int &seed) const {
-    std::vector<std::pair<unsigned int, double> > result(num_tests, std::make_pair(0, 0.0));
-
-    m_drng.seed(seed);
-
-    for (unsigned int i = 0; i < num_tests; ++i) {
-        const unsigned int current_seed = m_urng();
-        PaGMOSimulationNeuralNetwork simulation(current_seed, m_simulation_time, m_n_hidden_neurons, x);
-        result.at(i).first = current_seed;
-        result.at(i).second = single_fitness(simulation);
+boost::tuple<std::vector<double>, std::vector<unsigned int> > hovering_problem::post_evaluate(const decision_vector &x, const unsigned int &start_seed, const std::vector<unsigned int> &random_seeds) const {
+    unsigned int num_tests = random_seeds.size();
+    std::vector<unsigned int> used_random_seeds;
+    if (num_tests == 0) {
+        m_urng.seed(start_seed);
+        num_tests = 25000;
+        for (unsigned int i = 0; i < num_tests; ++i) {
+            used_random_seeds.push_back(m_urng());
+        }
+    } else {
+        used_random_seeds = random_seeds;
     }
 
-    return result;
+    std::vector<double> fitness(num_tests, 0.0);
+
+    for (unsigned int i = 0; i < num_tests; ++i) {
+        const unsigned int current_seed = used_random_seeds.at(i);
+        PaGMOSimulationNeuralNetwork simulation(current_seed, m_simulation_time, m_n_hidden_neurons, x);
+        fitness.at(i) = single_fitness(simulation);
+    }
+
+    return boost::make_tuple(fitness, used_random_seeds);
 }
 
 }}
