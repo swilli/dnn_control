@@ -255,28 +255,29 @@ def unit_test_angular_acceleration():
 def unit_test_gravity_direction():
     from numpy import random, array, mgrid, sin, cos
     from math import copysign
-    from asteroid import Asteroid
-    from boost_simulator.utility import sample_positions_outside_ellipsoid
+    from boost_asteroid import boost_asteroid
+    Asteroid = boost_asteroid.BoostAsteroid
+
+    from utility import sample_positions_outside_ellipsoid
     from mayavi import mlab
     from constants import PI
 
     signs = [-1.0, 1.0]
 
     num_samples = 1000
-    band_width = 10000.0
 
     axis = []
-    [axis.append(random.uniform(1000.0, 10000.0)) for i in range(3)]
-    semi_axis_c, semi_axis_b, semi_axis_a = sorted(axis)
+    [axis.append(random.uniform(1000.0, 12000.0)) for i in range(3)]
+    semi_axis = sorted(axis, reverse=True)
 
-    density = random.uniform(1500.0, 2500.0)
-    angular_velocity = [random.choice(signs) * random.uniform(0.0002, 0.0004), 0.0,
-                        random.choice(signs) * random.uniform(0.0002, 0.0004)]
+    density = random.uniform(1500.0, 3000.0)
+    angular_velocity = [random.choice(signs) * random.uniform(0.0002, 0.0008),
+                        random.choice(signs) * random.uniform(0.0002, 0.0008)]
 
-    asteroid = Asteroid(semi_axis_a, semi_axis_b, semi_axis_c, density, angular_velocity, 0.0)
+    asteroid = Asteroid(semi_axis, density, angular_velocity, 0.0)
 
-    positions = sample_positions_outside_ellipsoid(semi_axis_a, semi_axis_b, semi_axis_c, band_width, num_samples)
-    gravities = [asteroid.gravity_at_position(pos) for pos in positions]
+    positions = sample_positions_outside_ellipsoid(semi_axis, 1.1, 4.0, num_samples)
+    gravities = [asteroid.gravity_acceleration_at_position(pos) for pos in positions]
 
     positions = array(positions)
     gravities = array(gravities)
@@ -298,71 +299,70 @@ def unit_test_gravity_direction():
     ellipsoid = mlab.contour3d(f, contours=[0], extent=[-1.0, 1.0, -1.0, 1.0, -1.0, 1.0])
     '''
     phi, theta = mgrid[0:PI:100j, 0:2.0*PI:100j]
-    x = semi_axis_a * sin(phi) * cos(theta)
-    y = semi_axis_b * sin(phi) * sin(theta)
-    z = semi_axis_c * cos(phi)
+    x = semi_axis[0] * sin(phi) * cos(theta)
+    y = semi_axis[1] * sin(phi) * sin(theta)
+    z = semi_axis[2] * cos(phi)
     mlab.mesh(x, y, z, representation="wireframe", line_width=0.5, color=(153.0/255.0, 76.0/255.0, 0.0))
     field = mlab.quiver3d(positions[:, 0], positions[:, 1], positions[:, 2],
                           gravities[:, 0], gravities[:, 1], gravities[:, 2], mode="arrow")
-    title_start = "a = {0} b = {1} c = {2} rho = {3}".format(semi_axis_a, semi_axis_b, semi_axis_c, density)
+
+    title_start = "a = {0} b = {1} c = {2} rho = {3}".format(semi_axis[0], semi_axis[1], semi_axis[2], density)
 
     mlab.title(title_start)
-    mlab.axes(color=(.7, .7, .7), ranges=(positions[:, 0].min(), positions[:, 0].max(),
-                                          positions[:, 1].min(), positions[:, 1].max(),
-                                          positions[:, 2].min(), positions[:, 2].max()),
-              xlabel='x', ylabel='y', zlabel='z',
-              x_axis_visibility=True, z_axis_visibility=True, y_axis_visibility=True)
+    #mlab.axes(color=(.7, .7, .7), ranges=(positions[:, 0].min(), positions[:, 0].max(),
+    #                                      positions[:, 1].min(), positions[:, 1].max(),
+    #                                      positions[:, 2].min(), positions[:, 2].max()),
+    #          xlabel='x', ylabel='y', zlabel='z',
+    #          x_axis_visibility=True, z_axis_visibility=True, y_axis_visibility=True)
     mlab.show()
-
 
 
 def unit_test_gravity_contour():
     from numpy import random, linspace, meshgrid, array
     from numpy.linalg import norm
-    from boost_simulator.utility import sample_positions_outside_ellipse
-    from asteroid import Asteroid
+    from utility import sample_positions_outside_ellipse
+    from boost_asteroid import boost_asteroid
+    Asteroid = boost_asteroid.BoostAsteroid
     from matplotlib.pyplot import imshow, scatter, colorbar, title, close, gcf, xlabel, ylabel
     from scipy.interpolate import Rbf
 
     signs = [-1.0, 1.0]
 
-    axis = []
-    [axis.append(random.uniform(1000.0, 10000.0)) for i in range(3)]
-    semi_axis_c, semi_axis_b, semi_axis_a = sorted(axis)
+    semi_axis = [random.uniform(8000.0, 12000.0), random.uniform(4000.0, 7500.0), random.uniform(1000.0, 3500.0)]
 
-    density = random.uniform(1500.0, 2500.0)
-    angular_velocity = [random.choice(signs) * random.uniform(0.0002, 0.0004), 0.0,
-                            random.choice(signs) * random.uniform(0.0002, 0.0004)]
+    density = random.uniform(1500.0, 3000.0)
+    angular_velocity = [random.choice(signs) * random.uniform(0.0002, 0.0008),
+                        random.choice(signs) * random.uniform(0.0002, 0.0008)]
 
-    asteroid = Asteroid(semi_axis_a, semi_axis_b, semi_axis_c, density, angular_velocity, 0.0)
+    asteroid = Asteroid(semi_axis, density, angular_velocity, 0.0)
 
     num_samples = 1000
-    band_width = 2000.0
-    title_start = "a = {0} b = {1} c = {2} \nrho = {3} plane = ".format(semi_axis_a, semi_axis_b, semi_axis_c, density)
+    title_start = "a = {0} b = {1} c = {2} \nrho = {3} plane = ".format(semi_axis[0], semi_axis[1], semi_axis[2],
+                                                                        density)
     for dim in range(3):
         if dim == 0:
             plane = "yz"
-            samples = sample_positions_outside_ellipse(semi_axis_b, semi_axis_c, band_width, num_samples)
+            samples = sample_positions_outside_ellipse([semi_axis[1], semi_axis[2]], 1.1, 4.0, num_samples)
             samples = [[0.0] + pos for pos in samples]
             samples = array(samples)
             x = samples[:, 1]
             y = samples[:, 2]
         elif dim == 1:
             plane = "xz"
-            samples = sample_positions_outside_ellipse(semi_axis_a, semi_axis_c, band_width, num_samples)
+            samples = sample_positions_outside_ellipse([semi_axis[0], semi_axis[2]], 1.1, 4.0, num_samples)
             samples = [[pos[0]] + [0.0] + [pos[1]] for pos in samples]
             samples = array(samples)
             x = samples[:, 0]
             y = samples[:, 2]
         else:
             plane = "xy"
-            samples = sample_positions_outside_ellipse(semi_axis_a, semi_axis_b, band_width, num_samples)
+            samples = sample_positions_outside_ellipse([semi_axis[0], semi_axis[1]], 1.1, 4.0, num_samples)
             samples = [pos + [0.0] for pos in samples]
             samples = array(samples)
             x = samples[:, 0]
             y = samples[:, 1]
 
-        z = array([norm(asteroid.gravity_at_position(pos)) for pos in samples])
+        z = array([norm(asteroid.gravity_acceleration_at_position(pos.tolist())) for pos in samples])
 
         # Set up a regular grid of interpolation points
         xi, yi = linspace(x.min(), x.max(), 100), linspace(y.min(), y.max(), 100)
@@ -381,7 +381,7 @@ def unit_test_gravity_contour():
         ylabel(plane[1:])
         title(title_start + plane)
         img = gcf()
-        img.savefig("plane_{0}.png".format(plane))
+        img.savefig("gravity_plane_{0}.svg".format(plane))
         close()
 
 def unit_test_gravity_speed():
@@ -389,13 +389,11 @@ def unit_test_gravity_speed():
     from asteroid import Asteroid
     from sys import float_info
     from time import time
-    from boost_simulator.utility import sample_positions_outside_ellipsoid
+    from utility import sample_positions_outside_ellipsoid
 
     signs = [-1.0, 1.0]
 
-    axis = []
-    [axis.append(random.uniform(1000.0, 10000.0)) for i in range(3)]
-    semi_axis_c, semi_axis_b, semi_axis_a = sorted(axis)
+    semi_axis = [random.uniform(8000.0, 12000.0), random.uniform(4000.0, 7500.0), random.uniform(1000.0, 3500.0)]
 
     density = random.uniform(1500.0, 2500.0)
     angular_velocity = [random.choice(signs) * random.uniform(0.0002, 0.0004), 0.0,
@@ -429,26 +427,25 @@ def unit_test_gravity_speed():
 
 def unit_test_angular_velocity_period():
     from numpy import random, linspace, array
-    from asteroid import Asteroid
+    from boost_asteroid import boost_asteroid
+    Asteroid = boost_asteroid.BoostAsteroid
     from matplotlib.pyplot import plot, xlabel, ylabel, title, gcf, close
 
     signs = [-1.0, 1.0]
 
-    axis = []
-    test_time = random.uniform(1.0, 100.0)
-    [axis.append(random.uniform(1000.0, 5000.0)) for i in range(3)]
-    semi_axis_c, semi_axis_b, semi_axis_a = sorted(axis)
+    semi_axis = [random.uniform(8000.0, 12000.0), random.uniform(4000.0, 7500.0), random.uniform(1000.0, 3500.0)]
 
-    density = 2000.0
-    angular_velocity = [random.choice(signs) * random.uniform(0.0002, 0.0004), 0.0,
+    density = random.uniform(1500.0, 3000.0)
+    angular_velocity_xz = [random.choice(signs) * random.uniform(0.0002, 0.0004),
                         random.choice(signs) * random.uniform(0.0002, 0.0004)]
 
-    asteroid = Asteroid(semi_axis_a, semi_axis_b, semi_axis_c, density, angular_velocity, 0.0)
+    asteroid = Asteroid(semi_axis, density, angular_velocity_xz, 0.0)
 
     sample_points = linspace(0.0, 24.0 * 60.0 * 60.0, 1000)
-    samples = array([asteroid.angular_velocity_and_acceleration_at_time(time) for time in sample_points])
+    samples = array([asteroid.angular_velocity_and_acceleration_at_time(time)[0] for time in sample_points])
 
-    title_start = "a = {0} b = {1} c = {2} \nrho = {3} plane = ".format(semi_axis_a, semi_axis_b, semi_axis_c, density)
+    title_start = "a = {0} b = {1} c = {2} \nrho = {3} plane = ".format(semi_axis[0], semi_axis[1], semi_axis[2],
+                                                                        density)
 
     for dim in range(3):
         if dim == 0:
@@ -465,7 +462,7 @@ def unit_test_angular_velocity_period():
         ylabel(plane[1:])
         title(title_start + plane)
         img = gcf()
-        img.savefig("plane_{0}.png".format(plane))
+        img.savefig("omega_plane_{0}.svg".format(plane))
         close()
 
 def unit_test_boost_asteroid():
@@ -571,10 +568,10 @@ def unit_test_boost_asteroid():
 #unit_test_angular_velocity()
 #unit_test_angular_acceleration()
 #unit_test_gravity_direction()
-#unit_test_gravity_contour()
+unit_test_gravity_contour()
 #unit_test_gravity_speed()
-#unit_test_angular_velocity_period()
-unit_test_boost_asteroid()
+unit_test_angular_velocity_period()
+#unit_test_boost_asteroid()
 
 '''from asteroid import Asteroid
 semi_axis = [5000.0, 2567.0, 1235.0]
