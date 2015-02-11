@@ -4,8 +4,12 @@
 const unsigned int SensorSimulatorAutoencoder::kDimensions = SSA_DATA_DIMENSIONS * SSA_DATA_MULTIPLIER * SSA_DATA_HISTORY;
 
 SensorSimulatorAutoencoder::SensorSimulatorAutoencoder(SampleFactory &sample_factory, const Asteroid &asteroid)
-    : SensorSimulator(kDimensions, sample_factory, asteroid),
-      sensor_maximum_absolute_ranges_(SSA_DATA_DIMENSIONS, 0.025) {
+    : SensorSimulator(kDimensions, sample_factory, asteroid) {
+    sensor_maximum_absolute_ranges_ = {10.0, 10.0, 10.0, 0.025, 0.025, 0.025};
+
+    if (sensor_maximum_absolute_ranges_.size() != SSA_DATA_DIMENSIONS) {
+        throw RangeMalConfigurationException();
+    }
 
     noise_configurations_ = std::vector<double>(SSA_DATA_DIMENSIONS * SSA_DATA_MULTIPLIER, 0.05);
     sensor_values_cache_ = std::vector<double>(SSA_DATA_DIMENSIONS * SSA_DATA_MULTIPLIER * SSA_DATA_HISTORY, 0.0);
@@ -31,6 +35,7 @@ SensorData SensorSimulatorAutoencoder::Simulate(const SystemState &state, const 
     const Vector3D position = {state[0], state[1], state[2]};
     const Vector3D velocity = {state[3], state[4], state[5]};
 
+    /*
     const double norm_height_pow2 = VectorDotProduct(height, height);
     const double coef_norm_height = 1.0 / sqrt(norm_height_pow2);
 
@@ -62,6 +67,11 @@ SensorData SensorSimulatorAutoencoder::Simulate(const SystemState &state, const 
         sensor_seed[i] = coef_vert_height * normalized_height[i];
         sensor_seed[3+i] = coef_rem_height * normalized_velocity_remaining[i];
     }
+    */
+
+    sensor_seed[0] = velocity[0];
+    sensor_seed[1] = velocity[1];
+    sensor_seed[2] = velocity[2];
 
     const Vector3D gravity_acceleration = asteroid_.GravityAccelerationAtPosition(position);
 
@@ -80,7 +90,7 @@ SensorData SensorSimulatorAutoencoder::Simulate(const SystemState &state, const 
     const Vector3D coriolis_acceleration = VectorCrossProduct(tmp, velocity);
 
     for (unsigned int i = 0; i < 3; ++i) {
-        sensor_seed[6+i] = perturbations_acceleration[i]
+        sensor_seed[3+i] = perturbations_acceleration[i]
                 + gravity_acceleration[i]
                 - coriolis_acceleration[i]
                 - euler_acceleration[i]

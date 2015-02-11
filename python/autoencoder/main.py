@@ -10,14 +10,15 @@ from numpy.linalg import norm
 from denoising_autoencoder import DenoisingAutoencoder
 
 learning_rate = 0.1
-training_epochs = 50
-batch_size = 100
-num_hidden_nodes = 10
-corruption_level = 0.0
+training_epochs = 500
+batch_size = 20
+num_hidden_nodes = 54
+num_visible_size = 54
+corruption_level = 0.1
+num_samples = 500000
 data_path = "/home/willist/Documents/data/"
 
-training_set = load_sensor_files(data_path)
-# training_set = load_sensor_file("/home/willist/Documents/data/sensor_stream_03_02_15_03_54_00_gen2.txt")
+training_set = load_sensor_files(data_path, num_samples=num_samples)
 
 print "collected " + str(training_set.get_value(borrow=True).shape[0]) + " samples"
 
@@ -41,7 +42,7 @@ da = DenoisingAutoencoder(
     numpy_rng=rng,
     theano_rng=theano_rng,
     input=x,
-    n_visible=81,
+    n_visible=num_visible_size,
     n_hidden=num_hidden_nodes
 )
 

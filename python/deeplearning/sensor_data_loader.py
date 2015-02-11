@@ -34,7 +34,7 @@ def load_sensor_files(data_path, num_samples=100000):
     from random import sample
 
     file_names = listdir(data_path)
-    #file_names = sample(file_names, len(file_names) / 2)
+    file_names = sample(file_names, 10)
     file_names = sorted(file_names)
     file_paths = [data_path + name for name in file_names]
 
@@ -45,7 +45,7 @@ def load_sensor_files(data_path, num_samples=100000):
         lines = sensor_data_file.readlines()
         sensor_data_file.close()
         lines = [line for line in lines if not line.startswith("#")]
-        #lines = lines[:len(lines)/10]
+        lines = lines[:len(lines)/10]
         data_set = [line.split(',') for line in lines]
         data_set = [[float(value) for value in data_line] for data_line in data_set]
         total_data_set = total_data_set + data_set

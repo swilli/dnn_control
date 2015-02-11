@@ -15,6 +15,8 @@ public:
 
     void Reset();
 
+    class RangeMalConfigurationException : public Exception {};
+
 private:
     unsigned int cache_index_;
 

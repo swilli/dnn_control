@@ -23,6 +23,7 @@ public:
 
     unsigned int Dimensions() const;
 
+    class Exception {};
 
 protected:
     // How large is the sensor data space

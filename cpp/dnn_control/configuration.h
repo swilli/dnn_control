@@ -56,7 +56,7 @@
 #define CNN_WITH_VELOCITY   true
 
 // Class SensorSimulatorAutoencoder configs
-#define SSA_DATA_DIMENSIONS  9
+#define SSA_DATA_DIMENSIONS  6
 #define SSA_DATA_MULTIPLIER  3
 #define SSA_DATA_HISTORY     3
 
