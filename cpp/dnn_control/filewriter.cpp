@@ -75,3 +75,11 @@ void FileWriter::CreatePostEvaluationFile(const std::vector<unsigned int> &rando
         file_ << std::endl;
     }
 }
+
+void FileWriter::CreateConvexityFile(const unsigned int &random_seed, const unsigned int &dimension, const std::vector<std::pair<double, double> > &fitness) {
+    file_ << random_seed << ",\t" << dimension << std::endl;
+    for (unsigned int i = 0; i < fitness.size(); ++i) {
+        const std::pair<double, double> &p = fitness.at(i);
+        file_ << p.first << ",\t" << p.second << std::endl;
+    }
+}

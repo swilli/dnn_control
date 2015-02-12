@@ -20,6 +20,8 @@ public:
 
     void CreatePostEvaluationFile(const std::vector<unsigned int> &random_seeds, const std::vector<std::vector<double> > &fitness);
 
+    void CreateConvexityFile(const unsigned int &random_seed, const unsigned int &dimension, const std::vector<std::pair<double, double> > &fitness);
+
 private:
     std::ofstream file_;
 };

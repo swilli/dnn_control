@@ -1,7 +1,11 @@
 #include "sensorsimulatorfullstate.h"
 #include "configuration.h"
 
-const unsigned int SensorSimulatorFullState::kDimensions = 8;
+#if SSFS_WITH_VELOCITY
+const unsigned int SensorSimulatorFullState::kDimensions = 7;
+#else
+const unsigned int SensorSimulatorFullState::kDimensions = 4;
+#endif
 
 SensorSimulatorFullState::SensorSimulatorFullState(SampleFactory &sample_factory, const Asteroid &asteroid)
     : SensorSimulator(kDimensions, sample_factory, asteroid) {
@@ -23,6 +27,7 @@ SensorData SensorSimulatorFullState::Simulate(const SystemState &state, const Ve
         sensor_data[i] = sensor_data[i] + sensor_data[i] * sample_factory_.SampleNormal(0.0, noise_configurations_.at(i));
 #endif
     }
-    sensor_data[7] = time;
+    sensor_data[dimensions_ - 1] = time;
+
     return sensor_data;
 }

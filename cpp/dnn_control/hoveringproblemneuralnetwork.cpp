@@ -1,9 +1,9 @@
-#include "hoveringproblem.h"
+#include "hoveringproblemneuralnetwork.h"
 #include "configuration.h"
 
 namespace pagmo { namespace problem {
 
-hovering_problem::hovering_problem(const unsigned int &seed, const unsigned int &n_evaluations, const double &simulation_time, const unsigned int &n_hidden_neurons)
+hovering_problem_neural_network::hovering_problem_neural_network(const unsigned int &seed, const unsigned int &n_evaluations, const double &simulation_time, const unsigned int &n_hidden_neurons)
     : base_stochastic(PaGMOSimulationNeuralNetwork(0, 0.0, n_hidden_neurons).ChromosomeSize(), seed),
       m_n_evaluations(n_evaluations), m_n_hidden_neurons(n_hidden_neurons), m_simulation_time(simulation_time) {
 
@@ -11,29 +11,29 @@ hovering_problem::hovering_problem(const unsigned int &seed, const unsigned int 
     set_ub(1.0);
 }
 
-hovering_problem::hovering_problem(const hovering_problem &other)
+hovering_problem_neural_network::hovering_problem_neural_network(const hovering_problem_neural_network &other)
     : base_stochastic(other) {
     m_n_evaluations = other.m_n_evaluations;
     m_simulation_time = other.m_simulation_time;
     m_n_hidden_neurons = other.m_n_hidden_neurons;
 }
 
-std::string hovering_problem::get_name() const {
+std::string hovering_problem_neural_network::get_name() const {
     return "Asteroid hovering - Neurocontroller Evolution";
 }
 
-base_ptr hovering_problem::clone() const {
-    return base_ptr(new hovering_problem(*this));
+base_ptr hovering_problem_neural_network::clone() const {
+    return base_ptr(new hovering_problem_neural_network(*this));
 }
 
-fitness_vector hovering_problem::objfun_seeded(const unsigned int &seed, const decision_vector &x) const {
+fitness_vector hovering_problem_neural_network::objfun_seeded(const unsigned int &seed, const decision_vector &x) const {
     PaGMOSimulationNeuralNetwork simulation(seed, m_simulation_time, m_n_hidden_neurons, x);
     fitness_vector f(1);
     f[0] = single_fitness(simulation);
     return f;
 }
 
-void hovering_problem::objfun_impl(fitness_vector &f, const decision_vector &x) const {
+void hovering_problem_neural_network::objfun_impl(fitness_vector &f, const decision_vector &x) const {
     f[0] = 0.0;
 
     // Make sure the pseudorandom sequence will always be the same
@@ -55,7 +55,7 @@ void hovering_problem::objfun_impl(fitness_vector &f, const decision_vector &x) 
     f[0] /= m_n_evaluations;
 }
 
-std::string hovering_problem::human_readable_extra() const {
+std::string hovering_problem_neural_network::human_readable_extra() const {
     std::ostringstream oss;
     oss << "\tSimulation Time: " << m_simulation_time << '\n';
     oss << "\tSeed: " << m_seed << '\n';
@@ -64,7 +64,7 @@ std::string hovering_problem::human_readable_extra() const {
     return oss.str();
 }
 
-double hovering_problem::single_fitness(PaGMOSimulationNeuralNetwork &simulation) const {
+double hovering_problem_neural_network::single_fitness(PaGMOSimulationNeuralNetwork &simulation) const {
     double fitness = 0.0;
 
     const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = simulation.EvaluateAdaptive();
@@ -144,11 +144,40 @@ double hovering_problem::single_fitness(PaGMOSimulationNeuralNetwork &simulation
     return fitness;
 }
 
-hovering_problem::~hovering_problem() {
+double hovering_problem_neural_network::single_post_evaluation(PaGMOSimulationNeuralNetwork &simulation) const {
+    double fitness = 0.0;
+
+    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = simulation.EvaluateAdaptive();
+    const std::vector<double> &evaluated_times = boost::get<0>(result);
+    const std::vector<Vector3D> &evaluated_positions = boost::get<2>(result);
+
+    const unsigned int num_samples = evaluated_times.size();
+
+    // The target position
+    const Vector3D target_position = simulation.TargetPosition();
+
+    // punish unfinished simulations (crash / out of fuel)
+    double time_diff = evaluated_times.back() - m_simulation_time;
+    time_diff = (time_diff < 0.0 ? -time_diff : time_diff);
+    if (time_diff > 0.1) {
+        fitness += 1e30;
+    }
+
+    const unsigned int start_index = num_samples * 0.01;
+    for (unsigned int i = start_index; i < num_samples; ++i) {
+        fitness += VectorNorm(VectorSub(target_position, evaluated_positions.at(i)));
+    }
+
+    fitness /= (num_samples - start_index);
+
+    return fitness;
+}
+
+hovering_problem_neural_network::~hovering_problem_neural_network() {
 
 }
 
-boost::tuple<std::vector<double>, std::vector<unsigned int> > hovering_problem::post_evaluate(const decision_vector &x, const unsigned int &start_seed, const std::vector<unsigned int> &random_seeds) const {
+boost::tuple<std::vector<double>, std::vector<unsigned int> > hovering_problem_neural_network::post_evaluate(const decision_vector &x, const unsigned int &start_seed, const std::vector<unsigned int> &random_seeds) const {
     unsigned int num_tests = random_seeds.size();
     std::vector<unsigned int> used_random_seeds;
     if (num_tests == 0) {
@@ -166,7 +195,7 @@ boost::tuple<std::vector<double>, std::vector<unsigned int> > hovering_problem::
     for (unsigned int i = 0; i < num_tests; ++i) {
         const unsigned int current_seed = used_random_seeds.at(i);
         PaGMOSimulationNeuralNetwork simulation(current_seed, m_simulation_time, m_n_hidden_neurons, x);
-        fitness.at(i) = single_fitness(simulation);
+        fitness.at(i) = single_post_evaluation(simulation);
     }
 
     return boost::make_tuple(fitness, used_random_seeds);

@@ -45,7 +45,8 @@
 #define SSNN_WITH_NOISE false
 
 // Class SensorSimulatorFullState configs
-#define SSFS_WITH_NOISE true
+#define SSFS_WITH_VELOCITY true
+#define SSFS_WITH_NOISE false
 
 // Class ControllerNeuralNetwork configs
 #define CNN_NN_TYPE_FFNN    0
@@ -54,6 +55,9 @@
 
 #define CNN_NEURAL_NETWORK_TYPE     CNN_NN_TYPE_FFNN
 #define CNN_WITH_VELOCITY   true
+
+// Class ControllerFullState configs
+#define CFS_WITH_VELOCITY   true
 
 // Class SensorSimulatorAutoencoder configs
 #define SSA_DATA_DIMENSIONS  6
@@ -68,6 +72,8 @@
 #define LSPR_IC_VELOCITY_TYPE  LSPR_IC_BODY_RANDOM_VELOCITY
 #define LSPR_IC_POSITION_OFFSET_ENABLED true
 
+#define LSPR_DIRECTION_RESOLUTION   10
+#define LSPR_THRUST_RESOLUTION  5
 #define LSPR_NUM_EPISODES    1000
 #define LSPR_NUM_STEPS  50
 #define LSPR_GAMMA  0.9
@@ -78,7 +84,12 @@
 #define PATH_TO_LSPI_TRAJECTORY_FILE   "../../../results/trajectory_lspi.txt"
 #define PATH_TO_NEURO_EVALUATION_FILE  "../../../results/evaluation_neuro.txt"
 #define PATH_TO_NEURO_POST_EVALUATION_FILE    "../../../results/post_evaluation_neuro.txt"
+#define PATH_TO_NEURO_CONVEXITY_FILE    "../../../results/convexity_neuro.txt"
+#define PATH_TO_FULL_STATE_TRAJECTORY_FILE  "../../../results/trajectory_full_state.txt"
+#define PATH_TO_FULL_STATE_EVALUATION_FILE  "../../../results/evaluation_full_state.txt"
+#define PATH_TO_FULL_STATE_POST_EVALUATION_FILE    "../../../results/post_evaluation_full_state.txt"
 #define PATH_TO_SENSOR_DATA_FOLDER  "/home/willist/Documents/data/"
+
 
 #ifdef HP_FIXED_SEED
 #undef ER_EVALUATIONS
@@ -108,9 +119,11 @@ inline void Configuration() {
     std::cout << "ODES_FUEL_ENABLED   " << ToString(ODES_FUEL_ENABLED) << std::endl;
     std::cout << "SSNN_WITH_VELOCITY   " << ToString(SSNN_WITH_VELOCITY) << std::endl;
     std::cout << "SSNN_WITH_NOISE   " << ToString(SSNN_WITH_NOISE) << std::endl;
+    std::cout << "SSFS_WITH_VELOCITY   " << ToString(SSFS_WITH_VELOCITY) << std::endl;
     std::cout << "SSFS_WITH_NOISE   " << ToString(SSFS_WITH_NOISE) << std::endl;
     std::cout << "CNN_NEURAL_NETWORK_TYPE   " << CNN_NEURAL_NETWORK_TYPE << std::endl;
     std::cout << "CNN_WITH_VELOCITY   " << ToString(CNN_WITH_VELOCITY) << std::endl;
+    std::cout << "CFS_WITH_VELOCITY   " << ToString(CFS_WITH_VELOCITY) << std::endl;
     std::cout << "SSA_DATA_DIMENSIONS   " << SSA_DATA_DIMENSIONS << std::endl;
     std::cout << "SSA_DATA_MULTIPLIER   " << SSA_DATA_MULTIPLIER << std::endl;
     std::cout << "SSA_DATA_HISTORY   " << SSA_DATA_HISTORY << std::endl;
@@ -119,6 +132,8 @@ inline void Configuration() {
     std::cout << "LSPI global configuration" << std::endl;
     std::cout << "LSPR_NUM_EPISODES   " << LSPR_NUM_EPISODES << std::endl;
     std::cout << "LSPR_NUM_STEPS   " << LSPR_NUM_STEPS << std::endl;
+    std::cout << "LSPR_DIRECTION_RESOLUTION   " << LSPR_DIRECTION_RESOLUTION << std::endl;
+    std::cout << "LSPR_THRUST_RESOLUTION   " << LSPR_THRUST_RESOLUTION << std::endl;
     std::cout << "LSPR_GAMMA   " << LSPR_GAMMA << std::endl;
     std::cout << "LSPR_EPSILON   " << LSPR_EPSILON << std::endl;
 #ifdef LSPR_FIXED_SEED

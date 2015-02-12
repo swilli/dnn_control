@@ -52,7 +52,7 @@ errors = repmat(target_position, num_samples, 1) - positions
 
 fig = plt.figure(1)
 if obj_fun:
-    fitness = norm(errors, axis=1) + norm(velocities, axis=1)
+    fitness = norm(errors, axis=1)
 
     plt.plot(times, fitness)
     plt.title('Fitness vs Time')

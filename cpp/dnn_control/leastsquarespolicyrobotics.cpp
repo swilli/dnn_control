@@ -1,4 +1,5 @@
 #include "leastsquarespolicyrobotics.h"
+#include "constants.h"
 #include "vector.h"
 #include "lspisimulator.h"
 #include "filewriter.h"
@@ -14,7 +15,6 @@
 namespace eigen = Eigen;
 
 static const double kSpacecraftMaximumThrust = 21.0;
-
 static const unsigned int kSpacecraftStateDimension = 6;
 
 static unsigned int kSpacecraftNumActions = 0;
@@ -28,15 +28,33 @@ typedef boost::array<double, kSpacecraftStateDimension> LSPIState;
 // (x, a, r, x_prime)
 typedef boost::tuple<LSPIState, unsigned int, double, LSPIState> Sample;
 
-static std::map<int, Vector3D> kSpacecraftActions;
+static std::map<unsigned int, Vector3D> kSpacecraftActions;
 
 static void Init() {
     unsigned int index = 0;
-    const Vector3D actions_1d = {-kSpacecraftMaximumThrust, 0.0, kSpacecraftMaximumThrust};
-    for (int i = 0; i < 3; ++i) {
-        for (int j = 0; j < 3; ++j) {
-            for (int k = 0; k < 3; ++k) {
-                const Vector3D action = {actions_1d[i], actions_1d[j], actions_1d[k]};
+    const double res_u = 1.0 / LSPR_DIRECTION_RESOLUTION ;
+    const double res_v = 1.0 / (LSPR_DIRECTION_RESOLUTION - 1);
+    const double d_thrust = kSpacecraftMaximumThrust / (LSPR_THRUST_RESOLUTION - 1);
+    for (unsigned int k = 0; k < LSPR_THRUST_RESOLUTION; ++k) {
+        if (k == 0) {
+            kSpacecraftActions[index++] = {0.0, 0.0, 0.0};
+            continue;
+        }
+        const double t = k * d_thrust;
+        for (unsigned int j = 0; j < LSPR_DIRECTION_RESOLUTION; ++j) {
+            if (j == 0) {
+                kSpacecraftActions[index++] = {0.0, 0.0, -t};
+                continue;
+            } else if (j == LSPR_DIRECTION_RESOLUTION - 1) {
+                kSpacecraftActions[index++] = {0.0, 0.0, t};
+                continue;
+            }
+            const double v = j * res_v;
+            const double phi = acos(2.0 * v - 1.0);
+            for (unsigned int i = 0; i < LSPR_DIRECTION_RESOLUTION; ++i) {
+                const double u = i * res_u;
+                const double theta = 2.0 * kPi * u;
+                const Vector3D action = {t * sin(phi) * cos(theta), t * sin(phi) * sin(theta), t * cos(phi)};
                 kSpacecraftActions[index++] = action;
             }
         }

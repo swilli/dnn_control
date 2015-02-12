@@ -2,6 +2,7 @@
 #define FULLSTATECONTROLLER_H
 
 #include "controller.h"
+#include "configuration.h"
 
 class ControllerFullState : public Controller {
 public:
@@ -16,19 +17,22 @@ public:
     void SetCoefficients(const std::vector<double> &pid_coefficients);
 
 private:
+
+#if CFS_WITH_VELOCITY
+typedef boost::array<double,6> Array;
+#else
+typedef boost::array<double,3> Array;
+#endif
+
     double latest_control_action_;
 
-    double coef_proportional_;
+    Array pid_coefficients_;
 
-    double coef_derivative_;
+    Array target_state_;
 
-    double coef_integral_;
+    Array previous_error_;
 
-    Vector3D target_position_;
-
-    Vector3D previous_error_;
-
-    Vector3D integral_;
+    Array integral_;
 };
 
 #endif // FULLSTATECONTROLLER_H
