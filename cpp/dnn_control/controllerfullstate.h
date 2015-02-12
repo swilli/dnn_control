@@ -18,21 +18,15 @@ public:
 
 private:
 
-#if CFS_WITH_VELOCITY
-typedef boost::array<double,6> Array;
-#else
-typedef boost::array<double,3> Array;
-#endif
-
     double latest_control_action_;
 
-    Array pid_coefficients_;
+    std::vector<double>  target_state_;
 
-    Array target_state_;
+    std::vector<double> pid_coefficients_;
 
-    Array previous_error_;
+    std::vector<double> previous_error_;
 
-    Array integral_;
+    std::vector<double> integral_;
 };
 
 #endif // FULLSTATECONTROLLER_H

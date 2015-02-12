@@ -7,17 +7,15 @@ const unsigned int ControllerFullState::kDimensions = 4;
 #endif
 
 ControllerFullState::ControllerFullState(const double &maximum_thrust, const Vector3D &target_position)
-    : Controller(kDimensions, kDimensions - 1, maximum_thrust) {
-    for (unsigned int i = 0; i < 3; ++i) {
+    : Controller(kDimensions, (kDimensions - 1) * 3, maximum_thrust) {
+    target_state_ = std::vector<double>(dimensions_ - 1, 0.0);
+    for (unsigned int i  = 0; i < 3; ++i) {
         target_state_[i] = target_position[i];
-        previous_error_[i] = 0.0;
-        integral_[i] = 0.0;
-#if CFS_WITH_VELOCITY
-        target_state_[3+i] = 0.0;
-        previous_error_[3+i] = 0.0;
-        integral_[3+i] = 0.0;
-#endif
     }
+
+    previous_error_ = std::vector<double>(dimensions_ - 1, 0.0);
+    integral_ = std::vector<double>(dimensions_ - 1, 0.0);
+    pid_coefficients_ = std::vector<double>(number_of_parameters_, 0.0);
 
     latest_control_action_ = 0.0;
 }
@@ -30,44 +28,32 @@ void ControllerFullState::SetCoefficients(const std::vector<double> &pid_coeffic
     if (pid_coefficients.size() != number_of_parameters_) {
         throw SizeMismatchException();
     }
-    for (unsigned int i = 0; i < pid_coefficients_.size(); ++i) {
-        pid_coefficients_.at(i) = pid_coefficients.at(i);
-    }
+    pid_coefficients_ = pid_coefficients;
 }
 
 Vector3D ControllerFullState::GetThrustForSensorData(const SensorData &sensor_data) {
-    Vector3D thrust;
-    const double control_interval = (sensor_data[dimensions_ - 1] - latest_control_action_);
+    Vector3D thrust = {0.0, 0.0, 0.0};
+    const double control_interval = sensor_data[dimensions_ - 1] - latest_control_action_;
+
+    for (unsigned int i = 0; i < dimensions_ - 1; ++i) {
+        const double error = target_state_[i] - sensor_data[i];
+        double derivative = 0.0;
+        if (control_interval > 0.0) {
+            derivative = (error - previous_error_[i]) / control_interval;
+            integral_[i] += error * control_interval;
+        }
+        const unsigned int base = i * 3;
+        thrust[i % 3] += pid_coefficients_.at(base) * error + pid_coefficients_.at(base + 1) * integral_[i] + pid_coefficients_.at(base + 2) * derivative;
+        previous_error_[i] = error;
+    }
 
     for (unsigned int i = 0; i < 3; ++i) {
-        const double error_position = target_state_[i] - sensor_data[i];
-        double derivative_position = 0.0;
-        if (control_interval > 0.0) {
-            derivative_position = (error_position - previous_error_[i]) / control_interval;
-            integral_[i] += error_position * control_interval;
-        }
-#if CFS_WITH_VELOCITY
-        const double error_velocity = target_state_[3+i] - sensor_data[3+i];
-        double derivative_velocity = 0.0;
-        if (control_interval > 0.0) {
-            derivative_velocity = (error_velocity - previous_error_[3+i]) / control_interval;
-            integral_[3+i] += error_velocity * control_interval;
-        }
-        double t = pid_coefficients_.at(0) * error_position + pid_coefficients_.at(1) * derivative_position + pid_coefficients_.at(2) * integral_[i]
-                + pid_coefficients_.at(3) * error_velocity + pid_coefficients_.at(4) * derivative_velocity + pid_coefficients_.at(5) * integral_[3+i];
-#else
-        double t = pid_coefficients_.at(0) * error_position + pid_coefficients_.at(1) * derivative_position + pid_coefficients_.at(2) * integral_[i];
-#endif
+        double &t = thrust[i];
         if (t > maximum_thrust_) {
             t = maximum_thrust_;
         } else if (t < -maximum_thrust_) {
             t = -maximum_thrust_;
         }
-        thrust[i] = t;
-        previous_error_[i] = error_position;
-#if CFS_WITH_VELOCITY
-        previous_error_[3+i] = error_velocity;
-#endif
     }
     latest_control_action_ = sensor_data[dimensions_ - 1];
 
