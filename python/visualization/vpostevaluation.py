@@ -40,4 +40,6 @@ data = array(filtered_data)
 
 plt.boxplot(data, labels=labels)
 plt.title("Post Evaluation for 25000 different Initial Conditions")
+plt.xlabel('Controller')
+plt.ylabel('Fitness')
 plt.show()
