@@ -26,6 +26,7 @@
 #define HP_OBJ_FUN_METHOD_7    7   // Compare mean distance to target point, also consider velocity, punish later offsets more.
 
 #define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_6
+#define HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED    true
 //#define HP_FIXED_SEED  1990
 
 // Class ODESystem configs
@@ -80,15 +81,16 @@
 #define LSPR_EPSILON 1e-10
 
 // Other stuff configs, not relevant for simulation
-#define PATH_TO_NEURO_TRAJECTORY_FILE   "../../../results/trajectory_neuro.txt"
-#define PATH_TO_LSPI_TRAJECTORY_FILE   "../../../results/trajectory_lspi.txt"
-#define PATH_TO_NEURO_EVALUATION_FILE  "../../../results/evaluation_neuro.txt"
-#define PATH_TO_NEURO_POST_EVALUATION_FILE    "../../../results/post_evaluation_neuro.txt"
-#define PATH_TO_NEURO_CONVEXITY_FILE    "../../../results/convexity_neuro.txt"
-#define PATH_TO_FULL_STATE_TRAJECTORY_FILE  "../../../results/trajectory_full_state.txt"
-#define PATH_TO_FULL_STATE_EVALUATION_FILE  "../../../results/evaluation_full_state.txt"
-#define PATH_TO_FULL_STATE_POST_EVALUATION_FILE    "../../../results/post_evaluation_full_state.txt"
-#define PATH_TO_SENSOR_DATA_FOLDER  "/home/willist/Documents/data/"
+#define OUTPUT_ROOT_PATH   "/home/willist/Documents/dnn/"
+#define PATH_TO_NEURO_TRAJECTORY_FILE   OUTPUT_ROOT_PATH    "results/trajectory_neuro.txt"
+#define PATH_TO_LSPI_TRAJECTORY_FILE   OUTPUT_ROOT_PATH "results/trajectory_lspi.txt"
+#define PATH_TO_NEURO_EVALUATION_FILE  OUTPUT_ROOT_PATH "results/evaluation_neuro.txt"
+#define PATH_TO_NEURO_POST_EVALUATION_FILE    OUTPUT_ROOT_PATH  "results/post_evaluation_neuro.txt"
+#define PATH_TO_NEURO_CONVEXITY_PATH    OUTPUT_ROOT_PATH    "results/convexity/"
+#define PATH_TO_FULL_STATE_TRAJECTORY_FILE  OUTPUT_ROOT_PATH    "results/trajectory_full_state.txt"
+#define PATH_TO_FULL_STATE_EVALUATION_FILE  OUTPUT_ROOT_PATH    "results/evaluation_full_state.txt"
+#define PATH_TO_FULL_STATE_POST_EVALUATION_FILE    OUTPUT_ROOT_PATH "results/post_evaluation_full_state.txt"
+#define PATH_TO_SENSOR_DATA_FOLDER  OUTPUT_ROOT_PATH    "data/"
 
 
 #ifdef HP_FIXED_SEED

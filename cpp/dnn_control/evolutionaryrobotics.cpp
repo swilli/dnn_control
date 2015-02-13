@@ -4,6 +4,7 @@
 #include "samplefactory.h"
 #include "filewriter.h"
 #include "configuration.h"
+#include <sstream>
 
 // Training configuration
 static const unsigned int kNumGenerations = ER_NUM_GENERATIONS;
@@ -162,22 +163,32 @@ void TrainFullStateController() {
     ArchipelagoEvolve(archi, kNumGenerations);
 }
 
-static void ConvexityCheck(pagmo::problem::hovering_problem_neural_network &problem, const unsigned &random_seed, const unsigned int &dimension, pagmo::decision_vector x) {
-    std::vector<std::pair<double,double> > fitness;
-    const double d_weight = 0.01;
+static void ConvexityCheck(pagmo::problem::hovering_problem_neural_network &problem, const unsigned &random_seed, const pagmo::decision_vector &x) {
+    const double d_range = 0.01;
+    const double range = 5.0;
 
     std::cout << "Checking NN controller convexity... ";
-    double weight = -5.0;
-    while (weight <= 5.0) {
-        x.at(dimension) = weight;
-        fitness.push_back(std::make_pair(weight, problem.objfun_seeded(random_seed, x)[0]));
-        weight += d_weight;
-    }
-    std::cout << "done." << std::endl;
 
-    std::cout << "Writing convexity file ... ";
-    FileWriter writer(PATH_TO_NEURO_CONVEXITY_FILE);
-    writer.CreateConvexityFile(random_seed, dimension, fitness);
+    for (unsigned int dimension = 0; dimension < x.size(); ++dimension) {
+        std::vector<std::pair<double,double> > fitness;
+        pagmo::decision_vector x_copy(x);
+        double weight = -range;
+        while (weight <= range) {
+            std::cout << weight << std::endl;
+            x_copy.at(dimension) = weight;
+            fitness.push_back(std::make_pair(weight, problem.objfun_seeded(random_seed, x_copy)[0]));
+            weight += d_range;
+        }
+        std::cout << "Writing convexity file ... ";
+        std::string path(PATH_TO_NEURO_CONVEXITY_PATH);
+        std::stringstream ss;
+        ss << "dim_" << dimension << ".txt";
+        path += ss.str();
+        FileWriter writer(path);
+        writer.CreateConvexityFile(random_seed, dimension, fitness);
+        std::cout << "done." << std::endl;
+    }
+
     std::cout << "done." << std::endl;
 }
 
@@ -189,7 +200,12 @@ void TestNeuralNetworkController(const unsigned int &random_seed) {
 
     pagmo::problem::hovering_problem_neural_network prob(random_seed, kNumEvaluations, kSimulationTime, kNumHiddenNeurons);
 
-    ConvexityCheck(prob, random_seed, 1, task_41_solution);
+    SampleFactory sample_factory(random_seed);
+    pagmo::decision_vector rand_guess;
+    for (unsigned int i = 0; i < task_41_solution.size(); ++i) {
+        rand_guess.push_back(sample_factory.SampleUniform(-1.0, 1.0));
+    }
+    ConvexityCheck(prob, random_seed, rand_guess);
     return;
 
     std::cout << "Checking NN controller fitness... ";

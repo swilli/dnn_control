@@ -79,11 +79,13 @@ double hovering_problem_neural_network::single_fitness(PaGMOSimulationNeuralNetw
     const Vector3D target_position = simulation.TargetPosition();
 
     // punish unfinished simulations (crash / out of fuel)
+#if HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED
     double time_diff = evaluated_times.back() - m_simulation_time;
     time_diff = (time_diff < 0.0 ? -time_diff : time_diff);
     if (time_diff > 0.1) {
         fitness += 1e30;
     }
+#endif
 
 #if HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_1
     // Method 1 : Compare start and ending position and velocity
@@ -157,11 +159,13 @@ double hovering_problem_neural_network::single_post_evaluation(PaGMOSimulationNe
     const Vector3D target_position = simulation.TargetPosition();
 
     // punish unfinished simulations (crash / out of fuel)
+#if HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED
     double time_diff = evaluated_times.back() - m_simulation_time;
     time_diff = (time_diff < 0.0 ? -time_diff : time_diff);
     if (time_diff > 0.1) {
         fitness += 1e30;
     }
+#endif
 
     const unsigned int start_index = num_samples * 0.01;
     for (unsigned int i = start_index; i < num_samples; ++i) {
