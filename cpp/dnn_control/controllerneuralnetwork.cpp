@@ -1,9 +1,9 @@
 #include "controllerneuralnetwork.h"
 
-#if CNN_WITH_VELOCITY
+#if CNN_SENSOR_INPUT_TYPE == CNN_SI_TYPE_TARGET
 const unsigned int ControllerNeuralNetwork::kDimensions = 6;
-#else
-const unsigned int ControllerNeuralNetwork::kDimensions = 3;
+#elif CNN_SENSOR_INPUT_TYPE == CNN_SI_TYPE_HOVER
+const unsigned int ControllerNeuralNetwork::kDimensions = 5;
 #endif
 
 ControllerNeuralNetwork::ControllerNeuralNetwork(const double &maximum_thrust, const unsigned int &num_hidden)

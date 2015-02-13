@@ -9,4 +9,6 @@ void TestNeuralNetworkController(const unsigned int &random_seed);
 void TrainFullStateController();
 void TestFullStateController(const unsigned int &random_seed);
 
+void TestNeuralNetworkVSFullStateController(const unsigned int &random_seed);
+
 #endif // EVOLUTIONARYROBOTICS_H

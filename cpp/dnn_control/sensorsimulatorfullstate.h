@@ -3,9 +3,6 @@
 
 #include "sensorsimulator.h"
 
-#include <boost/random.hpp>
-#include <boost/random/variate_generator.hpp>
-
 class SensorSimulatorFullState : public SensorSimulator {
 public:
     static const unsigned int kDimensions;

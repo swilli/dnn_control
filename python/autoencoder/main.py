@@ -6,17 +6,18 @@ import numpy
 import time
 import sys
 from numpy.linalg import norm
+from random import sample
 
 from denoising_autoencoder import DenoisingAutoencoder
 
 learning_rate = 0.1
-training_epochs = 500
+training_epochs = 50
 batch_size = 20
-num_hidden_nodes = 54
-num_visible_size = 54
+num_hidden_nodes = 15
+num_visible_size = 15
 corruption_level = 0.1
-num_samples = 500000
-data_path = "/home/willist/Documents/data/"
+num_samples = 100000
+data_path = "/home/willist/Documents/dnn/data/"
 
 training_set = load_sensor_files(data_path, num_samples=num_samples)
 
@@ -87,12 +88,11 @@ print da.W.get_value(borrow=True).T
 
 samples = training_set.get_value(borrow=True)
 num_test_samples = 1  # len(samples)/10
-test_samples = samples[numpy.random.randint(len(samples), size=num_test_samples), :]
+test_samples = sample(samples, num_test_samples)
+mean_error = 0.0
 for sample in test_samples:
     s_compr = da.compress(sample)
     s_decompr = da.decompress(s_compr)
-    print sample
-    print s_compr
-    print s_decompr
-    print norm(sample - s_decompr)
-    print "\n"
+    mean_error += norm(sample - s_decompr)
+
+print mean_error / num_test_samples

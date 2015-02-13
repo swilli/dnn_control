@@ -20,7 +20,7 @@ public:
 private:
     unsigned int cache_index_;
 
-    bool first_simulation_;
+    unsigned int num_simulations_;
 
     std::vector<double> sensor_maximum_absolute_ranges_;
 

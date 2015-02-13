@@ -26,7 +26,9 @@ private:
 
     std::vector<double> previous_error_;
 
+#if CFS_ENABLE_INTEGRATION
     std::vector<double> integral_;
+#endif
 };
 
 #endif // FULLSTATECONTROLLER_H
