@@ -6,31 +6,39 @@ examples:
 ./python2.7 vconvexity.py convexity.txt
 '''
 
-import sys
-import matplotlib.pyplot as plt
-from numpy import array, nan, diff
-from numpy.matlib import repmat
-from numpy.linalg import norm
+def visualize_convexity(file_path, save=False):
+	import matplotlib.pyplot as plt
+	from numpy import array, nan, diff
+	from numpy.matlib import repmat
+	from numpy.linalg import norm
+	
+	print("preparing data... ")
+	result_file = open(file_path, 'r')
+	seed, dimension = [int(value) for value in result_file.readline().split(',')]
+	lines = result_file.readlines()
+	result_file.close()
 
-file_name = sys.argv[1]
-print("preparing data... ")
+	num_samples = len(lines)
+	data = [line.split(',') for line in lines]
+	data = [[float(value) for value in line] for line in data]
+	data = array(data)
 
-result_file = open(file_name, 'r')
-seed, dimension = [int(value) for value in result_file.readline().split(',')]
-lines = result_file.readlines()
-result_file.close()
+	def discontinuous(data):
+	    data[diff(data) >= 0.5] = nan
+	    return data
 
-num_samples = len(lines)
-data = [line.split(',') for line in lines]
-data = [[float(value) for value in line] for line in data]
-data = array(data)
+	plt.plot(data[:,0], discontinuous(data[:,1]))
+	plt.title("Convexity of problem (seed: {0}, dimension: {1})".format(seed, dimension))
+	plt.xlabel('Parameter value')
+	plt.ylabel('Fitness')
+	if save:
+		plt.savefig(file_path.replace(".txt", ".svg"))
+		plt.close()
+	else:
+		plt.show()
 
-def discontinuous(x):
-    x[diff(x) >= 0.5] = nan
-    return x
+if __name__ == '__main__':
+	import sys
+	file_path = sys.argv[1]
+	visualize_convexity(file_path)
 
-plt.plot(data[:,0], discontinuous(data[:,1]))
-plt.title("Convexity of problem (seed: {0}, dimension: {1})".format(seed, dimension))
-plt.xlabel('Parameter value')
-plt.ylabel('Fitness')
-plt.show()
