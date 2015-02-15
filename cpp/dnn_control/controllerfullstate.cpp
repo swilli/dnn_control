@@ -3,12 +3,12 @@
 const unsigned int ControllerFullState::kDimensions = 6;
 
 ControllerFullState::ControllerFullState(const double &maximum_thrust)
-    : Controller(kDimensions, 0, maximum_thrust), neural_network_({std::make_pair(kDimensions, false), std::make_pair(3 , false)}, NeuralNetwork::ActivationFunctionType::Linear) {
+    : Controller(kDimensions, maximum_thrust), neural_network_({std::make_pair(kDimensions, false), std::make_pair(3 , false)}, NeuralNetwork::ActivationFunctionType::Linear) {        
     number_of_parameters_ = neural_network_.Size();
 }
 
 ControllerFullState::ControllerFullState(const double &maximum_thrust, const std::vector<double> &pd_coefficients)
-    : Controller(kDimensions, 0, maximum_thrust), neural_network_({std::make_pair(kDimensions, false), std::make_pair(3 , false)}, NeuralNetwork::ActivationFunctionType::Linear) {
+    : Controller(kDimensions, maximum_thrust), neural_network_({std::make_pair(kDimensions, false), std::make_pair(3 , false)}, NeuralNetwork::ActivationFunctionType::Linear) {
     number_of_parameters_ = neural_network_.Size();
     SetCoefficients(pd_coefficients);
 }
