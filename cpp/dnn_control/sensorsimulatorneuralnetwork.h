@@ -4,7 +4,11 @@
 #include "sensorsimulator.h"
 
 class SensorSimulatorNeuralNetwork : public SensorSimulator {
+	/*
+    * This class generates the artificial sensor data required for a neural network controller. The data produced by this sensor simulator contains optical flow and accelerometer data.
+    */
 public:
+	// The number of output dimensions the sensor simulator will generate
     static const unsigned int kDimensions;
 
     SensorSimulatorNeuralNetwork(SampleFactory &sample_factory, const Asteroid &asteroid);

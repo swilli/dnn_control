@@ -11,7 +11,7 @@ typedef std::vector<double> SensorData;
 
 class SensorSimulator {
     /*
-     * This abstract class generates the artificial the sensor data required for a controller.
+     * This abstract class generates the artificial sensor data required for a controller.
      */
 public:
     SensorSimulator(const unsigned int &dimensions, SampleFactory &sample_factory, const Asteroid &asteroid);
@@ -21,9 +21,8 @@ public:
     // Generates (simulates) sensor data based on the current spacecraft state "state" and time "time"
     virtual SensorData Simulate(const SystemState &state, const Vector3D &height, const Vector3D &perturbations_acceleration, const double &time) = 0;
 
+    // The number of sensor data dimensions produced by the SensorSimulator
     unsigned int Dimensions() const;
-
-    class Exception {};
 
 protected:
     // How large is the sensor data space

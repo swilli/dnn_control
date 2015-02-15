@@ -27,6 +27,8 @@
 
 #include "asteroid.h"
 
+// If the adaptive simulator tests to far in the future, the spacecraft might pass through the asteroid's surface. 
+// Catch this exception, until the integration step is so small, that the hit point on the surface is accurate enough.
 const static double kMaximumCollisionTimeStep = 0.1;
 
 namespace boost {

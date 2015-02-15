@@ -51,7 +51,7 @@ IF(NOT F2C_LIBRARY)
 	MESSAGE(FATAL_ERROR "F2C library not found")
 ENDIF(NOT F2C_LIBRARY)
 IF(NOT PAGMO_LIBRARY OR NOT PAGMO_INCLUDE_DIR)
-	MESSAGE(FATAL_ERROR "PAGMO installation not found")
+	MESSAGE(FATAL_ERROR "PaGMO installation not found")
 ENDIF(NOT PAGMO_LIBRARY OR NOT PAGMO_INCLUDE_DIR)
 
 # 4 - Define mandatory libraries and include directories

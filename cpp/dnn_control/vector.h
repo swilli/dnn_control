@@ -16,6 +16,7 @@ inline Vector3D VectorCrossProduct(const Vector3D &vector_u, const Vector3D &vec
     return result;
 }
 
+// s  = first - second
 inline Vector3D VectorSub(const Vector3D &first, const Vector3D &second) {
     Vector3D result;
     result[0] = first[0] - second[0];
@@ -24,6 +25,7 @@ inline Vector3D VectorSub(const Vector3D &first, const Vector3D &second) {
     return result;
 }
 
+// n = ||vector||
 inline double VectorNorm(const Vector3D &vector) {
     double result = 0.0;
     for (unsigned int i = 0; i < 3; ++i) {
@@ -32,6 +34,7 @@ inline double VectorNorm(const Vector3D &vector) {
     return sqrt(result);
 }
 
+// n = ||vector||
 inline double VectorNorm(const Vector2D &vector) {
     double result = 0.0;
     for (unsigned int i = 0; i < 2; ++i) {
@@ -40,6 +43,7 @@ inline double VectorNorm(const Vector2D &vector) {
     return sqrt(result);
 }
 
+// nv = vector/||vector||
 inline Vector3D VectorNormalize(const Vector3D &vector) {
     Vector3D result;
     const double norm = VectorNorm(vector);
@@ -53,6 +57,7 @@ inline Vector3D VectorNormalize(const Vector3D &vector) {
     return result;
 }
 
+// nv = vector/||vector||
 inline Vector2D VectorNormalize(const Vector2D &vector) {
     Vector2D result;
     const double norm = VectorNorm(vector);
@@ -65,6 +70,7 @@ inline Vector2D VectorNormalize(const Vector2D &vector) {
     return result;
 }
 
+// String representation of vector
 inline std::string VectorToString(const Vector3D &vector) {
     std::ostringstream oss;
     oss << "[";
@@ -74,6 +80,7 @@ inline std::string VectorToString(const Vector3D &vector) {
     return oss.str();
 }
 
+// String representation of vector
 inline std::string VectorToString(const Vector2D &vector) {
     std::ostringstream oss;
     oss << "[";
@@ -82,10 +89,12 @@ inline std::string VectorToString(const Vector2D &vector) {
     return oss.str();
 }
 
+// p = <first, second>
 inline double VectorDotProduct(const Vector3D &first, const Vector3D &second) {
     return first[0] * second[0] + first[1] * second[1] + first[2] * second[2];
 }
 
+// p = <first, second>
 inline double VectorDotProduct(const Vector2D &first, const Vector2D &second) {
     return first[0] * second[0] + first[1] * second[1];
 }

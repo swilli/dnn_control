@@ -6,7 +6,7 @@
 
 class Controller {
         /*
-         * This abstract class generates the thrust for a given sensor_data input (which will hopefully result in hovering at some point).
+         * This abstract class generates the thrust for a given sensor_data input.
         */
 public:
     Controller(const unsigned int &dimensions, const unsigned int &num_parameters, const double &maximum_thrust);
@@ -14,13 +14,16 @@ public:
 
     virtual ~Controller();
 
-    // thrust = F(sensor_data), whereas F can be eg., a PID controller, some RL solution, a NN, ...
+    // thrust = F(sensor_data), whereas F can be eg., a PD controller, a NN, ...
     virtual Vector3D GetThrustForSensorData(const SensorData &sensor_data) = 0;
 
+    // The number of dimensions the controller works on in the function GetThrustForSensorData
     unsigned int Dimensions() const;
 
+    // The number of parameters the controller can be changed with
     virtual unsigned int NumberOfParameters() const;
 
+    // Controller can throw the following exceptions
     class Exception {};
     class SizeMismatchException : public Exception {};
 
