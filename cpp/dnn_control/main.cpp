@@ -19,7 +19,7 @@ int main(int argc, char *argv[]) {
     //TrainNeuralNetworkController();
     //return 0;
 
-    //TestFullStateController(rand());
+    //TestFullStateController(871);
     //return 0;
 
     TrainFullStateController();
@@ -45,13 +45,11 @@ int main(int argc, char *argv[]) {
     const std::vector<Vector3D> &pos = boost::get<2>(result);
     const std::vector<Vector3D> &hei = boost::get<3>(result);
 
-    FileWriter writer(PATH_TO_NEURO_TRAJECTORY_FILE);
+    FileWriter writer(PATH_TO_FULL_STATE_TRAJECTORY_FILE);
     writer.CreateVisualizationFile(sim.ControlFrequency(), sim.AsteroidOfSystem(), pos, hei);
 
     return 0;
     */
-
-
 
 
     /*
@@ -62,16 +60,17 @@ int main(int argc, char *argv[]) {
     double s_fixed = 0.0;
     double error_a_fi = 0.0;
     double sim_time = 0.0;
+    const pagmo::decision_vector &task_41_solution = {-0.2653449146, 0.8221059793, 7.115913466, 0.9384741461, 2.460804959, 12.3201749, 1.871427235, -0.07533608116, -8.801983599, 1.642141599, -0.4937348003, -11.74057504, 3.7529415, 5.392689477, -7.77324484, -1.770696028, -1.183963091, -5.650056297, 1.019963074, 1.392104027, 1.926941641, 2.285940845, -1.079293945, -1.105212255, -3.894913852, -1.532887634, 2.790675652, -2.038766662, -0.7017624366, -2.263868159, -1.198603142, -4.826437788, -3.92156976, -2.00905927, -15.71152901, -2.343697858, -1.634728259, -4.242889368, -11.67533841, 7.999951956, 4.194276093, 7.023201787, 2.993808039, 2.996861109, -7.245632379, 1.343217234, -0.08975019422, -2.389846969, 0.25375688, -4.253339765, 7.06271584, 1.547862271, -0.7536306029, 1.070464669, -0.8058834915, -1.815555643, 2.866735509, -1.269174723, 1.178642348, -4.484382836, -0.6004458266, -6.729774456, -0.7779761483};
     for (unsigned int i = 0; i < num_tests; ++i) {
         const unsigned seed = rand();
         std::cout << "seed for round " << i << " is " << seed << std::endl;
-        PaGMOSimulationNeuralNetwork sim(seed,  6.0 * 60.0 * 60.0, kNeuralNetworkWeights, 5);
+        PaGMOSimulationNeuralNetwork sim(seed,  1.0 * 60.0 * 60.0, 6, task_41_solution);
 
 
         // Adaptive bucket
         std::cout << "adaptive" << std::endl;
         clock_t begin = clock();
-        boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = sim.Evaluate();
+        boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>  > result = sim.EvaluateAdaptive();
         clock_t end = clock();
         double simulated_time = boost::get<0>(result).back();
         double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
@@ -83,7 +82,7 @@ int main(int argc, char *argv[]) {
         // Fixed bucket
         std::cout << "fixed" << std::endl;
         begin = clock();
-        result = sim.EvaluateDetailed();
+        result = sim.EvaluateFixed();
         end = clock();
         simulated_time = boost::get<0>(result).back();
         elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
@@ -119,9 +118,7 @@ int main(int argc, char *argv[]) {
     std::cout << "mean speedup fixed: " << s_fixed / num_tests << std::endl;
     std::cout << "mean error a-fi: " << error_a_fi / num_tests << std::endl;
     return 0;
-
     */
-
 
     /*
 

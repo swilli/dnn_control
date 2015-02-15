@@ -48,7 +48,7 @@ void hovering_problem_full_state::objfun_impl(fitness_vector &f, const decision_
         const unsigned int current_seed = m_urng();
 #endif
 
-        // PID Controller simulation
+        // PD Controller simulation
         PaGMOSimulationFullState simulation(current_seed, m_simulation_time, x);
         f[0] += single_fitness(simulation);
     }
@@ -75,8 +75,10 @@ double hovering_problem_full_state::single_fitness(PaGMOSimulationFullState &sim
 
     const unsigned int num_samples = evaluated_times.size();
 
+#if HP_TARGET_TYPE == HP_TT_TARGET
     // The target position
     const Vector3D target_position = simulation.TargetPosition();
+#endif
 
     // punish unfinished simulations (crash / out of fuel)
 #if HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED

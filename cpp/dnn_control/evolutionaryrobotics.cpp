@@ -128,7 +128,7 @@ void TrainFullStateController() {
     // We instantiate a PSO algorithm capable of coping with stochastic prolems
     pagmo::algorithm::pso_generational algo(1,0.7298,2.05,2.05,0.05);
 
-    std::cout << "Initializing PID controller evolution ....";
+    std::cout << "Initializing PD controller evolution ....";
 
     pagmo::archipelago archi = pagmo::archipelago(pagmo::topology::fully_connected());
 
@@ -234,6 +234,7 @@ void TestNeuralNetworkController(const unsigned int &random_seed) {
     writer_evaluation.CreateEvaluationFile(random_seed, simulation.TargetPosition(), times, positions, velocities, thrusts);
     std::cout << "done." << std::endl;
 
+    /*
     std::cout << "Performing post evaluation ... ";
     std::vector<std::vector<double> > fitness_tasks;
     const boost::tuple<std::vector<double>, std::vector<unsigned int> > post_evaluation_task_42 = prob.post_evaluate(task_42_solution, random_seed);
@@ -248,6 +249,7 @@ void TestNeuralNetworkController(const unsigned int &random_seed) {
     FileWriter writer_post_evaluation(PATH_TO_NEURO_POST_EVALUATION_FILE);
     writer_post_evaluation.CreatePostEvaluationFile(random_seeds, fitness_tasks);
     std::cout << "done." << std::endl;
+    */
 }
 
 void TestFullStateController(const unsigned int &random_seed) {
@@ -258,11 +260,11 @@ void TestFullStateController(const unsigned int &random_seed) {
     pagmo::problem::hovering_problem_full_state prob(random_seed, kNumEvaluations, kSimulationTime);
 
 
-    std::cout << "Checking PID controller fitness... ";
+    std::cout << "Checking PD controller fitness... ";
     const double fitness = prob.objfun_seeded(random_seed, task_44_solution)[0];
     std::cout << fitness << std::endl;
 
-    std::cout << "Simulating PID controller ... ";
+    std::cout << "Simulating PD controller ... ";
     PaGMOSimulationFullState simulation(random_seed, 86400.0, task_44_solution);
     const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = simulation.EvaluateAdaptive();
     const std::vector<double> &times = boost::get<0>(result);
@@ -282,8 +284,8 @@ void TestFullStateController(const unsigned int &random_seed) {
     writer_evaluation.CreateEvaluationFile(random_seed, simulation.TargetPosition(), times, positions, velocities, thrusts);
     std::cout << "done." << std::endl;
 
-    return;
 
+    /*
     std::cout << "Performing post evaluation ... ";
     std::vector<std::vector<double> > fitness_tasks;
     const boost::tuple<std::vector<double>, std::vector<unsigned int> > post_evaluation_task_44 = prob.post_evaluate(task_44_solution, random_seed);
@@ -296,6 +298,7 @@ void TestFullStateController(const unsigned int &random_seed) {
     FileWriter writer_post_evaluation(PATH_TO_FULL_STATE_POST_EVALUATION_FILE);
     writer_post_evaluation.CreatePostEvaluationFile(random_seeds, fitness_tasks);
     std::cout << "done." << std::endl;
+    */
 }
 
 

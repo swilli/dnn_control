@@ -5,7 +5,7 @@
 
 class FeedForwardNeuralNetwork : public NeuralNetwork {
 public:
-    FeedForwardNeuralNetwork(const unsigned int &dim_input, const unsigned int &dim_hidden, const unsigned int &dim_output);
+    FeedForwardNeuralNetwork(const std::vector<std::pair<unsigned int, bool> > &layer_configurations, const ActivationFunctionType &function_type);
     virtual ~FeedForwardNeuralNetwork();
 
 
@@ -14,12 +14,11 @@ public:
     virtual void SetWeights(const std::vector<double> &weights);
 
 private:
-    unsigned int dim_input_;
-    unsigned int dim_hidden_;
-    unsigned int dim_output_;
+    ActivationFunctionType activation_function_type_;
 
-    std::vector<double> weights_;
-    std::vector<double> hidden_;
+    std::vector<std::pair<unsigned int, bool> > layer_configurations_;
+
+    std::vector<std::vector<double> > layer_weights_;
 };
 
 

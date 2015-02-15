@@ -76,8 +76,10 @@ double hovering_problem_neural_network::single_fitness(PaGMOSimulationNeuralNetw
 
     const unsigned int num_samples = evaluated_times.size();
 
+#if HP_TARGET_TYPE == HP_TT_TARGET
     // The target position
     const Vector3D target_position = simulation.TargetPosition();
+#endif
 
     // punish unfinished simulations (crash / out of fuel)
 #if HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED
@@ -141,7 +143,7 @@ double hovering_problem_neural_network::single_fitness(PaGMOSimulationNeuralNetw
     }
     fitness /= num_samples;
 
-#elif HP_OBJECTIVE_FUNCTION_METHOD ==  HP_OBJ_FUN_METHOD_8
+#elif HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_8
     // Method 8 : Compare height changes compared to initial height.
     const double height = VectorNorm(evaluated_heights.at(0));
     for (unsigned int i = 1; i < num_samples; ++i) {

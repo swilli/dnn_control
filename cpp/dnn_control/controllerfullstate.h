@@ -2,33 +2,25 @@
 #define FULLSTATECONTROLLER_H
 
 #include "controller.h"
-#include "configuration.h"
+#include "feedforwardneuralnetwork.h"
 
 class ControllerFullState : public Controller {
 public:
     static const unsigned int kDimensions;
 
-    ControllerFullState(const double &maximum_thrust, const Vector3D &target_position);
+    ControllerFullState(const double &maximum_thrust);
+    ControllerFullState(const double &maximum_thrust, const std::vector<double> &pd_coefficients);
+
     virtual ~ControllerFullState();
 
-    // thrust = F(sensor_data), whereas F can be eg., a PD controller, some RL solution, a NN, ...
+
+    // thrust = F(sensor_data), whereas F can be eg., a PID controller, some RL solution, a NN, ...
     virtual Vector3D GetThrustForSensorData(const SensorData &sensor_data);
 
-    void SetCoefficients(const std::vector<double> &pid_coefficients);
+    void SetCoefficients(const std::vector<double> &pd_coefficients);
 
 private:
-
-    double latest_control_action_;
-
-    std::vector<double>  target_state_;
-
-    std::vector<double> pid_coefficients_;
-
-    std::vector<double> previous_error_;
-
-#if CFS_ENABLE_INTEGRATION
-    std::vector<double> integral_;
-#endif
+    FeedForwardNeuralNetwork neural_network_;
 };
 
 #endif // FULLSTATECONTROLLER_H

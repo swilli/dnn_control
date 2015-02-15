@@ -8,6 +8,13 @@
  * GLOBAL CONFIGURATION FILE FOR ALL AVAILABLE COMPILE TIME OPTIONS
  */
 
+// Target Goal
+#define HP_TT_TARGET  0
+#define HP_TT_HOVER   1
+
+#define HP_TARGET_TYPE  HP_TT_TARGET
+
+
 // Evolutionary Robotics configs
 #define ER_NUM_GENERATIONS  1000
 #define ER_POPULATION_SIZE  100
@@ -15,6 +22,7 @@
 #define ER_SIMULATION_TIME  1.0 * 60.0 * 60.0
 #define ER_EVALUATIONS  4
 #define ER_NUM_HIDDEN_NODES 6
+
 
 // Class hovering_problem configs
 #define HP_OBJ_FUN_METHOD_1    1   // Compare start and ending position and velocity.
@@ -30,8 +38,10 @@
 #define HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED    true
 //#define HP_FIXED_SEED  1990
 
+
 // Class ODESystem configs
 #define ODES_FUEL_ENABLED   true
+
 
 // Class PaGMOSimulation configs
 #define PGMOS_IC_INERTIAL_ZERO_VELOCITY      0
@@ -44,11 +54,12 @@
 
 
 // Class SensorSimulatorNeuralNetwork configs
-#define SSNN_SD_TYPE_TARGET 0
-#define SSNN_SD_TYPE_HOVER  1
-
-#define SSNN_SENSOR_DATA_TYPE   SSNN_SD_TYPE_HOVER
 #define SSNN_WITH_NOISE false
+
+
+// Class SensorSimulatorFullState configs
+#define SSFS_WITH_NOISE false
+
 
 // Class SensorSimulatorAutoencoder configs
 #define SSA_DATA_WITH_NOISE false
@@ -56,22 +67,6 @@
 #define SSA_DATA_MULTIPLIER  1
 #define SSA_DATA_HISTORY     0
 
-// Class SensorSimulatorFullState configs
-#define SSFS_WITH_NOISE false
-
-// Class ControllerNeuralNetwork configs
-#define CNN_NN_TYPE_FFNN    0
-#define CNN_NN_TYPE_ESRN    1
-#define CNN_NN_TYPE_CTRNN   2
-
-#define CNN_SI_TYPE_TARGET 0
-#define CNN_SI_TYPE_HOVER  1
-
-#define CNN_NEURAL_NETWORK_TYPE     CNN_NN_TYPE_FFNN
-#define CNN_SENSOR_INPUT_TYPE   CNN_SI_TYPE_HOVER
-
-// Class ControllerFullState configs
-#define CFS_ENABLE_INTEGRATION  false
 
 // Least Squares Policy Robotics configs
 #define LSPR_IC_BODY_ZERO_VELOCITY          0
@@ -87,6 +82,7 @@
 #define LSPR_NUM_STEPS  50
 #define LSPR_GAMMA  0.9
 #define LSPR_EPSILON 1e-10
+
 
 // Other stuff configs, not relevant for simulation
 #define OUTPUT_ROOT_PATH   "/home/willist/Documents/dnn/"
@@ -107,9 +103,11 @@
 #define ER_EVALUATIONS  1
 #endif
 
-#if HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_8
+#if HP_TARGET_TYPE == HP_TT_HOVER
 #undef PGMOS_IC_POSITION_OFFSET_ENABLED
 #define PGMOS_IC_POSITION_OFFSET_ENABLED false
+#undef HP_OBJECTIVE_FUNCTION_METHOD
+#define HP_OBJECTIVE_FUNCTION_METHOD     HP_OBJ_FUN_METHOD_8
 #endif
 
 
@@ -125,6 +123,7 @@ inline void Configuration() {
     std::cout << "ER_NUM_GENERATIONS   " << ER_NUM_GENERATIONS << std::endl;
     std::cout << "ER_SIMULATION_TIME   " << ER_SIMULATION_TIME << std::endl;
     std::cout << "ER_NUM_HIDDEN_NODES   " << ER_NUM_HIDDEN_NODES << std::endl;
+    std::cout << "HP_TARGET_TYPE   " << HP_TARGET_TYPE << std::endl;
 #ifdef HP_FIXED_SEED
     std::cout << "HP_FIXED_SEED   " << HP_FIXED_SEED << std::endl;
 #else
@@ -135,12 +134,8 @@ inline void Configuration() {
     std::cout << "PGMOS_IC_VELOCITY_TYPE   " << PGMOS_IC_VELOCITY_TYPE << std::endl;
     std::cout << "PGMOS_IC_POSITION_OFFSET_ENABLED   " << ToString(PGMOS_IC_POSITION_OFFSET_ENABLED) << std::endl;
     std::cout << "ODES_FUEL_ENABLED   " << ToString(ODES_FUEL_ENABLED) << std::endl;
-    std::cout << "SSNN_SENSOR_DATA_TYPE   " << SSNN_SENSOR_DATA_TYPE << std::endl;
     std::cout << "SSNN_WITH_NOISE   " << ToString(SSNN_WITH_NOISE) << std::endl;
     std::cout << "SSFS_WITH_NOISE   " << ToString(SSFS_WITH_NOISE) << std::endl;
-    std::cout << "CNN_SENSOR_INPUT_TYPE   " << CNN_SENSOR_INPUT_TYPE << std::endl;
-    std::cout << "CNN_NEURAL_NETWORK_TYPE   " << CNN_NEURAL_NETWORK_TYPE << std::endl;
-    std::cout << "CFS_ENABLE_INTEGRATION   " << ToString(CFS_ENABLE_INTEGRATION) << std::endl;
     std::cout << "SSA_DATA_WITH_NOISE   " << ToString(SSA_DATA_WITH_NOISE) << std::endl;
     std::cout << "SSA_DATA_DIMENSIONS   " << SSA_DATA_DIMENSIONS << std::endl;
     std::cout << "SSA_DATA_MULTIPLIER   " << SSA_DATA_MULTIPLIER << std::endl;

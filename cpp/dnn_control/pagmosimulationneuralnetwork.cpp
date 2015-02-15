@@ -3,8 +3,10 @@
 #include "modifiedcontrolledrungekutta.h"
 #include "odesystem.h"
 #include "samplefactory.h"
+#include "sensorsimulatorfullstate.h"
 #include "sensorsimulatorneuralnetwork.h"
 #include "controllerneuralnetwork.h"
+#include "configuration.h"
 
 PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &random_seed, const double &simulation_time)
     : PaGMOSimulation(random_seed, simulation_time) {
@@ -39,7 +41,12 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     SampleFactory sample_factory(random_seed_);
     SampleFactory sf_sensor_simulator(sample_factory.SampleRandomInteger());
 
-    SensorSimulatorNeuralNetwork sensor_simulator(sf_sensor_simulator, asteroid_, target_position_);
+#if HP_TARGET_TYPE == HP_TT_TARGET
+    SensorSimulatorFullState sensor_simulator(sf_sensor_simulator, asteroid_, target_position_);
+#elif HP_TARGET_TYPE == HP_TT_HOVER
+    SensorSimulatorNeuralNetwork sensor_simulator(sf_sensor_simulator, asteroid_);
+#endif
+
     ControllerNeuralNetwork controller(spacecraft_maximum_thrust_, neural_network_hidden_nodes_);
 
     if (simulation_parameters_.size()) {
@@ -140,7 +147,12 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     SampleFactory sample_factory(random_seed_);
     SampleFactory sf_sensor_simulator(sample_factory.SampleRandomInteger());
 
-    SensorSimulatorNeuralNetwork sensor_simulator(sf_sensor_simulator, asteroid_, target_position_);
+#if HP_TARGET_TYPE == HP_TT_TARGET
+    SensorSimulatorFullState sensor_simulator(sf_sensor_simulator, asteroid_, target_position_);
+#elif HP_TARGET_TYPE == HP_TT_HOVER
+    SensorSimulatorNeuralNetwork sensor_simulator(sf_sensor_simulator, asteroid_);
+#endif
+
     ControllerNeuralNetwork controller(spacecraft_maximum_thrust_, neural_network_hidden_nodes_);
 
     if (simulation_parameters_.size()) {

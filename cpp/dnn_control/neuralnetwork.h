@@ -5,19 +5,23 @@
 
 class NeuralNetwork {
 public:
-    NeuralNetwork(const unsigned int &size);
+    NeuralNetwork();
     virtual ~NeuralNetwork();
 
     virtual std::vector<double> Evaluate(const std::vector<double> &input) = 0;
 
     virtual void SetWeights(const std::vector<double> &weights) = 0;
 
-    unsigned int Size() const;
-
-    static unsigned int TotalSizeForNetworkConfiguration(const std::vector<std::pair<unsigned int, bool> > &layer_configurations);
+    virtual unsigned int Size() const;
 
     class Exception {};
     class SizeMismatchException : public Exception {};
+
+
+    enum ActivationFunctionType {
+        Linear,
+        Sigmoid
+    };
 
 protected:
     unsigned int size_;

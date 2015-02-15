@@ -2,13 +2,8 @@
 #define CONTROLLERNEURALNETWORK_H
 
 #include "controller.h"
-#include "configuration.h"
-
-#if CNN_NEURAL_NETWORK_TYPE == CNN_NN_TYPE_FFNN
 #include "feedforwardneuralnetwork.h"
-#elif CNN_NEURAL_NETWORK_TYPE == CNN_NN_TYPE_ESRN
-#include "simplerecurrentneuralnetwork.h"
-#endif
+
 
 class ControllerNeuralNetwork : public Controller {
 public:
@@ -19,18 +14,13 @@ public:
 
     virtual ~ControllerNeuralNetwork();
 
-    // thrust = F(sensor_data), whereas F can be eg., a PD controller, some RL solution, a NN, ...
+    // thrust = F(sensor_data), whereas F can be eg., a PID controller, some RL solution, a NN, ...
     virtual Vector3D GetThrustForSensorData(const SensorData &sensor_data);
 
     void SetWeights(const std::vector<double> &weights);
 
 private:
-
-#if CNN_NEURAL_NETWORK_TYPE == CNN_NN_TYPE_FFNN
     FeedForwardNeuralNetwork neural_network_;
-#elif CNN_NEURAL_NETWORK_TYPE == CNN_NN_TYPE_ESRN
-    SimpleRecurrentNeuralNetwork neural_network_;
-#endif
 };
 
 #endif // CONTROLLERNEURALNETWORK_H

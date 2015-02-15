@@ -1,23 +1,33 @@
 #include "controllerneuralnetwork.h"
+#include "configuration.h"
 
-#if CNN_SENSOR_INPUT_TYPE == CNN_SI_TYPE_TARGET
+#if HP_TARGET_TYPE == HP_TT_TARGET
 const unsigned int ControllerNeuralNetwork::kDimensions = 6;
-#elif CNN_SENSOR_INPUT_TYPE == CNN_SI_TYPE_HOVER
+#elif HP_TARGET_TYPE == HP_TT_HOVER
 const unsigned int ControllerNeuralNetwork::kDimensions = 5;
 #endif
 
 ControllerNeuralNetwork::ControllerNeuralNetwork(const double &maximum_thrust, const unsigned int &num_hidden)
-    : Controller(kDimensions, NeuralNetwork::TotalSizeForNetworkConfiguration({std::make_pair(kDimensions, true), std::make_pair(num_hidden , true), std::make_pair(3 , false)}), maximum_thrust), neural_network_(dimensions_, num_hidden, 3) {
-
+    : Controller(kDimensions, maximum_thrust), neural_network_({std::make_pair(kDimensions, true), std::make_pair(num_hidden , true), std::make_pair(3 , false)}, NeuralNetwork::ActivationFunctionType::Sigmoid) {
+    number_of_parameters_ = neural_network_.Size();
 }
 
 ControllerNeuralNetwork::ControllerNeuralNetwork(const double &maximum_thrust, const unsigned int &num_hidden, const std::vector<double> &weights)
-    : Controller(kDimensions, NeuralNetwork::TotalSizeForNetworkConfiguration({std::make_pair(kDimensions, true), std::make_pair(num_hidden , true), std::make_pair(3 , false)}), maximum_thrust), neural_network_(dimensions_, num_hidden, 3) {
+    : Controller(kDimensions, maximum_thrust), neural_network_({std::make_pair(kDimensions, true), std::make_pair(num_hidden , true), std::make_pair(3 , false)}, NeuralNetwork::ActivationFunctionType::Sigmoid) {
+    number_of_parameters_ = neural_network_.Size();
     SetWeights(weights);
 }
 
 ControllerNeuralNetwork::~ControllerNeuralNetwork() {
 
+}
+
+void ControllerNeuralNetwork::SetWeights(const std::vector<double> &weights) {
+    if (weights.size() == number_of_parameters_) {
+        neural_network_.SetWeights(weights);
+    } else {
+        throw SizeMismatchException();
+    }
 }
 
 Vector3D ControllerNeuralNetwork::GetThrustForSensorData(const SensorData &sensor_data) {
@@ -27,12 +37,4 @@ Vector3D ControllerNeuralNetwork::GetThrustForSensorData(const SensorData &senso
         thrust[i] = (normalized_thrust[i] * maximum_thrust_ * 2.0) - maximum_thrust_;
     }
     return thrust;
-}
-
-void ControllerNeuralNetwork::SetWeights(const std::vector<double> &weights) {
-    if (weights.size() == number_of_parameters_) {
-        neural_network_.SetWeights(weights);
-    } else {
-        throw SizeMismatchException();
-    }
 }

@@ -10,9 +10,9 @@ PaGMOSimulationFullState::PaGMOSimulationFullState(const unsigned int &random_se
     : PaGMOSimulation(random_seed, simulation_time) {
 }
 
-PaGMOSimulationFullState::PaGMOSimulationFullState(const unsigned int &random_seed, const double &simulation_time, const std::vector<double> &pid_coefficients)
+PaGMOSimulationFullState::PaGMOSimulationFullState(const unsigned int &random_seed, const double &simulation_time, const std::vector<double> &pd_coefficients)
     : PaGMOSimulation(random_seed, simulation_time) {
-    simulation_parameters_ = pid_coefficients;
+    simulation_parameters_ = pd_coefficients;
 }
 
 PaGMOSimulationFullState::~PaGMOSimulationFullState() {
@@ -26,8 +26,8 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     SampleFactory sample_factory(random_seed_);
     SampleFactory sf_sensor_simulator(sample_factory.SampleRandomInteger());
 
-    SensorSimulatorFullState sensor_simulator(sf_sensor_simulator, asteroid_);
-    ControllerFullState controller(spacecraft_maximum_thrust_, target_position_);
+    SensorSimulatorFullState sensor_simulator(sf_sensor_simulator, asteroid_, target_position_);
+    ControllerFullState controller(spacecraft_maximum_thrust_);
 
     if (simulation_parameters_.size()) {
         controller.SetCoefficients(simulation_parameters_);
@@ -127,8 +127,8 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     SampleFactory sample_factory(random_seed_);
     SampleFactory sf_sensor_simulator(sample_factory.SampleRandomInteger());
 
-    SensorSimulatorFullState sensor_simulator(sf_sensor_simulator, asteroid_);
-    ControllerFullState controller(spacecraft_maximum_thrust_, target_position_);
+    SensorSimulatorFullState sensor_simulator(sf_sensor_simulator, asteroid_, target_position_);
+    ControllerFullState controller(spacecraft_maximum_thrust_);
 
     if (simulation_parameters_.size()) {
         controller.SetCoefficients(simulation_parameters_);
@@ -195,5 +195,5 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
 }
 
 unsigned int PaGMOSimulationFullState::ChromosomeSize() const {
-    return ControllerFullState(spacecraft_maximum_thrust_, target_position_).NumberOfParameters();
+    return ControllerFullState(spacecraft_maximum_thrust_).NumberOfParameters();
 }

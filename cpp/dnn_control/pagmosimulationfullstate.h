@@ -6,7 +6,7 @@
 class PaGMOSimulationFullState : public PaGMOSimulation {
 public:
     PaGMOSimulationFullState(const unsigned int &random_seed, const double &simulation_time);
-    PaGMOSimulationFullState(const unsigned int &random_seed, const double &simulation_time, const std::vector<double> &pid_coefficients);
+    PaGMOSimulationFullState(const unsigned int &random_seed, const double &simulation_time, const std::vector<double> &pd_coefficients);
 
     virtual ~PaGMOSimulationFullState();
 

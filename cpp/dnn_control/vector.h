@@ -42,7 +42,11 @@ inline double VectorNorm(const Vector2D &vector) {
 
 inline Vector3D VectorNormalize(const Vector3D &vector) {
     Vector3D result;
-    const double scal_norm = 1.0 / VectorNorm(vector);
+    const double norm = VectorNorm(vector);
+    if (norm == 0) {
+        return Vector3D(vector);
+    }
+    const double scal_norm = 1.0 / norm;
     result[0] = vector[0] * scal_norm;
     result[1] = vector[1] * scal_norm;
     result[2] = vector[2] * scal_norm;
@@ -51,7 +55,11 @@ inline Vector3D VectorNormalize(const Vector3D &vector) {
 
 inline Vector2D VectorNormalize(const Vector2D &vector) {
     Vector2D result;
-    const double scal_norm = 1.0 / VectorNorm(vector);
+    const double norm = VectorNorm(vector);
+    if (norm == 0) {
+        return Vector2D(vector);
+    }
+    const double scal_norm = 1.0 / norm;
     result[0] = vector[0] * scal_norm;
     result[1] = vector[1] * scal_norm;
     return result;

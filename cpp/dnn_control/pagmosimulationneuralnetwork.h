@@ -2,6 +2,7 @@
 #define PAGMOSIMULATIONNEURALNETWORK_H
 
 #include "pagmosimulation.h"
+#include "configuration.h"
 
 class PaGMOSimulationNeuralNetwork : public PaGMOSimulation {
 public:

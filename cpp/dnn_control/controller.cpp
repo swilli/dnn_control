@@ -5,6 +5,11 @@ Controller::Controller(const unsigned int &dimensions, const unsigned int &num_p
 
 }
 
+Controller::Controller(const unsigned int &dimensions, const double &maximum_thrust)
+    : dimensions_(dimensions), number_of_parameters_(0), maximum_thrust_(maximum_thrust) {
+
+}
+
 Controller::~Controller() {
 
 }

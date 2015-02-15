@@ -10,9 +10,11 @@ class Controller {
         */
 public:
     Controller(const unsigned int &dimensions, const unsigned int &num_parameters, const double &maximum_thrust);
+    Controller(const unsigned int &dimensions, const double &maximum_thrust);
+
     virtual ~Controller();
 
-    // thrust = F(sensor_data), whereas F can be eg., a PD controller, some RL solution, a NN, ...
+    // thrust = F(sensor_data), whereas F can be eg., a PID controller, some RL solution, a NN, ...
     virtual Vector3D GetThrustForSensorData(const SensorData &sensor_data) = 0;
 
     unsigned int Dimensions() const;
