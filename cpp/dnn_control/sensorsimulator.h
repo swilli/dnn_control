@@ -24,6 +24,9 @@ public:
     // The number of sensor data dimensions produced by the SensorSimulator
     unsigned int Dimensions() const;
 
+    // SensorSimulator can throw the following exceptions
+    class Exception {};
+
 protected:
     // How large is the sensor data space
     unsigned int dimensions_;
