@@ -9,10 +9,10 @@
  */
 
 // Target Goal
-#define HP_TT_TARGET  0
-#define HP_TT_HOVER   1
+#define HP_TT_POSITION  0
+#define HP_TT_HEIGHT   1
 
-#define HP_TARGET_TYPE  HP_TT_TARGET
+#define HP_TARGET_TYPE  HP_TT_POSITION
 
 
 // Evolutionary Robotics configs
@@ -103,7 +103,7 @@
 #define ER_EVALUATIONS  1
 #endif
 
-#if HP_TARGET_TYPE == HP_TT_HOVER
+#if HP_TARGET_TYPE == HP_TT_HEIGHT
 #undef PGMOS_IC_POSITION_OFFSET_ENABLED
 #define PGMOS_IC_POSITION_OFFSET_ENABLED false
 #undef HP_OBJECTIVE_FUNCTION_METHOD

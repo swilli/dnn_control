@@ -41,9 +41,9 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     SampleFactory sample_factory(random_seed_);
     SampleFactory sf_sensor_simulator(sample_factory.SampleRandomInteger());
 
-#if HP_TARGET_TYPE == HP_TT_TARGET
+#if HP_TARGET_TYPE == HP_TT_POSITION
     SensorSimulatorFullState sensor_simulator(sf_sensor_simulator, asteroid_, target_position_);
-#elif HP_TARGET_TYPE == HP_TT_HOVER
+#elif HP_TARGET_TYPE == HP_TT_HEIGHT
     SensorSimulatorNeuralNetwork sensor_simulator(sf_sensor_simulator, asteroid_);
 #endif
 
@@ -147,9 +147,9 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     SampleFactory sample_factory(random_seed_);
     SampleFactory sf_sensor_simulator(sample_factory.SampleRandomInteger());
 
-#if HP_TARGET_TYPE == HP_TT_TARGET
+#if HP_TARGET_TYPE == HP_TT_POSITION
     SensorSimulatorFullState sensor_simulator(sf_sensor_simulator, asteroid_, target_position_);
-#elif HP_TARGET_TYPE == HP_TT_HOVER
+#elif HP_TARGET_TYPE == HP_TT_HEIGHT
     SensorSimulatorNeuralNetwork sensor_simulator(sf_sensor_simulator, asteroid_);
 #endif
 

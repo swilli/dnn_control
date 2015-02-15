@@ -75,7 +75,7 @@ double hovering_problem_full_state::single_fitness(PaGMOSimulationFullState &sim
 
     const unsigned int num_samples = evaluated_times.size();
 
-#if HP_TARGET_TYPE == HP_TT_TARGET
+#if HP_TARGET_TYPE == HP_TT_POSITION
     // The target position
     const Vector3D target_position = simulation.TargetPosition();
 #endif

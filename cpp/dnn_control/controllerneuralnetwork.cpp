@@ -1,9 +1,9 @@
 #include "controllerneuralnetwork.h"
 #include "configuration.h"
 
-#if HP_TARGET_TYPE == HP_TT_TARGET
+#if HP_TARGET_TYPE == HP_TT_POSITION
 const unsigned int ControllerNeuralNetwork::kDimensions = 6;
-#elif HP_TARGET_TYPE == HP_TT_HOVER
+#elif HP_TARGET_TYPE == HP_TT_HEIGHT
 const unsigned int ControllerNeuralNetwork::kDimensions = 5;
 #endif
 
