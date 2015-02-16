@@ -340,6 +340,7 @@ void TestLeastSquaresPolicyController(const unsigned int &random_seed) {
 }
 
 void TrainLeastSquaresPolicyController() {
+    std::cout << "Initializing LSPI controller learning .... ";
     Init();
 
 #if LSPR_WRITE_ACTION_SET_TO_FILE
