@@ -13,13 +13,13 @@ int main(int argc, char *argv[]) {
     srand(time(0));
     Configuration();
 
-    //TestNeuralNetworkController(871);
+    //TestNeuralNetworkController(1990);
     //return 0;
 
-    TrainNeuralNetworkController();
-    return 0;
+    //TrainNeuralNetworkController();
+    //return 0;
 
-    //TestFullStateController(871);
+    //TestFullStateController(1990);
     //return 0;
 
     //TrainFullStateController();
@@ -31,8 +31,8 @@ int main(int argc, char *argv[]) {
     //TestLeastSquaresPolicyController(1990);
     //return 0;
 
-    //TrainLeastSquaresPolicyController();
-    //return 0;
+    TrainLeastSquaresPolicyController();
+    return 0;
 
     //SensorDataGenerator generator(PATH_TO_SENSOR_DATA_FOLDER, 24.0 * 60.0 * 60.0);
     //generator.Generate(100, rand());

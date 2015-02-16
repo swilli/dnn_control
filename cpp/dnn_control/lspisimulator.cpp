@@ -30,7 +30,7 @@ LSPISimulator::~LSPISimulator() {
 
 }
 
-boost::tuple<SystemState, bool> LSPISimulator::NextState(const SystemState &state, const double &time, const Vector3D &thrust) {
+boost::tuple<SystemState, double, bool> LSPISimulator::NextState(const SystemState &state, const double &time, const Vector3D &thrust) {
     typedef odeint::runge_kutta_cash_karp54<SystemState> ErrorStepper;
     typedef odeint::modified_controlled_runge_kutta<ErrorStepper> ControlledStepper;
 
@@ -60,7 +60,7 @@ boost::tuple<SystemState, bool> LSPISimulator::NextState(const SystemState &stat
         exception_thrown = true;
     }
 
-    return boost::make_tuple(state_copy, exception_thrown);
+    return boost::make_tuple(state_copy, current_time_observer, exception_thrown);
 }
 
 Asteroid &LSPISimulator::AsteroidOfSystem() {

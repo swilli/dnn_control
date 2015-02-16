@@ -45,7 +45,7 @@
 #define PGMOS_IC_POSITION_OFFSET_ENABLED true
 
 // Class PaGMOSimulationNeuralNetwork configs
-#define PGMOSNN_ENABLE_ODOMETRY false
+#define PGMOSNN_ENABLE_ODOMETRY true
 
 
 // Class SensorSimulatorNeuralNetwork configs
@@ -72,7 +72,7 @@
 //#define LSPR_FIXED_SEED     1990
 
 #define LSPR_DIRECTION_RESOLUTION   5
-#define LSPR_THRUST_RESOLUTION  5
+#define LSPR_THRUST_RESOLUTION  10
 #define LSPR_NUM_EPISODES    1000
 #define LSPR_NUM_STEPS  50
 #define LSPR_GAMMA  0.9
@@ -82,13 +82,14 @@
 // Other stuff configs, not relevant for simulation
 #define OUTPUT_ROOT_PATH   "/home/willist/Documents/dnn/"
 #define PATH_TO_NEURO_TRAJECTORY_FILE   OUTPUT_ROOT_PATH    "results/trajectory_neuro.txt"
-#define PATH_TO_LSPI_TRAJECTORY_FILE   OUTPUT_ROOT_PATH "results/trajectory_lspi.txt"
 #define PATH_TO_NEURO_EVALUATION_FILE  OUTPUT_ROOT_PATH "results/evaluation_neuro.txt"
 #define PATH_TO_NEURO_POST_EVALUATION_FILE    OUTPUT_ROOT_PATH  "results/post_evaluation_neuro.txt"
 #define PATH_TO_NEURO_CONVEXITY_PATH    OUTPUT_ROOT_PATH    "results/convexity/"
 #define PATH_TO_FULL_STATE_TRAJECTORY_FILE  OUTPUT_ROOT_PATH    "results/trajectory_full_state.txt"
 #define PATH_TO_FULL_STATE_EVALUATION_FILE  OUTPUT_ROOT_PATH    "results/evaluation_full_state.txt"
 #define PATH_TO_FULL_STATE_POST_EVALUATION_FILE     OUTPUT_ROOT_PATH "results/post_evaluation_full_state.txt"
+#define PATH_TO_LSPI_TRAJECTORY_FILE   OUTPUT_ROOT_PATH "results/trajectory_lspi.txt"
+#define PATH_TO_LSPI_EVALUATION_FILE  OUTPUT_ROOT_PATH "results/evaluation_lspi.txt"
 #define PATH_TO_COMPARISON_POST_EVALUATION_FILE     OUTPUT_ROOT_PATH "results/post_evaluation_comparison.txt"
 #define PATH_TO_SENSOR_DATA_FOLDER  OUTPUT_ROOT_PATH    "data/"
 

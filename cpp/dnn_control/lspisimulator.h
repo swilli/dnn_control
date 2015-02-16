@@ -12,8 +12,8 @@ public:
     LSPISimulator(const unsigned int &random_seed);
     ~LSPISimulator();
 
-    // (s', end_of_sim) = NextState(s, t, a)
-    boost::tuple<SystemState, bool> NextState(const SystemState &state, const double &time, const Vector3D &thrust);
+    // (s', t', end_of_sim) = NextState(s, t, a)
+    boost::tuple<SystemState, double, bool> NextState(const SystemState &state, const double &time, const Vector3D &thrust);
 
     // Returns the asteroid the simulator works with
     Asteroid &AsteroidOfSystem();

@@ -80,7 +80,7 @@ std::vector<SensorData> PaGMOSimulation::GenerateSensorDataSet() {
         for (iteration = 0; iteration < num_iterations; ++iteration) {
             const Vector3D &position = {system_state[0], system_state[1], system_state[2]};
 
-            const Vector3D &surf_pos = boost::get<0>(asteroid_.NearestPointOnSurfaceToPosition(position));
+            const Vector3D surf_pos = boost::get<0>(asteroid_.NearestPointOnSurfaceToPosition(position));
             const Vector3D &height = {position[0] - surf_pos[0], position[1] - surf_pos[1], position[2] - surf_pos[2]};
 
             for (unsigned int i = 0; i < 3; ++i) {
@@ -106,15 +106,15 @@ std::vector<SensorData> PaGMOSimulation::GenerateSensorDataSet() {
         exception_thrown = true;
     }
     if (exception_thrown) {
-        evaluated_sensor_values.resize(iteration + 2);
+        evaluated_sensor_values.resize(iteration + 1);
+    } else {
+        const Vector3D &position = {system_state[0], system_state[1], system_state[2]};
+
+        const Vector3D surf_pos = boost::get<0>(asteroid_.NearestPointOnSurfaceToPosition(position));
+        const Vector3D &height = {position[0] - surf_pos[0], position[1] - surf_pos[1], position[2] - surf_pos[2]};
+
+        evaluated_sensor_values.back() = sensor_simulator.Simulate(system_state, height, perturbations_acceleration, current_time_observer);
     }
-
-    const Vector3D &position = {system_state[0], system_state[1], system_state[2]};
-
-    const Vector3D &surf_pos = boost::get<0>(asteroid_.NearestPointOnSurfaceToPosition(position));
-    const Vector3D &height = {position[0] - surf_pos[0], position[1] - surf_pos[1], position[2] - surf_pos[2]};
-
-    evaluated_sensor_values.back() = sensor_simulator.Simulate(system_state, height, perturbations_acceleration, current_time_observer);
 
     return evaluated_sensor_values;
 }
