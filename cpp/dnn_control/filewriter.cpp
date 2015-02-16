@@ -83,3 +83,10 @@ void FileWriter::CreateConvexityFile(const unsigned int &random_seed, const unsi
         file_ << p.first << ",\t" << p.second << std::endl;
     }
 }
+
+void FileWriter::CreateActionSetFile(const std::vector<Vector3D> actions) {
+    for (unsigned int i = 0; i < actions.size(); ++i) {
+        const Vector3D &v = actions.at(i);
+        file_ << v[0] << ",\t" << v[1] << ",\t" << v[2] << std::endl;
+    }
+}

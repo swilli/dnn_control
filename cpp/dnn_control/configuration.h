@@ -77,7 +77,7 @@
 #define LSPR_NUM_STEPS  50
 #define LSPR_GAMMA  0.9
 #define LSPR_EPSILON 1e-10
-
+#define LSPR_WRITE_ACTION_SET_TO_FILE   true
 
 // Other stuff configs, not relevant for simulation
 #define OUTPUT_ROOT_PATH   "/home/willist/Documents/dnn/"
@@ -90,6 +90,7 @@
 #define PATH_TO_FULL_STATE_POST_EVALUATION_FILE     OUTPUT_ROOT_PATH "results/post_evaluation_full_state.txt"
 #define PATH_TO_LSPI_TRAJECTORY_FILE   OUTPUT_ROOT_PATH "results/trajectory_lspi.txt"
 #define PATH_TO_LSPI_EVALUATION_FILE  OUTPUT_ROOT_PATH "results/evaluation_lspi.txt"
+#define PATH_TO_LSPI_ACTION_SET_FILE    OUTPUT_ROOT_PATH "results/lspi_action_set.txt"
 #define PATH_TO_COMPARISON_POST_EVALUATION_FILE     OUTPUT_ROOT_PATH "results/post_evaluation_comparison.txt"
 #define PATH_TO_SENSOR_DATA_FOLDER  OUTPUT_ROOT_PATH    "data/"
 

@@ -28,25 +28,24 @@ typedef boost::array<double, kSpacecraftStateDimension> LSPIState;
 // (x, a, r, x_prime)
 typedef boost::tuple<LSPIState, unsigned int, double, LSPIState> Sample;
 
-static std::map<unsigned int, Vector3D> kSpacecraftActions;
+static std::vector<Vector3D> kSpacecraftActions;
 
 static void Init() {
-    unsigned int index = 0;
     const double res_u = 1.0 / LSPR_DIRECTION_RESOLUTION ;
     const double res_v = 1.0 / (LSPR_DIRECTION_RESOLUTION - 1);
     const double d_thrust = kSpacecraftMaximumThrust / (LSPR_THRUST_RESOLUTION - 1);
     for (unsigned int k = 0; k < LSPR_THRUST_RESOLUTION; ++k) {
         if (k == 0) {
-            kSpacecraftActions[index++] = {0.0, 0.0, 0.0};
+            kSpacecraftActions.push_back({0.0, 0.0, 0.0});
             continue;
         }
         const double t = k * d_thrust;
         for (unsigned int j = 0; j < LSPR_DIRECTION_RESOLUTION; ++j) {
             if (j == 0) {
-                kSpacecraftActions[index++] = {0.0, 0.0, -t};
+                kSpacecraftActions.push_back({0.0, 0.0, -t});
                 continue;
             } else if (j == LSPR_DIRECTION_RESOLUTION - 1) {
-                kSpacecraftActions[index++] = {0.0, 0.0, t};
+                kSpacecraftActions.push_back({0.0, 0.0, t});
                 continue;
             }
             const double v = j * res_v;
@@ -55,11 +54,11 @@ static void Init() {
                 const double u = i * res_u;
                 const double theta = 2.0 * kPi * u;
                 const Vector3D action = {t * sin(phi) * cos(theta), t * sin(phi) * sin(theta), t * cos(phi)};
-                kSpacecraftActions[index++] = action;
+                kSpacecraftActions.push_back(action);
             }
         }
     }
-    kSpacecraftNumActions = index;
+    kSpacecraftNumActions = kSpacecraftActions.size();
     kSpacecraftPolynomialDimensions = (int) (0.5 * kSpacecraftStateDimension * (kSpacecraftStateDimension + 3) + 1);
     kSpacecraftPhiSize = kSpacecraftNumActions * kSpacecraftPolynomialDimensions;
 }
@@ -342,6 +341,11 @@ void TestLeastSquaresPolicyController(const unsigned int &random_seed) {
 
 void TrainLeastSquaresPolicyController() {
     Init();
+
+#if LSPR_WRITE_ACTION_SET_TO_FILE
+    FileWriter writer(PATH_TO_LSPI_ACTION_SET_FILE);
+    writer.CreateActionSetFile(kSpacecraftActions);
+#endif
 
     const unsigned int num_samples = LSPR_NUM_EPISODES;
     const unsigned int num_steps = LSPR_NUM_STEPS;

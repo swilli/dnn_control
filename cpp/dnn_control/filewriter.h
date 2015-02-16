@@ -27,6 +27,9 @@ public:
     // Create a file which can be visualized using vconvexity.py
     void CreateConvexityFile(const unsigned int &random_seed, const unsigned int &dimension, const std::vector<std::pair<double, double> > &fitness);
 
+    // Create a file which can be visualized using vactionset.py
+    void CreateActionSetFile(const std::vector<Vector3D> actions);
+
 private:
 	// The file to write into
     std::ofstream file_;

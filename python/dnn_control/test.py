@@ -567,10 +567,10 @@ def unit_test_boost_asteroid():
 #unit_test_height()
 #unit_test_angular_velocity()
 #unit_test_angular_acceleration()
-#unit_test_gravity_direction()
-unit_test_gravity_contour()
+unit_test_gravity_direction()
+#unit_test_gravity_contour()
 #unit_test_gravity_speed()
-unit_test_angular_velocity_period()
+#unit_test_angular_velocity_period()
 #unit_test_boost_asteroid()
 
 '''from asteroid import Asteroid
