@@ -28,11 +28,10 @@ data = [line.split(',') for line in lines]
 data = [[float(value) for value in line] for line in data]
 data = array(data)
 
-root = zeros(num_samples, 3)
+root = zeros([num_samples, 3])
 
 mlab.figure()
-
-mlab.quiver3d(root[:,0], root[:,1], root[:,2], data[:,0], data[:,1], data[:,2], mode="arrow")
-
+mlab.quiver3d(root[:,0], root[:,1], root[:,2], data[:,0], data[:,1], data[:,2], mode="2darrow")
+mlab.show()
 
 
