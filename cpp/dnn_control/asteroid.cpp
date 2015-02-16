@@ -119,7 +119,7 @@ double Asteroid::NewtonRaphsonEllipse(const Vector2D &semi_axis_mul_pos, const V
         root = root - f_root/df_root;
         error = root - old_root;
         error = (error < 0.0 ? -error : error);
-        if (isinf(root) || isnan(root)) {
+        if (std::isinf(root) || std::isnan(root)) {
             throw PositionInsideException();
         }
     } while (error > tolerance);
@@ -145,7 +145,7 @@ double Asteroid::NewtonRaphsonEllipsoid(const Vector3D &semi_axis_mul_pos, const
         root = root - f_root/df_root;
         error = root - old_root;
         error = (error < 0.0 ? -error : error);
-        if (isinf(root) || isnan(root)) {
+        if (std::isinf(root) || std::isnan(root)) {
             throw PositionInsideException();
         }
     } while (error > tolerance);

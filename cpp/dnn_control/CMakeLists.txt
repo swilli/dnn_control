@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 2.8.11)
-project (dnn_control)
+project(dnn_control)
 
 # 1 - Preliminary checks and messages
 MESSAGE(STATUS "OS detected: ${CMAKE_SYSTEM_NAME}")
