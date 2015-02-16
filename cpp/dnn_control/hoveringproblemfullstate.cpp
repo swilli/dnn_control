@@ -75,10 +75,8 @@ double hovering_problem_full_state::single_fitness(PaGMOSimulationFullState &sim
 
     const unsigned int num_samples = evaluated_times.size();
 
-#if HP_TARGET_TYPE == HP_TT_POSITION
     // The target position
     const Vector3D target_position = simulation.TargetPosition();
-#endif
 
     // punish unfinished simulations (crash / out of fuel)
 #if HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED
@@ -142,15 +140,6 @@ double hovering_problem_full_state::single_fitness(PaGMOSimulationFullState &sim
     }
     fitness /= num_samples;
 
-#elif HP_OBJECTIVE_FUNCTION_METHOD ==  HP_OBJ_FUN_METHOD_8
-    // Method 8 : Compare height changes compared to initial height.
-    const double height = VectorNorm(evaluated_heights.at(0));
-    for (unsigned int i = 1; i < num_samples; ++i) {
-        double cur_error = height - VectorNorm(evaluated_heights.at(i));
-        cur_error = (cur_error < 0.0 ? -cur_error : cur_error);
-        fitness += cur_error;
-    }
-    fitness /= num_samples - 1;
 #endif
 
     return fitness;
@@ -166,6 +155,9 @@ double hovering_problem_full_state::single_post_evaluation(PaGMOSimulationFullSt
 
     const unsigned int num_samples = evaluated_times.size();
 
+    // The target position
+    const Vector3D target_position = simulation.TargetPosition();
+
     // punish unfinished simulations (crash / out of fuel)
 #if HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED
     double time_diff = evaluated_times.back() - m_simulation_time;
@@ -175,24 +167,11 @@ double hovering_problem_full_state::single_post_evaluation(PaGMOSimulationFullSt
     }
 #endif
 
-#if HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_8
-    const double height = VectorNorm(evaluated_heights.at(0));
-    for (unsigned int i = 1; i < num_samples; ++i) {
-        double cur_error = height - VectorNorm(evaluated_heights.at(i));
-        cur_error = (cur_error < 0.0 ? -cur_error : cur_error);
-        fitness += cur_error;
-    }
-    fitness /= num_samples - 1;
-#else
-    // The target position
-    const Vector3D target_position = simulation.TargetPosition();
     const unsigned int start_index = num_samples * 0.01;
     for (unsigned int i = start_index; i < num_samples; ++i) {
         fitness += VectorNorm(VectorSub(target_position, evaluated_positions.at(i)));
     }
-
     fitness /= (num_samples - start_index);
-#endif
 
     return fitness;
 }

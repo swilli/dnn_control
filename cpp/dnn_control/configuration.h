@@ -8,13 +8,6 @@
  * GLOBAL CONFIGURATION FILE FOR ALL AVAILABLE COMPILE TIME OPTIONS
  */
 
-// Target Goal
-#define HP_TT_POSITION  0
-#define HP_TT_HEIGHT   1
-
-#define HP_TARGET_TYPE  HP_TT_POSITION
-
-
 // Evolutionary Robotics configs
 #define ER_NUM_GENERATIONS  1000
 #define ER_POPULATION_SIZE  100
@@ -32,7 +25,6 @@
 #define HP_OBJ_FUN_METHOD_5    5   // Compare mean distance to target point, but don't take into consideration some amount of starting positions. Additionally, take into consideration total fuel consumption.
 #define HP_OBJ_FUN_METHOD_6    6   // Compare mean distance to target point, also consider velocity, but don't take into consideration some amount of starting positions.
 #define HP_OBJ_FUN_METHOD_7    7   // Compare mean distance to target point, also consider velocity, punish later offsets more.
-#define HP_OBJ_FUN_METHOD_8    8   // Compare mean height to surface, also consider velocity. Don't take into account some amount of starting positions.
 
 #define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_6
 #define HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED    true
@@ -51,6 +43,9 @@
 
 #define PGMOS_IC_VELOCITY_TYPE  PGMOS_IC_BODY_RANDOM_VELOCITY
 #define PGMOS_IC_POSITION_OFFSET_ENABLED true
+
+// Class PaGMOSimulationNeuralNetwork configs
+#define PGMOSNN_ENABLE_ODOMETRY false
 
 
 // Class SensorSimulatorNeuralNetwork configs
@@ -72,11 +67,11 @@
 #define LSPR_IC_BODY_ZERO_VELOCITY          0
 #define LSPR_IC_BODY_RANDOM_VELOCITY        1
 
-//#define LSPR_FIXED_SEED     1990
 #define LSPR_IC_VELOCITY_TYPE  LSPR_IC_BODY_RANDOM_VELOCITY
 #define LSPR_IC_POSITION_OFFSET_ENABLED true
+//#define LSPR_FIXED_SEED     1990
 
-#define LSPR_DIRECTION_RESOLUTION   10
+#define LSPR_DIRECTION_RESOLUTION   5
 #define LSPR_THRUST_RESOLUTION  5
 #define LSPR_NUM_EPISODES    1000
 #define LSPR_NUM_STEPS  50
@@ -103,11 +98,9 @@
 #define ER_EVALUATIONS  1
 #endif
 
-#if HP_TARGET_TYPE == HP_TT_HEIGHT
+#if PGMOSNN_ENABLE_ODOMETRY == false
 #undef PGMOS_IC_POSITION_OFFSET_ENABLED
 #define PGMOS_IC_POSITION_OFFSET_ENABLED false
-#undef HP_OBJECTIVE_FUNCTION_METHOD
-#define HP_OBJECTIVE_FUNCTION_METHOD     HP_OBJ_FUN_METHOD_8
 #endif
 
 
@@ -123,7 +116,6 @@ inline void Configuration() {
     std::cout << "ER_NUM_GENERATIONS   " << ER_NUM_GENERATIONS << std::endl;
     std::cout << "ER_SIMULATION_TIME   " << ER_SIMULATION_TIME << std::endl;
     std::cout << "ER_NUM_HIDDEN_NODES   " << ER_NUM_HIDDEN_NODES << std::endl;
-    std::cout << "HP_TARGET_TYPE   " << HP_TARGET_TYPE << std::endl;
 #ifdef HP_FIXED_SEED
     std::cout << "HP_FIXED_SEED   " << HP_FIXED_SEED << std::endl;
 #else
@@ -133,6 +125,7 @@ inline void Configuration() {
     std::cout << "HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED   " << ToString(HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED) << std::endl;
     std::cout << "PGMOS_IC_VELOCITY_TYPE   " << PGMOS_IC_VELOCITY_TYPE << std::endl;
     std::cout << "PGMOS_IC_POSITION_OFFSET_ENABLED   " << ToString(PGMOS_IC_POSITION_OFFSET_ENABLED) << std::endl;
+    std::cout << "PGMOSNN_ENABLE_ODOMETRY   " << ToString(PGMOSNN_ENABLE_ODOMETRY) << std::endl;
     std::cout << "ODES_FUEL_ENABLED   " << ToString(ODES_FUEL_ENABLED) << std::endl;
     std::cout << "SSNN_WITH_NOISE   " << ToString(SSNN_WITH_NOISE) << std::endl;
     std::cout << "SSFS_WITH_NOISE   " << ToString(SSFS_WITH_NOISE) << std::endl;

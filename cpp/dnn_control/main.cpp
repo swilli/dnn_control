@@ -16,14 +16,14 @@ int main(int argc, char *argv[]) {
     //TestNeuralNetworkController(871);
     //return 0;
 
-    //TrainNeuralNetworkController();
-    //return 0;
+    TrainNeuralNetworkController();
+    return 0;
 
     //TestFullStateController(871);
     //return 0;
 
-    TrainFullStateController();
-    return 0;
+    //TrainFullStateController();
+    //return 0;
 
     //TestNeuralNetworkVSFullStateController(rand());
     //return 0;

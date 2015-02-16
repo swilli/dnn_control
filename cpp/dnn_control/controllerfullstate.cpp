@@ -28,9 +28,13 @@ void ControllerFullState::SetCoefficients(const std::vector<double> &pd_coeffici
 Vector3D ControllerFullState::GetThrustForSensorData(const SensorData &sensor_data) {
     const std::vector<double> thrust = neural_network_.Evaluate(sensor_data);
     Vector3D normalized_thrust = {thrust[0], thrust[1], thrust[2]};
-    normalized_thrust = VectorNormalize(normalized_thrust);
     for (unsigned int i = 0; i < 3; ++i) {
-        normalized_thrust[i] *= maximum_thrust_;
+        double &t = normalized_thrust[i];
+        if (t > maximum_thrust_per_dimension_) {
+            t = maximum_thrust_per_dimension_;
+        } else if (t < -maximum_thrust_per_dimension_) {
+            t = -maximum_thrust_per_dimension_;
+        }
     }
     return normalized_thrust;
 }

@@ -1,9 +1,9 @@
 #include "controllerneuralnetwork.h"
 #include "configuration.h"
 
-#if HP_TARGET_TYPE == HP_TT_POSITION
+#if PGMOSNN_ENABLE_ODOMETRY
 const unsigned int ControllerNeuralNetwork::kDimensions = 6;
-#elif HP_TARGET_TYPE == HP_TT_HEIGHT
+#else
 const unsigned int ControllerNeuralNetwork::kDimensions = 5;
 #endif
 
@@ -34,7 +34,7 @@ Vector3D ControllerNeuralNetwork::GetThrustForSensorData(const SensorData &senso
     const std::vector<double> normalized_thrust = neural_network_.Evaluate(sensor_data);
     Vector3D thrust;
     for (unsigned int i = 0; i < 3; ++i) {
-        thrust[i] = (normalized_thrust[i] * maximum_thrust_ * 2.0) - maximum_thrust_;
+        thrust[i] = (normalized_thrust[i] * maximum_thrust_per_dimension_ * 2.0) - maximum_thrust_per_dimension_;
     }
     return thrust;
 }
