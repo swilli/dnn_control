@@ -12,20 +12,20 @@
 int main(int argc, char *argv[]) {
     srand(time(0));
 
-    TestNeuralNetworkController(9782);
+    //TestNeuralNetworkController(9782);
     //return 0;
 
-    TestFullStateController(9782);
+    //TestFullStateController(9782);
     //return 0;
 
-    TestNeuralNetworkVSFullStateController(9782);
+    //TestNeuralNetworkVSFullStateController(9782);
     //return 0;
 
-    TestLeastSquaresPolicyController(9782);
+    //TestLeastSquaresPolicyController(9782);
+    //return 0;
+
+    TrainNeuralNetworkController();
     return 0;
-
-    //TrainNeuralNetworkController();
-    //return 0;
 
     //TrainFullStateController();
     //return 0;

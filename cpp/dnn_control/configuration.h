@@ -45,7 +45,7 @@
 #define PGMOS_IC_POSITION_OFFSET_ENABLED true
 
 // Class PaGMOSimulationNeuralNetwork configs
-#define PGMOSNN_ENABLE_ODOMETRY true
+#define PGMOSNN_ENABLE_ODOMETRY false
 
 
 // Class SensorSimulatorNeuralNetwork configs
