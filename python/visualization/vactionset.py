@@ -8,7 +8,6 @@ examples:
 '''
 
 import sys
-import matplotlib.pyplot as plt
 from numpy import array, zeros
 from numpy.matlib import repmat
 from numpy.linalg import norm

@@ -23,7 +23,7 @@ SensorData SensorSimulatorFullState::Simulate(const SystemState &state, const Ve
 
 #if SSFS_WITH_NOISE
         sensor_data[i] += sensor_data[i] * sample_factory_.SampleNormal(0.0, noise_configurations_.at(i));
-        sensor_data[3+i] += sensor_data[3+i] * sample_factory_.SampleNormal(0.0, noise_configurations_.at(i));
+        sensor_data[3+i] += sensor_data[3+i] * sample_factory_.SampleNormal(0.0, noise_configurations_.at(3+i));
 #endif
     }
 
