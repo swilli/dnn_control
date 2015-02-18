@@ -31,15 +31,15 @@ typedef boost::tuple<LSPIState, unsigned int, double, LSPIState> Sample;
 static std::vector<Vector3D> kSpacecraftActions;
 
 static void Init() {
-    const double res_u = 1.0 / LSPR_DIRECTION_RESOLUTION ;
+    const double res_u = 1.0 / LSPR_DIRECTION_RESOLUTION;
     const double res_v = 1.0 / (LSPR_DIRECTION_RESOLUTION - 1);
-    const double d_thrust = kSpacecraftMaximumThrust / (LSPR_THRUST_RESOLUTION - 1);
+    const double d_thrust = kSpacecraftMaximumThrust / pow(3.0, LSPR_THRUST_RESOLUTION - 2);
     for (unsigned int k = 0; k < LSPR_THRUST_RESOLUTION; ++k) {
         if (k == 0) {
             kSpacecraftActions.push_back({0.0, 0.0, 0.0});
             continue;
         }
-        const double t = k * d_thrust;
+        const double t = d_thrust * pow(3.0, k - 1);
         for (unsigned int j = 0; j < LSPR_DIRECTION_RESOLUTION; ++j) {
             if (j == 0) {
                 kSpacecraftActions.push_back({0.0, 0.0, -t});

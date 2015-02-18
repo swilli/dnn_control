@@ -27,9 +27,9 @@ base_ptr hovering_problem_neural_network::clone() const {
 }
 
 fitness_vector hovering_problem_neural_network::objfun_seeded(const unsigned int &seed, const decision_vector &x) const {
-    PaGMOSimulationNeuralNetwork simulation(seed, m_simulation_time, m_n_hidden_neurons, x);
+    m_seed = seed;
     fitness_vector f(1);
-    f[0] = single_fitness(simulation);
+    objfun_impl(f, x);
     return f;
 }
 
@@ -141,6 +141,12 @@ double hovering_problem_neural_network::single_fitness(PaGMOSimulationNeuralNetw
     }
     fitness /= num_samples;
 
+#elif HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_8
+    // Method 8 : Mean velocity
+    for (unsigned int i = 0; i < num_samples; ++i) {
+        fitness += VectorNorm(evaluated_velocities.at(i));
+    }
+    fitness /= num_samples;
 #endif
 
     return fitness;

@@ -1,7 +1,7 @@
 #include "sensorsimulatorneuralnetwork.h"
 #include "configuration.h"
 
-const unsigned int SensorSimulatorNeuralNetwork::kDimensions = 6;
+const unsigned int SensorSimulatorNeuralNetwork::kDimensions = 3;
 
 SensorSimulatorNeuralNetwork::SensorSimulatorNeuralNetwork(SampleFactory &sample_factory, const Asteroid &asteroid)
     : SensorSimulator(kDimensions, sample_factory, asteroid) {
@@ -17,6 +17,12 @@ SensorData SensorSimulatorNeuralNetwork::Simulate(const SystemState &state, cons
     SensorData sensor_data(dimensions_, 0.0);
 
     const Vector3D &velocity = {state[3], state[4], state[5]};
+
+    sensor_data[0] = state[3];
+    sensor_data[1] = state[4];
+    sensor_data[2] = state[5];
+
+    return sensor_data;
 
     const double norm_height_pow2 = VectorDotProduct(height, height);
     const double norm_height = sqrt(norm_height_pow2);

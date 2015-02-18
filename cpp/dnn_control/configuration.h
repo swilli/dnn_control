@@ -18,15 +18,16 @@
 
 
 // Class hovering_problem configs
-#define HP_OBJ_FUN_METHOD_1    1   // Compare start and ending position and velocity.
-#define HP_OBJ_FUN_METHOD_2    2   // Compare mean distance to target point.
-#define HP_OBJ_FUN_METHOD_3    3   // Compare mean distance to target point, also consider velocity.
-#define HP_OBJ_FUN_METHOD_4    4   // Compare mean distance to target point, but don't take into consideration some amount of starting positions.
-#define HP_OBJ_FUN_METHOD_5    5   // Compare mean distance to target point, but don't take into consideration some amount of starting positions. Additionally, take into consideration total fuel consumption.
-#define HP_OBJ_FUN_METHOD_6    6   // Compare mean distance to target point, also consider velocity, but don't take into consideration some amount of starting positions.
-#define HP_OBJ_FUN_METHOD_7    7   // Compare mean distance to target point, also consider velocity, punish later offsets more.
+#define HP_OBJ_FUN_METHOD_1     1   // Compare start and ending position and velocity.
+#define HP_OBJ_FUN_METHOD_2     2   // Compare mean distance to target point.
+#define HP_OBJ_FUN_METHOD_3     3   // Compare mean distance to target point, also consider velocity.
+#define HP_OBJ_FUN_METHOD_4     4   // Compare mean distance to target point, but don't take into consideration some amount of starting positions.
+#define HP_OBJ_FUN_METHOD_5     5   // Compare mean distance to target point, but don't take into consideration some amount of starting positions. Additionally, take into consideration total fuel consumption.
+#define HP_OBJ_FUN_METHOD_6     6   // Compare mean distance to target point, also consider velocity, but don't take into consideration some amount of starting positions.
+#define HP_OBJ_FUN_METHOD_7     7   // Compare mean distance to target point, also consider velocity, punish later offsets more.
+#define HP_OBJ_FUN_METHOD_8     8   // Mean velocity.
 
-#define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_6
+#define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_8
 #define HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED    true
 //#define HP_FIXED_SEED  1990
 
@@ -37,11 +38,11 @@
 
 // Class PaGMOSimulation configs
 #define PGMOS_IC_INERTIAL_ZERO_VELOCITY      0
-#define PGMOS_IC_BODY_ZERO_VELOCITY          1
-#define PGMOS_IC_INERTIAL_ORBITAL_VELOCITY   2
+#define PGMOS_IC_INERTIAL_ORBITAL_VELOCITY   1
+#define PGMOS_IC_BODY_ZERO_VELOCITY          2
 #define PGMOS_IC_BODY_RANDOM_VELOCITY        3
 
-#define PGMOS_IC_VELOCITY_TYPE  PGMOS_IC_BODY_RANDOM_VELOCITY
+#define PGMOS_IC_VELOCITY_TYPE  PGMOS_IC_BODY_ZERO_VELOCITY
 #define PGMOS_IC_POSITION_OFFSET_ENABLED true
 
 // Class PaGMOSimulationNeuralNetwork configs
@@ -63,6 +64,8 @@
 #define SSA_DATA_HISTORY     0
 
 
+
+
 // Least Squares Policy Robotics configs
 #define LSPR_IC_BODY_ZERO_VELOCITY          0
 #define LSPR_IC_BODY_RANDOM_VELOCITY        1
@@ -72,7 +75,7 @@
 //#define LSPR_FIXED_SEED     1990
 
 #define LSPR_DIRECTION_RESOLUTION   5
-#define LSPR_THRUST_RESOLUTION  10
+#define LSPR_THRUST_RESOLUTION  7
 #define LSPR_NUM_EPISODES    1000
 #define LSPR_NUM_STEPS  50
 #define LSPR_GAMMA  0.9

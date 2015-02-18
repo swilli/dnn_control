@@ -170,7 +170,7 @@ static void ConvexityCheck(pagmo::problem::hovering_problem_neural_network &prob
     const double d_range = 0.01;
     const double range = 5.0;
 
-    std::cout << "Checking NN controller convexity... ";
+    std::cout << "Checking NN controller convexity... " << std::endl;
 
     for (unsigned int dimension = 0; dimension < x.size(); ++dimension) {
         std::vector<std::pair<double,double> > fitness;
@@ -198,22 +198,24 @@ static void ConvexityCheck(pagmo::problem::hovering_problem_neural_network &prob
 void TestNeuralNetworkController(const unsigned int &random_seed) {
     ConfigurationPaGMO();
 
-    const pagmo::decision_vector &solution = {0.04474285262, -1.181798445, 5.990240969, 3.368014356, -0.3884005916, 7.925862891, -4.007351087, -0.9033229497, 0.06888286759, -0.7082884631, -0.5803069954, 4.363130184, 6.764881924, 5.854863165, 0.1400946691, -1.50547086, -0.5521360017, 4.45201907, -4.250967073, -7.918608319, 9.717649144, -0.207032013, -5.833015115, -6.733938867, -4.608356761, -8.060719304, -1.410652379, -1.818076147, -0.8461389996, -2.954327447, -0.8073555435, -0.9967155903, -7.519709687, 3.701398114, 1.227121096, -0.3308526675, 0.7947630271, 4.84080388, -1.145269555, 0.4878662145, 5.394556383, -1.617437627, 3.819445141, -3.798915672, 4.164880788, -1.518176575, -3.984603965, -5.053259696, 2.04070011, -2.4627301, 5.187969076, 0.5709029065, -3.823333832, -2.089997512, 1.734804532, 5.298199453, -3.459244202, 0.3670544974, 3.308344852, 7.871539459, -3.628642295, 0.0001312112673, -0.5016102762};
+    const pagmo::decision_vector &solution = {-0.0742299153, -1.186668949, 0.249955145, -0.9298201199, 0.5244551236, -0.9142008616, 0.5307820708, -1.172092464, -0.9830928861, -0.8250706137, 1.189182548, 0.4777706551, -0.1318155262, 0.5931646143, -0.5538061257, -0.5212298593, -1.163717637, -0.4832667106, -1.348576846, -0.5794423311, 0.2406298766, -0.7715076583, 1.470309367, 0.07269885374, 0.1835183574, -0.1664255177, -1.250103709, -0.6154449098, -1.144527257, 0.09340195075, 1.278029083, 0.5940111415, 0.2073732704, -0.2236440927, -0.007989021814, -0.9407231912, -0.6136416122, 0.9417699609, 0.404844066, -0.04893679232, -0.868818689, -1.133700427, 0.01640574586, 0.2593246245, -0.7135022968, -0.0935678092, 0.6864504047, -0.3412767421, -0.5206754903, 0.4239021019, 0.4811909671, 0.4274861348, -0.7953838846, -0.530784064, -0.8705483249, -0.1700130627, 0.3330935376, -0.01933809731, 0.5132757758, -0.05572663633, -0.8204283585, -0.1835307579, -0.1832258481};
 
 
     std::cout << std::setprecision(10);
 
     pagmo::problem::hovering_problem_neural_network prob(random_seed, kNumEvaluations, kSimulationTime, kNumHiddenNeurons);
 
+
     /*
     SampleFactory sample_factory(random_seed);
     pagmo::decision_vector rand_guess;
-    for (unsigned int i = 0; i < task_41_solution.size(); ++i) {
+    for (unsigned int i = 0; i < solution.size(); ++i) {
         rand_guess.push_back(sample_factory.SampleUniform(-1.0, 1.0));
     }
     ConvexityCheck(prob, random_seed, rand_guess);
     return;
     */
+
 
     std::cout << "Checking NN controller fitness... ";
     const double fitness = prob.objfun_seeded(random_seed, solution)[0];
@@ -239,6 +241,7 @@ void TestNeuralNetworkController(const unsigned int &random_seed) {
     writer_evaluation.CreateEvaluationFile(random_seed, simulation.TargetPosition(), times, positions, velocities, thrusts);
     std::cout << "done." << std::endl;
 
+    return;
 
     std::cout << "Performing post evaluation ... ";
     std::vector<std::vector<double> > fitness_tasks;
@@ -318,14 +321,15 @@ void TestNeuralNetworkVSFullStateController(const unsigned int &random_seed) {
 
     std::cout << "Performing post evaluation ... ";
     std::vector<std::vector<double> > fitness_tasks;
-    const boost::tuple<std::vector<double>, std::vector<unsigned int> > post_evaluation_full_state = prob_full_state.post_evaluate(solution_full_state, random_seed);
-    const std::vector<unsigned int> &random_seeds = boost::get<1>(post_evaluation_full_state);
-    const std::vector<double> &fitness_full_state = boost::get<0>(post_evaluation_full_state);
-    fitness_tasks.push_back(fitness_full_state);
 
-    const boost::tuple<std::vector<double>, std::vector<unsigned int> > post_evaluation_neural_network = prob_neural_network.post_evaluate(solution_neural_network, 0, random_seeds);
+    const boost::tuple<std::vector<double>, std::vector<unsigned int> > post_evaluation_neural_network = prob_neural_network.post_evaluate(solution_neural_network, random_seed);
+    const std::vector<unsigned int> &random_seeds = boost::get<1>(post_evaluation_neural_network);
     const std::vector<double> &fitness_neural_network = boost::get<0>(post_evaluation_neural_network);
     fitness_tasks.push_back(fitness_neural_network);
+
+    const boost::tuple<std::vector<double>, std::vector<unsigned int> > post_evaluation_full_state = prob_full_state.post_evaluate(solution_full_state, 0, random_seeds);
+    const std::vector<double> &fitness_full_state = boost::get<0>(post_evaluation_full_state);
+    fitness_tasks.push_back(fitness_full_state);
 
     std::cout << "done." << std::endl << "Writing post evaluation file ... ";
     FileWriter writer_post_evaluation(PATH_TO_COMPARISON_POST_EVALUATION_FILE);

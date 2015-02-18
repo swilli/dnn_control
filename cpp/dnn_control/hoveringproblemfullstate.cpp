@@ -27,9 +27,9 @@ base_ptr hovering_problem_full_state::clone() const {
 }
 
 fitness_vector hovering_problem_full_state::objfun_seeded(const unsigned int &seed, const decision_vector &x) const {
-    PaGMOSimulationFullState simulation(seed, m_simulation_time, x);
+    m_seed = seed;
     fitness_vector f(1);
-    f[0] = single_fitness(simulation);
+    objfun_impl(f, x);
     return f;
 }
 
@@ -140,6 +140,12 @@ double hovering_problem_full_state::single_fitness(PaGMOSimulationFullState &sim
     }
     fitness /= num_samples;
 
+#elif HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_8
+    // Method 8 : Mean velocity
+    for (unsigned int i = 0; i < num_samples; ++i) {
+        fitness += VectorNorm(evaluated_velocities.at(i));
+    }
+    fitness /= num_samples;
 #endif
 
     return fitness;
