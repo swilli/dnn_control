@@ -11,6 +11,7 @@
 #include <boost/tuple/tuple.hpp>
 #include <iomanip>
 #include <fstream>
+#include <limits>
 
 namespace eigen = Eigen;
 
@@ -33,13 +34,13 @@ static std::vector<Vector3D> kSpacecraftActions;
 static void Init() {
     const double res_u = 1.0 / LSPR_DIRECTION_RESOLUTION;
     const double res_v = 1.0 / (LSPR_DIRECTION_RESOLUTION - 1);
-    const double d_thrust = kSpacecraftMaximumThrust / pow(3.0, LSPR_THRUST_RESOLUTION - 2);
+    const double d_thrust = kSpacecraftMaximumThrust / pow(4.0, LSPR_THRUST_RESOLUTION - 2);
     for (unsigned int k = 0; k < LSPR_THRUST_RESOLUTION; ++k) {
         if (k == 0) {
             kSpacecraftActions.push_back({0.0, 0.0, 0.0});
             continue;
         }
-        const double t = d_thrust * pow(3.0, k - 1);
+        const double t = d_thrust * pow(4.0, k - 1);
         for (unsigned int j = 0; j < LSPR_DIRECTION_RESOLUTION; ++j) {
             if (j == 0) {
                 kSpacecraftActions.push_back({0.0, 0.0, -t});
@@ -82,7 +83,7 @@ static eigen::VectorXd Phi(const LSPIState &state, const unsigned int &action) {
 
 static unsigned int Pi(SampleFactory &sample_factory, const LSPIState &state, const eigen::VectorXd &weights) {
     std::vector<unsigned int> best_a;
-    double best_q = -DBL_MAX;
+    double best_q = -std::numeric_limits<double>::max();
     for (unsigned int a = 0; a < kSpacecraftNumActions; ++a) {
         eigen::VectorXd  val_phi = Phi(state, a);
         eigen::VectorXd  val_phi_t = val_phi.transpose();
@@ -196,7 +197,7 @@ static std::vector<Sample> PrepareSamples(SampleFactory &sample_factory, const u
         double time = sample_factory.SampleUniform(0.0, 12.0 * 60.0 * 60.0);
 
         for (unsigned int j = 0; j < num_steps; ++j) {
-            const Vector3D position = {state[0], state[1], state[2]};
+            const Vector3D &position = {state[0], state[1], state[2]};
             const LSPIState lspi_state = SystemStateToLSPIState(state, target_position);
 
             const unsigned int a = sample_factory.SampleRandomInteger() % kSpacecraftNumActions;
@@ -208,14 +209,20 @@ static std::vector<Sample> PrepareSamples(SampleFactory &sample_factory, const u
             }
             SystemState next_state = boost::get<0>(result);
 
-            const Vector3D next_position = {next_state[0], next_state[1], next_state[2]};
+            const Vector3D &next_position = {next_state[0], next_state[1], next_state[2]};
 
             const LSPIState next_lspi_state = SystemStateToLSPIState(next_state, target_position);
 
-
             const double error_state = VectorNorm(VectorSub(target_position, position));
             const double error_next_state = VectorNorm(VectorSub(target_position, next_position));
+
+#if LSPR_REWARD_WITH_VELOCITY
+            const Vector3D &next_velocity = {next_state[3], next_state[4], next_state[5]};
+            const double norm_velocity = VectorNorm(next_velocity);
+            const double r = error_state - error_next_state - norm_velocity;
+#else
             const double r = error_state - error_next_state;
+#endif
 
             samples.push_back(boost::make_tuple(lspi_state, a, r, next_lspi_state));
 
@@ -305,7 +312,7 @@ static boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector
     return boost::make_tuple(evaluated_times, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities, evaluated_thrusts);
 }
 
-static boost::tuple<std::vector<double>, std::vector<unsigned int> > PostEvaluateLSPIController(const eigen::VectorXd &controller_weights, const unsigned int &start_seed, const std::vector<unsigned int> &random_seeds=std::vector<unsigned int>()) {
+static boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<std::pair<double, double> > > PostEvaluateLSPIController(const eigen::VectorXd &controller_weights, const unsigned int &start_seed, const std::vector<unsigned int> &random_seeds=std::vector<unsigned int>()) {
     unsigned int num_tests = random_seeds.size();
     std::vector<unsigned int> used_random_seeds;
     if (num_tests == 0) {
@@ -318,7 +325,8 @@ static boost::tuple<std::vector<double>, std::vector<unsigned int> > PostEvaluat
         used_random_seeds = random_seeds;
     }
 
-    std::vector<double> fitness(num_tests, 0.0);
+    std::vector<double> mean_errors(num_tests, 0.0);
+    std::vector<std::pair<double, double> > min_max_errors(num_tests);
 
     const double test_time = 1.0 * 60.0 * 60.0;
 
@@ -329,20 +337,33 @@ static boost::tuple<std::vector<double>, std::vector<unsigned int> > PostEvaluat
         const Vector3D target_position = sample_factory.SamplePointOutSideEllipsoid(simulator.AsteroidOfSystem().SemiAxis(), 1.1, 4.0);
 
         const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = EvaluatePolicy(sample_factory, controller_weights, simulator, target_position, test_time * simulator.ControlFrequency());
-        const std::vector<double> &times = boost::get<0>(result);
-        const std::vector<Vector3D> &positions = boost::get<2>(result);
+        const std::vector<double> &evaluated_times = boost::get<0>(result);
+        const std::vector<Vector3D> &evaluated_positions = boost::get<2>(result);
 
-        const unsigned int num_samples = times.size();
-        double error = 0.0;
-        const unsigned int start_index = num_samples * 0.01;
-        for (unsigned int i = start_index; i < num_samples; ++i) {
-            error += VectorNorm(VectorSub(target_position, positions.at(i)));
+        const unsigned int num_samples = evaluated_times.size();
+        double mean_error = 0.0;
+        double min_error = std::numeric_limits<double>::max();
+        double max_error = -std::numeric_limits<double>::max();
+        unsigned int considered_samples = 0;
+        for (unsigned int i = 0; i < num_samples; ++i) {
+            if (evaluated_times.at(i) >= LSPR_TRANSIENT_RESPONSE_TIME) {
+                const double error = VectorNorm(VectorSub(target_position, evaluated_positions.at(i)));
+                if (error > max_error) {
+                    max_error = error;
+                } else if(error < min_error) {
+                    min_error = error;
+                }
+                mean_error += error;
+                considered_samples++;
+            }
         }
-        error /= (num_samples - start_index);
-        fitness.at(i) = error;
+        mean_error /= considered_samples;
+        mean_errors.at(i) = mean_error;
+        min_max_errors.at(i).first = min_error;
+        min_max_errors.at(i).second = max_error;
     }
 
-    return boost::make_tuple(fitness, used_random_seeds);
+    return boost::make_tuple(used_random_seeds, mean_errors, min_max_errors);
 }
 
 void TestLeastSquaresPolicyController(const unsigned int &random_seed) {
@@ -386,15 +407,20 @@ void TestLeastSquaresPolicyController(const unsigned int &random_seed) {
     std::cout << "done." << std::endl;
 
     std::cout << "Performing post evaluation ... ";
-    std::vector<std::vector<double> > fitness_tasks;
-    const boost::tuple<std::vector<double>, std::vector<unsigned int> > post_evaluation = PostEvaluateLSPIController(weights, random_seed);
-    const std::vector<unsigned int> &random_seeds = boost::get<1>(post_evaluation);
-    const std::vector<double> &fitness_evaluations = boost::get<0>(post_evaluation);
-    fitness_tasks.push_back(fitness_evaluations);
+    std::vector<std::vector<double> > mean_errors_tasks;
+    std::vector<std::vector<std::pair<double, double > > > min_max_errors_tasks;
+
+    const boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<std::pair<double, double > > > post_evaluation = PostEvaluateLSPIController(weights, random_seed);
+    const std::vector<unsigned int> &random_seeds = boost::get<0>(post_evaluation);
+    const std::vector<double> &mean_errors = boost::get<1>(post_evaluation);
+    const std::vector<std::pair<double, double > > min_max_errors = boost::get<2>(post_evaluation);
+
+    mean_errors_tasks.push_back(mean_errors);
+    min_max_errors_tasks.push_back(min_max_errors);
 
     std::cout << "done." << std::endl << "Writing post evaluation file ... ";
     FileWriter writer_post_evaluation(PATH_TO_LSPI_POST_EVALUATION_FILE);
-    writer_post_evaluation.CreatePostEvaluationFile(random_seeds, fitness_tasks);
+    writer_post_evaluation.CreatePostEvaluationFile(random_seeds, mean_errors_tasks, min_max_errors_tasks);
     std::cout << "done." << std::endl;
 }
 

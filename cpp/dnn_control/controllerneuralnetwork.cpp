@@ -4,7 +4,7 @@
 #if PGMOSNN_ENABLE_ODOMETRY
 const unsigned int ControllerNeuralNetwork::kDimensions = 6;
 #else
-const unsigned int ControllerNeuralNetwork::kDimensions = 3;
+const unsigned int ControllerNeuralNetwork::kDimensions = 6;
 #endif
 
 ControllerNeuralNetwork::ControllerNeuralNetwork(const double &maximum_thrust, const unsigned int &num_hidden)

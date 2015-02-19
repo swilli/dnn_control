@@ -19,15 +19,14 @@
 
 // Class hovering_problem configs
 #define HP_OBJ_FUN_METHOD_1     1   // Compare start and ending position and velocity.
-#define HP_OBJ_FUN_METHOD_2     2   // Compare mean distance to target point.
-#define HP_OBJ_FUN_METHOD_3     3   // Compare mean distance to target point, also consider velocity.
-#define HP_OBJ_FUN_METHOD_4     4   // Compare mean distance to target point, but don't take into consideration some amount of starting positions.
-#define HP_OBJ_FUN_METHOD_5     5   // Compare mean distance to target point, but don't take into consideration some amount of starting positions. Additionally, take into consideration total fuel consumption.
-#define HP_OBJ_FUN_METHOD_6     6   // Compare mean distance to target point, also consider velocity, but don't take into consideration some amount of starting positions.
-#define HP_OBJ_FUN_METHOD_7     7   // Compare mean distance to target point, also consider velocity, punish later offsets more.
-#define HP_OBJ_FUN_METHOD_8     8   // Mean velocity.
+#define HP_OBJ_FUN_METHOD_2     2   // Compare mean distance to target point. Transient response aware.
+#define HP_OBJ_FUN_METHOD_3     3   // Compare mean distance to target point, also consider velocity. Transient response aware.
+#define HP_OBJ_FUN_METHOD_4     4   // Compare mean distance to target point, also consider fuel consumption. Transient response aware.
+#define HP_OBJ_FUN_METHOD_5     5   // Compare mean distance to target point, also consider velocity, punish later offsets more.
+#define HP_OBJ_FUN_METHOD_6     6   // Mean velocity.
 
-#define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_8
+#define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_6
+#define HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME  100.0
 #define HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED    true
 //#define HP_FIXED_SEED  1990
 
@@ -42,7 +41,7 @@
 #define PGMOS_IC_BODY_ZERO_VELOCITY          2
 #define PGMOS_IC_BODY_RANDOM_VELOCITY        3
 
-#define PGMOS_IC_VELOCITY_TYPE  PGMOS_IC_BODY_ZERO_VELOCITY
+#define PGMOS_IC_VELOCITY_TYPE  PGMOS_IC_BODY_RANDOM_VELOCITY
 #define PGMOS_IC_POSITION_OFFSET_ENABLED true
 
 // Class PaGMOSimulationNeuralNetwork configs
@@ -76,6 +75,8 @@
 
 #define LSPR_DIRECTION_RESOLUTION   5
 #define LSPR_THRUST_RESOLUTION  7
+#define LSPR_TRANSIENT_RESPONSE_TIME  100.0
+#define LSPR_REWARD_WITH_VELOCITY   true
 #define LSPR_NUM_EPISODES    1000
 #define LSPR_NUM_STEPS  50
 #define LSPR_GAMMA  0.9
@@ -130,6 +131,7 @@ inline void ConfigurationPaGMO() {
 #endif
     std::cout << "HP_OBJECTIVE_FUNCTION_METHOD   " << HP_OBJECTIVE_FUNCTION_METHOD << std::endl;
     std::cout << "HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED   " << ToString(HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED) << std::endl;
+    std::cout << "HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME   " << HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME << std::endl;
     std::cout << "PGMOS_IC_VELOCITY_TYPE   " << PGMOS_IC_VELOCITY_TYPE << std::endl;
     std::cout << "PGMOS_IC_POSITION_OFFSET_ENABLED   " << ToString(PGMOS_IC_POSITION_OFFSET_ENABLED) << std::endl;
     std::cout << "PGMOSNN_ENABLE_ODOMETRY   " << ToString(PGMOSNN_ENABLE_ODOMETRY) << std::endl;
@@ -149,6 +151,8 @@ inline void ConfigurationLSPI() {
     std::cout << "LSPR_NUM_STEPS   " << LSPR_NUM_STEPS << std::endl;
     std::cout << "LSPR_DIRECTION_RESOLUTION   " << LSPR_DIRECTION_RESOLUTION << std::endl;
     std::cout << "LSPR_THRUST_RESOLUTION   " << LSPR_THRUST_RESOLUTION << std::endl;
+    std::cout << "LSPR_TRANSIENT_RESPONSE_TIME   " << LSPR_TRANSIENT_RESPONSE_TIME << std::endl;
+    std::cout << "LSPR_REWARD_WITH_VELOCITY   " << ToString(LSPR_REWARD_WITH_VELOCITY) << std::endl;
     std::cout << "LSPR_GAMMA   " << LSPR_GAMMA << std::endl;
     std::cout << "LSPR_EPSILON   " << LSPR_EPSILON << std::endl;
 #ifdef LSPR_FIXED_SEED

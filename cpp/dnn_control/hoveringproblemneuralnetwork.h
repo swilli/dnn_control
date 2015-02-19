@@ -20,8 +20,8 @@ public:
 
     ~hovering_problem_neural_network();
 
-    // Perform multiple evaluations with a solution on the problem
-    boost::tuple<std::vector<double>, std::vector<unsigned int> > post_evaluate(const decision_vector &x, const unsigned int &start_seed=0, const std::vector<unsigned int> &random_seeds=std::vector<unsigned int>()) const;
+    // Perform multiple evaluations with a solution on the problem, returns the seeds used, the mean, min and max error for each simulation.
+    boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<std::pair<double, double> > > post_evaluate(const decision_vector &x, const unsigned int &start_seed=0, const std::vector<unsigned int> &random_seeds=std::vector<unsigned int>()) const;
 
     // Returns the problem name
     std::string get_name() const;
@@ -41,8 +41,9 @@ private:
     // Implementation of the problems fitness
     double single_fitness(PaGMOSimulationNeuralNetwork &simulation) const;
 
-    // Returns more information about the problem
-    double single_post_evaluation(PaGMOSimulationNeuralNetwork &simulation) const;
+    // Performs the simulation, computes the mean, min, max error based on the generated data.
+    // Error can be different from fitness.
+    boost::tuple<double, double, double> single_post_evaluation(PaGMOSimulationNeuralNetwork &simulation) const;
 
     // Number of evaluations an indiviual will be tested in a generation
     unsigned int m_n_evaluations;

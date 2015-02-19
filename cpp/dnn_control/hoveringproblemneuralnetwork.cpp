@@ -1,6 +1,8 @@
 #include "hoveringproblemneuralnetwork.h"
 #include "configuration.h"
 
+#include <limits>
+
 namespace pagmo { namespace problem {
 
 hovering_problem_neural_network::hovering_problem_neural_network(const unsigned int &seed, const unsigned int &n_evaluations, const double &simulation_time, const unsigned int &n_hidden_neurons)
@@ -95,65 +97,62 @@ double hovering_problem_neural_network::single_fitness(PaGMOSimulationNeuralNetw
     fitness += VectorNorm(VectorSub(target_position, position_end)) + VectorNorm(velocity_end);
 
 #elif HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_2
-    // Method 2 : Compare mean distance to target point
+    // Method 2 : Compare mean distance to target point. Transient response aware
+    unsigned int considered_samples = 0;
     for (unsigned int i = 0; i < num_samples; ++i) {
-        fitness += VectorNorm(VectorSub(target_position, evaluated_positions.at(i)));
+        if (evaluated_times.at(i) >= HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME) {
+            fitness += VectorNorm(VectorSub(target_position, evaluated_positions.at(i)));
+            considered_samples++;
+        }
     }
-    fitness /= num_samples;
+    fitness /= considered_samples;
 
 #elif HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_3
-    // Method 3 : Compare mean distance to target point, also consider velocity
+    // Method 3 : Compare mean distance to target point, also consider velocity. Transient response aware.
+    unsigned int considered_samples = 0;
     for (unsigned int i = 0; i < num_samples; ++i) {
-        fitness += VectorNorm(VectorSub(target_position, evaluated_positions.at(i))) + VectorNorm(evaluated_velocities.at(i));
+        if (evaluated_times.at(i) >= HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME) {
+            fitness += VectorNorm(VectorSub(target_position, evaluated_positions.at(i))) + VectorNorm(evaluated_velocities.at(i));
+            considered_samples++;
+        }
     }
-    fitness /= num_samples;
+    fitness /= considered_samples;
 
 #elif HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_4
-    // Method 4 : Compare mean distance to target point, but don't take into consideration some amount of starting positions
-    const unsigned int start_index = num_samples * 0.01;
-    for (unsigned int i = start_index; i < num_samples; ++i) {
-        fitness += VectorNorm(VectorSub(target_position, evaluated_positions.at(i)));
+    // Method 4 : Compare mean distance to target point, also consider fuel consumption. Transient response aware.
+    unsigned int considered_samples = 0;
+    for (unsigned int i = 0; i < num_samples; ++i) {
+        if (evaluated_times.at(i) >= HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME) {
+            fitness += VectorNorm(VectorSub(target_position, evaluated_positions.at(i)));
+            considered_samples++;
+        }
     }
-    fitness /= (num_samples - start_index);
-
-#elif HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_5
-    // Method 5 : Compare mean distance to target point, but don't take into consideration some amount of starting positions.
-    // Additionally, take into consideration total fuel consumption
-    const unsigned int start_index = num_samples * 0.01;
-    for (unsigned int i = start_index; i < num_samples; ++i) {
-        fitness += VectorNorm(VectorSub(target_position, evaluated_positions.at(i)));
-    }
-    fitness /= (num_samples - start_index);
+    fitness /= considered_samples;
     fitness += 1.0 / (evaluated_masses.back() - simulation.SpacecraftMinimumMass() + 0.001);
 
-#elif HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_6
-    // Method 6 : Compare mean distance to target point, also consider velocity, but don't take into consideration some amount of starting positions.
-    const unsigned int start_index = num_samples * 0.01;
-    for (unsigned int i = start_index; i < num_samples; ++i) {
-        fitness += VectorNorm(VectorSub(target_position, evaluated_positions.at(i))) + VectorNorm(evaluated_velocities.at(i));
-    }
-    fitness /= num_samples - start_index;
-
-#elif HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_7
-    // Method 7 : Compare mean distance to target point, also consider velocity, punish later offsets more
+#elif HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_5
+    // Method 5 : Compare mean distance to target point, also consider velocity, punish later offsets more
     for (unsigned int i = 0; i < num_samples; ++i) {
         fitness += (i + 1) * (VectorNorm(VectorSub(target_position, evaluated_positions.at(i))) + VectorNorm(evaluated_velocities.at(i)));
     }
     fitness /= num_samples;
 
-#elif HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_8
-    // Method 8 : Mean velocity
+#elif HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_6
+    // Method 6 : Mean velocity
     for (unsigned int i = 0; i < num_samples; ++i) {
         fitness += VectorNorm(evaluated_velocities.at(i));
     }
     fitness /= num_samples;
+
 #endif
 
     return fitness;
 }
 
-double hovering_problem_neural_network::single_post_evaluation(PaGMOSimulationNeuralNetwork &simulation) const {
-    double fitness = 0.0;
+boost::tuple<double, double, double> hovering_problem_neural_network::single_post_evaluation(PaGMOSimulationNeuralNetwork &simulation) const {
+    double mean_error = 0.0;
+    double min_error = std::numeric_limits<double>::max();
+    double max_error = -std::numeric_limits<double>::max();
 
     const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = simulation.EvaluateAdaptive();
     const std::vector<double> &evaluated_times = boost::get<0>(result);
@@ -170,24 +169,33 @@ double hovering_problem_neural_network::single_post_evaluation(PaGMOSimulationNe
     double time_diff = evaluated_times.back() - m_simulation_time;
     time_diff = (time_diff < 0.0 ? -time_diff : time_diff);
     if (time_diff > 0.1) {
-        fitness += 1e30;
+        mean_error += 1e30;
     }
 #endif
 
-    const unsigned int start_index = num_samples * 0.01;
-    for (unsigned int i = start_index; i < num_samples; ++i) {
-        fitness += VectorNorm(VectorSub(target_position, evaluated_positions.at(i)));
+    unsigned int considered_samples = 0;
+    for (unsigned int i = 0; i < num_samples; ++i) {
+        if (evaluated_times.at(i) >= HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME) {
+            const double error = VectorNorm(VectorSub(target_position, evaluated_positions.at(i)));
+            if (error > max_error) {
+                max_error = error;
+            } else if(error < min_error) {
+                min_error = error;
+            }
+            mean_error += error;
+            considered_samples++;
+        }
     }
-    fitness /= (num_samples - start_index);
+    mean_error /= considered_samples;
 
-    return fitness;
+    return boost::make_tuple(mean_error, min_error, max_error);
 }
 
 hovering_problem_neural_network::~hovering_problem_neural_network() {
 
 }
 
-boost::tuple<std::vector<double>, std::vector<unsigned int> > hovering_problem_neural_network::post_evaluate(const decision_vector &x, const unsigned int &start_seed, const std::vector<unsigned int> &random_seeds) const {
+boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<std::pair<double, double> > > hovering_problem_neural_network::post_evaluate(const decision_vector &x, const unsigned int &start_seed, const std::vector<unsigned int> &random_seeds) const {
     unsigned int num_tests = random_seeds.size();
     std::vector<unsigned int> used_random_seeds;
     if (num_tests == 0) {
@@ -200,15 +208,22 @@ boost::tuple<std::vector<double>, std::vector<unsigned int> > hovering_problem_n
         used_random_seeds = random_seeds;
     }
 
-    std::vector<double> fitness(num_tests, 0.0);
+    std::vector<double> mean_errors(num_tests, 0.0);
+    std::vector<std::pair<double,double> > min_max_errors(num_tests, std::make_pair(0.0, 0.0));
 
     for (unsigned int i = 0; i < num_tests; ++i) {
         const unsigned int current_seed = used_random_seeds.at(i);
+
         PaGMOSimulationNeuralNetwork simulation(current_seed, m_simulation_time, m_n_hidden_neurons, x);
-        fitness.at(i) = single_post_evaluation(simulation);
+
+        const boost::tuple<double, double, double> result = single_post_evaluation(simulation);
+
+        mean_errors.at(i) = boost::get<0>(result);
+        min_max_errors.at(i).first = boost::get<1>(result);
+        min_max_errors.at(i).second = boost::get<2>(result);
     }
 
-    return boost::make_tuple(fitness, used_random_seeds);
+    return boost::make_tuple(used_random_seeds, mean_errors, min_max_errors);
 }
 
 }}
