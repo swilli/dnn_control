@@ -17,6 +17,10 @@ public:
 
     // Generates (simulates) sensor data based on the current spacecraft state "state" and time "time"
     virtual SensorData Simulate(const SystemState &state, const Vector3D &height, const Vector3D &perturbations_acceleration, const double &time);
+
+private:
+    // Sensor data values will be normalized between [0,1] by dividing them by the maximum range
+    std::vector<double> sensor_maximum_absolute_ranges_;
 };
 
 #endif // SENSORSIMULATORNEURALNETWORK_H
