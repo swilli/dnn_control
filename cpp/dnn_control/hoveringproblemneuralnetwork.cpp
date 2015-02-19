@@ -138,11 +138,15 @@ double hovering_problem_neural_network::single_fitness(PaGMOSimulationNeuralNetw
     fitness /= num_samples;
 
 #elif HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_6
-    // Method 6 : Mean velocity
+    // Method 6 : Mean velocity. Transient response aware.
+    unsigned int considered_samples = 0;
     for (unsigned int i = 0; i < num_samples; ++i) {
-        fitness += VectorNorm(evaluated_velocities.at(i));
+        if (evaluated_times.at(i) >= HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME) {
+            fitness += VectorNorm(evaluated_velocities.at(i));
+            considered_samples++;
+        }
     }
-    fitness /= num_samples;
+    fitness /= considered_samples;
 
 #endif
 

@@ -23,7 +23,7 @@
 #define HP_OBJ_FUN_METHOD_3     3   // Compare mean distance to target point, also consider velocity. Transient response aware.
 #define HP_OBJ_FUN_METHOD_4     4   // Compare mean distance to target point, also consider fuel consumption. Transient response aware.
 #define HP_OBJ_FUN_METHOD_5     5   // Compare mean distance to target point, also consider velocity, punish later offsets more.
-#define HP_OBJ_FUN_METHOD_6     6   // Mean velocity.
+#define HP_OBJ_FUN_METHOD_6     6   // Mean velocity. Transient response aware.
 
 #define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_6
 #define HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME  100.0
