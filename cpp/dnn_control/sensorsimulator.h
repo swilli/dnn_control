@@ -27,6 +27,9 @@ public:
     // SensorSimulator can throw the following exceptions
     class Exception {};
 
+    // Returns sensor data in a string representation
+    static std::string SensorDataToString(const SensorData &data);
+
 protected:
     // How large is the sensor data space
     unsigned int dimensions_;

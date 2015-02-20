@@ -1,12 +1,26 @@
 #include "sensorsimulatorneuralnetwork.h"
 #include "configuration.h"
 
+
+#if PGMOSNN_ENABLE_ACCELEROMETER
+const unsigned int SensorSimulatorNeuralNetwork::kDimensions = 9;
+#else
 const unsigned int SensorSimulatorNeuralNetwork::kDimensions = 6;
+#endif
 
 SensorSimulatorNeuralNetwork::SensorSimulatorNeuralNetwork(SampleFactory &sample_factory, const Asteroid &asteroid)
     : SensorSimulator(kDimensions, sample_factory, asteroid) {
 
-    sensor_maximum_absolute_ranges_ = std::vector<double>(dimensions_, 1e-4);
+#if PGMOSNN_ENABLE_ACCELEROMETER
+    sensor_maximum_absolute_ranges_ = {1e-4, 1e-4, 1e-4, 1e-4, 1e-4, 1e-4, 0.025, 0.025, 0.025};
+#else
+    sensor_maximum_absolute_ranges_ = {1e-4, 1e-4, 1e-4, 1e-4, 1e-4, 1e-4};
+#endif
+
+    if (sensor_maximum_absolute_ranges_.size() != dimensions_) {
+        throw RangeMalConfigurationException();
+    }
+
     noise_configurations_ = std::vector<double>(dimensions_, 0.05);
 }
 
@@ -30,27 +44,49 @@ SensorData SensorSimulatorNeuralNetwork::Simulate(const SystemState &state, cons
     const Vector3D velocity_horizontal = VectorSub(velocity, velocity_vertical);
 
     for (unsigned int i = 0; i < 3; ++i) {
-        double sensor_value = velocity_vertical[i] * coef_norm_height;
-        if (sensor_value > sensor_maximum_absolute_ranges_.at(i)) {
-            sensor_value = sensor_maximum_absolute_ranges_.at(i);
-        } else if (sensor_value < -sensor_maximum_absolute_ranges_.at(i)) {
-            sensor_value =  -sensor_maximum_absolute_ranges_.at(i);
-        }
-        sensor_value = sensor_value * 0.5 / sensor_maximum_absolute_ranges_.at(i) + 0.5;
-        sensor_data[i] = sensor_value;
+        sensor_data[i] = velocity_vertical[i] * coef_norm_height;
+        sensor_data[3+i] = velocity_horizontal[i] * coef_norm_height;
+    }
 
-        sensor_value = velocity_horizontal[i] * coef_norm_height;
-        if (sensor_value > sensor_maximum_absolute_ranges_.at(3+i)) {
-            sensor_value = sensor_maximum_absolute_ranges_.at(3+i);
-        } else if (sensor_value < -sensor_maximum_absolute_ranges_.at(3+i)) {
-            sensor_value =  -sensor_maximum_absolute_ranges_.at(3+i);
+#if PGMOSNN_ENABLE_ACCELEROMETER
+    const Vector3D &position = {state[0], state[1], state[2]};
+    const Vector3D gravity_acceleration = asteroid_.GravityAccelerationAtPosition(position);
+
+    const boost::tuple<Vector3D, Vector3D> result_angular = asteroid_.AngularVelocityAndAccelerationAtTime(time);
+    const Vector3D angular_velocity = boost::get<0>(result_angular);
+    const Vector3D angular_acceleration = boost::get<1>(result_angular);
+
+    const Vector3D euler_acceleration = VectorCrossProduct(angular_acceleration, position);
+    const Vector3D centrifugal_acceleration = VectorCrossProduct(angular_velocity, VectorCrossProduct(angular_velocity, position));
+
+    Vector3D tmp;
+    for (unsigned int i = 0; i < 3; ++i) {
+        tmp[i] = angular_velocity[i] * 2.0;
+    }
+
+    const Vector3D coriolis_acceleration = VectorCrossProduct(tmp, velocity);
+
+    for (unsigned int i = 0; i < 3; ++i) {
+        sensor_data[6+i] = perturbations_acceleration[i]
+                + gravity_acceleration[i]
+                - coriolis_acceleration[i]
+                - euler_acceleration[i]
+                - centrifugal_acceleration[i];
+    }
+#endif
+
+ for (unsigned int i = 0; i < dimensions_; ++i) {
+        double &sensor_value = sensor_data[i];
+        const double &max_abs_sensor_value = sensor_maximum_absolute_ranges_.at(i);
+        if (sensor_value > max_abs_sensor_value) {
+            sensor_value = max_abs_sensor_value;
+        } else if (sensor_value < -max_abs_sensor_value) {
+            sensor_value = -max_abs_sensor_value;
         }
-        sensor_value = sensor_value * 0.5 / sensor_maximum_absolute_ranges_.at(3+i) + 0.5;
-        sensor_data[3+i] = sensor_value;
+        sensor_value = sensor_value * 0.5 / max_abs_sensor_value + 0.5;
 
 #if SSNN_WITH_NOISE
-        sensor_data[i] += sensor_data[i] * sample_factory_.SampleNormal(0.0, noise_configurations_.at(i));
-        sensor_data[3+i] += sensor_data[3+i] * sample_factory_.SampleNormal(0.0, noise_configurations_.at(3+i));
+        sensor_value += sensor_value * sample_factory_.SampleNormal(0.0, noise_configurations_.at(i));
 #endif
 
     }

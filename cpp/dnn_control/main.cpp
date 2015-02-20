@@ -8,11 +8,10 @@
 #include "leastsquarespolicyrobotics.h"
 #include "evolutionaryrobotics.h"
 
-
 int main(int argc, char *argv[]) {
     srand(time(0));
 
-    //TestNeuralNetworkController(9782);
+    //TestNeuralNetworkController(123);
     //return 0;
 
     //TestFullStateController(9782);
