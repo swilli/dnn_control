@@ -36,7 +36,7 @@ SensorData SensorSimulatorNeuralNetwork::Simulate(const SystemState &state, cons
     sensor_data[0] = velocity[0];
     sensor_data[1] = velocity[1];
     sensor_data[2] = velocity[2];
-    sensor_data[3] = state[6] / 500.0;
+    sensor_data[3] = VectorNorm(velocity);
 
     /*
     const double norm_height_pow2 = VectorDotProduct(height, height);
