@@ -198,6 +198,7 @@ static std::vector<Sample> PrepareSamples(SampleFactory &sample_factory, const u
 
         for (unsigned int j = 0; j < num_steps; ++j) {
             const Vector3D &position = {state[0], state[1], state[2]};
+
             const LSPIState lspi_state = SystemStateToLSPIState(state, target_position);
 
             const unsigned int a = sample_factory.SampleRandomInteger() % kSpacecraftNumActions;
@@ -213,15 +214,16 @@ static std::vector<Sample> PrepareSamples(SampleFactory &sample_factory, const u
 
             const LSPIState next_lspi_state = SystemStateToLSPIState(next_state, target_position);
 
-            const double error_state = VectorNorm(VectorSub(target_position, position));
-            const double error_next_state = VectorNorm(VectorSub(target_position, next_position));
+            const double delta_state = VectorNorm(VectorSub(target_position, position)) - VectorNorm(VectorSub(target_position, next_position));
 
 #if LSPR_REWARD_WITH_VELOCITY
             const Vector3D &next_velocity = {next_state[3], next_state[4], next_state[5]};
-            const double norm_velocity = VectorNorm(next_velocity);
-            const double r = error_state - error_next_state - norm_velocity;
+            const Vector3D &velocity = {state[3], next_state[4], next_state[5]};
+
+            const double delta_velocity = VectorNorm(velocity) - VectorNorm(next_velocity);
+            const double r = delta_state + delta_velocity;
 #else
-            const double r = error_state - error_next_state;
+            const double r = delta_state - error_next_state;
 #endif
 
             samples.push_back(boost::make_tuple(lspi_state, a, r, next_lspi_state));
