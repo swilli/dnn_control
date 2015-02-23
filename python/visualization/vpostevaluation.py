@@ -26,9 +26,10 @@ num_samples = len(lines)
 data = [line.split(',') for line in lines]
 data = [[int(line[0])] + [float(value) for value in line[1:]] for line in data]
 filtered_data = []
+outliers = 0
 for line in data:
-    if line[1] >= 1.0:
-        print(line[0])
+    if line[1] >= 0.5:
+        outliers += 1
         continue
     else:
 	    filtered_data += [line]
@@ -47,6 +48,7 @@ ssde_stdev = std(delta_errors, axis=0)
 ssde_min = min(delta_errors)
 ssde_max = max(delta_errors)
 
+print("Outliers: {0}".format(outliers))
 print("SSME: mean={0}, stdev={1}, min={2}, max={3}".format(ssme_mean, ssme_stdev, ssme_min, ssme_max))
 print("SSDE: mean={0}, stdev={1}, min={2}, max={3}".format(ssde_mean, ssde_stdev, ssde_min, ssde_max))
 

@@ -5,9 +5,9 @@
 const unsigned int ControllerNeuralNetwork::kDimensions = 6;
 #else
 #if PGMOSNN_ENABLE_ACCELEROMETER
-const unsigned int ControllerNeuralNetwork::kDimensions = 9;
+const unsigned int ControllerNeuralNetwork::kDimensions = 7;
 #else
-const unsigned int ControllerNeuralNetwork::kDimensions = 4;
+const unsigned int ControllerNeuralNetwork::kDimensions = 6;
 #endif
 #endif
 
