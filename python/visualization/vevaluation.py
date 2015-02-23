@@ -84,19 +84,19 @@ else:
     plt.plot(times, velocities[:, 0])
     plt.title('X Velocity vs Time')
     plt.xlabel('time [s]')
-    plt.ylabel('velocity [N]')
+    plt.ylabel('velocity [m/s]')
 
     plt.subplot(335)
     plt.plot(times, velocities[:, 1])
     plt.title('Y Velocity vs Time')
     plt.xlabel('time [s]')
-    plt.ylabel('velocity [N]')
+    plt.ylabel('velocity [m/s]')
     
     plt.subplot(336)
     plt.plot(times, velocities[:, 2])
     plt.title('Z Velocity vs Time')
     plt.xlabel('time [s]')
-    plt.ylabel('velocity [N]')
+    plt.ylabel('velocity [m/s]')
 
     plt.subplot(337)
     plt.step(times, thrusts[:, 0])

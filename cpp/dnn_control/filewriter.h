@@ -22,7 +22,7 @@ public:
     void CreateEvaluationFile(const unsigned int &random_seed, const Vector3D &target_position, const std::vector<double> &times, const std::vector<Vector3D> &positions, const std::vector<Vector3D> &velocities, const std::vector<Vector3D> &thrusts);
 
     // Create a file which can be visualized using vpostevaluation.py
-    void CreatePostEvaluationFile(const std::vector<unsigned int> &random_seeds, const std::vector<std::vector<double> > &mean_errors, const std::vector<std::vector<std::pair<double, double> > > &min_max_errors);
+    void CreatePostEvaluationFile(const std::vector<unsigned int> &random_seeds, const std::vector<double> &mean_errors, const std::vector<std::pair<double, double> > &min_max_errors);
 
     // Create a file which can be visualized using vconvexity.py
     void CreateConvexityFile(const unsigned int &random_seed, const unsigned int &dimension, const std::vector<std::pair<double, double> > &fitness);

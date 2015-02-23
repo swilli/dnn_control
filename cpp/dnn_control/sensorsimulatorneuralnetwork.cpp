@@ -5,7 +5,7 @@
 #if PGMOSNN_ENABLE_ACCELEROMETER
 const unsigned int SensorSimulatorNeuralNetwork::kDimensions = 9;
 #else
-const unsigned int SensorSimulatorNeuralNetwork::kDimensions = 6;
+const unsigned int SensorSimulatorNeuralNetwork::kDimensions = 4;
 #endif
 
 SensorSimulatorNeuralNetwork::SensorSimulatorNeuralNetwork(SampleFactory &sample_factory, const Asteroid &asteroid)
@@ -14,7 +14,7 @@ SensorSimulatorNeuralNetwork::SensorSimulatorNeuralNetwork(SampleFactory &sample
 #if PGMOSNN_ENABLE_ACCELEROMETER
     sensor_maximum_absolute_ranges_ = {1e-4, 1e-4, 1e-4, 1e-4, 1e-4, 1e-4, 0.025, 0.025, 0.025};
 #else
-    sensor_maximum_absolute_ranges_ = {1e-4, 1e-4, 1e-4, 1e-4, 1e-4, 1e-4};
+    sensor_maximum_absolute_ranges_ = {1e-4, 1e-4, 1e-4, 1e-4}; //1e-4, 1e-4, 1e-4};
 #endif
 
     if (sensor_maximum_absolute_ranges_.size() != dimensions_) {
@@ -32,6 +32,13 @@ SensorData SensorSimulatorNeuralNetwork::Simulate(const SystemState &state, cons
     SensorData sensor_data(dimensions_, 0.0);
 
     const Vector3D &velocity = {state[3], state[4], state[5]};
+
+    sensor_data[0] = velocity[0];
+    sensor_data[1] = velocity[1];
+    sensor_data[2] = velocity[2];
+    sensor_data[3] = VectorNorm(velocity);
+    return sensor_data;
+
 
     const double norm_height_pow2 = VectorDotProduct(height, height);
     const double norm_height = sqrt(norm_height_pow2);

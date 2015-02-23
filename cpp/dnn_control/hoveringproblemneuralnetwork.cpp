@@ -29,9 +29,9 @@ base_ptr hovering_problem_neural_network::clone() const {
 }
 
 fitness_vector hovering_problem_neural_network::objfun_seeded(const unsigned int &seed, const decision_vector &x) const {
-    m_seed = seed;
+    PaGMOSimulationNeuralNetwork simulation(seed, m_simulation_time, m_n_hidden_neurons, x);
     fitness_vector f(1);
-    objfun_impl(f, x);
+    f[0] = single_fitness(simulation);
     return f;
 }
 
@@ -183,8 +183,14 @@ boost::tuple<double, double, double> hovering_problem_neural_network::single_pos
             const double error = VectorNorm(VectorSub(target_position, evaluated_positions.at(i)));
             if (error > max_error) {
                 max_error = error;
+                if (min_error == std::numeric_limits<double>::max()) {
+                    min_error = max_error;
+                }
             } else if(error < min_error) {
                 min_error = error;
+                if (max_error == -std::numeric_limits<double>::max()){
+                        max_error = min_error;
+                }
             }
             mean_error += error;
             considered_samples++;

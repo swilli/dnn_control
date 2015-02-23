@@ -9,12 +9,12 @@
  */
 
 // Evolutionary Robotics configs
-#define ER_NUM_GENERATIONS  1000
+#define ER_NUM_GENERATIONS  500
 #define ER_POPULATION_SIZE  100
 #define ER_NUM_ISLANDS  4
 #define ER_SIMULATION_TIME  1.0 * 60.0 * 60.0
-#define ER_EVALUATIONS  4
-#define ER_NUM_HIDDEN_NODES 9
+#define ER_EVALUATIONS  8
+#define ER_NUM_HIDDEN_NODES 4
 
 
 // Class hovering_problem configs
@@ -26,7 +26,7 @@
 #define HP_OBJ_FUN_METHOD_6     6   // Mean velocity. Transient response aware.
 
 #define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_6
-#define HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME  30.0
+#define HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME  100.0
 #define HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED    true
 //#define HP_FIXED_SEED  1990
 
@@ -46,14 +46,14 @@
 
 // Class PaGMOSimulationNeuralNetwork configs
 #define PGMOSNN_ENABLE_ODOMETRY false
-#define PGMOSNN_ENABLE_ACCELEROMETER    true
+#define PGMOSNN_ENABLE_ACCELEROMETER    false
 
 
 // Class SensorSimulatorNeuralNetwork configs
 #define SSNN_WITH_NOISE false
 
 // Class SensorSimulatorFullState configs
-#define SSFS_WITH_NOISE false
+#define SSFS_WITH_NOISE true
 
 
 // Class SensorSimulatorAutoencoder configs

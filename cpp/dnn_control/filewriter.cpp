@@ -65,15 +65,10 @@ void FileWriter::CreateEvaluationFile(const unsigned int &random_seed, const Vec
     }
 }
 
-void FileWriter::CreatePostEvaluationFile(const std::vector<unsigned int> &random_seeds, const std::vector<std::vector<double> > &mean_errors, const std::vector<std::vector<std::pair<double, double> > > &min_max_errors) {
+void FileWriter::CreatePostEvaluationFile(const std::vector<unsigned int> &random_seeds, const std::vector<double> &mean_errors, const std::vector<std::pair<double, double> > &min_max_errors) {
     for(unsigned int i = 0; i < random_seeds.size(); ++i) {
         const unsigned int seed = random_seeds.at(i);
-        file_ << seed;
-
-        for (unsigned int j = 0; j < mean_errors.size(); ++j) {
-            file_ << ",\t" << mean_errors.at(j).at(i) << ",\t" << min_max_errors.at(j).at(i).first << ",\t" << min_max_errors.at(j).at(i).second << std::endl;
-        }
-        file_ << std::endl;
+        file_ << seed << ",\t" << mean_errors.at(i) << ",\t" << min_max_errors.at(i).first << ",\t" << min_max_errors.at(i).second << std::endl;
     }
 }
 

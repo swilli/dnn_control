@@ -11,10 +11,10 @@
 int main(int argc, char *argv[]) {
     srand(time(0));
 
-    //TestNeuralNetworkController(123);
+    //TestNeuralNetworkController(0);
     //return 0;
 
-    //TestFullStateController(9782);
+    //TestFullStateController(0);
     //return 0;
 
     //TestNeuralNetworkVSFullStateController(9782);

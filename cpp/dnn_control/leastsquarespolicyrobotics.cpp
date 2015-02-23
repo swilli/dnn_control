@@ -407,20 +407,15 @@ void TestLeastSquaresPolicyController(const unsigned int &random_seed) {
     std::cout << "done." << std::endl;
 
     std::cout << "Performing post evaluation ... ";
-    std::vector<std::vector<double> > mean_errors_tasks;
-    std::vector<std::vector<std::pair<double, double > > > min_max_errors_tasks;
-
     const boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<std::pair<double, double > > > post_evaluation = PostEvaluateLSPIController(weights, random_seed);
     const std::vector<unsigned int> &random_seeds = boost::get<0>(post_evaluation);
     const std::vector<double> &mean_errors = boost::get<1>(post_evaluation);
     const std::vector<std::pair<double, double > > min_max_errors = boost::get<2>(post_evaluation);
 
-    mean_errors_tasks.push_back(mean_errors);
-    min_max_errors_tasks.push_back(min_max_errors);
 
     std::cout << "done." << std::endl << "Writing post evaluation file ... ";
     FileWriter writer_post_evaluation(PATH_TO_LSPI_POST_EVALUATION_FILE);
-    writer_post_evaluation.CreatePostEvaluationFile(random_seeds, mean_errors_tasks, min_max_errors_tasks);
+    writer_post_evaluation.CreatePostEvaluationFile(random_seeds, mean_errors, min_max_errors);
     std::cout << "done." << std::endl;
 }
 
