@@ -88,7 +88,7 @@ void TrainNeuralNetworkController() {
     // We instantiate a PSO algorithm capable of coping with stochastic prolems
     pagmo::algorithm::pso_generational algo(1,0.7298,2.05,2.05,0.05);
 
-    std::cout << "Initializing NN evolution ....";
+    std::cout << "Initializing NN controller evolution ....";
 
     pagmo::archipelago archi = pagmo::archipelago(pagmo::topology::fully_connected());
 
