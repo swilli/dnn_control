@@ -1,6 +1,6 @@
 #include "configuration.h"
 #include "pagmosimulationneuralnetwork.h"
-#include "pagmosimulationfullstate.h"
+#include "pagmosimulationproportionalderivative.h"
 
 #include "filewriter.h"
 #include "sensordatagenerator.h"

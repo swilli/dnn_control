@@ -1,6 +1,6 @@
 #include "evolutionaryrobotics.h"
 #include "hoveringproblemneuralnetwork.h"
-#include "hoveringproblemfullstate.h"
+#include "hoveringproblemproportionalderivative.h"
 #include "samplefactory.h"
 #include "filewriter.h"
 #include "configuration.h"
@@ -138,7 +138,7 @@ void TrainFullStateController() {
     for (unsigned int j = 0;j < kNumIslands; ++j) {
         std::cout << " [" << j;
         fflush(stdout);
-        pagmo::problem::hovering_problem_full_state prob(rand(), kNumEvaluations, kSimulationTime);
+        pagmo::problem::hovering_problem_proportional_derivative prob(rand(), kNumEvaluations, kSimulationTime);
 
         // This instantiates a population within the original bounds (-1,1)
         pagmo::population pop_temp(prob, kPopulationSize);
@@ -198,7 +198,7 @@ static void ConvexityCheck(pagmo::problem::hovering_problem_neural_network &prob
 void TestNeuralNetworkController(const unsigned int &random_seed) {
     ConfigurationPaGMO();
 
-    const pagmo::decision_vector &solution = {-0.3205006583, -1.411962842, 5.002589073, 0.8747903128, 0.6876097979, 14.03314313, -1.166271096, -0.3679340263, -1.166900117, 1.731581934, -1.57012307, -4.191789102, 1.74318714, -9.736338456, 0.07218139422, 4.645111156, 2.075702695, 4.030859844, 10.43824789, 4.830241415, 4.920330312, -0.5184711055, 2.899623471, 0.5532577447, -5.301623811, 2.62820165, 1.179117488, -5.309926797, -0.3566922594, -7.501068902, -10.66974999, -1.197729182, -2.428899793, -2.6107191, -3.57549472, 0.1570112806, 2.968238589, 0.03139542939, -0.5967465449, 14.53588986, -4.298054495, -3.280360149, -2.846779154, -4.948100176, -6.971947577, 1.94332889, 1.854185223, -3.599753768, 13.70252418, -1.283790949, 9.372855349, 0.9015173328, -2.007459996, -0.5403034024, -2.555339051, -1.386378154, 1.926336454, 2.2543917, -3.898602194, 3.688637787, -3.277467381, -0.6227536819, -3.186091818};
+    const pagmo::decision_vector &solution = {0.1706789394, 6.391103265, -4.844305805, 14.79450134, 2.461898567, -0.3381245896, -4.949960837, 14.10351753, 8.883169321, -1.326416109, -0.1696018523, -16.89241883, -6.437639831, 6.395617865, -1.647325562, -1.385827668, -2.62581393, -6.500836362, 2.401432207, 1.630369467, 3.385221801, -9.965975545, -3.013213706, 6.000530322, 2.584463077, -2.561646792, 7.579409453, -9.707534915, 4.034683863, 3.444476854, 5.207027969, -1.505561988, -2.964210528, -5.924351493, -2.647210083};
 
 
     std::cout << std::setprecision(10);
@@ -262,7 +262,7 @@ void TestFullStateController(const unsigned int &random_seed) {
 
     std::cout << std::setprecision(10);
 
-    pagmo::problem::hovering_problem_full_state prob(random_seed, kNumEvaluations, kSimulationTime);
+    pagmo::problem::hovering_problem_proportional_derivative prob(random_seed, kNumEvaluations, kSimulationTime);
 
 
     std::cout << "Checking PD controller fitness... ";
@@ -270,7 +270,7 @@ void TestFullStateController(const unsigned int &random_seed) {
     std::cout << fitness << std::endl;
 
     std::cout << "Simulating PD controller ... ";
-    PaGMOSimulationFullState simulation(random_seed, 86400.0, solution);
+    PaGMOSimulationProportionalDerivative simulation(random_seed, 86400.0, solution);
     const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = simulation.EvaluateAdaptive();
     const std::vector<double> &times = boost::get<0>(result);
     const std::vector<Vector3D> &positions = boost::get<2>(result);
@@ -310,7 +310,7 @@ void TestNeuralNetworkVSFullStateController(const unsigned int &random_seed) {
     const pagmo::decision_vector &solution_full_state = {19.62982929, 2.562497127, 3.627020967, 19.86051527, -0.4731542458, 3.46844508, 0.1620948448, 19.30288406, 2.296871748, -2.52698378, 19.99586136, 4.082133337, 1.996530484, 1.526402493, 12.49818943, -0.5111650787, -1.310274189, 19.98615408};
 
 
-    pagmo::problem::hovering_problem_full_state prob_full_state(random_seed, kNumEvaluations, kSimulationTime);
+    pagmo::problem::hovering_problem_proportional_derivative prob_full_state(random_seed, kNumEvaluations, kSimulationTime);
     pagmo::problem::hovering_problem_neural_network prob_neural_network(random_seed, kNumEvaluations, kSimulationTime);
 
     std::cout << "Performing post evaluation ... ";

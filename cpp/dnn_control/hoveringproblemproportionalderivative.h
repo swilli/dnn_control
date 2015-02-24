@@ -1,24 +1,24 @@
-#ifndef HOVERINGPROBLEMFULLSTATE_H
-#define HOVERINGPROBLEMFULLSTATE_H
+#ifndef HOVERINGPROBLEMPROPORTIONALDERIVATIVE_H
+#define HOVERINGPROBLEMPROPORTIONALDERIVATIVE_H
 
-#include "pagmosimulationfullstate.h"
+#include "pagmosimulationproportionalderivative.h"
 
 #include <pagmo/src/problem/base_stochastic.h>
 #include <boost/serialization/access.hpp>
 
 namespace pagmo { namespace problem {
 
-class __PAGMO_VISIBLE hovering_problem_full_state : public base_stochastic {
+class __PAGMO_VISIBLE hovering_problem_proportional_derivative : public base_stochastic {
     /*
     * This class represents a PaGMO problem which can be optimized using a base stochastic algorithm. 
-    * The task in this problem is to hover over a specific target position.
+    * The optimization problem is to find a proportional derivative controller which minimizes the objective function.
     */
 public:
-    hovering_problem_full_state(const unsigned int &seed=0, const unsigned int &n_evaluations=4, const double &simulation_time=3600.0);
+    hovering_problem_proportional_derivative(const unsigned int &seed=0, const unsigned int &n_evaluations=4, const double &simulation_time=3600.0);
 
-    hovering_problem_full_state(const hovering_problem_full_state &other);
+    hovering_problem_proportional_derivative(const hovering_problem_proportional_derivative &other);
 
-    ~hovering_problem_full_state();
+    ~hovering_problem_proportional_derivative();
 
     // Perform multiple evaluations with a solution on the problem, returns the seeds used, the mean, min and max error for each simulation.
     boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<std::pair<double, double> > > post_evaluate(const decision_vector &x, const unsigned int &start_seed=0, const std::vector<unsigned int> &random_seeds=std::vector<unsigned int>()) const;
@@ -41,11 +41,11 @@ protected:
 
 private:
     // Performs the simulation, computes the fitness based on the generated data
-    double single_fitness(PaGMOSimulationFullState &simulation) const;
+    double single_fitness(PaGMOSimulationProportionalDerivative &simulation) const;
 
     // Performs the simulation, computes the mean, min, max error based on the generated data.
     // Error can be different from fitness.
-    boost::tuple<double,double,double> single_post_evaluation(PaGMOSimulationFullState &simulation) const;
+    boost::tuple<double,double,double> single_post_evaluation(PaGMOSimulationProportionalDerivative &simulation) const;
 
     // Number of evaluations an indiviual will be tested in a generation
     unsigned int m_n_evaluations;
@@ -64,6 +64,6 @@ private:
 
 }} //namespaces
 
-BOOST_CLASS_EXPORT_KEY(pagmo::problem::hovering_problem_full_state)
+BOOST_CLASS_EXPORT_KEY(pagmo::problem::hovering_problem_proportional_derivative)
 
-#endif // HOVERINGPROBLEMFULLSTATE_H
+#endif // HOVERINGPROBLEMPROPORTIONALDERIVATIVE_H

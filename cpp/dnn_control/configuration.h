@@ -14,7 +14,7 @@
 #define ER_NUM_ISLANDS  4
 #define ER_SIMULATION_TIME  1.0 * 60.0 * 60.0
 #define ER_EVALUATIONS  8
-#define ER_NUM_HIDDEN_NODES 4
+#define ER_NUM_HIDDEN_NODES 6
 
 
 // Class hovering_problem configs
@@ -25,8 +25,8 @@
 #define HP_OBJ_FUN_METHOD_5     5   // Compare mean distance to target point, also consider velocity, punish later offsets more.
 #define HP_OBJ_FUN_METHOD_6     6   // Mean velocity. Transient response aware.
 
-#define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_6
-#define HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME  200.0
+#define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_3
+#define HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME  150.0
 #define HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED    true
 //#define HP_FIXED_SEED  1990
 
@@ -42,18 +42,16 @@
 #define PGMOS_IC_BODY_RANDOM_VELOCITY        3
 
 #define PGMOS_IC_VELOCITY_TYPE  PGMOS_IC_BODY_RANDOM_VELOCITY
-#define PGMOS_IC_POSITION_OFFSET_ENABLED true
-
-// Class PaGMOSimulationNeuralNetwork configs
-#define PGMOSNN_ENABLE_ODOMETRY false
-#define PGMOSNN_ENABLE_ACCELEROMETER    false
+#define PGMOS_IC_POSITION_OFFSET_ENABLED    true
+#define PGMOS_ENABLE_ODOMETRY   true
+#define PGMOS_ENABLE_ACCELEROMETER  false
 
 
-// Class SensorSimulatorNeuralNetwork configs
-#define SSNN_WITH_NOISE false
+// Class SensorSimulatorPartialState configs
+#define SSPS_WITH_NOISE false
 
 // Class SensorSimulatorFullState configs
-#define SSFS_WITH_NOISE false
+#define SSFS_WITH_NOISE true
 
 
 // Class SensorSimulatorAutoencoder configs
@@ -106,7 +104,7 @@
 #define ER_EVALUATIONS  1
 #endif
 
-#if PGMOSNN_ENABLE_ODOMETRY == false
+#if PGMOS_ENABLE_ODOMETRY == false
 #undef PGMOS_IC_POSITION_OFFSET_ENABLED
 #define PGMOS_IC_POSITION_OFFSET_ENABLED false
 #endif
@@ -134,10 +132,10 @@ inline void ConfigurationPaGMO() {
     std::cout << "HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME   " << HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME << std::endl;
     std::cout << "PGMOS_IC_VELOCITY_TYPE   " << PGMOS_IC_VELOCITY_TYPE << std::endl;
     std::cout << "PGMOS_IC_POSITION_OFFSET_ENABLED   " << ToString(PGMOS_IC_POSITION_OFFSET_ENABLED) << std::endl;
-    std::cout << "PGMOSNN_ENABLE_ODOMETRY   " << ToString(PGMOSNN_ENABLE_ODOMETRY) << std::endl;
-    std::cout << "PGMOSNN_ENABLE_ACCELEROMETER   " << ToString(PGMOSNN_ENABLE_ACCELEROMETER) << std::endl;
+    std::cout << "PGMOS_ENABLE_ODOMETRY   " << ToString(PGMOS_ENABLE_ODOMETRY) << std::endl;
+    std::cout << "PGMOS_ENABLE_ACCELEROMETER   " << ToString(PGMOS_ENABLE_ACCELEROMETER) << std::endl;
     std::cout << "ODES_FUEL_ENABLED   " << ToString(ODES_FUEL_ENABLED) << std::endl;
-    std::cout << "SSNN_WITH_NOISE   " << ToString(SSNN_WITH_NOISE) << std::endl;
+    std::cout << "SSPS_WITH_NOISE   " << ToString(SSPS_WITH_NOISE) << std::endl;
     std::cout << "SSFS_WITH_NOISE   " << ToString(SSFS_WITH_NOISE) << std::endl;
     std::cout << "SSA_DATA_WITH_NOISE   " << ToString(SSA_DATA_WITH_NOISE) << std::endl;
     std::cout << "SSA_DATA_DIMENSIONS   " << SSA_DATA_DIMENSIONS << std::endl;

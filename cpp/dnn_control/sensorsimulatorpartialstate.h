@@ -1,19 +1,20 @@
-#ifndef SENSORSIMULATORNEURALNETWORK_H
-#define SENSORSIMULATORNEURALNETWORK_H
+#ifndef SENSORSIMULATORPARTIALSTATE_H
+#define SENSORSIMULATORPARTIALSTATE_H
 
 #include "sensorsimulator.h"
 
-class SensorSimulatorNeuralNetwork : public SensorSimulator {
+class SensorSimulatorPartialState : public SensorSimulator {
 	/*
-    * This class generates the artificial sensor data required for a neural network controller. The data produced by this sensor simulator contains optical flow and accelerometer data.
+    * This class generates the artificial sensor data which contains not all information about the spacecraft state.
+    * The data produced by this sensor simulator contains optical flow and accelerometer data.
     */
 public:
 	// The number of output dimensions the sensor simulator will generate
     static const unsigned int kDimensions;
 
-    SensorSimulatorNeuralNetwork(SampleFactory &sample_factory, const Asteroid &asteroid);
+    SensorSimulatorPartialState(SampleFactory &sample_factory, const Asteroid &asteroid);
 
-    virtual ~SensorSimulatorNeuralNetwork();
+    virtual ~SensorSimulatorPartialState();
 
     // Generates (simulates) sensor data based on the current spacecraft state "state" and time "time"
     virtual SensorData Simulate(const SystemState &state, const Vector3D &height, const Vector3D &perturbations_acceleration, const double &time);
@@ -26,4 +27,4 @@ private:
     std::vector<double> sensor_maximum_absolute_ranges_;
 };
 
-#endif // SENSORSIMULATORNEURALNETWORK_H
+#endif // SENSORSIMULATORPARTIALSTATE_H

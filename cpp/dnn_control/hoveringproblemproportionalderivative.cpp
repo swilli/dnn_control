@@ -1,40 +1,40 @@
-#include "hoveringproblemfullstate.h"
+#include "hoveringproblemproportionalderivative.h"
 #include "configuration.h"
 
 #include <limits>
 
 namespace pagmo { namespace problem {
 
-hovering_problem_full_state::hovering_problem_full_state(const unsigned int &seed, const unsigned int &n_evaluations, const double &simulation_time)
-    : base_stochastic(PaGMOSimulationFullState(0, 0.0).ChromosomeSize(), seed),
+hovering_problem_proportional_derivative::hovering_problem_proportional_derivative(const unsigned int &seed, const unsigned int &n_evaluations, const double &simulation_time)
+    : base_stochastic(PaGMOSimulationProportionalDerivative(0, 0.0).ChromosomeSize(), seed),
       m_n_evaluations(n_evaluations), m_simulation_time(simulation_time) {
 
     set_lb(-1.0);
     set_ub(1.0);
 }
 
-hovering_problem_full_state::hovering_problem_full_state(const hovering_problem_full_state &other)
+hovering_problem_proportional_derivative::hovering_problem_proportional_derivative(const hovering_problem_proportional_derivative &other)
     : base_stochastic(other) {
     m_n_evaluations = other.m_n_evaluations;
     m_simulation_time = other.m_simulation_time;
 }
 
-std::string hovering_problem_full_state::get_name() const {
+std::string hovering_problem_proportional_derivative::get_name() const {
     return "Asteroid hovering - PID controller Evolution";
 }
 
-base_ptr hovering_problem_full_state::clone() const {
-    return base_ptr(new hovering_problem_full_state(*this));
+base_ptr hovering_problem_proportional_derivative::clone() const {
+    return base_ptr(new hovering_problem_proportional_derivative(*this));
 }
 
-fitness_vector hovering_problem_full_state::objfun_seeded(const unsigned int &seed, const decision_vector &x) const {
-    PaGMOSimulationFullState simulation(seed, m_simulation_time, x);
+fitness_vector hovering_problem_proportional_derivative::objfun_seeded(const unsigned int &seed, const decision_vector &x) const {
+    PaGMOSimulationProportionalDerivative simulation(seed, m_simulation_time, x);
     fitness_vector f(1);
     f[0] = single_fitness(simulation);
     return f;
 }
 
-void hovering_problem_full_state::objfun_impl(fitness_vector &f, const decision_vector &x) const {
+void hovering_problem_proportional_derivative::objfun_impl(fitness_vector &f, const decision_vector &x) const {
     f[0] = 0.0;
 
     // Make sure the pseudorandom sequence will always be the same
@@ -50,13 +50,13 @@ void hovering_problem_full_state::objfun_impl(fitness_vector &f, const decision_
 #endif
 
         // PD Controller simulation
-        PaGMOSimulationFullState simulation(current_seed, m_simulation_time, x);
+        PaGMOSimulationProportionalDerivative simulation(current_seed, m_simulation_time, x);
         f[0] += single_fitness(simulation);
     }
     f[0] /= m_n_evaluations;
 }
 
-std::string hovering_problem_full_state::human_readable_extra() const {
+std::string hovering_problem_proportional_derivative::human_readable_extra() const {
     std::ostringstream oss;
     oss << "\tSimulation Time: " << m_simulation_time << '\n';
     oss << "\tSeed: " << m_seed << '\n';
@@ -64,7 +64,7 @@ std::string hovering_problem_full_state::human_readable_extra() const {
     return oss.str();
 }
 
-double hovering_problem_full_state::single_fitness(PaGMOSimulationFullState &simulation) const {
+double hovering_problem_proportional_derivative::single_fitness(PaGMOSimulationProportionalDerivative &simulation) const {
     double fitness = 0.0;
 
     const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = simulation.EvaluateAdaptive();
@@ -150,7 +150,7 @@ double hovering_problem_full_state::single_fitness(PaGMOSimulationFullState &sim
     return fitness;
 }
 
-boost::tuple<double, double, double> hovering_problem_full_state::single_post_evaluation(PaGMOSimulationFullState &simulation) const {
+boost::tuple<double, double, double> hovering_problem_proportional_derivative::single_post_evaluation(PaGMOSimulationProportionalDerivative &simulation) const {
     double mean_error = 0.0;
     double min_error = std::numeric_limits<double>::max();
     double max_error = -std::numeric_limits<double>::max();
@@ -198,11 +198,11 @@ boost::tuple<double, double, double> hovering_problem_full_state::single_post_ev
     return boost::make_tuple(mean_error, min_error, max_error);
 }
 
-hovering_problem_full_state::~hovering_problem_full_state() {
+hovering_problem_proportional_derivative::~hovering_problem_proportional_derivative() {
 
 }
 
-boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<std::pair<double, double> > > hovering_problem_full_state::post_evaluate(const decision_vector &x, const unsigned int &start_seed, const std::vector<unsigned int> &random_seeds) const {
+boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<std::pair<double, double> > > hovering_problem_proportional_derivative::post_evaluate(const decision_vector &x, const unsigned int &start_seed, const std::vector<unsigned int> &random_seeds) const {
     unsigned int num_tests = random_seeds.size();
     std::vector<unsigned int> used_random_seeds;
     if (num_tests == 0) {
@@ -221,7 +221,7 @@ boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<std::pa
     for (unsigned int i = 0; i < num_tests; ++i) {
         const unsigned int current_seed = used_random_seeds.at(i);
 
-        PaGMOSimulationFullState simulation(current_seed, m_simulation_time, x);
+        PaGMOSimulationProportionalDerivative simulation(current_seed, m_simulation_time, x);
 
         const boost::tuple<double, double, double> result = single_post_evaluation(simulation);
 

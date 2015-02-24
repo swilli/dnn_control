@@ -1,20 +1,20 @@
-#include "sensorsimulatorneuralnetwork.h"
+#include "sensorsimulatorpartialstate.h"
 #include "configuration.h"
 
 
-#if PGMOSNN_ENABLE_ACCELEROMETER
+#if PGMOS_ENABLE_ACCELEROMETER
 const unsigned int SensorSimulatorNeuralNetwork::kDimensions = 7;
 #else
-const unsigned int SensorSimulatorNeuralNetwork::kDimensions = 4;
+const unsigned int SensorSimulatorPartialState::kDimensions = 3;
 #endif
 
-SensorSimulatorNeuralNetwork::SensorSimulatorNeuralNetwork(SampleFactory &sample_factory, const Asteroid &asteroid)
+SensorSimulatorPartialState::SensorSimulatorPartialState(SampleFactory &sample_factory, const Asteroid &asteroid)
     : SensorSimulator(kDimensions, sample_factory, asteroid) {
 
-#if PGMOSNN_ENABLE_ACCELEROMETER
+#if PGMOS_ENABLE_ACCELEROMETER
     sensor_maximum_absolute_ranges_ = {1e-4, 1e-4, 1e-4, 0.025, 0.025, 0.025, 0.025};
 #else
-    sensor_maximum_absolute_ranges_ = {1e-4, 1e-4, 1e-4, 1e-4}; //1e-4, 1e-4, 1e-4};
+    sensor_maximum_absolute_ranges_ = {1e-4, 1e-4, 1e-4}; //1e-4, 1e-4, 1e-4};
 #endif
 
     if (sensor_maximum_absolute_ranges_.size() != dimensions_) {
@@ -24,11 +24,11 @@ SensorSimulatorNeuralNetwork::SensorSimulatorNeuralNetwork(SampleFactory &sample
     noise_configurations_ = std::vector<double>(dimensions_, 0.05);
 }
 
-SensorSimulatorNeuralNetwork::~SensorSimulatorNeuralNetwork() {
+SensorSimulatorPartialState::~SensorSimulatorPartialState() {
 
 }
 
-SensorData SensorSimulatorNeuralNetwork::Simulate(const SystemState &state, const Vector3D &height, const Vector3D &perturbations_acceleration, const double &time) {
+SensorData SensorSimulatorPartialState::Simulate(const SystemState &state, const Vector3D &height, const Vector3D &perturbations_acceleration, const double &time) {
     SensorData sensor_data(dimensions_, 0.0);
 
     const Vector3D &velocity = {state[3], state[4], state[5]};
@@ -36,7 +36,8 @@ SensorData SensorSimulatorNeuralNetwork::Simulate(const SystemState &state, cons
     sensor_data[0] = velocity[0];
     sensor_data[1] = velocity[1];
     sensor_data[2] = velocity[2];
-    sensor_data[3] = VectorNorm(velocity);
+
+    return sensor_data;
 
     /*
     const double norm_height_pow2 = VectorDotProduct(height, height);
@@ -55,7 +56,7 @@ SensorData SensorSimulatorNeuralNetwork::Simulate(const SystemState &state, cons
     }
     */
 
-#if PGMOSNN_ENABLE_ACCELEROMETER
+#if PGMOS_ENABLE_ACCELEROMETER
     const Vector3D &position = {state[0], state[1], state[2]};
     const Vector3D gravity_acceleration = asteroid_.GravityAccelerationAtPosition(position);
 

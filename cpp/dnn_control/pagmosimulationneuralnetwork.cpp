@@ -4,7 +4,7 @@
 #include "odesystem.h"
 #include "samplefactory.h"
 #include "sensorsimulatorfullstate.h"
-#include "sensorsimulatorneuralnetwork.h"
+#include "sensorsimulatorpartialstate.h"
 #include "controllerneuralnetwork.h"
 #include "configuration.h"
 
@@ -41,10 +41,10 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     SampleFactory sample_factory(random_seed_);
     SampleFactory sf_sensor_simulator(sample_factory.SampleRandomInteger());
 
-#if PGMOSNN_ENABLE_ODOMETRY
+#if PGMOS_ENABLE_ODOMETRY
     SensorSimulatorFullState sensor_simulator(sf_sensor_simulator, asteroid_, target_position_);
 #else
-    SensorSimulatorNeuralNetwork sensor_simulator(sf_sensor_simulator, asteroid_);
+    SensorSimulatorPartialState sensor_simulator(sf_sensor_simulator, asteroid_);
 #endif
 
     ControllerNeuralNetwork controller(spacecraft_maximum_thrust_, neural_network_hidden_nodes_);
@@ -147,10 +147,10 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     SampleFactory sample_factory(random_seed_);
     SampleFactory sf_sensor_simulator(sample_factory.SampleRandomInteger());
 
-#if PGMOSNN_ENABLE_ODOMETRY
+#if PGMOS_ENABLE_ODOMETRY
     SensorSimulatorFullState sensor_simulator(sf_sensor_simulator, asteroid_, target_position_);
 #else
-    SensorSimulatorNeuralNetwork sensor_simulator(sf_sensor_simulator, asteroid_);
+    SensorSimulatorPartialState sensor_simulator(sf_sensor_simulator, asteroid_);
 #endif
 
     ControllerNeuralNetwork controller(spacecraft_maximum_thrust_, neural_network_hidden_nodes_);

@@ -1,11 +1,11 @@
-#ifndef FULLSTATESENSORSIMULATOR_H
-#define FULLSTATESENSORSIMULATOR_H
+#ifndef SENSORSIMULATORFULLSTATE_H
+#define SENSORSIMULATORFULLSTATE_H
 
 #include "sensorsimulator.h"
 
 class SensorSimulatorFullState : public SensorSimulator {
 	/*
-	* This class generates the artificial sensor data required for a neural network controller or a PD controller. 
+    * This class generates the artificial sensor data data which contains all information about the spacecraft state (except mass).
 	* It generates relative position and velocity offsets.
     */
 public:
@@ -24,4 +24,4 @@ private:
     Vector3D target_position_;
 };
 
-#endif // FULLSTATESENSORSIMULATOR_H
+#endif // SENSORSIMULATORFULLSTATE_H

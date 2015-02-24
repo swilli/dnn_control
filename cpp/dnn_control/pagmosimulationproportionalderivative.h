@@ -1,17 +1,17 @@
-#ifndef PAGMOSIMULATIONFULLSTATE_H
-#define PAGMOSIMULATIONFULLSTATE_H
+#ifndef PAGMOSIMULATIONPROPORTIONALDERIVATIVE_H
+#define PAGMOSIMULATIONPROPORTIONALDERIVATIVE_H
 
 #include "pagmosimulation.h"
 
-class PaGMOSimulationFullState : public PaGMOSimulation {
+class PaGMOSimulationProportionalDerivative : public PaGMOSimulation {
 	/*
     * This class represents a full simulation with a PD controller.
     */
 public:
-    PaGMOSimulationFullState(const unsigned int &random_seed, const double &simulation_time);
-    PaGMOSimulationFullState(const unsigned int &random_seed, const double &simulation_time, const std::vector<double> &pd_coefficients);
+    PaGMOSimulationProportionalDerivative(const unsigned int &random_seed, const double &simulation_time);
+    PaGMOSimulationProportionalDerivative(const unsigned int &random_seed, const double &simulation_time, const std::vector<double> &pd_coefficients);
 
-    virtual ~PaGMOSimulationFullState();
+    virtual ~PaGMOSimulationProportionalDerivative();
 
     // Simulates the configured simulation, used an adaptive integrator
     virtual boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > EvaluateAdaptive();
@@ -23,4 +23,4 @@ public:
     virtual unsigned int ChromosomeSize() const;
 };
 
-#endif // PAGMOSIMULATIONFULLSTATE_H
+#endif // PAGMOSIMULATIONPROPORTIONALDERIVATIVE_H

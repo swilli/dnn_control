@@ -1,10 +1,10 @@
-#ifndef FULLSTATECONTROLLER_H
-#define FULLSTATECONTROLLER_H
+#ifndef CONTROLLERPROPORTIONALDERIVATIVE_H
+#define CONTROLLERPROPORTIONALDERIVATIVE_H
 
 #include "controller.h"
 #include "feedforwardneuralnetwork.h"
 
-class ControllerFullState : public Controller {
+class ControllerProportionalDerivative : public Controller {
 	/*
 	* This class represents a PD controller and generates the thrust for hovering over a specific target position with respect to the rotating asteroid reference frame. 
 	* The sensor data input is assumed to be relative target state offset.
@@ -14,10 +14,10 @@ public:
     // The number of input dimensions the controller works with
     static const unsigned int kDimensions;
 
-    ControllerFullState(const double &maximum_thrust);
-    ControllerFullState(const double &maximum_thrust, const std::vector<double> &pd_coefficients);
+    ControllerProportionalDerivative(const double &maximum_thrust);
+    ControllerProportionalDerivative(const double &maximum_thrust, const std::vector<double> &pd_coefficients);
 
-    virtual ~ControllerFullState();
+    virtual ~ControllerProportionalDerivative();
 
 
     // thrust = F(sensor_data), whereas F is a PD controller
@@ -31,4 +31,4 @@ private:
     FeedForwardNeuralNetwork neural_network_;
 };
 
-#endif // FULLSTATECONTROLLER_H
+#endif // CONTROLLERPROPORTIONALDERIVATIVE_H

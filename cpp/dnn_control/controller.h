@@ -36,9 +36,6 @@ protected:
 
     // What is the maximum absolute thrust that the spacecraft can generate
     double maximum_thrust_;
-
-    // The maximum absolute thrust the spacecraft can generate with respect to one dimension (x,y,z)
-    double maximum_thrust_per_dimension_;
 };
 
 #endif // SPACECRAFTCONTROLLER_H

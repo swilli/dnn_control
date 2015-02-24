@@ -1,33 +1,40 @@
-#include "pagmosimulationfullstate.h"
+#include "pagmosimulationproportionalderivative.h"
 #include "odeint.h"
 #include "modifiedcontrolledrungekutta.h"
 #include "odesystem.h"
 #include "samplefactory.h"
 #include "sensorsimulatorfullstate.h"
-#include "controllerfullstate.h"
+#include "sensorsimulatorpartialstate.h"
+#include "controllerproportionalderivative.h"
+#include "configuration.h"
 
-PaGMOSimulationFullState::PaGMOSimulationFullState(const unsigned int &random_seed, const double &simulation_time)
+PaGMOSimulationProportionalDerivative::PaGMOSimulationProportionalDerivative(const unsigned int &random_seed, const double &simulation_time)
     : PaGMOSimulation(random_seed, simulation_time) {
 }
 
-PaGMOSimulationFullState::PaGMOSimulationFullState(const unsigned int &random_seed, const double &simulation_time, const std::vector<double> &pd_coefficients)
+PaGMOSimulationProportionalDerivative::PaGMOSimulationProportionalDerivative(const unsigned int &random_seed, const double &simulation_time, const std::vector<double> &pd_coefficients)
     : PaGMOSimulation(random_seed, simulation_time) {
     simulation_parameters_ = pd_coefficients;
 }
 
-PaGMOSimulationFullState::~PaGMOSimulationFullState() {
+PaGMOSimulationProportionalDerivative::~PaGMOSimulationProportionalDerivative() {
 
 }
 
-boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > PaGMOSimulationFullState::EvaluateAdaptive() {
+boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > PaGMOSimulationProportionalDerivative::EvaluateAdaptive() {
     typedef odeint::runge_kutta_cash_karp54<SystemState> ErrorStepper;
     typedef odeint::modified_controlled_runge_kutta<ErrorStepper> ControlledStepper;
 
     SampleFactory sample_factory(random_seed_);
     SampleFactory sf_sensor_simulator(sample_factory.SampleRandomInteger());
 
+#if PGMOS_ENABLE_ODOMETRY
     SensorSimulatorFullState sensor_simulator(sf_sensor_simulator, asteroid_, target_position_);
-    ControllerFullState controller(spacecraft_maximum_thrust_);
+#else
+    SensorSimulatorPartialState sensor_simulator(sf_sensor_simulator, asteroid_);
+#endif
+
+    ControllerProportionalDerivative controller(spacecraft_maximum_thrust_);
 
     if (simulation_parameters_.size()) {
         controller.SetCoefficients(simulation_parameters_);
@@ -123,12 +130,17 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     return boost::make_tuple(evaluated_times, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities, evaluated_thrusts);
 }
 
-boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > PaGMOSimulationFullState::EvaluateFixed() {
+boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > PaGMOSimulationProportionalDerivative::EvaluateFixed() {
     SampleFactory sample_factory(random_seed_);
     SampleFactory sf_sensor_simulator(sample_factory.SampleRandomInteger());
 
+#if PGMOS_ENABLE_ODOMETRY
     SensorSimulatorFullState sensor_simulator(sf_sensor_simulator, asteroid_, target_position_);
-    ControllerFullState controller(spacecraft_maximum_thrust_);
+#else
+    SensorSimulatorPartialState sensor_simulator(sf_sensor_simulator, asteroid_);
+#endif
+
+    ControllerProportionalDerivative controller(spacecraft_maximum_thrust_);
 
     if (simulation_parameters_.size()) {
         controller.SetCoefficients(simulation_parameters_);
@@ -194,6 +206,6 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     return boost::make_tuple(evaluated_times, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities, evaluated_thrusts);
 }
 
-unsigned int PaGMOSimulationFullState::ChromosomeSize() const {
-    return ControllerFullState(spacecraft_maximum_thrust_).NumberOfParameters();
+unsigned int PaGMOSimulationProportionalDerivative::ChromosomeSize() const {
+    return ControllerProportionalDerivative(spacecraft_maximum_thrust_).NumberOfParameters();
 }

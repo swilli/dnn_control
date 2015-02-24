@@ -11,7 +11,7 @@ namespace pagmo { namespace problem {
 class __PAGMO_VISIBLE hovering_problem_neural_network : public base_stochastic {
     /*
     * This class represents a PaGMO problem which can be optimized using a base stochastic algorithm. 
-    * The task in this problem is to either hover over a specific target position, or to keep a certain height above the asteroid.
+    * The optimization problem is to find a neural network controller which minimizes the objective function.
     */
 public:
     hovering_problem_neural_network(const unsigned int &seed=0, const unsigned int &n_evaluations=4, const double &simulation_time=3600.0, const unsigned int &n_hidden_neurons=6);
