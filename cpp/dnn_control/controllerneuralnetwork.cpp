@@ -39,17 +39,14 @@ Vector3D ControllerNeuralNetwork::GetThrustForSensorData(const SensorData &senso
     Vector3D direction = {direction_magnitude[0] - 0.5, direction_magnitude[1] - 0.5, direction_magnitude[2] - 0.5};
     const double magnitude = direction_magnitude[3] * maximum_thrust_;
     const double norm_direction = VectorNorm(direction);
+    Vector3D thrust;
     if (norm_direction) {
         const double coef_norm= 1.0 / norm_direction;
-        direction[0] *= coef_norm;
-        direction[1] *= coef_norm;
-        direction[2] *= coef_norm;
+        for (unsigned int i = 0; i < 3; ++i) {
+            thrust[i] = direction[i] * coef_norm * magnitude;
+        }
     } else {
-        return {0.0, 0.0, 0.0};
+        thrust = {0.0, 0.0, 0.0};
     }
-    Vector3D thrust(direction);
-    thrust[0] *= magnitude;
-    thrust[1] *= magnitude;
-    thrust[2] *= magnitude;
     return thrust;
 }
