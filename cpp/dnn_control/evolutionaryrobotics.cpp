@@ -88,7 +88,7 @@ void TrainNeuralNetworkController() {
     // We instantiate a PSO algorithm capable of coping with stochastic prolems
     pagmo::algorithm::pso_generational algo(1,0.7298,2.05,2.05,0.05);
 
-    std::cout << "Initializing neuro controller evolution ....";
+    std::cout << "Initializing NN evolution ....";
 
     pagmo::archipelago archi = pagmo::archipelago(pagmo::topology::fully_connected());
 
@@ -123,7 +123,7 @@ void TrainNeuralNetworkController() {
 }
 
 
-void TrainFullStateController() {
+void TrainProportionalDerivativeController() {
     ConfigurationPaGMO();
 
     std::cout << std::setprecision(10);
@@ -255,7 +255,7 @@ void TestNeuralNetworkController(const unsigned int &random_seed) {
     std::cout << "done." << std::endl;
 }
 
-void TestFullStateController(const unsigned int &random_seed) {
+void TestProportionalDerivativeController(const unsigned int &random_seed) {
     ConfigurationPaGMO();
 
     const pagmo::decision_vector &solution = {19.42617142, -0.1578370174, -1.158468383, 20, -0.645107367, -12.69431901, 1.310052018, 18.60307364, -2.021242612, 3.288074883, 19.81166744, 12.39927012, -0.4653634484, 0.06561330597, 12.82200748, 6.208813021, -9.63074012, 19.93887631};

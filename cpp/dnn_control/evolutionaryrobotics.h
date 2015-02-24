@@ -6,8 +6,8 @@
 void TrainNeuralNetworkController();
 void TestNeuralNetworkController(const unsigned int &random_seed);
 
-void TrainFullStateController();
-void TestFullStateController(const unsigned int &random_seed);
+void TrainProportionalDerivativeController();
+void TestProportionalDerivativeController(const unsigned int &random_seed);
 
 void TestNeuralNetworkVSFullStateController(const unsigned int &random_seed);
 

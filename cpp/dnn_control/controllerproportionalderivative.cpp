@@ -37,7 +37,12 @@ void ControllerProportionalDerivative::SetCoefficients(const std::vector<double>
 Vector3D ControllerProportionalDerivative::GetThrustForSensorData(const SensorData &sensor_data) {
     const std::vector<double> direction_magnitude = neural_network_.Evaluate(sensor_data);
     Vector3D direction = {direction_magnitude[0], direction_magnitude[1], direction_magnitude[2]};
-    const double magnitude = direction_magnitude[3] * maximum_thrust_;
+    double magnitude = direction_magnitude[3] * maximum_thrust_;
+    if (magnitude > maximum_thrust_) {
+        magnitude = maximum_thrust_;
+    } else if (magnitude < -maximum_thrust_) {
+        magnitude = -maximum_thrust_;
+    }
     const double norm_direction = VectorNorm(direction);
     if (norm_direction) {
         const double coef_norm= 1.0 / norm_direction;
