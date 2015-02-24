@@ -28,14 +28,17 @@ SensorSimulatorPartialState::~SensorSimulatorPartialState() {
 
 }
 
+static const double root_three = sqrt(3);
+
 SensorData SensorSimulatorPartialState::Simulate(const SystemState &state, const Vector3D &height, const Vector3D &perturbations_acceleration, const double &time) {
     SensorData sensor_data(dimensions_, 0.0);
 
     const Vector3D &velocity = {state[3], state[4], state[5]};
 
-    sensor_data[0] = velocity[0];
-    sensor_data[1] = velocity[1];
-    sensor_data[2] = velocity[2];
+    const double coef_height = 1.0 / (VectorNorm(height) * (1.0 / root_three));
+    sensor_data[0] = velocity[0] * coef_height;
+    sensor_data[1] = velocity[1] * coef_height;
+    sensor_data[2] = velocity[2] * coef_height;
 
     return sensor_data;
 
