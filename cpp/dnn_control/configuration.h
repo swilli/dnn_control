@@ -48,7 +48,7 @@
 
 
 // Class SensorSimulatorPartialState configs
-#define SSPS_WITH_NOISE false
+#define SSPS_WITH_NOISE true
 
 // Class SensorSimulatorFullState configs
 #define SSFS_WITH_NOISE true
