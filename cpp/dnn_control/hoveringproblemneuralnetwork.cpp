@@ -128,7 +128,7 @@ double hovering_problem_neural_network::single_fitness(PaGMOSimulationNeuralNetw
         }
     }
     fitness /= considered_samples;
-    fitness += 1.0 / (evaluated_masses.back() - simulation.SpacecraftMinimumMass() + 0.001);
+    fitness += simulation.SpacecraftMaximumMass() / evaluated_masses.back() - 1.0;
 
 #elif HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_5
     // Method 5 : Compare mean distance to target point, also consider velocity, punish later offsets more
