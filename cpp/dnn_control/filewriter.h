@@ -13,7 +13,7 @@ public:
     ~FileWriter();
 
     // Create a file which can be visualized using vtrajectory.py
-    void CreateVisualizationFile(const double &control_frequency, const Asteroid &asteroid, const std::vector<Vector3D> &positions, const std::vector<Vector3D> &heights);
+    void CreateTrajectoryFile(const double &control_frequency, const Asteroid &asteroid, const std::vector<Vector3D> &positions, const std::vector<Vector3D> &heights);
 
     // Create a file which can be used to train e.g., an autoencoder: The file will contain the stream of sensor data readings produced in a simulation
     void CreateSensorDataFile(const unsigned int &random_seed, const double &control_frequency, const double &simulation_time, const Asteroid &asteroid, const SystemState &system_state, const std::vector<SensorData> &sensor_data);

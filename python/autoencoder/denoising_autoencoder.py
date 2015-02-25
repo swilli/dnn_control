@@ -202,9 +202,7 @@ class DenoisingAutoencoder(object):
                 correctly as it only support float32 for now.
 
         """
-        return self.theano_rng.binomial(size=input.shape, n=1,
-                                        p=1 - corruption_level,
-                                        dtype=theano.config.floatX) * input
+        return input + input * self.theano_rng.normal(size=input.shape, avg=0.0, std=corruption_level)
 
     def _get_hidden_values(self, input):
         """ Computes the values of the hidden layer """

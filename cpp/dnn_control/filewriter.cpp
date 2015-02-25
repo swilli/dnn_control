@@ -10,7 +10,7 @@ FileWriter::~FileWriter() {
     file_.close();
 }
 
-void FileWriter::CreateVisualizationFile(const double &control_frequency, const Asteroid &asteroid, const std::vector<Vector3D> &positions, const std::vector<Vector3D> &heights) {
+void FileWriter::CreateTrajectoryFile(const double &control_frequency, const Asteroid &asteroid, const std::vector<Vector3D> &positions, const std::vector<Vector3D> &heights) {
     const Vector3D semi_axis = asteroid.SemiAxis();
     const Vector2D angular_velocity_xz = asteroid.ConstructorAngularVelocitiesXZ();
 

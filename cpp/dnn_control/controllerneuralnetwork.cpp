@@ -4,11 +4,7 @@
 #if PGMOS_ENABLE_ODOMETRY
 const unsigned int ControllerNeuralNetwork::kDimensions = 6;
 #else
-#if PGMOS_ENABLE_ACCELEROMETER
-const unsigned int ControllerNeuralNetwork::kDimensions = 7;
-#else
-const unsigned int ControllerNeuralNetwork::kDimensions = 3;
-#endif
+const unsigned int ControllerNeuralNetwork::kDimensions = PGMOS_ENABLE_OPTICAL_FLOW * 3 + PGMOS_ENABLE_DIRECTION_SENSOR * 3 + PGMOS_ENABLE_ACCELEROMETER * 3;
 #endif
 
 ControllerNeuralNetwork::ControllerNeuralNetwork(const double &maximum_thrust, const unsigned int &num_hidden)

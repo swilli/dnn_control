@@ -11,7 +11,7 @@ from random import sample
 from denoising_autoencoder import DenoisingAutoencoder
 
 learning_rate = 0.1
-training_epochs = 50
+training_epochs = 5000
 batch_size = 20
 num_hidden_nodes = 15
 num_visible_size = 15

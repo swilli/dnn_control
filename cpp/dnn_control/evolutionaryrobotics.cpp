@@ -232,7 +232,7 @@ void TestNeuralNetworkController(const unsigned int &random_seed) {
 
     std::cout << "Writing visualization file ... ";
     FileWriter writer_visualization(PATH_TO_NEURO_TRAJECTORY_FILE);
-    writer_visualization.CreateVisualizationFile(simulation.ControlFrequency(), simulation.AsteroidOfSystem(), positions, heights);
+    writer_visualization.CreateTrajectoryFile(simulation.ControlFrequency(), simulation.AsteroidOfSystem(), positions, heights);
     std::cout << "done." << std::endl;
 
     std::cout << "Writing evaluation file ... ";
@@ -281,7 +281,7 @@ void TestProportionalDerivativeController(const unsigned int &random_seed) {
 
     std::cout << "Writing visualization file ... ";
     FileWriter writer_visualization(PATH_TO_FULL_STATE_TRAJECTORY_FILE);
-    writer_visualization.CreateVisualizationFile(simulation.ControlFrequency(), simulation.AsteroidOfSystem(), positions, heights);
+    writer_visualization.CreateTrajectoryFile(simulation.ControlFrequency(), simulation.AsteroidOfSystem(), positions, heights);
     std::cout << "done." << std::endl;
 
     std::cout << "Writing evaluation file ... ";

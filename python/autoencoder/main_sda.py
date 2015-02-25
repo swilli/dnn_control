@@ -3,15 +3,18 @@ import os
 from time import clock
 from sensor_data_loader import load_sensor_files
 from stacked_denoising_autoencoder import StackedDenoisingAutoencoder
+from numpy.linalg import norm
+from random import sample
 
-pretraining_epochs = 50
-pretraining_learning_rate = 0.1
+pretraining_epochs = 5000
+pretraining_learning_rate = 0.05
 batch_size = 100
-num_hidden_nodes = 10
-corruption_level = 0.0
-data_path = "/home/willist/Documents/data/"
+input_size = 18
+hidden_layer_sizes = [6, 3]
+corruption_levels = [0.05, 0.001]
+data_path = "/home/willist/Documents/dnn/data/"
 
-training_set = load_sensor_files(data_path)
+training_set, test_set = load_sensor_files(data_path)
 
 # compute number of minibatches for training, validation and testing
 n_train_batches = training_set.get_value(borrow=True).shape[0]
@@ -26,11 +29,9 @@ print '... building the model'
 
 sda = StackedDenoisingAutoencoder(
         numpy_rng=numpy_rng,
-        n_ins=81,
-        hidden_layers_sizes=[40, 20],
-        n_outs=5)
+        n_ins=input_size,
+        hidden_layers_sizes=hidden_layer_sizes)
 
-corruption_levels = [.1, .2]
 
     # end-snippet-3 start-snippet-4
     #########################
@@ -59,87 +60,17 @@ end_time = clock()
 
 print 'The pretraining code for file ' + os.path.split(__file__)[1] + ' ran for %.2fm' % ((end_time - start_time) / 60.)
 
-# end-snippet-4
-########################
-# FINETUNING THE MODEL #
-########################
+samples = training_set.get_value(borrow=True)
+num_test_samples = 1000
+test_samples = sample(test_set.get_value(borrow=True), num_test_samples)
+mean_error = 0.0
+num_tests = 0
+for sample in test_samples:
+    s_corrupt = sda.corrupt(sample)
+    s_compr = sda.compress(s_corrupt)
+    s_decompr = sda.decompress(s_compr)
+    mean_error += norm(sample - s_decompr)
+    num_tests += 1
+    print(mean_error / num_tests)
 
-# get the training, validation and testing function for the model
-print '... getting the finetuning functions'
-train_fn, validate_model, test_model = sda.build_finetune_functions(
-    datasets=datasets,
-    batch_size=batch_size,
-    learning_rate=finetune_lr
-)
-
-print '... finetunning the model'
-# early-stopping parameters
-patience = 10 * n_train_batches  # look as this many examples regardless
-patience_increase = 2.  # wait this much longer when a new best is
-                        # found
-improvement_threshold = 0.995  # a relative improvement of this much is
-                               # considered significant
-validation_frequency = min(n_train_batches, patience / 2)
-                              # go through this many
-                              # minibatche before checking the network
-                              # on the validation set; in this case we
-                              # check every epoch
-
-best_validation_loss = numpy.inf
-test_score = 0.
-start_time = time.clock()
-
-done_looping = False
-epoch = 0
-
-while (epoch < training_epochs) and (not done_looping):
-    epoch = epoch + 1
-    for minibatch_index in xrange(n_train_batches):
-        minibatch_avg_cost = train_fn(minibatch_index)
-        iter = (epoch - 1) * n_train_batches + minibatch_index
-
-        if (iter + 1) % validation_frequency == 0:
-            validation_losses = validate_model()
-            this_validation_loss = numpy.mean(validation_losses)
-            print('epoch %i, minibatch %i/%i, validation error %f %%' %
-                  (epoch, minibatch_index + 1, n_train_batches,
-                   this_validation_loss * 100.))
-
-            # if we got the best validation score until now
-            if this_validation_loss < best_validation_loss:
-
-                #improve patience if loss improvement is good enough
-                if (
-                    this_validation_loss < best_validation_loss *
-                    improvement_threshold
-                ):
-                    patience = max(patience, iter * patience_increase)
-
-                # save best validation score and iteration number
-                best_validation_loss = this_validation_loss
-                best_iter = iter
-
-                # test it on the test set
-                test_losses = test_model()
-                test_score = numpy.mean(test_losses)
-                print(('     epoch %i, minibatch %i/%i, test error of '
-                       'best model %f %%') %
-                      (epoch, minibatch_index + 1, n_train_batches,
-                       test_score * 100.))
-
-        if patience <= iter:
-            done_looping = True
-            break
-
-end_time = time.clock()
-print(
-    (
-        'Optimization complete with best validation score of %f %%, '
-        'on iteration %i, '
-        'with test performance %f %%'
-    )
-    % (best_validation_loss * 100., best_iter + 1, test_score * 100.)
-)
-print >> sys.stderr, ('The training code for file ' +
-                      os.path.split(__file__)[1] +
-                      ' ran for %.2fm' % ((end_time - start_time) / 60.))
+print mean_error / num_test_samples

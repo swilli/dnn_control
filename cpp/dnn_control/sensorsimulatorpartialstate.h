@@ -2,6 +2,7 @@
 #define SENSORSIMULATORPARTIALSTATE_H
 
 #include "sensorsimulator.h"
+#include "configuration.h"
 
 class SensorSimulatorPartialState : public SensorSimulator {
 	/*
@@ -23,8 +24,9 @@ public:
     class RangeMalConfigurationException : public Exception {};
 
 private:
-    // Sensor data values will be normalized between [0,1] by dividing them by the maximum range
-    std::vector<double> sensor_maximum_absolute_ranges_;
+#if PGMOS_ENABLE_DIRECTION_SENSOR
+    Vector3D surface_point_;
+#endif
 };
 
 #endif // SENSORSIMULATORPARTIALSTATE_H

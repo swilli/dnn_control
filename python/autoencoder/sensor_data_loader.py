@@ -28,19 +28,25 @@ def load_sensor_file(file_path):
     return shared_data_set
 
 
-def load_sensor_files(data_path, num_samples=100000, shared=True):
+def load_sensor_files(data_path, num_training_samples=100000, num_test_samples=10000, shared=True):
     from numpy import array
     from os import listdir
     from random import sample
+    from random import shuffle
 
     file_names = listdir(data_path)
-    file_names = sample(file_names, len(file_names) / 2)
-    file_names = sorted(file_names)
-    file_paths = [data_path + name for name in file_names]
+    file_names = [name for name in file_names if "trajectory" not in name]
+    training_file_names = sample(file_names, len(file_names) / 2)
+    shuffle(training_file_names)
+    test_file_names = [file_name for file_name in file_names if file_name not in training_file_names]
+    shuffle(test_file_names)
 
-    total_data_set = []
-    for file_path in file_paths:
-        print '... loading data ' + file_path
+    training_file_paths = [data_path + name for name in training_file_names]
+    test_file_paths = [data_path + name for name in test_file_names]
+
+    total_training_set = []
+    for file_path in training_file_paths:
+        print '... loading training data ' + file_path
         sensor_data_file = open(file_path, 'r')
         lines = sensor_data_file.readlines()
         sensor_data_file.close()
@@ -48,14 +54,30 @@ def load_sensor_files(data_path, num_samples=100000, shared=True):
         lines = lines[:len(lines)/10]
         data_set = [line.split(',') for line in lines]
         data_set = [[float(value) for value in data_line] for data_line in data_set]
-        total_data_set = total_data_set + data_set
-        if len(total_data_set) >= num_samples:
+        total_training_set = total_training_set + data_set
+        if len(total_training_set) >= num_training_samples:
             break
 
-    total_data_set = array(total_data_set[:num_samples])
+    total_test_set = []
+    for file_path in test_file_paths:
+        print '... loading test data ' + file_path
+        sensor_data_file = open(file_path, 'r')
+        lines = sensor_data_file.readlines()
+        sensor_data_file.close()
+        lines = [line for line in lines if not line.startswith("#")]
+        lines = sample(lines, 500)
+        data_set = [line.split(',') for line in lines]
+        data_set = [[float(value) for value in data_line] for data_line in data_set]
+        total_test_set = total_test_set + data_set
+        if len(total_test_set) >= num_test_samples:
+            break
+
+    total_training_set = array(total_training_set[:num_training_samples])
+    total_test_set = array(total_test_set[:num_test_samples])
 
     if shared:
-        total_data_set = shared_dataset(total_data_set)
+        total_training_set = shared_dataset(total_training_set)
+        total_test_set = shared_dataset(total_test_set)
 
-    return total_data_set
+    return total_training_set, total_test_set
 

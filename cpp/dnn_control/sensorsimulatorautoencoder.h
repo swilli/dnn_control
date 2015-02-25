@@ -30,9 +30,6 @@ private:
     // The number of calls to Simulate since the last call to Reset or construction
     unsigned int num_simulations_;
 
-    // Sensor data values will be normalized between [0,1] by dividing them by the maximum range
-    std::vector<double> sensor_maximum_absolute_ranges_;
-
     // The history of sensor data values
     std::vector<double> sensor_values_cache_;
 };

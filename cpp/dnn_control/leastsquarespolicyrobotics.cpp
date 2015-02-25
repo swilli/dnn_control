@@ -400,7 +400,7 @@ void TestLeastSquaresPolicyController(const unsigned int &random_seed) {
 
     std::cout << "Writing visualization file ... ";
     FileWriter writer_visualization(PATH_TO_LSPI_TRAJECTORY_FILE);
-    writer_visualization.CreateVisualizationFile(simulator.ControlFrequency(), simulator.AsteroidOfSystem(), positions, heights);
+    writer_visualization.CreateTrajectoryFile(simulator.ControlFrequency(), simulator.AsteroidOfSystem(), positions, heights);
     std::cout << "done." << std::endl;
 
     std::cout << "Writing evaluation file ... ";

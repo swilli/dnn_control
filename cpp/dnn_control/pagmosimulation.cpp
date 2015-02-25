@@ -53,7 +53,7 @@ double PaGMOSimulation::SimulationTime() const {
     return simulation_time_;
 }
 
-std::vector<SensorData> PaGMOSimulation::GenerateSensorDataSet() {
+boost::tuple<std::vector<SensorData>, std::vector<Vector3D>, std::vector<Vector3D> > PaGMOSimulation::GenerateSensorDataSet() {
     typedef odeint::runge_kutta_cash_karp54<SystemState> ErrorStepper;
     typedef odeint::modified_controlled_runge_kutta<ErrorStepper> ControlledStepper;
 
@@ -63,7 +63,10 @@ std::vector<SensorData> PaGMOSimulation::GenerateSensorDataSet() {
     SensorSimulatorAutoencoder sensor_simulator(sf_sensor_simulator, asteroid_);
 
     const unsigned int num_iterations = simulation_time_ * control_frequency_;
+
     std::vector<SensorData> evaluated_sensor_values(num_iterations + 1);
+    std::vector<Vector3D> evaluated_positions(num_iterations + 1);
+    std::vector<Vector3D> evaluated_heights(num_iterations + 1);
 
     SystemState system_state(initial_system_state_);
 
@@ -87,7 +90,9 @@ std::vector<SensorData> PaGMOSimulation::GenerateSensorDataSet() {
                 perturbations_acceleration[i] = sample_factory.SampleNormal(perturbation_mean_, perturbation_noise_);
             }
 
-            evaluated_sensor_values[iteration] = sensor_simulator.Simulate(system_state, height, perturbations_acceleration, current_time);
+            evaluated_sensor_values.at(iteration) = sensor_simulator.Simulate(system_state, height, perturbations_acceleration, current_time);
+            evaluated_positions.at(iteration) = position;
+            evaluated_heights.at(iteration) = height;
 
             const double engine_noise = sample_factory.SampleNormal(0.0, spacecraft_engine_noise_);
 
@@ -106,17 +111,21 @@ std::vector<SensorData> PaGMOSimulation::GenerateSensorDataSet() {
         exception_thrown = true;
     }
     if (exception_thrown) {
-        evaluated_sensor_values.resize(iteration + 1);
-    } else {
-        const Vector3D &position = {system_state[0], system_state[1], system_state[2]};
-
-        const Vector3D surf_pos = boost::get<0>(asteroid_.NearestPointOnSurfaceToPosition(position));
-        const Vector3D &height = {position[0] - surf_pos[0], position[1] - surf_pos[1], position[2] - surf_pos[2]};
-
-        evaluated_sensor_values.back() = sensor_simulator.Simulate(system_state, height, perturbations_acceleration, current_time_observer);
+        const unsigned int new_size = iteration + 2;
+        evaluated_sensor_values.resize(new_size);
+        evaluated_positions.resize(new_size);
+        evaluated_heights.resize(new_size);
     }
+    const Vector3D &position = {system_state[0], system_state[1], system_state[2]};
 
-    return evaluated_sensor_values;
+    const Vector3D surf_pos = boost::get<0>(asteroid_.NearestPointOnSurfaceToPosition(position));
+    const Vector3D &height = {position[0] - surf_pos[0], position[1] - surf_pos[1], position[2] - surf_pos[2]};
+
+    evaluated_sensor_values.back() = sensor_simulator.Simulate(system_state, height, perturbations_acceleration, current_time_observer);
+    evaluated_positions.back() = position;
+    evaluated_heights.back() = height;
+
+    return boost::make_tuple(evaluated_sensor_values, evaluated_positions, evaluated_heights);
 }
 
 Vector3D PaGMOSimulation::TargetPosition() const {
@@ -172,13 +181,33 @@ void PaGMOSimulation::Init() {
 
     const double norm_position = VectorNorm(spacecraft_position);
     const double magn_orbital_vel = sqrt(asteroid_.MassGravitationalConstant() / norm_position);
-    Vector3D orth_pos = {sample_factory.SampleSign(), sample_factory.SampleSign(),  sample_factory.SampleSign()};
+    Vector3D orth_pos = {sample_factory.SampleSign() * sample_factory.SampleUniform(1e-10, 1.0), sample_factory.SampleSign() * sample_factory.SampleUniform(1e-10, 1.0), sample_factory.SampleSign() * sample_factory.SampleUniform(1e-10, 1.0)};
+
+    std::vector<unsigned int> choices;
     if (spacecraft_position[2] > 1.0 || spacecraft_position[2] < -1.0) {
+        choices.push_back(0);
+    }
+    if (spacecraft_position[1] > 1.0 || spacecraft_position[1] < -1.0) {
+        choices.push_back(1);
+    }
+    if (spacecraft_position[0] > 1.0 || spacecraft_position[0] < -1.0) {
+        choices.push_back(2);
+    }
+    if (choices.size() == 0) {
+        std::cout << "WOW... WTF... " << random_seed_ << std::endl;
+        exit(0);
+    }
+    const unsigned int choice = choices.at(sample_factory.SampleRandomInteger() % choices.size());
+    switch (choice) {
+        case 0:
         orth_pos[2] = -(orth_pos[0]*spacecraft_position[0] + orth_pos[1]*spacecraft_position[1]) / spacecraft_position[2];
-    } else if (spacecraft_position[1] > 1.0 || spacecraft_position[1] < -1.0) {
+        break;
+    case 1:
         orth_pos[1] = -(orth_pos[0]*spacecraft_position[0] + orth_pos[2]*spacecraft_position[2]) / spacecraft_position[1];
-    } else {
+        break;
+    case 2:
         orth_pos[0] = -(orth_pos[1]*spacecraft_position[1] + orth_pos[2]*spacecraft_position[2]) / spacecraft_position[0];
+        break;
     }
     const double coef_norm_orth_pos = 1.0 / VectorNorm(orth_pos);
     for (unsigned int i = 0; i < 3; ++i) {

@@ -25,8 +25,8 @@ public:
     // Returns the number of parameters the controller has. 
     virtual unsigned int ChromosomeSize() const = 0;
 
-    // Simulates the configured simulation, returns the resulting sensor data stream
-    virtual std::vector<SensorData> GenerateSensorDataSet();
+    // Simulates the configured simulation without a controller, returns the resulting sensor data stream, positions and heights
+    virtual boost::tuple<std::vector<SensorData>, std::vector<Vector3D>, std::vector<Vector3D> > GenerateSensorDataSet();
 
     // Returns the target position, the spacecraft should stay at
     Vector3D TargetPosition() const;
