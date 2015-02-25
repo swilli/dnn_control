@@ -1,4 +1,5 @@
 #include "controllerneuralnetwork.h"
+#include "constants.h"
 #include "configuration.h"
 
 #if PGMOS_ENABLE_ODOMETRY
@@ -7,17 +8,17 @@ const unsigned int ControllerNeuralNetwork::kDimensions = 6;
 #if PGMOS_ENABLE_ACCELEROMETER
 const unsigned int ControllerNeuralNetwork::kDimensions = 7;
 #else
-const unsigned int ControllerNeuralNetwork::kDimensions = 3;
+const unsigned int ControllerNeuralNetwork::kDimensions = 4;
 #endif
 #endif
 
 ControllerNeuralNetwork::ControllerNeuralNetwork(const double &maximum_thrust, const unsigned int &num_hidden)
-    : Controller(kDimensions, maximum_thrust), neural_network_({std::make_pair(kDimensions, true), std::make_pair(num_hidden, true), std::make_pair(4, false)}, NeuralNetwork::ActivationFunctionType::Sigmoid) {
+    : Controller(kDimensions, maximum_thrust), neural_network_({std::make_pair(kDimensions, true), std::make_pair(num_hidden, true), std::make_pair(3, false)}, NeuralNetwork::ActivationFunctionType::Sigmoid) {
     number_of_parameters_ = neural_network_.Size();
 }
 
 ControllerNeuralNetwork::ControllerNeuralNetwork(const double &maximum_thrust, const unsigned int &num_hidden, const std::vector<double> &weights)
-    : Controller(kDimensions, maximum_thrust), neural_network_({std::make_pair(kDimensions, true), std::make_pair(num_hidden, true), std::make_pair(4, false)}, NeuralNetwork::ActivationFunctionType::Sigmoid) {
+    : Controller(kDimensions, maximum_thrust), neural_network_({std::make_pair(kDimensions, true), std::make_pair(num_hidden, true), std::make_pair(3, false)}, NeuralNetwork::ActivationFunctionType::Sigmoid) {
     number_of_parameters_ = neural_network_.Size();
     SetWeights(weights);
 }
@@ -35,18 +36,13 @@ void ControllerNeuralNetwork::SetWeights(const std::vector<double> &weights) {
 }
 
 Vector3D ControllerNeuralNetwork::GetThrustForSensorData(const SensorData &sensor_data) {
-    const std::vector<double> direction_magnitude = neural_network_.Evaluate(sensor_data);
-    Vector3D direction = {direction_magnitude[0] - 0.5, direction_magnitude[1] - 0.5, direction_magnitude[2] - 0.5};
-    const double magnitude = direction_magnitude[3] * maximum_thrust_;
-    const double norm_direction = VectorNorm(direction);
+    const std::vector<double> normalized_u_v_t = neural_network_.Evaluate(sensor_data);
     Vector3D thrust;
-    if (norm_direction) {
-        const double coef_norm= 1.0 / norm_direction;
-        for (unsigned int i = 0; i < 3; ++i) {
-            thrust[i] = direction[i] * coef_norm * magnitude;
-        }
-    } else {
-        thrust = {0.0, 0.0, 0.0};
-    }
+    const double u = 2.0 * kPi * normalized_u_v_t[0];
+    const double v = acos(2.0 * normalized_u_v_t[1] - 1.0);
+    const double t = normalized_u_v_t[2];
+    thrust[0] = cos(u) * sin(v) * t;
+    thrust[1] = sin(u) * sin(v) * t;
+    thrust[2] = cos(v) * t;
     return thrust;
 }
