@@ -23,11 +23,11 @@ int main(int argc, char *argv[]) {
     //TestLeastSquaresPolicyController(9782);
     //return 0;
 
-    TrainNeuralNetworkController();
-    return 0;
-
-    //TrainProportionalDerivativeController();
+    //TrainNeuralNetworkController();
     //return 0;
+
+    TrainProportionalDerivativeController();
+    return 0;
 
     //TrainLeastSquaresPolicyController();
     //return 0;

@@ -1,4 +1,5 @@
 #include "controllerneuralnetwork.h"
+#include "constants.h"
 #include "configuration.h"
 
 #if PGMOS_ENABLE_ODOMETRY
@@ -7,7 +8,7 @@ const unsigned int ControllerNeuralNetwork::kDimensions = 6;
 #if PGMOS_ENABLE_ACCELEROMETER
 const unsigned int ControllerNeuralNetwork::kDimensions = 7;
 #else
-const unsigned int ControllerNeuralNetwork::kDimensions = 3;
+const unsigned int ControllerNeuralNetwork::kDimensions = 4;
 #endif
 #endif
 
@@ -35,10 +36,14 @@ void ControllerNeuralNetwork::SetWeights(const std::vector<double> &weights) {
 }
 
 Vector3D ControllerNeuralNetwork::GetThrustForSensorData(const SensorData &sensor_data) {
-    const std::vector<double> unscaled_thrust = neural_network_.Evaluate(sensor_data);
+    const std::vector<double> normalized_u_v_t = neural_network_.Evaluate(sensor_data);
+    const double u = 2.0 * kPi * normalized_u_v_t[0];
+    const double v = acos(2.0 * normalized_u_v_t[1] - 1.0);
+    const double t = normalized_u_v_t[2] * maximum_thrust_;
+
     Vector3D thrust;
-    for (unsigned int i = 0; i < 3; ++i) {
-        thrust[i] = (unscaled_thrust[i] - 0.5) * maximum_thrust_;
-    }
+    thrust[0] = cos(u) * sin(v) * t;
+    thrust[1] = sin(u) * sin(v) * t;
+    thrust[2] = cos(v) * t;
     return thrust;
 }

@@ -5,7 +5,7 @@
 #if PGMOS_ENABLE_ACCELEROMETER
 const unsigned int SensorSimulatorNeuralNetwork::kDimensions = 7;
 #else
-const unsigned int SensorSimulatorPartialState::kDimensions = 3;
+const unsigned int SensorSimulatorPartialState::kDimensions = 4;
 #endif
 
 SensorSimulatorPartialState::SensorSimulatorPartialState(SampleFactory &sample_factory, const Asteroid &asteroid)
@@ -14,7 +14,7 @@ SensorSimulatorPartialState::SensorSimulatorPartialState(SampleFactory &sample_f
 #if PGMOS_ENABLE_ACCELEROMETER
     sensor_maximum_absolute_ranges_ = {1e-4, 1e-4, 1e-4, 0.025, 0.025, 0.025, 0.025};
 #else
-    sensor_maximum_absolute_ranges_ = {1e-4, 1e-4, 1e-4}; //1e-4, 1e-4, 1e-4};
+    sensor_maximum_absolute_ranges_ = {1e-4, 1e-4, 1e-4, 1e-4}; //1e-4, 1e-4, 1e-4};
 #endif
 
     if (sensor_maximum_absolute_ranges_.size() != dimensions_) {
@@ -35,11 +35,11 @@ SensorData SensorSimulatorPartialState::Simulate(const SystemState &state, const
 
     const Vector3D &velocity = {state[3], state[4], state[5]};
 
-    const double coef_height = 1.0 / (VectorNorm(height) * (1.0 / root_three));
+    const double coef_height = 1.0; // / (VectorNorm(height) * (1.0 / root_three));
     sensor_data[0] = velocity[0] * coef_height;
     sensor_data[1] = velocity[1] * coef_height;
     sensor_data[2] = velocity[2] * coef_height;
-
+    sensor_data[3] = VectorNorm(velocity);
     return sensor_data;
 
     /*
