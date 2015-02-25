@@ -11,8 +11,8 @@
 int main(int argc, char *argv[]) {
     srand(time(0));
 
-    TestNeuralNetworkController(0);
-    return 0;
+    //TestNeuralNetworkController(0);
+    //return 0;
 
     //TestFullStateController(0);
     //return 0;
@@ -26,8 +26,8 @@ int main(int argc, char *argv[]) {
     //TrainNeuralNetworkController();
     //return 0;
 
-    //TrainProportionalDerivativeController();
-    //return 0;
+    TrainProportionalDerivativeController();
+    return 0;
 
     //TrainLeastSquaresPolicyController();
     //return 0;
