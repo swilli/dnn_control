@@ -1,19 +1,23 @@
 #include "feedforwardneuralnetwork.h"
 #include <cmath>
 
-FeedForwardNeuralNetwork::FeedForwardNeuralNetwork(const std::vector<std::pair<unsigned int, bool> > &layer_configurations, const ActivationFunctionType &function_type )
-    : NeuralNetwork(), activation_function_type_(function_type), layer_configurations_(layer_configurations) {
+FeedForwardNeuralNetwork::FeedForwardNeuralNetwork(const unsigned int &dimension_input_layer, const bool &input_layer_enable_bias, const std::vector<boost::tuple<unsigned int, bool, ActivationFunctionType> > &layer_configurations)
+    : NeuralNetwork(), dimension_input_layer_(dimension_input_layer), input_layer_enable_bias_(input_layer_enable_bias), layer_configurations_(layer_configurations) {
 
     unsigned int total_size = 0;
 
-    for (unsigned int i = 1; i < layer_configurations.size(); ++i) {
-        unsigned int layer_size = 0;
-        if (layer_configurations.at(i-1).second) {
-            layer_size = (layer_configurations.at(i-1).first + 1) * layer_configurations.at(i).first;
+    unsigned int layer_size = 0;
+    unsigned int bias = input_layer_enable_bias_;
 
-        } else {
-            layer_size = layer_configurations.at(i-1).first * layer_configurations.at(i).first;
-        }
+    layer_size = (dimension_input_layer_ + bias) * boost::get<0>(layer_configurations_.at(0));
+
+    layer_weights_.push_back(std::vector<double>(layer_size));
+    total_size += layer_size;
+
+    for (unsigned int i = 1; i < layer_configurations_.size(); ++i) {
+        layer_size = 0;
+        bias = boost::get<1>(layer_configurations_.at(i-1));
+        layer_size = (boost::get<0>(layer_configurations_.at(i-1)) + bias) * boost::get<0>(layer_configurations_.at(i));
         layer_weights_.push_back(std::vector<double>(layer_size));
         total_size += layer_size;
     }
@@ -42,32 +46,32 @@ void FeedForwardNeuralNetwork::SetWeights(const std::vector<double> &weights) {
 std::vector<double> FeedForwardNeuralNetwork::Evaluate(const std::vector<double> &input) {
 
     std::vector<double> layer_input(input);
+    unsigned int bias = input_layer_enable_bias_;
+    unsigned int dim_input = dimension_input_layer_;
 
-    for (unsigned int layer_index = 0; layer_index < layer_weights_.size(); layer_index++) {
-        const std::pair<unsigned int, bool> &layer_conf = layer_configurations_.at(layer_index);
-        const std::pair<unsigned int, bool> &next_layer_conf = layer_configurations_.at(layer_index + 1);
+    for (unsigned int layer_index = 0; layer_index < layer_configurations_.size(); layer_index++) {
+        const boost::tuple<unsigned int, bool, ActivationFunctionType> &next_layer_conf = layer_configurations_.at(layer_index);
         const std::vector<double> &layer_weights = layer_weights_.at(layer_index);
 
-        const unsigned int bias = layer_conf.second;
-        const unsigned int dim_input = layer_conf.first + bias;
-        const unsigned int dim_output = next_layer_conf.first;
+        const unsigned int dim_output = boost::get<0>(next_layer_conf);
+        const ActivationFunctionType function_type = boost::get<2>(next_layer_conf);
         std::vector<double> layer_output(dim_output, 0.0);
 
         for (unsigned int i = 0; i < dim_output; ++i) {
 
             // Add bias
-            if (layer_conf.second) {
-                layer_output[i] = layer_weights[i * dim_input];
+            if (bias == 1) {
+                layer_output[i] = layer_weights[i * (dim_input + bias)];
             }
 
             // Add weighted input
-            for (unsigned int j = 0; j < layer_conf.first; ++j) {
-                const unsigned int ji = i * dim_input + j + bias;
+            for (unsigned int j = 0; j < dim_input; ++j) {
+                const unsigned int ji = i * (dim_input + bias) + j + bias;
                 layer_output[i] += layer_weights[ji] * layer_input[j];
             }
 
             // Activation function
-            switch (activation_function_type_) {
+            switch (function_type) {
             case ActivationFunctionType::Linear:
                 // do nothing
                 break;
@@ -78,6 +82,8 @@ std::vector<double> FeedForwardNeuralNetwork::Evaluate(const std::vector<double>
         }
 
         layer_input = layer_output;
+        dim_input = dim_output;
+        bias = boost::get<1>(next_layer_conf);
     }
 
     return layer_input;
