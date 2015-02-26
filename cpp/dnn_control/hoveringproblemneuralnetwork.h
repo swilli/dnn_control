@@ -18,7 +18,6 @@ public:
 
     hovering_problem_neural_network(const hovering_problem_neural_network &other);
 
-    ~hovering_problem_neural_network();
 
     // Perform multiple evaluations with a solution on the problem, returns the seeds used, the mean, min and max error for each simulation.
     boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<std::pair<double, double> > > post_evaluate(const decision_vector &x, const unsigned int &start_seed=0, const std::vector<unsigned int> &random_seeds=std::vector<unsigned int>()) const;

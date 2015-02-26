@@ -15,7 +15,6 @@ public:
 
     SensorSimulatorPartialState(SampleFactory &sample_factory, const Asteroid &asteroid);
 
-    virtual ~SensorSimulatorPartialState();
 
     // Generates (simulates) sensor data based on the current spacecraft state "state" and time "time"
     virtual SensorData Simulate(const SystemState &state, const Vector3D &height, const Vector3D &perturbations_acceleration, const double &time);

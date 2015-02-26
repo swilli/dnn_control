@@ -199,10 +199,6 @@ boost::tuple<double, double, double> hovering_problem_proportional_derivative::s
     return boost::make_tuple(mean_error, min_error, max_error);
 }
 
-hovering_problem_proportional_derivative::~hovering_problem_proportional_derivative() {
-
-}
-
 boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<std::pair<double, double> > > hovering_problem_proportional_derivative::post_evaluate(const decision_vector &x, const unsigned int &start_seed, const std::vector<unsigned int> &random_seeds) const {
     unsigned int num_tests = random_seeds.size();
     std::vector<unsigned int> used_random_seeds;

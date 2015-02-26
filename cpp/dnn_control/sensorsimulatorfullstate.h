@@ -14,7 +14,6 @@ public:
 
     SensorSimulatorFullState(SampleFactory &sample_factory, const Asteroid &asteroid, const Vector3D &target_position);
 
-    virtual ~SensorSimulatorFullState();
 
     // Generates (simulates) sensor data based on the current spacecraft state "state" and time "time"
     virtual SensorData Simulate(const SystemState &state, const Vector3D  &, const Vector3D &, const double &time);

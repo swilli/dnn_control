@@ -12,7 +12,7 @@ class SampleFactory {
 public:
     SampleFactory();
     SampleFactory(const unsigned int &seed);
-    ~SampleFactory();
+
 
     // X ~ U(N) 
     unsigned int SampleRandomInteger();

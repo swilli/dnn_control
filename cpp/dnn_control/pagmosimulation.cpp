@@ -3,10 +3,8 @@
 #include "odeint.h"
 #include "modifiedcontrolledrungekutta.h"
 #include "odesystem.h"
+#include "trainingdatagenerator.h"
 #include "configuration.h"
-
-// Include here sensor simulator for which you want to produce sensor data
-#include "sensorsimulatorautoencoder.h"
 
 PaGMOSimulation::PaGMOSimulation(const unsigned int &random_seed, const double &simulation_time)
     : random_seed_(random_seed), simulation_time_(simulation_time) {
@@ -53,18 +51,19 @@ double PaGMOSimulation::SimulationTime() const {
     return simulation_time_;
 }
 
-boost::tuple<std::vector<SensorData>, std::vector<Vector3D>, std::vector<Vector3D> > PaGMOSimulation::GenerateSensorDataSet() {
+boost::tuple<std::vector<std::vector<double> >, std::vector<std::vector<double> >, std::vector<Vector3D>, std::vector<Vector3D> > PaGMOSimulation::GenerateSensorDataSet() {
     typedef odeint::runge_kutta_cash_karp54<SystemState> ErrorStepper;
     typedef odeint::modified_controlled_runge_kutta<ErrorStepper> ControlledStepper;
 
     SampleFactory sample_factory(random_seed_);
     SampleFactory sf_sensor_simulator(sample_factory.SampleRandomInteger());
 
-    SensorSimulatorAutoencoder sensor_simulator(sf_sensor_simulator, asteroid_);
+    TrainingDataGenerator training_data_generator(sf_sensor_simulator, asteroid_);
 
     const unsigned int num_iterations = simulation_time_ * control_frequency_;
 
-    std::vector<SensorData> evaluated_sensor_values(num_iterations + 1);
+    std::vector<std::vector<double> > evaluated_sensor_values(num_iterations + 1);
+    std::vector<std::vector<double> > evaluated_labels(num_iterations + 1);
     std::vector<Vector3D> evaluated_positions(num_iterations + 1);
     std::vector<Vector3D> evaluated_heights(num_iterations + 1);
 
@@ -90,7 +89,9 @@ boost::tuple<std::vector<SensorData>, std::vector<Vector3D>, std::vector<Vector3
                 perturbations_acceleration[i] = sample_factory.SampleNormal(perturbation_mean_, perturbation_noise_);
             }
 
-            evaluated_sensor_values.at(iteration) = sensor_simulator.Simulate(system_state, height, perturbations_acceleration, current_time);
+            boost::tuple<std::vector<double>, std::vector<double> > result = training_data_generator.Generate(system_state, height, perturbations_acceleration, current_time);
+            evaluated_sensor_values.at(iteration) = boost::get<0>(result);
+            evaluated_labels.at(iteration) = boost::get<1>(result);
             evaluated_positions.at(iteration) = position;
             evaluated_heights.at(iteration) = height;
 
@@ -113,6 +114,7 @@ boost::tuple<std::vector<SensorData>, std::vector<Vector3D>, std::vector<Vector3
     if (exception_thrown) {
         const unsigned int new_size = iteration + 2;
         evaluated_sensor_values.resize(new_size);
+        evaluated_labels.resize(new_size);
         evaluated_positions.resize(new_size);
         evaluated_heights.resize(new_size);
     }
@@ -121,11 +123,13 @@ boost::tuple<std::vector<SensorData>, std::vector<Vector3D>, std::vector<Vector3
     const Vector3D surf_pos = boost::get<0>(asteroid_.NearestPointOnSurfaceToPosition(position));
     const Vector3D &height = {position[0] - surf_pos[0], position[1] - surf_pos[1], position[2] - surf_pos[2]};
 
-    evaluated_sensor_values.back() = sensor_simulator.Simulate(system_state, height, perturbations_acceleration, current_time_observer);
+    boost::tuple<std::vector<double>, std::vector<double> > result = training_data_generator.Generate(system_state, height, perturbations_acceleration, current_time_observer);
+    evaluated_sensor_values.back() = boost::get<0>(result);
+    evaluated_labels.back() = boost::get<1>(result);
     evaluated_positions.back() = position;
     evaluated_heights.back() = height;
 
-    return boost::make_tuple(evaluated_sensor_values, evaluated_positions, evaluated_heights);
+    return boost::make_tuple(evaluated_sensor_values, evaluated_labels, evaluated_positions, evaluated_heights);
 }
 
 Vector3D PaGMOSimulation::TargetPosition() const {
@@ -195,7 +199,7 @@ void PaGMOSimulation::Init() {
     }
     if (choices.size() == 0) {
         std::cout << "WOW... WTF... " << random_seed_ << std::endl;
-        exit(0);
+        exit(1);
     }
     const unsigned int choice = choices.at(sample_factory.SampleRandomInteger() % choices.size());
     switch (choice) {

@@ -25,10 +25,6 @@ FeedForwardNeuralNetwork::FeedForwardNeuralNetwork(const unsigned int &dimension
     size_ = total_size;
 }
 
-FeedForwardNeuralNetwork::~FeedForwardNeuralNetwork() {
-
-}
-
 void FeedForwardNeuralNetwork::SetWeights(const std::vector<double> &weights) {
     if (size_ != weights.size()) {
         throw SizeMismatchException();

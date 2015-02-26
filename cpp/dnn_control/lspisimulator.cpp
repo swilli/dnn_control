@@ -26,10 +26,6 @@ LSPISimulator::LSPISimulator(const unsigned int &random_seed)
     perturbation_noise_ = 1e-7;
 }
 
-LSPISimulator::~LSPISimulator() {
-
-}
-
 boost::tuple<SystemState, double, bool> LSPISimulator::NextState(const SystemState &state, const double &time, const Vector3D &thrust) {
     typedef odeint::runge_kutta_cash_karp54<SystemState> ErrorStepper;
     typedef odeint::modified_controlled_runge_kutta<ErrorStepper> ControlledStepper;

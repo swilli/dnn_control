@@ -41,7 +41,7 @@
 #define PGMOS_IC_BODY_ZERO_VELOCITY          2
 #define PGMOS_IC_BODY_RANDOM_VELOCITY        3
 
-#define PGMOS_IC_VELOCITY_TYPE  PGMOS_IC_BODY_RANDOM_VELOCITY
+#define PGMOS_IC_VELOCITY_TYPE  PGMOS_IC_INERTIAL_ORBITAL_VELOCITY
 #define PGMOS_IC_POSITION_OFFSET_ENABLED    true
 #define PGMOS_ENABLE_ODOMETRY   false
 #define PGMOS_ENABLE_OPTICAL_FLOW   true
@@ -56,11 +56,11 @@
 #define SSFS_WITH_NOISE true
 
 
-// Class SensorSimulatorAutoencoder configs
-#define SSA_DATA_WITH_NOISE false
-#define SSA_DATA_DIMENSIONS  6
-#define SSA_DATA_MULTIPLIER  3
-#define SSA_DATA_HISTORY     0
+// Class TraingDataGenerator configs
+#define TDG_DATA_WITH_NOISE true
+#define TDG_DATA_DIMENSIONS  6
+#define TDG_DATA_MULTIPLIER  3
+#define TDG_DATA_HISTORY     0
 
 
 
@@ -111,6 +111,10 @@
 #define PGMOS_IC_POSITION_OFFSET_ENABLED false
 #endif
 
+#if TDG_DATA_HISTORY > 0
+#undef SSA_DATA_LABELED
+#define SSA_DATA_LABELED false
+#endif
 
 static inline std::string ToString(const bool &value) {
     return (value ? "true" : "false");
@@ -141,10 +145,10 @@ inline void ConfigurationPaGMO() {
     std::cout << "ODES_FUEL_ENABLED   " << ToString(ODES_FUEL_ENABLED) << std::endl;
     std::cout << "SSPS_WITH_NOISE   " << ToString(SSPS_WITH_NOISE) << std::endl;
     std::cout << "SSFS_WITH_NOISE   " << ToString(SSFS_WITH_NOISE) << std::endl;
-    std::cout << "SSA_DATA_WITH_NOISE   " << ToString(SSA_DATA_WITH_NOISE) << std::endl;
-    std::cout << "SSA_DATA_DIMENSIONS   " << SSA_DATA_DIMENSIONS << std::endl;
-    std::cout << "SSA_DATA_MULTIPLIER   " << SSA_DATA_MULTIPLIER << std::endl;
-    std::cout << "SSA_DATA_HISTORY   " << SSA_DATA_HISTORY << std::endl;
+    std::cout << "TDG_DATA_WITH_NOISE   " << ToString(TDG_DATA_WITH_NOISE) << std::endl;
+    std::cout << "TDG_DATA_DIMENSIONS   " << TDG_DATA_DIMENSIONS << std::endl;
+    std::cout << "TDG_DATA_MULTIPLIER   " << TDG_DATA_MULTIPLIER << std::endl;
+    std::cout << "TDG_DATA_HISTORY   " << TDG_DATA_HISTORY << std::endl;
     std::cout << std::endl;
 }
 

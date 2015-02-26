@@ -20,10 +20,6 @@ ODESystem::ODESystem(const ODESystem &other)
     engine_noise_ = other.engine_noise_;
 }
 
-ODESystem::~ODESystem() {
-
-}
-
 void ODESystem::operator ()(const SystemState &state, SystemState &d_state_dt, const double &time) {
     const double mass = state[6];
     // check if spacecraft is out of fuel

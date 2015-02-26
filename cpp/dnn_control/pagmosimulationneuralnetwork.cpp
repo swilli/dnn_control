@@ -30,10 +30,6 @@ PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &r
     simulation_parameters_ = neural_network_weights;
 }
 
-PaGMOSimulationNeuralNetwork::~PaGMOSimulationNeuralNetwork() {
-
-}
-
 boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > PaGMOSimulationNeuralNetwork::EvaluateAdaptive() {
     typedef odeint::runge_kutta_cash_karp54<SystemState> ErrorStepper;
     typedef odeint::modified_controlled_runge_kutta<ErrorStepper> ControlledStepper;

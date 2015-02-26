@@ -20,10 +20,6 @@ ControllerNeuralNetwork::ControllerNeuralNetwork(const double &maximum_thrust, c
     SetWeights(weights);
 }
 
-ControllerNeuralNetwork::~ControllerNeuralNetwork() {
-
-}
-
 void ControllerNeuralNetwork::SetWeights(const std::vector<double> &weights) {
     if (weights.size() == number_of_parameters_) {
         neural_network_.SetWeights(weights);

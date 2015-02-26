@@ -11,7 +11,6 @@ public:
     PaGMOSimulationProportionalDerivative(const unsigned int &random_seed, const double &simulation_time);
     PaGMOSimulationProportionalDerivative(const unsigned int &random_seed, const double &simulation_time, const std::vector<double> &pd_coefficients);
 
-    virtual ~PaGMOSimulationProportionalDerivative();
 
     // Simulates the configured simulation, used an adaptive integrator
     virtual boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > EvaluateAdaptive();

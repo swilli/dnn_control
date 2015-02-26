@@ -18,10 +18,6 @@ ControllerProportionalDerivative::ControllerProportionalDerivative(const double 
     SetCoefficients(pd_coefficients);
 }
 
-ControllerProportionalDerivative::~ControllerProportionalDerivative() {
-
-}
-
 void ControllerProportionalDerivative::SetCoefficients(const std::vector<double> &pd_coefficients) {
     if (pd_coefficients.size() == number_of_parameters_) {
         neural_network_.SetWeights(pd_coefficients);

@@ -17,8 +17,6 @@ public:
     ControllerProportionalDerivative(const double &maximum_thrust);
     ControllerProportionalDerivative(const double &maximum_thrust, const std::vector<double> &pd_coefficients);
 
-    virtual ~ControllerProportionalDerivative();
-
 
     // thrust = F(sensor_data), whereas F is a PD controller
     virtual Vector3D GetThrustForSensorData(const SensorData &sensor_data);

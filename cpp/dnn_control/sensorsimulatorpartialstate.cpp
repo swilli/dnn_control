@@ -21,10 +21,6 @@ SensorSimulatorPartialState::SensorSimulatorPartialState(SampleFactory &sample_f
 
 }
 
-SensorSimulatorPartialState::~SensorSimulatorPartialState() {
-
-}
-
 
 SensorData SensorSimulatorPartialState::Simulate(const SystemState &state, const Vector3D &height, const Vector3D &perturbations_acceleration, const double &time) {
     SensorData sensor_data(dimensions_, 0.0);

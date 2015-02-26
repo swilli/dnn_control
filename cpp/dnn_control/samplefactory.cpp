@@ -14,10 +14,6 @@ SampleFactory::SampleFactory(const unsigned int &random_seed) {
     normal_distribution_ = boost::random::normal_distribution<>(0.0, 1.0);
 }
 
-SampleFactory::~SampleFactory() {
-
-}
-
 unsigned int SampleFactory::SampleRandomInteger() {
     return generator_();
 }

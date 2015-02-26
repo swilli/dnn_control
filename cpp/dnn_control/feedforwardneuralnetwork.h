@@ -11,7 +11,7 @@ class FeedForwardNeuralNetwork : public NeuralNetwork {
 	*/
 public:
     FeedForwardNeuralNetwork(const unsigned int &dimension_input_layer, const bool &input_layer_enable_bias, const std::vector<boost::tuple<unsigned int, bool, ActivationFunctionType> > &layer_configurations);
-    virtual ~FeedForwardNeuralNetwork();
+
 
     // Evaluate input data by a forward pass through the network
     virtual std::vector<double> Evaluate(const std::vector<double> &input);

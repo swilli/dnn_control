@@ -4,7 +4,6 @@
 #include "vector.h"
 #include "asteroid.h"
 #include "systemstate.h"
-#include "sensorsimulator.h"
 
 #include <boost/tuple/tuple.hpp>
 
@@ -14,6 +13,7 @@ class PaGMOSimulation {
     */
 public:
     PaGMOSimulation(const unsigned int &random_seed, const double &simulation_time);
+
     virtual ~PaGMOSimulation();
 
     // Simulates the configured simulation, used an adaptive integrator
@@ -26,7 +26,7 @@ public:
     virtual unsigned int ChromosomeSize() const = 0;
 
     // Simulates the configured simulation without a controller, returns the resulting sensor data stream, positions and heights
-    virtual boost::tuple<std::vector<SensorData>, std::vector<Vector3D>, std::vector<Vector3D> > GenerateSensorDataSet();
+    virtual boost::tuple<std::vector<std::vector<double > >, std::vector<std::vector<double> >, std::vector<Vector3D>, std::vector<Vector3D> > GenerateSensorDataSet();
 
     // Returns the target position, the spacecraft should stay at
     Vector3D TargetPosition() const;

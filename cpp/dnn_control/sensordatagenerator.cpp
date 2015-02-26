@@ -19,10 +19,11 @@ void SensorDataGenerator::Generate(const unsigned int &num_datasets, const unsig
         PaGMOSimulationNeuralNetwork simulation(sample_factory.SampleRandomInteger(), data_set_time_);
 
         std::cout << "   running simulation ... ";
-        const boost::tuple<std::vector<SensorData>, std::vector<Vector3D>, std::vector<Vector3D> > result = simulation.GenerateSensorDataSet();
-        const std::vector<SensorData> &data_set = boost::get<0>(result);
-        const std::vector<Vector3D> &positions = boost::get<1>(result);
-        const std::vector<Vector3D> &heights = boost::get<2>(result);
+        const boost::tuple<std::vector<std::vector<double> >, std::vector<std::vector<double> >, std::vector<Vector3D>, std::vector<Vector3D> > result = simulation.GenerateSensorDataSet();
+        const std::vector<std::vector<double> > &data_set = boost::get<0>(result);
+        const std::vector<std::vector<double> > &labels = boost::get<1>(result);
+        const std::vector<Vector3D> &positions = boost::get<2>(result);
+        const std::vector<Vector3D> &heights = boost::get<3>(result);
         std::cout << "done." << std::endl;
 
         time_t raw_time;
@@ -52,7 +53,7 @@ void SensorDataGenerator::Generate(const unsigned int &num_datasets, const unsig
 
         std::cout << "   writing sensor data to file " << path_to_sensor_data_file << " ... ";
         FileWriter writer_sensor_data(path_to_sensor_data_file);
-        writer_sensor_data.CreateSensorDataFile(random_seed, control_frequency, data_set_time_, simulation.AsteroidOfSystem(), system_state, data_set);
+        writer_sensor_data.CreateSensorDataFile(random_seed, control_frequency, data_set_time_, simulation.AsteroidOfSystem(), system_state, labels, data_set);
         std::cout << "done." << std::endl;
         std::cout << "   writing trajectory to file " << path_to_trajectory_file << " ... ";
         FileWriter writer_trajectory(path_to_trajectory_file);

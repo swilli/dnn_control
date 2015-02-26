@@ -1,32 +1,29 @@
-#include "sensorsimulatorautoencoder.h"
+#include "trainingdatagenerator.h"
 #include "configuration.h"
 
-const unsigned int SensorSimulatorAutoencoder::kDimensions = SSA_DATA_DIMENSIONS * SSA_DATA_MULTIPLIER * (SSA_DATA_HISTORY + 1);
+const unsigned int TrainingDataGenerator::kDimensions = TDG_DATA_DIMENSIONS * TDG_DATA_MULTIPLIER * (TDG_DATA_HISTORY + 1);
 
-SensorSimulatorAutoencoder::SensorSimulatorAutoencoder(SampleFactory &sample_factory, const Asteroid &asteroid)
-    : SensorSimulator(kDimensions, sample_factory, asteroid) {
+TrainingDataGenerator::TrainingDataGenerator(SampleFactory &sample_factory, const Asteroid &asteroid)
+    : dimensions_(kDimensions), sample_factory_(sample_factory), asteroid_(asteroid) {
 
-    noise_configurations_ = std::vector<double>(SSA_DATA_DIMENSIONS * SSA_DATA_MULTIPLIER, 0.05);
+    noise_configurations_ = std::vector<double>(TDG_DATA_DIMENSIONS * TDG_DATA_MULTIPLIER, 0.05);
 
-    sensor_values_cache_ = std::vector<double>(SSA_DATA_DIMENSIONS * SSA_DATA_MULTIPLIER * (SSA_DATA_HISTORY + 1), 0.0);
+    sensor_values_cache_ = std::vector<double>(TDG_DATA_DIMENSIONS * TDG_DATA_MULTIPLIER * (TDG_DATA_HISTORY + 1), 0.0);
     cache_index_ = 0;
-    num_simulations_ = 0;
+    num_generate_calls_ = 0;
 }
 
-SensorSimulatorAutoencoder::~SensorSimulatorAutoencoder() {
-
-}
-
-void SensorSimulatorAutoencoder::Reset() {
+void TrainingDataGenerator::Reset() {
     cache_index_ = 0;
-    num_simulations_ = 0;
+    num_generate_calls_ = 0;
 }
 
 
-SensorData SensorSimulatorAutoencoder::Simulate(const SystemState &state, const Vector3D &height, const Vector3D &perturbations_acceleration, const double &time) {
-    SensorData sensor_data(dimensions_, 0.0);
+boost::tuple<std::vector<double>, std::vector<double> > TrainingDataGenerator::Generate(const SystemState &state, const Vector3D &height, const Vector3D &perturbations_acceleration, const double &time) {
+    std::vector<double> sensor_data(dimensions_, 0.0);
+    std::vector<double> labels(TDG_DATA_DIMENSIONS, 0.0);
 
-    std::vector<double> sensor_seed(SSA_DATA_DIMENSIONS, 0.0);
+    std::vector<double> sensor_seed(TDG_DATA_DIMENSIONS, 0.0);
 
     const Vector3D &velocity = {state[3], state[4], state[5]};
 
@@ -45,13 +42,17 @@ SensorData SensorSimulatorAutoencoder::Simulate(const SystemState &state, const 
         sensor_seed[3+i] = velocity_horizontal[i] * coef_norm_height;
     }
 
+    for (unsigned int i = 0; i < TDG_DATA_DIMENSIONS; ++i) {
+        labels[i] = sensor_seed[i];
+    }
+
     // Every initial sensor value gets tripled and added with normal distributed noise
-    std::vector<double> sensor_duplicates(SSA_DATA_DIMENSIONS * SSA_DATA_MULTIPLIER, 0.0);
-    for (unsigned int i = 0; i < SSA_DATA_DIMENSIONS * SSA_DATA_MULTIPLIER; ++i) {
-        const unsigned int sensor_data_index = i % SSA_DATA_DIMENSIONS;
+    std::vector<double> sensor_duplicates(TDG_DATA_DIMENSIONS * TDG_DATA_MULTIPLIER, 0.0);
+    for (unsigned int i = 0; i < TDG_DATA_DIMENSIONS * TDG_DATA_MULTIPLIER; ++i) {
+        const unsigned int sensor_data_index = i % TDG_DATA_DIMENSIONS;
         sensor_duplicates[i] = sensor_seed[sensor_data_index];
 
-#if SSA_DATA_WITH_NOISE
+#if TDG_DATA_WITH_NOISE
         sensor_duplicates[i] += sensor_seed[sensor_data_index] * sample_factory_.SampleNormal(0.0, noise_configurations_.at(i));
 #endif
 
@@ -67,11 +68,11 @@ SensorData SensorSimulatorAutoencoder::Simulate(const SystemState &state, const 
 
        // write new sensor values at correct place
         const int cache_index = cache_index_;
-        int start_index = cache_index - (SSA_DATA_DIMENSIONS * SSA_DATA_MULTIPLIER);
+        int start_index = cache_index - (TDG_DATA_DIMENSIONS * TDG_DATA_MULTIPLIER);
         if (start_index < 0) {
-            start_index = dimensions_ - (SSA_DATA_DIMENSIONS * SSA_DATA_MULTIPLIER);
+            start_index = dimensions_ - (TDG_DATA_DIMENSIONS * TDG_DATA_MULTIPLIER);
         }
-        for (unsigned int i = 0; i < SSA_DATA_DIMENSIONS * SSA_DATA_MULTIPLIER; ++i) {
+        for (unsigned int i = 0; i < TDG_DATA_DIMENSIONS * TDG_DATA_MULTIPLIER; ++i) {
             sensor_values_cache_[start_index +i] = sensor_duplicates[i];
         }
 
@@ -79,14 +80,15 @@ SensorData SensorSimulatorAutoencoder::Simulate(const SystemState &state, const 
         sensor_data[(dimensions_ - 1) - i] = sensor_values_cache_[(cache_index_ + i) % dimensions_];
     }
 
-    cache_index_ += SSA_DATA_DIMENSIONS*SSA_DATA_MULTIPLIER;
+    cache_index_ += TDG_DATA_DIMENSIONS*TDG_DATA_MULTIPLIER;
     if (cache_index_ == dimensions_) {
         cache_index_ = 0;
     }
 
-    if (num_simulations_ < SSA_DATA_HISTORY) {
-        num_simulations_++;
-        return SensorData(dimensions_, 0.0);
+    if (num_generate_calls_ < TDG_DATA_HISTORY) {
+        num_generate_calls_++;
+        return std::vector<double>(dimensions_, 0.0);
     }
-    return sensor_data;
+
+    return boost::make_tuple(sensor_data, labels);
 }
