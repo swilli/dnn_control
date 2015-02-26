@@ -1,46 +1,40 @@
 #include "sensorsimulatorpartialstate.h"
 #include "configuration.h"
 
-
-#if PGMOS_ENABLE_ACCELEROMETER
-const unsigned int SensorSimulatorNeuralNetwork::kDimensions = 7;
-#else
-const unsigned int SensorSimulatorPartialState::kDimensions = 4;
-#endif
+const unsigned int SensorSimulatorPartialState::kDimensions = PGMOS_ENABLE_OPTICAL_FLOW * 3 + PGMOS_ENABLE_DIRECTION_SENSOR * 3 + PGMOS_ENABLE_ACCELEROMETER * 3;
 
 SensorSimulatorPartialState::SensorSimulatorPartialState(SampleFactory &sample_factory, const Asteroid &asteroid)
     : SensorSimulator(kDimensions, sample_factory, asteroid) {
 
+#if PGMOS_ENABLE_OPTICAL_FLOW
+    noise_configurations_ = std::vector<double>(3, 0.05);
+#endif
+#if PGMOS_ENABLE_DIRECTION_SENSOR
+    surface_point_ = sample_factory.SamplePointOnEllipsoidSurface(asteroid.SemiAxis());
+    const std::vector<double> noise_direction_sensor(3, 0.05);
+    noise_configurations_.insert(noise_configurations_.end(), noise_direction_sensor.begin(), noise_direction_sensor.end());
+#endif
 #if PGMOS_ENABLE_ACCELEROMETER
-    sensor_maximum_absolute_ranges_ = {1e-4, 1e-4, 1e-4, 0.025, 0.025, 0.025, 0.025};
-#else
-    sensor_maximum_absolute_ranges_ = {1e-4, 1e-4, 1e-4, 1e-4}; //1e-4, 1e-4, 1e-4};
+    const std::vector<double> noise_accelerometer(3, 0.05);
+    noise_configurations_.insert(noise_configurations_.end(), noise_accelerometer.begin(), noise_accelerometer.end());
 #endif
 
-    if (sensor_maximum_absolute_ranges_.size() != dimensions_) {
-        throw RangeMalConfigurationException();
-    }
-
-    noise_configurations_ = std::vector<double>(dimensions_, 0.05);
 }
 
 SensorSimulatorPartialState::~SensorSimulatorPartialState() {
 
 }
 
-static const double root_three = sqrt(3);
 
 SensorData SensorSimulatorPartialState::Simulate(const SystemState &state, const Vector3D &height, const Vector3D &perturbations_acceleration, const double &time) {
     SensorData sensor_data(dimensions_, 0.0);
 
+#if PGMOS_ENABLE_OPTICAL_FLOW
     const Vector3D &velocity = {state[3], state[4], state[5]};
 
-    const double coef_height = 1.0; // / (VectorNorm(height) * (1.0 / root_three));
-    sensor_data[0] = velocity[0] * coef_height;
-    sensor_data[1] = velocity[1] * coef_height;
-    sensor_data[2] = velocity[2] * coef_height;
-    sensor_data[3] = VectorNorm(velocity);
-    return sensor_data;
+    sensor_data[0] = velocity[0];
+    sensor_data[1] = velocity[1];
+    sensor_data[2] = velocity[2];
 
     /*
     const double norm_height_pow2 = VectorDotProduct(height, height);
@@ -58,6 +52,44 @@ SensorData SensorSimulatorPartialState::Simulate(const SystemState &state, const
         sensor_data[3+i] = velocity_horizontal[i] * coef_norm_height;
     }
     */
+
+#if SSPS_WITH_NOISE
+    for (unsigned int i = 0; i < 3; ++i) {
+        sensor_data[i] += sensor_data[i] * sample_factory_.SampleNormal(0.0, noise_configurations_.at(i));
+    }
+#endif
+
+    /*
+    const double max_abs_sensor_value = 1e-4;
+    for (unsigned int i = 0; i < 6; ++i) {
+        double &sensor_value = sensor_data[i];
+        if (sensor_value > max_abs_sensor_value) {
+            sensor_value = max_abs_sensor_value;
+        } else if (sensor_value < -max_abs_sensor_value) {
+            sensor_value = -max_abs_sensor_value;
+        }
+        sensor_value = sensor_value * 0.5 / max_abs_sensor_value + 0.5;
+    }
+    */
+#endif
+
+#if PGMOS_ENABLE_DIRECTION_SENSOR
+    const Vector3D &position = {state[0], state[1], state[2]};
+    Vector3D direction = VectorSub(surface_point_, position);
+
+#if SSPS_WITH_NOISE
+    for (unsigned int i = 0; i < 3; ++i) {
+        direction[i] += direction[i] * sample_factory_.SampleNormal(0.0, noise_configurations_.at(PGMOS_ENABLE_OPTICAL_FLOW * 3 + i));
+    }
+#endif
+
+    direction = VectorNormalize(direction);
+    sensor_data[3] = direction[0];
+    sensor_data[4] = direction[1];
+    sensor_data[5] = direction[2];
+#endif
+
+
 
 #if PGMOS_ENABLE_ACCELEROMETER
     const Vector3D &position = {state[0], state[1], state[2]};
@@ -86,25 +118,6 @@ SensorData SensorSimulatorPartialState::Simulate(const SystemState &state, const
     }
 #endif
 
-    /*
- for (unsigned int i = 0; i < dimensions_; ++i) {
-        double &sensor_value = sensor_data[i];
-        const double &max_abs_sensor_value = sensor_maximum_absolute_ranges_.at(i);
-        if (sensor_value > max_abs_sensor_value) {
-            sensor_value = max_abs_sensor_value;
-        } else if (sensor_value < -max_abs_sensor_value) {
-            sensor_value = -max_abs_sensor_value;
-        }
-        sensor_value = sensor_value * 0.5 / max_abs_sensor_value + 0.5;
-
-#if SSNN_WITH_NOISE
-        sensor_value += sensor_value * sample_factory_.SampleNormal(0.0, noise_configurations_.at(i));
-#endif
-
-    }
-    */
-
     return sensor_data;
 }
-
 

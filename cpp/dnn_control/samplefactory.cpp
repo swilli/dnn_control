@@ -49,6 +49,17 @@ Vector3D SampleFactory::SamplePointOutSideEllipsoid(const Vector3D &semi_axis, c
     return point;
 }
 
+Vector3D SampleFactory::SamplePointOnEllipsoidSurface(const Vector3D &semi_axis) {
+    Vector3D point;
+
+    const double u = 2.0 * kPi * SampleUniform(0.0, 1.0 - 1e-10);
+    const double v = acos(2.0 * SampleUniform(0.0, 1.0) - 1.0);
+    point[0] = semi_axis[0] * cos(u) * sin(v);
+    point[1] = semi_axis[1] * sin(u) * sin(v);
+    point[2] = semi_axis[2] * cos(v);
+    return point;
+}
+
 void SampleFactory::SetSeed(const unsigned int &random_seed) {
     generator_.seed(random_seed);
 }

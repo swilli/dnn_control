@@ -14,7 +14,7 @@
 #define ER_NUM_ISLANDS  4
 #define ER_SIMULATION_TIME  1.0 * 60.0 * 60.0
 #define ER_EVALUATIONS  8
-#define ER_NUM_HIDDEN_NODES 6
+#define ER_NUM_HIDDEN_NODES 10
 
 
 // Class hovering_problem configs
@@ -25,7 +25,7 @@
 #define HP_OBJ_FUN_METHOD_5     5   // Compare mean distance to target point, also consider velocity, punish later offsets more.
 #define HP_OBJ_FUN_METHOD_6     6   // Mean velocity. Transient response aware.
 
-#define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_4
+#define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_6
 #define HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME  150.0
 #define HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED    true
 //#define HP_FIXED_SEED  1990
@@ -41,9 +41,11 @@
 #define PGMOS_IC_BODY_ZERO_VELOCITY          2
 #define PGMOS_IC_BODY_RANDOM_VELOCITY        3
 
-#define PGMOS_IC_VELOCITY_TYPE  PGMOS_IC_BODY_RANDOM_VELOCITY
+#define PGMOS_IC_VELOCITY_TYPE  PGMOS_IC_INERTIAL_ORBITAL_VELOCITY
 #define PGMOS_IC_POSITION_OFFSET_ENABLED    true
-#define PGMOS_ENABLE_ODOMETRY   true
+#define PGMOS_ENABLE_ODOMETRY   false
+#define PGMOS_ENABLE_OPTICAL_FLOW   true
+#define PGMOS_ENABLE_DIRECTION_SENSOR   true
 #define PGMOS_ENABLE_ACCELEROMETER  false
 
 
@@ -56,8 +58,8 @@
 
 // Class SensorSimulatorAutoencoder configs
 #define SSA_DATA_WITH_NOISE false
-#define SSA_DATA_DIMENSIONS  5
-#define SSA_DATA_MULTIPLIER  1
+#define SSA_DATA_DIMENSIONS  6
+#define SSA_DATA_MULTIPLIER  3
 #define SSA_DATA_HISTORY     0
 
 
@@ -133,6 +135,8 @@ inline void ConfigurationPaGMO() {
     std::cout << "PGMOS_IC_VELOCITY_TYPE   " << PGMOS_IC_VELOCITY_TYPE << std::endl;
     std::cout << "PGMOS_IC_POSITION_OFFSET_ENABLED   " << ToString(PGMOS_IC_POSITION_OFFSET_ENABLED) << std::endl;
     std::cout << "PGMOS_ENABLE_ODOMETRY   " << ToString(PGMOS_ENABLE_ODOMETRY) << std::endl;
+    std::cout << "PGMOS_ENABLE_OPTICAL_FLOW   " << ToString(PGMOS_ENABLE_OPTICAL_FLOW) << std::endl;
+    std::cout << "PGMOS_ENABLE_DIRECTION_SENSOR   " << ToString(PGMOS_ENABLE_DIRECTION_SENSOR) << std::endl;
     std::cout << "PGMOS_ENABLE_ACCELEROMETER   " << ToString(PGMOS_ENABLE_ACCELEROMETER) << std::endl;
     std::cout << "ODES_FUEL_ENABLED   " << ToString(ODES_FUEL_ENABLED) << std::endl;
     std::cout << "SSPS_WITH_NOISE   " << ToString(SSPS_WITH_NOISE) << std::endl;
