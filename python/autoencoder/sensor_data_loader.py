@@ -53,7 +53,9 @@ def load_sensor_files(data_path, num_training_samples=100000, num_test_samples=1
         sensor_data_file.close()
         lines = [line for line in lines if not line.startswith("#")]
         lines = lines[:len(lines)/10]
-        labels, data_set = [line.split('|') for line in lines]
+        lines = [line.split('|') for line in lines]
+        labels = [labels for labels, _ in lines]
+        data_set = [data_set for _, data_set in lines]
         data_set = [line.split(',') for line in data_set]
         data_set = [[float(value) for value in data_line] for data_line in data_set]
         labels = [line.split(',') for line in labels]
@@ -72,7 +74,9 @@ def load_sensor_files(data_path, num_training_samples=100000, num_test_samples=1
         sensor_data_file.close()
         lines = [line for line in lines if not line.startswith("#")]
         lines = sample(lines, 500)
-        labels, data_set = [line.split('|') for line in lines]
+        lines = [line.split('|') for line in lines]
+        labels = [labels for labels, _ in lines]
+        data_set = [data_set for _, data_set in lines]
         data_set = [line.split(',') for line in data_set]
         data_set = [[float(value) for value in data_line] for data_line in data_set]
         labels = [line.split(',') for line in labels]
