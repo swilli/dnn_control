@@ -3,12 +3,14 @@
 
 #include "neuralnetwork.h"
 
+#include <boost/tuple/tuple.hpp>
+
 class FeedForwardNeuralNetwork : public NeuralNetwork {
 	/*
 	* This class represents a Feed Forward Neural Network. 
 	*/
 public:
-    FeedForwardNeuralNetwork(const std::vector<std::pair<unsigned int, bool> > &layer_configurations, const ActivationFunctionType &function_type);
+    FeedForwardNeuralNetwork(const unsigned int &dimension_input_layer, const bool &input_layer_enable_bias, const std::vector<boost::tuple<unsigned int, bool, ActivationFunctionType> > &layer_configurations);
     virtual ~FeedForwardNeuralNetwork();
 
     // Evaluate input data by a forward pass through the network
@@ -18,11 +20,14 @@ public:
     virtual void SetWeights(const std::vector<double> &weights);
 
 private:
-	// The activation function used for each layer 
-    ActivationFunctionType activation_function_type_;
+    // The input size
+    unsigned int dimension_input_layer_;
+
+    // Bias at input layer
+    bool input_layer_enable_bias_;
 
     // The layer configurations specified by (bias_enabled, dimension)
-    std::vector<std::pair<unsigned int, bool> > layer_configurations_;
+    std::vector<boost::tuple<unsigned int, bool, ActivationFunctionType> > layer_configurations_;
 
     // The layer weights from layer i to layer i + 1
     std::vector<std::vector<double> > layer_weights_;

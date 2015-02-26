@@ -26,15 +26,15 @@ int main(int argc, char *argv[]) {
     //TrainNeuralNetworkController();
     //return 0;
 
-    //TrainProportionalDerivativeController();
-    //return 0;
+    TrainProportionalDerivativeController();
+    return 0;
 
     //TrainLeastSquaresPolicyController();
     //return 0;
 
-    SensorDataGenerator generator(PATH_TO_SENSOR_DATA_FOLDER, 24.0 * 60.0 * 60.0);
-    generator.Generate(100, rand());
-    return 0;
+    //SensorDataGenerator generator(PATH_TO_SENSOR_DATA_FOLDER, 24.0 * 60.0 * 60.0);
+    //generator.Generate(100, rand());
+    //return 0;
 
 
     /*

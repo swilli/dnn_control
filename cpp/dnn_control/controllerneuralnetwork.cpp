@@ -8,12 +8,14 @@ const unsigned int ControllerNeuralNetwork::kDimensions = PGMOS_ENABLE_OPTICAL_F
 #endif
 
 ControllerNeuralNetwork::ControllerNeuralNetwork(const double &maximum_thrust, const unsigned int &num_hidden)
-    : Controller(kDimensions, maximum_thrust), neural_network_({std::make_pair(kDimensions, true), std::make_pair(num_hidden, true), std::make_pair(3, false)}, NeuralNetwork::ActivationFunctionType::Sigmoid) {
+    : Controller(kDimensions, maximum_thrust), neural_network_(kDimensions, true, {boost::make_tuple(num_hidden, true, NeuralNetwork::ActivationFunctionType::Sigmoid),
+                                                               boost::make_tuple(3, false, NeuralNetwork::ActivationFunctionType::Sigmoid)}) {
     number_of_parameters_ = neural_network_.Size();
 }
 
 ControllerNeuralNetwork::ControllerNeuralNetwork(const double &maximum_thrust, const unsigned int &num_hidden, const std::vector<double> &weights)
-    : Controller(kDimensions, maximum_thrust), neural_network_({std::make_pair(kDimensions, true), std::make_pair(num_hidden, true), std::make_pair(3, false)}, NeuralNetwork::ActivationFunctionType::Sigmoid) {
+    : Controller(kDimensions, maximum_thrust), neural_network_(kDimensions, true, {boost::make_tuple(num_hidden, true, NeuralNetwork::ActivationFunctionType::Sigmoid),
+                                                               boost::make_tuple(3, false, NeuralNetwork::ActivationFunctionType::Sigmoid)}) {
     number_of_parameters_ = neural_network_.Size();
     SetWeights(weights);
 }
