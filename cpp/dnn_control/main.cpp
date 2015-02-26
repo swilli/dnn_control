@@ -26,8 +26,8 @@ int main(int argc, char *argv[]) {
     //TrainNeuralNetworkController();
     //return 0;
 
-    TrainProportionalDerivativeController();
-    return 0;
+    //TrainProportionalDerivativeController();
+    //return 0;
 
     //TrainLeastSquaresPolicyController();
     //return 0;

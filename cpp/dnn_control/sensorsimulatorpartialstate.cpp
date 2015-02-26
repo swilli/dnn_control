@@ -32,9 +32,10 @@ SensorData SensorSimulatorPartialState::Simulate(const SystemState &state, const
 #if PGMOS_ENABLE_OPTICAL_FLOW
     const Vector3D &velocity = {state[3], state[4], state[5]};
 
-    sensor_data[0] = velocity[0];
-    sensor_data[1] = velocity[1];
-    sensor_data[2] = velocity[2];
+    const double coef_norm_height = 1e5 * sqrt(3) / VectorNorm(height);
+    sensor_data[0] = velocity[0] * coef_norm_height;
+    sensor_data[1] = velocity[1] * coef_norm_height;
+    sensor_data[2] = velocity[2] * coef_norm_height;
 
     /*
     const double norm_height_pow2 = VectorDotProduct(height, height);
