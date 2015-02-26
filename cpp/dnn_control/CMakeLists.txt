@@ -44,7 +44,14 @@ INCLUDE_DIRECTORIES(${PAGMO_INCLUDE_DIR})
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
 
 # 5 - Define the target and linked libraries
+OPTION(BUILD_WITH_LSPI "BUILD WITH LSPI" OFF)
+MESSAGE(STATUS "BUILD with LSPI: ${BUILD_WITH_LSPI}")
+
+IF(BUILD_WITH_LSPI)
 add_executable(main main.cpp asteroid.cpp pagmosimulation.cpp pagmosimulationproportionalderivative.cpp pagmosimulationneuralnetwork.cpp odesystem.cpp filewriter.cpp samplefactory.cpp sensordatagenerator.cpp neuralnetwork.cpp feedforwardneuralnetwork.cpp sensorsimulator.cpp controller.cpp controllerproportionalderivative.cpp controllerneuralnetwork.cpp sensorsimulatorfullstate.cpp sensorsimulatorpartialstate.cpp sensorsimulatorautoencoder.cpp hoveringproblemneuralnetwork.cpp hoveringproblemproportionalderivative.cpp evolutionaryrobotics.cpp lspisimulator.cpp leastsquarespolicyrobotics.cpp) 
+ELSE(BUILD_WITH_LSPI)
+add_executable(main main.cpp asteroid.cpp pagmosimulation.cpp pagmosimulationproportionalderivative.cpp pagmosimulationneuralnetwork.cpp odesystem.cpp filewriter.cpp samplefactory.cpp sensordatagenerator.cpp neuralnetwork.cpp feedforwardneuralnetwork.cpp sensorsimulator.cpp controller.cpp controllerproportionalderivative.cpp controllerneuralnetwork.cpp sensorsimulatorfullstate.cpp sensorsimulatorpartialstate.cpp sensorsimulatorautoencoder.cpp hoveringproblemneuralnetwork.cpp hoveringproblemproportionalderivative.cpp evolutionaryrobotics.cpp lspisimulator.cpp) 
+ENDIF(BUILD_WITH_LSPI)
 
 TARGET_LINK_LIBRARIES(main ${MANDATORY_LIBRARIES})
 
