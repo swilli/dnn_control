@@ -57,7 +57,7 @@ boost::tuple<std::vector<double>, std::vector<double> > TrainingDataGenerator::G
 #endif
 
         // Normalize between [0,1]
-        const double sensor_maximum_absolute_range = 1.0;
+        const double sensor_maximum_absolute_range = 1e-3;
         if (sensor_duplicates[i] > sensor_maximum_absolute_range) {
             sensor_duplicates[i] = sensor_maximum_absolute_range;
         } else if (sensor_duplicates[i] < -sensor_maximum_absolute_range) {
