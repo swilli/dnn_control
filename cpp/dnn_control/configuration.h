@@ -14,7 +14,7 @@
 #define ER_NUM_ISLANDS  24
 #define ER_SIMULATION_TIME  1.0 * 60.0 * 60.0
 #define ER_EVALUATIONS  8
-#define ER_NUM_HIDDEN_NODES 5
+#define ER_NUM_HIDDEN_NODES 6
 
 
 // Class hovering_problem configs
@@ -46,7 +46,7 @@
 #define PGMOS_ENABLE_ODOMETRY   false
 #define PGMOS_ENABLE_OPTICAL_FLOW   true
 #define PGMOS_ENABLE_DIRECTION_SENSOR   false
-#define PGMOS_ENABLE_ACCELEROMETER  false
+#define PGMOS_ENABLE_ACCELEROMETER  true
 
 
 // Class ControllerNeuralNetwork configs

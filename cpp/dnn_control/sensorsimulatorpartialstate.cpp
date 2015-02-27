@@ -23,11 +23,12 @@ SensorSimulatorPartialState::SensorSimulatorPartialState(SampleFactory &sample_f
 
 SensorData SensorSimulatorPartialState::Simulate(const SystemState &state, const Vector3D &height, const Vector3D &perturbations_acceleration, const double &time) {
     SensorData sensor_data(dimensions_, 0.0);
+    double max_abs_sensor_value = 1.0;
 
 #if PGMOS_ENABLE_OPTICAL_FLOW
     const Vector3D &velocity = {state[3], state[4], state[5]};
 
-        /*
+    /*
     const double coef_norm_height = 1e5 * sqrt(3) / VectorNorm(height);
     sensor_data[0] = velocity[0] * coef_norm_height;
     sensor_data[1] = velocity[1] * coef_norm_height;
@@ -57,7 +58,7 @@ SensorData SensorSimulatorPartialState::Simulate(const SystemState &state, const
 #endif
 
 
-    const double max_abs_sensor_value = 1e-5;
+    max_abs_sensor_value = 1e-5;
     for (unsigned int i = 0; i < 6; ++i) {
         double &sensor_value = sensor_data[i];
         if (sensor_value > max_abs_sensor_value) {
@@ -76,14 +77,14 @@ SensorData SensorSimulatorPartialState::Simulate(const SystemState &state, const
 
 #if SSPS_WITH_NOISE
     for (unsigned int i = 0; i < 3; ++i) {
-        direction[i] += direction[i] * sample_factory_.SampleNormal(0.0, noise_configurations_.at(PGMOS_ENABLE_OPTICAL_FLOW * 3 + i));
+        direction[i] += direction[i] * sample_factory_.SampleNormal(0.0, noise_configurations_.at(PGMOS_ENABLE_OPTICAL_FLOW * 6 + i));
     }
 #endif
 
     direction = VectorNormalize(direction);
-    sensor_data[3] = direction[0];
-    sensor_data[4] = direction[1];
-    sensor_data[5] = direction[2];
+    sensor_data[PGMOS_ENABLE_OPTICAL_FLOW * 6] = direction[0];
+    sensor_data[PGMOS_ENABLE_OPTICAL_FLOW * 6 + 1] = direction[1];
+    sensor_data[PGMOS_ENABLE_OPTICAL_FLOW * 6 + 2] = direction[2];
 #endif
 
 
@@ -106,12 +107,25 @@ SensorData SensorSimulatorPartialState::Simulate(const SystemState &state, const
 
     const Vector3D coriolis_acceleration = VectorCrossProduct(tmp, velocity);
 
+    max_abs_sensor_value = 0.025;
     for (unsigned int i = 0; i < 3; ++i) {
-        sensor_data[4+i] = perturbations_acceleration[i]
+        double sensor_value = perturbations_acceleration[i]
                 + gravity_acceleration[i]
                 - coriolis_acceleration[i]
                 - euler_acceleration[i]
                 - centrifugal_acceleration[i];
+
+#if SSPS_WITH_NOISE
+        sensor_value+= sensor_value * sample_factory_.SampleNormal(0.0, noise_configurations_.at(PGMOS_ENABLE_OPTICAL_FLOW * 6 + PGMOS_ENABLE_DIRECTION_SENSOR * 3 + i));
+#endif
+
+        if (sensor_value > max_abs_sensor_value) {
+            sensor_value = max_abs_sensor_value;
+        } else if (sensor_value < -max_abs_sensor_value) {
+            sensor_value = -max_abs_sensor_value;
+        }
+        sensor_value = sensor_value * 0.5 / max_abs_sensor_value + 0.5;
+        sensor_data[PGMOS_ENABLE_OPTICAL_FLOW * 6 + PGMOS_ENABLE_DIRECTION_SENSOR * 3 + i] = sensor_value;
     }
 #endif
 
