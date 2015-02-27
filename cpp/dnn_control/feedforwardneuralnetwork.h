@@ -6,9 +6,9 @@
 #include <boost/tuple/tuple.hpp>
 
 class FeedForwardNeuralNetwork : public NeuralNetwork {
-	/*
-	* This class represents a Feed Forward Neural Network. 
-	*/
+    /*
+    * This class represents a Feed Forward Neural Network.
+    */
 public:
     FeedForwardNeuralNetwork(const unsigned int &dimension_input_layer, const bool &input_layer_enable_bias, const std::vector<boost::tuple<unsigned int, bool, ActivationFunctionType> > &layer_configurations);
 

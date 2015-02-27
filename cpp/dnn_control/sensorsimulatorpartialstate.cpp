@@ -21,7 +21,6 @@ SensorSimulatorPartialState::SensorSimulatorPartialState(SampleFactory &sample_f
 
 }
 
-
 SensorData SensorSimulatorPartialState::Simulate(const SystemState &state, const Vector3D &height, const Vector3D &perturbations_acceleration, const double &time) {
     SensorData sensor_data(dimensions_, 0.0);
 
@@ -32,6 +31,7 @@ SensorData SensorSimulatorPartialState::Simulate(const SystemState &state, const
     sensor_data[0] = velocity[0] * coef_norm_height;
     sensor_data[1] = velocity[1] * coef_norm_height;
     sensor_data[2] = velocity[2] * coef_norm_height;
+
 
     /*
     const double norm_height_pow2 = VectorDotProduct(height, height);
@@ -117,5 +117,4 @@ SensorData SensorSimulatorPartialState::Simulate(const SystemState &state, const
 
     return sensor_data;
 }
-
 

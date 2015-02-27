@@ -12,54 +12,50 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -std=c++11 -pthread -DNDEBUG")
 # GSL
 FIND_LIBRARY(GSL_GSL_LIBRARY NAMES gsl)
 FIND_LIBRARY(GSL_GSLCBLAS_LIBRARY NAMES gslcblas)
+FIND_PATH(GSL_INCLUDE_DIR NAMES gsl/gsl_version.h)
 
 # PaGMO
 FIND_LIBRARY(PAGMO_LIBRARY NAMES pagmo)
-
-# Boost
-FIND_LIBRARY(BOOST_SYSTEM_LIBRARY NAMES boost_system)
-FIND_LIBRARY(BOOST_PYTHON_LIBRARY NAMES boost_python3)
-
-# F2C
-FIND_LIBRARY(F2C_LIBRARY NAMES f2c)
-
-FIND_PATH(GSL_INCLUDE_DIR NAMES gsl/gsl_version.h)
 FIND_PATH(PAGMO_INCLUDE_DIR NAMES pagmo/src/pagmo.h)
 
-MESSAGE(STATUS "GSL library: ${GSL_GSL_LIBRARY}")
-MESSAGE(STATUS "GSL CBLAS library: ${GSL_GSLCBLAS_LIBRARY}")
-MESSAGE(STATUS "GSL include dir: ${GSL_INCLUDE_DIR}")
-MESSAGE(STATUS "BOOST SYSTEM library: ${BOOST_SYSTEM_LIBRARY}")
-MESSAGE(STATUS "BOOST PYTHON library: ${BOOST_PYTHON_LIBRARY}")
-MESSAGE(STATUS "F2C library: ${F2C_LIBRARY}")
-MESSAGE(STATUS "PAGMO library: ${PAGMO_LIBRARY}")
-MESSAGE(STATUS "PAGMO include dir: ${PAGMO_INCLUDE_DIR}")
+# Boost
+FIND_PACKAGE(Boost 1.55.0 COMPONENTS system serialization thread)
 
-IF(NOT GSL_GSL_LIBRARY OR NOT GSL_INCLUDE_DIR)
+MESSAGE(STATUS "GSL library: ${GSL_GSL_LIBRARY}")
+MESSAGE(STATUS "GSL include dir: ${GSL_INCLUDE_DIR}")
+MESSAGE(STATUS "GSL CBLAS library: ${GSL_GSLCBLAS_LIBRARY}")
+MESSAGE(STATUS "BOOST SYSTEM library: ${Boost_SYSTEM_LIBRARY}")
+MESSAGE(STATUS "BOOST SERIALIZATION library: ${Boost_SERIALIZATION_LIBRARY}")
+MESSAGE(STATUS "BOOST THREAD library: ${Boost_THREAD_LIBRARY}")
+MESSAGE(STATUS "BOOST include dir: ${Boost_INCLUDE_DIRS}")
+MESSAGE(STATUS "PaGMO library: ${PAGMO_LIBRARY}")
+MESSAGE(STATUS "PaGMO include dir: ${PAGMO_INCLUDE_DIR}")
+
+IF(NOT GSL_GSL_LIBRARY OR NOT GSL_INCLUDE_DIR OR NOT GSL_GSLCBLAS_LIBRARY)
 	MESSAGE(FATAL_ERROR "GSL support was requested, but either the library or the include files could not be located.")
-ENDIF(NOT GSL_GSL_LIBRARY OR NOT GSL_INCLUDE_DIR)
-IF(NOT GSL_GSLCBLAS_LIBRARY)
-	MESSAGE(FATAL_ERROR  "GSL BLAS library not found")
-ENDIF(NOT GSL_GSLCBLAS_LIBRARY)
-IF(NOT BOOST_SYSTEM_LIBRARY)
-	MESSAGE(FATAL_ERROR "BOOST SYSTEM library not found")
-ENDIF(NOT BOOST_SYSTEM_LIBRARY)
-IF(NOT BOOST_PYTHON_LIBRARY)
-	MESSAGE(FATAL_ERROR "BOOST PYTHON library not found")
-ENDIF(NOT BOOST_PYTHON_LIBRARY)
-IF(NOT F2C_LIBRARY)
-	MESSAGE(FATAL_ERROR "F2C library not found")
-ENDIF(NOT F2C_LIBRARY)
+ENDIF(NOT GSL_GSL_LIBRARY OR NOT GSL_INCLUDE_DIR OR NOT GSL_GSLCBLAS_LIBRARY)
+IF(NOT Boost_INCLUDE_DIRS)
+	MESSAGE(FATAL_ERROR "Boost support was requested, but either the library or the include files could not be located.")
+ENDIF(NOT Boost_INCLUDE_DIRS)
 IF(NOT PAGMO_LIBRARY OR NOT PAGMO_INCLUDE_DIR)
 	MESSAGE(FATAL_ERROR "PaGMO installation not found")
 ENDIF(NOT PAGMO_LIBRARY OR NOT PAGMO_INCLUDE_DIR)
 
 # 4 - Define mandatory libraries and include directories
-SET(MANDATORY_LIBRARIES ${MANDATORY_LIBRARIES} ${GSL_GSL_LIBRARY} ${GSL_GSLCBLAS_LIBRARY} ${BOOST_SYSTEM_LIBRARY} ${BOOST_PYTHON_LIBRARY} ${F2C_LIBRARY} ${PAGMO_LIBRARY})
-INCLUDE_DIRECTORIES("${GSL_INCLUDE_DIR} ${PAGMO_INCLUDE_DIR}")
+SET(MANDATORY_LIBRARIES ${MANDATORY_LIBRARIES} ${GSL_GSL_LIBRARY} ${GSL_GSLCBLAS_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_SERIALIZATION_LIBRARY} ${Boost_THREAD_LIBRARY} ${PAGMO_LIBRARY})
+INCLUDE_DIRECTORIES(${GSL_INCLUDE_DIR})
+INCLUDE_DIRECTORIES(${PAGMO_INCLUDE_DIR})
+INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
 
 # 5 - Define the target and linked libraries
-add_executable(main main.cpp asteroid.cpp pagmosimulation.cpp pagmosimulationproportionalderivative.cpp pagmosimulationneuralnetwork.cpp odesystem.cpp filewriter.cpp samplefactory.cpp sensordatagenerator.cpp neuralnetwork.cpp feedforwardneuralnetwork.cpp sensorsimulator.cpp controller.cpp controllerproportionalderivative.cpp controllerneuralnetwork.cpp sensorsimulatorfullstate.cpp sensorsimulatorpartialstate.cpp sensorsimulatorautoencoder.cpp hoveringproblemneuralnetwork.cpp hoveringproblemproportionalderivative.cpp evolutionaryrobotics.cpp lspisimulator.cpp leastsquarespolicyrobotics.cpp) 
+OPTION(BUILD_WITH_LSPI "BUILD WITH LSPI" OFF)
+MESSAGE(STATUS "BUILD with LSPI: ${BUILD_WITH_LSPI}")
+
+IF(BUILD_WITH_LSPI)
+add_executable(main main.cpp asteroid.cpp pagmosimulation.cpp pagmosimulationproportionalderivative.cpp pagmosimulationneuralnetwork.cpp odesystem.cpp filewriter.cpp samplefactory.cpp sensordatagenerator.cpp neuralnetwork.cpp feedforwardneuralnetwork.cpp sensorsimulator.cpp controller.cpp controllerproportionalderivative.cpp controllerneuralnetwork.cpp sensorsimulatorfullstate.cpp sensorsimulatorpartialstate.cpp trainingdatagenerator.cpp hoveringproblemneuralnetwork.cpp hoveringproblemproportionalderivative.cpp evolutionaryrobotics.cpp lspisimulator.cpp leastsquarespolicyrobotics.cpp) 
+ELSE(BUILD_WITH_LSPI)
+add_executable(main main.cpp asteroid.cpp pagmosimulation.cpp pagmosimulationproportionalderivative.cpp pagmosimulationneuralnetwork.cpp odesystem.cpp filewriter.cpp samplefactory.cpp sensordatagenerator.cpp neuralnetwork.cpp feedforwardneuralnetwork.cpp sensorsimulator.cpp controller.cpp controllerproportionalderivative.cpp controllerneuralnetwork.cpp sensorsimulatorfullstate.cpp sensorsimulatorpartialstate.cpp trainingdatagenerator.cpp hoveringproblemneuralnetwork.cpp hoveringproblemproportionalderivative.cpp evolutionaryrobotics.cpp lspisimulator.cpp) 
+ENDIF(BUILD_WITH_LSPI)
 
 TARGET_LINK_LIBRARIES(main ${MANDATORY_LIBRARIES})
 

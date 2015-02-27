@@ -10,8 +10,8 @@
 
 // Evolutionary Robotics configs
 #define ER_NUM_GENERATIONS  500
-#define ER_POPULATION_SIZE  100
-#define ER_NUM_ISLANDS  4
+#define ER_POPULATION_SIZE  20
+#define ER_NUM_ISLANDS  24
 #define ER_SIMULATION_TIME  1.0 * 60.0 * 60.0
 #define ER_EVALUATIONS  8
 #define ER_NUM_HIDDEN_NODES 10
@@ -49,8 +49,17 @@
 #define PGMOS_ENABLE_ACCELEROMETER  false
 
 
+// Class ControllerNeuralNetwork configs
+#define CNN_ENABLE_CORRECT_THRUST_OUTPUT    false
+
+
+// Class ControllerProportionalDerivative configs
+#define CPD_ENABLE_CORRECT_THRUST_OUTPUT    false
+
+
 // Class SensorSimulatorPartialState configs
 #define SSPS_WITH_NOISE true
+
 
 // Class SensorSimulatorFullState configs
 #define SSFS_WITH_NOISE true
@@ -61,7 +70,6 @@
 #define TDG_DATA_DIMENSIONS  6
 #define TDG_DATA_MULTIPLIER  3
 #define TDG_DATA_HISTORY     0
-
 
 
 
@@ -143,6 +151,8 @@ inline void ConfigurationPaGMO() {
     std::cout << "PGMOS_ENABLE_DIRECTION_SENSOR   " << ToString(PGMOS_ENABLE_DIRECTION_SENSOR) << std::endl;
     std::cout << "PGMOS_ENABLE_ACCELEROMETER   " << ToString(PGMOS_ENABLE_ACCELEROMETER) << std::endl;
     std::cout << "ODES_FUEL_ENABLED   " << ToString(ODES_FUEL_ENABLED) << std::endl;
+    std::cout << "CNN_ENABLE_CORRECT_THRUST_OUTPUT   " << ToString(CNN_ENABLE_CORRECT_THRUST_OUTPUT) << std::endl;
+    std::cout << "CPD_ENABLE_CORRECT_THRUST_OUTPUT   " << ToString(CPD_ENABLE_CORRECT_THRUST_OUTPUT) << std::endl;
     std::cout << "SSPS_WITH_NOISE   " << ToString(SSPS_WITH_NOISE) << std::endl;
     std::cout << "SSFS_WITH_NOISE   " << ToString(SSFS_WITH_NOISE) << std::endl;
     std::cout << "TDG_DATA_WITH_NOISE   " << ToString(TDG_DATA_WITH_NOISE) << std::endl;

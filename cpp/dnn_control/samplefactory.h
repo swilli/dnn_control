@@ -14,13 +14,13 @@ public:
     SampleFactory(const unsigned int &seed);
 
 
-    // X ~ U(N) 
+    // X ~ U(N)
     unsigned int SampleRandomInteger();
 
     // X ~ U(minimum, maximum)
     double SampleUniform(const double &minimum, const double &maximum);
 
-    // X ~ N(minimum, maximum)    
+    // X ~ N(minimum, maximum)
     double SampleNormal(const double &mean, const double &standard_deviation);
 
     // X ~ U({-1,1})
@@ -41,7 +41,7 @@ public:
     // Set the seed of the factory
     void SetSeed(const unsigned int &random_seed);
 
-private:    
+private:
     // The random number generator used for producing different samples
     boost::mt19937 generator_;
 

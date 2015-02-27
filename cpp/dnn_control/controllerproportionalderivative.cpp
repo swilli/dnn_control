@@ -27,6 +27,18 @@ void ControllerProportionalDerivative::SetCoefficients(const std::vector<double>
 }
 
 Vector3D ControllerProportionalDerivative::GetThrustForSensorData(const SensorData &sensor_data) {
+#if CPD_ENABLE_CORRECT_THRUST_OUTPUT
+    const std::vector<double> unboxed_thrust = neural_network_.Evaluate(sensor_data);
+    Vector3D thrust = {unboxed_thrust[0], unboxed_thrust[1], unboxed_thrust[2]};
+    const double norm = VectorNorm(thrust);
+    if (norm > maximum_thrust_) {
+        const double coef_norm = 1.0 / norm;
+        for (unsigned int i = 0; i < 3; ++i) {
+            thrust[i] *= coef_norm * maximum_thrust_;
+        }
+    }
+    return thrust;
+#else
     const std::vector<double> unboxed_thrust = neural_network_.Evaluate(sensor_data);
     Vector3D thrust;
     for (unsigned int i = 0; i < 3; ++i) {
@@ -39,4 +51,5 @@ Vector3D ControllerProportionalDerivative::GetThrustForSensorData(const SensorDa
         thrust[i] = t;
     }
     return thrust;
+#endif
 }
