@@ -121,11 +121,6 @@
 #define PGMOS_IC_POSITION_OFFSET_ENABLED false
 #endif
 
-#if TDG_DATA_HISTORY > 0
-#undef SSA_DATA_LABELED
-#define SSA_DATA_LABELED false
-#endif
-
 static inline std::string ToString(const bool &value) {
     return (value ? "true" : "false");
 }
