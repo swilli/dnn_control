@@ -9,7 +9,7 @@
  */
 
 // Evolutionary Robotics configs
-#define ER_NUM_GENERATIONS  500
+#define ER_NUM_GENERATIONS  1000
 #define ER_POPULATION_SIZE  20
 #define ER_NUM_ISLANDS  24
 #define ER_SIMULATION_TIME  1.0 * 60.0 * 60.0
@@ -45,7 +45,9 @@
 #define PGMOS_IC_POSITION_OFFSET_ENABLED    true
 #define PGMOS_ENABLE_ODOMETRY   true
 #define PGMOS_ENABLE_OPTICAL_FLOW   true
-#define PGMOS_ENABLE_DIRECTION_SENSOR   false
+#define PGMOS_ENABLE_VELOCITY   true
+#define PGMOS_ENABLE_VELOCITY_OVER_HEIGHT   true
+#define PGMOS_ENABLE_DIRECTION_SENSOR   true
 #define PGMOS_ENABLE_ACCELEROMETER  true
 
 
@@ -150,6 +152,8 @@ inline void ConfigurationPaGMO() {
     std::cout << "PGMOS_ENABLE_OPTICAL_FLOW   " << ToString(PGMOS_ENABLE_OPTICAL_FLOW) << std::endl;
     std::cout << "PGMOS_ENABLE_DIRECTION_SENSOR   " << ToString(PGMOS_ENABLE_DIRECTION_SENSOR) << std::endl;
     std::cout << "PGMOS_ENABLE_ACCELEROMETER   " << ToString(PGMOS_ENABLE_ACCELEROMETER) << std::endl;
+    std::cout << "PGMOS_ENABLE_VELOCITY   " << ToString(PGMOS_ENABLE_VELOCITY) << std::endl;
+    std::cout << "PGMOS_ENABLE_VELOCITY_OVER_HEIGHT   " << ToString(PGMOS_ENABLE_VELOCITY_OVER_HEIGHT) << std::endl;
     std::cout << "ODES_FUEL_ENABLED   " << ToString(ODES_FUEL_ENABLED) << std::endl;
     std::cout << "CNN_ENABLE_CORRECT_THRUST_OUTPUT   " << ToString(CNN_ENABLE_CORRECT_THRUST_OUTPUT) << std::endl;
     std::cout << "CPD_ENABLE_CORRECT_THRUST_OUTPUT   " << ToString(CPD_ENABLE_CORRECT_THRUST_OUTPUT) << std::endl;

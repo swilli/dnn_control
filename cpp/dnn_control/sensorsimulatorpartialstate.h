@@ -23,6 +23,9 @@ public:
     class RangeMalConfigurationException : public Exception {};
 
 private:
+
+    static double Normalize(const double &sensor_value, const double &max_abs_sensor_value);
+
 #if PGMOS_ENABLE_DIRECTION_SENSOR
     Vector3D surface_point_;
 #endif
