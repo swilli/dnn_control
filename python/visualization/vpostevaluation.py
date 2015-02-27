@@ -32,7 +32,7 @@ for line in data:
         outliers += 1
         continue
     else:
-	    filtered_data += [line]
+        filtered_data += [line]
 
 data = array(filtered_data)
 
