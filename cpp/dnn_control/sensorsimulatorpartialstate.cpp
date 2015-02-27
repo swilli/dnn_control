@@ -34,6 +34,7 @@ SensorData SensorSimulatorPartialState::Simulate(const SystemState &state, const
     unsigned int offset = 0;
     double max_abs_sensor_value = 0.0;
 
+    const Vector3D &position = {state[0], state[1], state[2]};
     const Vector3D &velocity = {state[3], state[4], state[5]};
 
     const double norm_height_pow2 = VectorDotProduct(height, height);
@@ -107,7 +108,6 @@ SensorData SensorSimulatorPartialState::Simulate(const SystemState &state, const
 
 #if PGMOS_ENABLE_DIRECTION_SENSOR
     offset = PGMOS_ENABLE_OPTICAL_FLOW * 6 + PGMOS_ENABLE_VELOCITY * 3 + PGMOS_ENABLE_VELOCITY_OVER_HEIGHT * 3;
-    const Vector3D &position = {state[0], state[1], state[2]};
     Vector3D direction = VectorSub(surface_point_, position);
 
 #if SSPS_WITH_NOISE
