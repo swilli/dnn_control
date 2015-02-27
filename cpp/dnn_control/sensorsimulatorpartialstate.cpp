@@ -117,9 +117,11 @@ SensorData SensorSimulatorPartialState::Simulate(const SystemState &state, const
 #endif
 
     direction = VectorNormalize(direction);
-    sensor_data[offset] = direction[0];
-    sensor_data[offset + 1] = direction[1];
-    sensor_data[offset + 2] = direction[2];
+
+    max_abs_sensor_value = 1.0;
+    sensor_data[offset] = Normalize(direction[0], max_abs_sensor_value);
+    sensor_data[offset + 1] = Normalize(direction[1], max_abs_sensor_value);
+    sensor_data[offset + 2] = Normalize(direction[2], max_abs_sensor_value);
 
 #endif
 
