@@ -34,7 +34,7 @@ Vector3D ControllerNeuralNetwork::GetThrustForSensorData(const SensorData &senso
     const std::vector<double> normalized_u_v_t = neural_network_.Evaluate(sensor_data);
     const double u = 2.0 * kPi * normalized_u_v_t[0];
     const double v = acos(2.0 * normalized_u_v_t[1] - 1.0);
-    const double t = normalized_u_v_t[2] * maximum_thrust_;
+    const double t = (normalized_u_v_t[2] - 0.5) * maximum_thrust_;
 
     Vector3D thrust;
     thrust[0] = cos(u) * sin(v) * t;
