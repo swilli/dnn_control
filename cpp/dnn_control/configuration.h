@@ -46,7 +46,7 @@
 #define PGMOS_ENABLE_ODOMETRY   true
 #define PGMOS_ENABLE_OPTICAL_FLOW   true
 #define PGMOS_ENABLE_DIRECTION_SENSOR   false
-#define PGMOS_ENABLE_ACCELEROMETER  false
+#define PGMOS_ENABLE_ACCELEROMETER  true
 
 
 // Class ControllerNeuralNetwork configs
