@@ -1,13 +1,13 @@
 #include "sensorsimulatorpartialstate.h"
 #include "configuration.h"
 
-const unsigned int SensorSimulatorPartialState::kDimensions = PGMOS_ENABLE_OPTICAL_FLOW * 3 + PGMOS_ENABLE_DIRECTION_SENSOR * 3 + PGMOS_ENABLE_ACCELEROMETER * 3;
+const unsigned int SensorSimulatorPartialState::kDimensions = PGMOS_ENABLE_OPTICAL_FLOW * 6 + PGMOS_ENABLE_DIRECTION_SENSOR * 3 + PGMOS_ENABLE_ACCELEROMETER * 3;
 
 SensorSimulatorPartialState::SensorSimulatorPartialState(SampleFactory &sample_factory, const Asteroid &asteroid)
     : SensorSimulator(kDimensions, sample_factory, asteroid) {
 
 #if PGMOS_ENABLE_OPTICAL_FLOW
-    noise_configurations_ = std::vector<double>(3, 0.05);
+    noise_configurations_ = std::vector<double>(6, 0.05);
 #endif
 #if PGMOS_ENABLE_DIRECTION_SENSOR
     surface_point_ = sample_factory.SamplePointOnEllipsoidSurface(asteroid.SemiAxis());
@@ -27,13 +27,14 @@ SensorData SensorSimulatorPartialState::Simulate(const SystemState &state, const
 #if PGMOS_ENABLE_OPTICAL_FLOW
     const Vector3D &velocity = {state[3], state[4], state[5]};
 
+        /*
     const double coef_norm_height = 1e5 * sqrt(3) / VectorNorm(height);
     sensor_data[0] = velocity[0] * coef_norm_height;
     sensor_data[1] = velocity[1] * coef_norm_height;
     sensor_data[2] = velocity[2] * coef_norm_height;
+    sensor_data[3] = VectorNorm(velocity);
+    */
 
-
-    /*
     const double norm_height_pow2 = VectorDotProduct(height, height);
     const double norm_height = sqrt(norm_height_pow2);
     const double coef_norm_height = sqrt(3) / norm_height;
@@ -48,16 +49,15 @@ SensorData SensorSimulatorPartialState::Simulate(const SystemState &state, const
         sensor_data[i] = velocity_vertical[i] * coef_norm_height;
         sensor_data[3+i] = velocity_horizontal[i] * coef_norm_height;
     }
-    */
 
 #if SSPS_WITH_NOISE
-    for (unsigned int i = 0; i < 3; ++i) {
+    for (unsigned int i = 0; i < 6; ++i) {
         sensor_data[i] += sensor_data[i] * sample_factory_.SampleNormal(0.0, noise_configurations_.at(i));
     }
 #endif
 
-    /*
-    const double max_abs_sensor_value = 1e-4;
+
+    const double max_abs_sensor_value = 1e-5;
     for (unsigned int i = 0; i < 6; ++i) {
         double &sensor_value = sensor_data[i];
         if (sensor_value > max_abs_sensor_value) {
@@ -67,7 +67,7 @@ SensorData SensorSimulatorPartialState::Simulate(const SystemState &state, const
         }
         sensor_value = sensor_value * 0.5 / max_abs_sensor_value + 0.5;
     }
-    */
+
 #endif
 
 #if PGMOS_ENABLE_DIRECTION_SENSOR
