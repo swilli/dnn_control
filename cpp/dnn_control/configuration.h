@@ -60,6 +60,7 @@
 
 
 // Class SensorSimulatorPartialState configs
+#define SSPS_NORMALIZE_SENSOR_VALUES    false
 #define SSPS_WITH_NOISE true
 
 
@@ -153,6 +154,7 @@ inline void ConfigurationPaGMO() {
     std::cout << "CNN_ENABLE_CORRECT_THRUST_OUTPUT   " << ToString(CNN_ENABLE_CORRECT_THRUST_OUTPUT) << std::endl;
     std::cout << "CPD_ENABLE_CORRECT_THRUST_OUTPUT   " << ToString(CPD_ENABLE_CORRECT_THRUST_OUTPUT) << std::endl;
     std::cout << "SSPS_WITH_NOISE   " << ToString(SSPS_WITH_NOISE) << std::endl;
+    std::cout << "SSPS_NORMALIZE_SENSOR_VALUES   " << ToString(SSPS_NORMALIZE_SENSOR_VALUES) << std::endl;
     std::cout << "SSFS_WITH_NOISE   " << ToString(SSFS_WITH_NOISE) << std::endl;
     std::cout << "TDG_DATA_WITH_NOISE   " << ToString(TDG_DATA_WITH_NOISE) << std::endl;
     std::cout << "TDG_DATA_DIMENSIONS   " << TDG_DATA_DIMENSIONS << std::endl;

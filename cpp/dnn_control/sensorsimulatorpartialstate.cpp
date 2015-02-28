@@ -166,12 +166,17 @@ SensorData SensorSimulatorPartialState::Simulate(const SystemState &state, const
 
 double SensorSimulatorPartialState::Normalize(const double &sensor_value, const double &max_abs_sensor_value) {
     double normalized_sensor_value = sensor_value;
+
+#if SSPS_NORMALIZE_SENSOR_VALUES
     if (normalized_sensor_value > max_abs_sensor_value) {
         normalized_sensor_value = max_abs_sensor_value;
     } else if (normalized_sensor_value < -max_abs_sensor_value) {
         normalized_sensor_value = -max_abs_sensor_value;
     }
     normalized_sensor_value = normalized_sensor_value * 0.5 / max_abs_sensor_value + 0.5;
+
+#endif
+
     return normalized_sensor_value;
 }
 
