@@ -161,6 +161,12 @@ SensorData SensorSimulatorPartialState::Simulate(const SystemState &state, const
 
 #endif
 
+    std::cout << std::endl;
+    std::cout << time << ", " << VectorNorm(height) << ", " << VectorNorm(velocity);
+    for (unsigned int i = 0; i < sensor_data.size(); ++i) {
+        std::cout << ", " << sensor_data[i];
+    }
+
     return sensor_data;
 }
 
@@ -176,6 +182,7 @@ double SensorSimulatorPartialState::Normalize(const double &sensor_value, const 
     normalized_sensor_value = normalized_sensor_value * 0.5 / max_abs_sensor_value + 0.5;
 
 #endif
+
 
     return normalized_sensor_value;
 }

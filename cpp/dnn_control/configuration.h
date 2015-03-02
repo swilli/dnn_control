@@ -9,7 +9,7 @@
  */
 
 // Task Name
-#define TASK_NAME   ""
+#define TASK_NAME   "nn_input"
 
 // Evolutionary Robotics configs
 #define ER_NUM_GENERATIONS  1000
@@ -17,7 +17,7 @@
 #define ER_NUM_ISLANDS  24
 #define ER_SIMULATION_TIME  1.0 * 60.0 * 60.0
 #define ER_EVALUATIONS  8
-#define ER_NUM_HIDDEN_NODES 5
+#define ER_NUM_HIDDEN_NODES 3
 
 
 // Class hovering_problem configs
@@ -47,11 +47,11 @@
 #define PGMOS_IC_VELOCITY_TYPE  PGMOS_IC_BODY_RANDOM_VELOCITY
 #define PGMOS_IC_POSITION_OFFSET_ENABLED    true
 #define PGMOS_ENABLE_ODOMETRY   false
-#define PGMOS_ENABLE_OPTICAL_FLOW   true
+#define PGMOS_ENABLE_OPTICAL_FLOW   false
 #define PGMOS_ENABLE_VELOCITY   true
-#define PGMOS_ENABLE_VELOCITY_OVER_HEIGHT   true
-#define PGMOS_ENABLE_DIRECTION_SENSOR   true
-#define PGMOS_ENABLE_ACCELEROMETER  true
+#define PGMOS_ENABLE_VELOCITY_OVER_HEIGHT   false
+#define PGMOS_ENABLE_DIRECTION_SENSOR   false
+#define PGMOS_ENABLE_ACCELEROMETER  false
 
 
 // Class ControllerNeuralNetwork configs
@@ -63,7 +63,7 @@
 
 
 // Class SensorSimulatorPartialState configs
-#define SSPS_NORMALIZE_SENSOR_VALUES    false
+#define SSPS_NORMALIZE_SENSOR_VALUES    true
 #define SSPS_WITH_NOISE true
 
 
