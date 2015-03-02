@@ -162,6 +162,7 @@ boost::tuple<double, double, double> hovering_problem_neural_network::single_pos
     const std::vector<double> &evaluated_times = boost::get<0>(result);
     const std::vector<Vector3D> &evaluated_positions = boost::get<2>(result);
     const std::vector<Vector3D> &evaluated_heights = boost::get<3>(result);
+    const std::vector<Vector3D> &evaluated_velocities = boost::get<4>(result);
 
     const unsigned int num_samples = evaluated_times.size();
 
@@ -177,6 +178,7 @@ boost::tuple<double, double, double> hovering_problem_neural_network::single_pos
     }
 #endif
 
+#if PGMOS_ENABLE_ODOMETRY
     unsigned int considered_samples = 0;
     for (unsigned int i = 0; i < num_samples; ++i) {
         if (evaluated_times.at(i) >= HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME) {
@@ -197,7 +199,28 @@ boost::tuple<double, double, double> hovering_problem_neural_network::single_pos
         }
     }
     mean_error /= considered_samples;
-
+#else
+    unsigned int considered_samples = 0;
+    for (unsigned int i = 0; i < num_samples; ++i) {
+        if (evaluated_times.at(i) >= HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME) {
+            const double error = VectorNorm(evaluated_velocities.at(i));
+            if (error > max_error) {
+                max_error = error;
+                if (min_error == std::numeric_limits<double>::max()) {
+                    min_error = max_error;
+                }
+            } else if(error < min_error) {
+                min_error = error;
+                if (max_error == -std::numeric_limits<double>::max()){
+                        max_error = min_error;
+                }
+            }
+            mean_error += error;
+            considered_samples++;
+        }
+    }
+    mean_error /= considered_samples;
+#endif
     return boost::make_tuple(mean_error, min_error, max_error);
 }
 
