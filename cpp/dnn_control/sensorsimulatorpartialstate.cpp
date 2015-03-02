@@ -39,7 +39,7 @@ SensorData SensorSimulatorPartialState::Simulate(const SystemState &state, const
 
     const double norm_height_pow2 = VectorDotProduct(height, height);
     const double norm_height = sqrt(norm_height_pow2);
-    const double coef_norm_height = sqrt(3) / norm_height;
+    const double coef_norm_height = 10000.0 / norm_height;
 
 #if PGMOS_ENABLE_OPTICAL_FLOW
     const double velocity_dot_height = VectorDotProduct(velocity, height);
