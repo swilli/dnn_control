@@ -52,7 +52,7 @@ print 'The pretraining code for file ' + os.path.split(__file__)[1] + ' ran for 
 
 samples = training_set.get_value(borrow=True)
 num_test_samples = 100
-test_samples = sample(test_set.get_value(borrow=True), num_test_samples)
+test_samples = sample(test_set, num_test_samples)
 mean_error = 0.0
 num_tests = 0
 for sample in test_samples:
