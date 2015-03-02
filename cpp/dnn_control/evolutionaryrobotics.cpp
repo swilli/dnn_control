@@ -240,9 +240,6 @@ void TestNeuralNetworkController(const unsigned int &random_seed) {
     writer_evaluation.CreateEvaluationFile(random_seed, simulation.TargetPosition(), times, positions, velocities, thrusts);
     std::cout << "done." << std::endl;
 
-
-    return;
-
     std::cout << "Performing post evaluation ... ";
     const boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<std::pair<double, double> > > post_evaluation = prob.post_evaluate(solution, random_seed);
     const std::vector<unsigned int> &random_seeds = boost::get<0>(post_evaluation);
