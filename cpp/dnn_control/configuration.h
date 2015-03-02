@@ -8,6 +8,9 @@
  * GLOBAL CONFIGURATION FILE FOR ALL AVAILABLE COMPILE TIME OPTIONS
  */
 
+// Task Name
+#define TASK_NAME   ""
+
 // Evolutionary Robotics configs
 #define ER_NUM_GENERATIONS  1000
 #define ER_POPULATION_SIZE  20
@@ -96,9 +99,9 @@
 
 // Other stuff configs, not relevant for simulation
 #define OUTPUT_ROOT_PATH   "/home/willist/Documents/dnn/"
-#define PATH_TO_NEURO_TRAJECTORY_FILE   OUTPUT_ROOT_PATH    "results/trajectory_neuro.txt"
-#define PATH_TO_NEURO_EVALUATION_FILE  OUTPUT_ROOT_PATH "results/evaluation_neuro.txt"
-#define PATH_TO_NEURO_POST_EVALUATION_FILE    OUTPUT_ROOT_PATH  "results/post_evaluation_neuro.txt"
+#define PATH_TO_NEURO_TRAJECTORY_FILE   OUTPUT_ROOT_PATH    "results/trajectory_neuro_" TASK_NAME ".txt"
+#define PATH_TO_NEURO_EVALUATION_FILE  OUTPUT_ROOT_PATH "results/evaluation_neuro_" TASK_NAME ".txt"
+#define PATH_TO_NEURO_POST_EVALUATION_FILE    OUTPUT_ROOT_PATH  "results/post_evaluation_neuro_" TASK_NAME ".txt"
 #define PATH_TO_NEURO_CONVEXITY_PATH    OUTPUT_ROOT_PATH    "results/convexity/"
 #define PATH_TO_FULL_STATE_TRAJECTORY_FILE  OUTPUT_ROOT_PATH    "results/trajectory_full_state.txt"
 #define PATH_TO_FULL_STATE_EVALUATION_FILE  OUTPUT_ROOT_PATH    "results/evaluation_full_state.txt"
@@ -127,6 +130,7 @@ static inline std::string ToString(const bool &value) {
 }
 
 inline void ConfigurationPaGMO() {
+    std::cout << TASK_NAME << std::endl;
     std::cout << "PaGMOSimulation global configuration" << std::endl;
     std::cout << "ER_NUM_ISLANDS   " << ER_NUM_ISLANDS << std::endl;
     std::cout << "ER_POPULATION_SIZE   " << ER_POPULATION_SIZE << std::endl;
