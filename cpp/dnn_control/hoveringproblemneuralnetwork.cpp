@@ -206,7 +206,7 @@ boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<std::pa
     std::vector<unsigned int> used_random_seeds;
     if (num_tests == 0) {
         m_urng.seed(start_seed);
-        num_tests = 25000;
+        num_tests = 10000;
         for (unsigned int i = 0; i < num_tests; ++i) {
             used_random_seeds.push_back(m_urng());
         }
