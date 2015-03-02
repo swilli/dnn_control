@@ -244,5 +244,21 @@ void PaGMOSimulation::Init() {
         initial_system_state_[i] = spacecraft_position[i];
         initial_system_state_[3+i] = spacecraft_velocity[i];
     }
+    boost::tuple<Vector3D, double> result = asteroid_.NearestPointOnSurfaceToPosition(spacecraft_position);
+    const Vector3D height = VectorSub(spacecraft_position, boost::get<0>(result));
+    const double norm_height_pow2 = VectorDotProduct(height, height);
+    const double norm_height = sqrt(norm_height_pow2);
+
+    const double norm_height_2 = boost::get<1>(result);
+
+    const double velocity_dot_height = VectorDotProduct(spacecraft_velocity, height);
+    const double scaling = velocity_dot_height / norm_height_pow2;
+
+    const Vector3D &velocity_vertical = {scaling * height[0], scaling * height[1], scaling * height[2]};
+    const Vector3D velocity_horizontal = VectorSub(spacecraft_velocity, velocity_vertical);
+
+    const Vector3D omega = boost::get<0>(asteroid_.AngularVelocityAndAccelerationAtTime(0));
+    std::cout << norm_height << ", " << velocity_vertical[0] << ", " << velocity_vertical[1] << ", " << velocity_vertical[2] << ", " << velocity_horizontal[0] << ", " << velocity_horizontal[1] << ", "<< velocity_horizontal[2] << ", "<< omega[0] << ", "<< omega[1] << ", "<< omega[2] << std::endl;
+
     initial_system_state_[6] = spacecraft_maximum_mass_;
 }
