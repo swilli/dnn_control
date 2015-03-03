@@ -189,7 +189,8 @@ static std::vector<Sample> PrepareSamples(SampleFactory &sample_factory, const u
         const Vector3D target_position = simulator.SampleFactoryOfSystem().SamplePointOutSideEllipsoid(simulator.AsteroidOfSystem().SemiAxis(), 1.1, 4.0);
 #else
         LSPISimulator simulator(sample_factory.SampleRandomInteger());
-        const Vector3D target_position = sample_factory.SamplePointOutSideEllipsoid(simulator.AsteroidOfSystem().SemiAxis(), 1.1, 4.0);
+        const boost::tuple<Vector3D, double, double, double> sampled_point = sample_factory.SamplePointOutSideEllipsoid(simulator.AsteroidOfSystem().SemiAxis(), 1.1, 4.0);
+        const Vector3D &target_position = boost::get<0>(sampled_point);
 #endif
         const double dt = 1.0 / simulator.ControlFrequency();
 
@@ -336,7 +337,8 @@ static boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<
         const unsigned int current_seed = used_random_seeds.at(i);
         LSPISimulator simulator(current_seed);
         SampleFactory &sample_factory = simulator.SampleFactoryOfSystem();
-        const Vector3D target_position = sample_factory.SamplePointOutSideEllipsoid(simulator.AsteroidOfSystem().SemiAxis(), 1.1, 4.0);
+        const boost::tuple<Vector3D, double, double, double> sampled_point = sample_factory.SamplePointOutSideEllipsoid(simulator.AsteroidOfSystem().SemiAxis(), 1.1, 4.0);
+        const Vector3D &target_position = boost::get<0>(sampled_point);
 
         const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = EvaluatePolicy(sample_factory, controller_weights, simulator, target_position, test_time * simulator.ControlFrequency());
         const std::vector<double> &evaluated_times = boost::get<0>(result);
@@ -377,7 +379,8 @@ void TestLeastSquaresPolicyController(const unsigned int &random_seed) {
 
     LSPISimulator simulator(random_seed);
     SampleFactory &sample_factory = simulator.SampleFactoryOfSystem();
-    const Vector3D target_position = sample_factory.SamplePointOutSideEllipsoid(simulator.AsteroidOfSystem().SemiAxis(), 1.1, 4.0);
+    const boost::tuple<Vector3D, double, double, double> sampled_point = sample_factory.SamplePointOutSideEllipsoid(simulator.AsteroidOfSystem().SemiAxis(), 1.1, 4.0);
+    const Vector3D &target_position = boost::get<0>(sampled_point);
 
     eigen::VectorXd weights(kSpacecraftPhiSize);
 

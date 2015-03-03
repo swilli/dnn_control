@@ -4,6 +4,7 @@
 #include "modifiedcontrolledrungekutta.h"
 #include "odesystem.h"
 #include "trainingdatagenerator.h"
+#include "constants.h"
 #include "configuration.h"
 
 PaGMOSimulation::PaGMOSimulation(const unsigned int &random_seed, const double &simulation_time)
@@ -143,9 +144,13 @@ void PaGMOSimulation::Init() {
 
     SampleFactory sample_factory(random_seed_);
 
-    const Vector3D semi_axis = {sample_factory.SampleUniform(8000.0, 12000.0), sample_factory.SampleUniform(4000.0, 7500.0), sample_factory.SampleUniform(1000.0, 3500.0)};
+    const double c_semi_axis = sample_factory.SampleUniform(100.0, 8000.0);
+    const double b_semi_axis_n = sample_factory.SampleUniform(1.1, 2.0);
+    const double a_semi_axis_n = sample_factory.SampleUniform(1.1 * b_semi_axis_n, 4.0);
+    const Vector3D semi_axis = {a_semi_axis_n * c_semi_axis, b_semi_axis_n * c_semi_axis, c_semi_axis};
     const double density = sample_factory.SampleUniform(1500.0, 3000.0);
-    const Vector2D angular_velocity_xz = {sample_factory.SampleSign() * sample_factory.SampleUniform(0.0002, 0.0008), sample_factory.SampleSign() * sample_factory.SampleUniform(0.0002, 0.0008)};
+    const double angular_velocity = sqrt((kGravitationalConstant * 4.0/3.0 * kPi * semi_axis[0] * semi_axis[1] * semi_axis[2] * density) / (semi_axis[0] * semi_axis[0] * semi_axis[0]));
+    const Vector2D angular_velocity_xz = {sample_factory.SampleSign() * sample_factory.SampleUniform(angular_velocity * 0.5, angular_velocity), sample_factory.SampleSign() * sample_factory.SampleUniform(angular_velocity * 0.5, angular_velocity)};
     const double time_bias = sample_factory.SampleUniform(0.0, 12.0 * 60 * 60);
     asteroid_ = Asteroid(semi_axis, density, angular_velocity_xz, time_bias);
 
@@ -160,10 +165,12 @@ void PaGMOSimulation::Init() {
 
 #if PGMOS_IC_VELOCITY_TYPE == PGMOS_IC_INERTIAL_ORBITAL_VELOCITY
     // higher for orbit, so we don't crash into the asteroid
-    target_position_ = sample_factory.SamplePointOutSideEllipsoid(semi_axis, 2.0, 4.0);
+    const boost::tuple<Vector3D, double, double, double> sampled_point = sample_factory.SamplePointOutSideEllipsoid(semi_axis, 2.0, 4.0);
+    target_position_ = boost::get<0>(sampled_point);
 #else
     // random
-    target_position_ = sample_factory.SamplePointOutSideEllipsoid(semi_axis, 1.1, 4.0);
+    const boost::tuple<Vector3D, double, double, double> sampled_point = sample_factory.SamplePointOutSideEllipsoid(semi_axis, 1.1, 4.0);
+    target_position_ = boost::get<0>(sampled_point);
 #endif
 
 #if PGMOS_IC_POSITION_OFFSET_ENABLED
@@ -244,5 +251,6 @@ void PaGMOSimulation::Init() {
         initial_system_state_[i] = spacecraft_position[i];
         initial_system_state_[3+i] = spacecraft_velocity[i];
     }
+
     initial_system_state_[6] = spacecraft_maximum_mass_;
 }
