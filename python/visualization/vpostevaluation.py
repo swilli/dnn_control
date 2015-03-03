@@ -28,11 +28,12 @@ data = [[int(line[0])] + [float(value) for value in line[1:]] for line in data]
 filtered_data = []
 outliers = 0
 for line in data:
-    if line[1] >= 0.5:
+    if line[1] >= 1.0:
         outliers += 1
-        continue
-    else:
-        filtered_data += [line]
+        print(line)
+        #continue
+
+    filtered_data += [line]
 
 data = array(filtered_data)
 
@@ -48,12 +49,13 @@ ssde_stdev = std(delta_errors, axis=0)
 ssde_min = min(delta_errors)
 ssde_max = max(delta_errors)
 
-print("Outliers: {0}".format(outliers))
-print("SSME: mean={0}, stdev={1}, min={2}, max={3}".format(ssme_mean, ssme_stdev, ssme_min, ssme_max))
-print("SSDE: mean={0}, stdev={1}, min={2}, max={3}".format(ssde_mean, ssde_stdev, ssde_min, ssde_max))
+#print("Outliers: {0}".format(outliers))
+
+subtitle1 = "SSME: mean=%.5f, stdev=%.5f, min=%.5f, max=%.5f" % (ssme_mean, ssme_stdev, ssme_min, ssme_max)
+subtitle2 = "SSDE: mean=%.5f, stdev=%.5f, min=%.5f, max=%.5f" % (ssde_mean, ssde_stdev, ssde_min, ssde_max)
 
 plt.boxplot(data[:, 1], labels=labels)
-plt.title("Post Evaluation for 25000 different Initial Conditions")
+plt.title("Post Evaluation for {0} different Initial Conditions".format(num_samples) + '\n' + subtitle1 + '\n' + subtitle2)
 plt.xlabel('Controller')
 plt.ylabel('Fitness')
 plt.show()

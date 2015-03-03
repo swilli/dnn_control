@@ -14,7 +14,7 @@ from numpy.matlib import repmat
 from numpy.linalg import norm
 
 
-num_bins = 50
+num_bins = 100
 
 file_name = sys.argv[1]
 
@@ -37,6 +37,7 @@ omega = data[:, 4:7]
 altitude = data[:, 7]
 mass = data[:, 8]
 velocity = norm(data[:, 9:12], axis=1)
+height = data[:, 12]
 
 frequency = 2.0 * pi / norm(omega, axis = 1)
 
@@ -51,6 +52,7 @@ min_density, max_density, mean_density, stdev_density = min_max_mean_stdev(densi
 min_altitude, max_altitude, mean_altitude, stdev_altitude = min_max_mean_stdev(altitude)
 min_mass, max_mass, mean_mass, stdev_mass = min_max_mean_stdev(mass)
 min_velocity, max_velocity, mean_velocity, stdev_velocity = min_max_mean_stdev(velocity)
+min_height, max_height, mean_height, stdev_height = min_max_mean_stdev(height)
 
 def print_stats(name, val_min, val_max, val_mean, val_stdev):
 	print "%s & %.2f & %.2f & %.2f & %.2f \\\\" % (name, val_mean, val_stdev, val_min, val_max)
@@ -64,4 +66,20 @@ print_stats("Density [kg/m^{3}]", min_density, max_density, mean_density, stdev_
 print_stats("Normalized Altitude", min_altitude, max_altitude, mean_altitude, stdev_altitude)
 print_stats("Mass [kg]", min_mass, max_mass, mean_mass, stdev_mass)
 print_stats("Magnitude Velocity [m/s]", min_velocity, max_velocity, mean_velocity, stdev_velocity)
+print_stats("Spacecraft Height [m]", min_height, max_height, mean_height, stdev_height)
 
+fig = plt.figure(1)
+fig.subplots_adjust(hspace=1.0)
+plt.subplot(311)
+plt.hist(frequency,num_bins)
+plt.title('Rotational Period [s]')
+
+plt.subplot(312)
+plt.hist(velocity, num_bins)
+plt.title('Magnitude Velocity [m/s]')
+
+plt.subplot(313)
+plt.hist(height, num_bins)
+plt.title('Spacecraft Height [m]')
+
+plt.show()
