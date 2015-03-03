@@ -18,7 +18,8 @@ SensorSimulatorPartialState::SensorSimulatorPartialState(SampleFactory &sample_f
     noise_configurations_.insert(noise_configurations_.end(), noise_velocity_over_height_sensor.begin(), noise_velocity_over_height_sensor.end());
 #endif
 #if PGMOS_ENABLE_DIRECTION_SENSOR
-    surface_point_ = sample_factory.SamplePointOnEllipsoidSurface(asteroid.SemiAxis());
+    const boost::tuple<Vector3D, double, double> sampled_point = sample_factory.SamplePointOnEllipsoidSurface(asteroid.SemiAxis());
+    surface_point_ = boost::get<0>(sampled_point);
     const std::vector<double> noise_direction_sensor(3, 0.05);
     noise_configurations_.insert(noise_configurations_.end(), noise_direction_sensor.begin(), noise_direction_sensor.end());
 #endif
@@ -176,6 +177,7 @@ double SensorSimulatorPartialState::Normalize(const double &sensor_value, const 
     normalized_sensor_value = normalized_sensor_value * 0.5 / max_abs_sensor_value + 0.5;
 
 #endif
+
 
     return normalized_sensor_value;
 }

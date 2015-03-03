@@ -34,7 +34,7 @@ double SampleFactory::SampleSign() {
     }
 }
 
-Vector3D SampleFactory::SamplePointOutSideEllipsoid(const Vector3D &semi_axis, const double &min_scale, const double &max_scale) {
+boost::tuple<Vector3D, double, double, double> SampleFactory::SamplePointOutSideEllipsoid(const Vector3D &semi_axis, const double &min_scale, const double &max_scale) {
     Vector3D point;
 
     const double u = 2.0 * kPi * SampleUniform(0.0, 1.0 - 1e-10);
@@ -43,10 +43,11 @@ Vector3D SampleFactory::SamplePointOutSideEllipsoid(const Vector3D &semi_axis, c
     point[0] = s * semi_axis[0] * cos(u) * sin(v);
     point[1] = s * semi_axis[1] * sin(u) * sin(v);
     point[2] = s * semi_axis[2] * cos(v);
-    return point;
+
+    return boost::make_tuple(point, u, v, s);
 }
 
-Vector3D SampleFactory::SamplePointOnEllipsoidSurface(const Vector3D &semi_axis) {
+boost::tuple<Vector3D, double, double> SampleFactory::SamplePointOnEllipsoidSurface(const Vector3D &semi_axis) {
     Vector3D point;
 
     const double u = 2.0 * kPi * SampleUniform(0.0, 1.0 - 1e-10);
@@ -54,7 +55,8 @@ Vector3D SampleFactory::SamplePointOnEllipsoidSurface(const Vector3D &semi_axis)
     point[0] = semi_axis[0] * cos(u) * sin(v);
     point[1] = semi_axis[1] * sin(u) * sin(v);
     point[2] = semi_axis[2] * cos(v);
-    return point;
+
+    return boost::make_tuple(point, u, v);
 }
 
 void SampleFactory::SetSeed(const unsigned int &random_seed) {

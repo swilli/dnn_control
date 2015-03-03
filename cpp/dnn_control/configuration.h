@@ -17,7 +17,7 @@
 #define ER_NUM_ISLANDS  24
 #define ER_SIMULATION_TIME  1.3 * 60.0 * 60.0
 #define ER_EVALUATIONS  8
-#define ER_NUM_HIDDEN_NODES 5
+#define ER_NUM_HIDDEN_NODES 3
 
 
 // Class hovering_problem configs
