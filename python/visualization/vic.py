@@ -5,7 +5,6 @@ usage:
 
 examples:
 ./python2.7 vic.py ic.txt
-./python2.7 vic.py ic.txt
 '''
 
 import sys
@@ -54,15 +53,15 @@ min_mass, max_mass, mean_mass, stdev_mass = min_max_mean_stdev(mass)
 min_velocity, max_velocity, mean_velocity, stdev_velocity = min_max_mean_stdev(velocity)
 
 def print_stats(name, val_min, val_max, val_mean, val_stdev):
-	print("{0}: min: {1}, max: {2}, mean: {3}, stdev: {4}".format(name, val_min, val_max, val_mean, val_stdev))
+	print "%s & %.2f & %.2f & %.2f & %.2f \\\\" % (name, val_mean, val_stdev, val_min, val_max)
 
 print("# samples: {0}".format(num_samples))
-print_stats("frequency", min_frequency, max_frequency, mean_frequency, stdev_frequency)
-print_stats("semi_axis_a", min_semi_axis_a, max_semi_axis_a, mean_semi_axis_a, stdev_semi_axis_a)
-print_stats("semi_axis_b", min_semi_axis_b, max_semi_axis_b, mean_semi_axis_b, stdev_semi_axis_b)
-print_stats("semi_axis_c", min_semi_axis_c, max_semi_axis_c, mean_semi_axis_c, stdev_semi_axis_c)
-print_stats("density", min_density, max_density, mean_density, stdev_density)
-print_stats("normalized altitude", min_altitude, max_altitude, mean_altitude, stdev_altitude)
-print_stats("mass", min_mass, max_mass, mean_mass, stdev_mass)
-print_stats("velocity", min_velocity, max_velocity, mean_velocity, stdev_velocity)
+print_stats("Rotational Period [s]", min_frequency, max_frequency, mean_frequency, stdev_frequency)
+print_stats("Semi Axis a [m]", min_semi_axis_a, max_semi_axis_a, mean_semi_axis_a, stdev_semi_axis_a)
+print_stats("Semi Axis b [m]", min_semi_axis_b, max_semi_axis_b, mean_semi_axis_b, stdev_semi_axis_b)
+print_stats("Semi Axis c [m]", min_semi_axis_c, max_semi_axis_c, mean_semi_axis_c, stdev_semi_axis_c)
+print_stats("Density [kg/m^{3}]", min_density, max_density, mean_density, stdev_density)
+print_stats("Normalized Altitude", min_altitude, max_altitude, mean_altitude, stdev_altitude)
+print_stats("Mass [kg]", min_mass, max_mass, mean_mass, stdev_mass)
+print_stats("Magnitude Velocity [m/s]", min_velocity, max_velocity, mean_velocity, stdev_velocity)
 
