@@ -10,7 +10,7 @@ examples:
 
 import sys
 import matplotlib.pyplot as plt
-from numpy import array, sum, pi, mean
+from numpy import array, sum, pi, mean, std
 from numpy.matlib import repmat
 from numpy.linalg import norm
 
@@ -30,89 +30,39 @@ data = [line.split(',') for line in lines]
 data = [[float(value) for value in line] for line in data]
 data = array(data)
 
-height = data[:, 0]
-velocity = norm(data[:, 1:4] + data[:, 4:7], axis=1)
-velocity_vertical = data[:, 1:4]
-velocity_horizontal = data[:, 4:7]
-frequency = 2.0 * pi / norm(data[:, 7:10], axis = 1)
-fig = plt.figure(1)
+semi_axis_a = data[:, 0]
+semi_axis_b = data[:, 1]
+semi_axis_c = data[:, 2]
+density = data[:, 3]
+omega = data[:, 4:7]
+altitude = data[:, 7]
+mass = data[:, 8]
+velocity = norm(data[:, 9:12], axis=1)
 
-fig.subplots_adjust(hspace=1.0)
+frequency = 2.0 * pi / norm(omega, axis = 1)
 
-scaling = 1e3
+def min_max_mean_stdev(data):
+	return min(data), max(data), mean(data), std(data)
 
-plt.subplot(15,1,1)
-plt.hist(height, num_bins)
-plt.title('Height')
+min_frequency, max_frequency, mean_frequency, stdev_frequency = min_max_mean_stdev(frequency)
+min_semi_axis_a, max_semi_axis_a, mean_semi_axis_a, stdev_semi_axis_a = min_max_mean_stdev(semi_axis_a)
+min_semi_axis_b, max_semi_axis_b, mean_semi_axis_b, stdev_semi_axis_b = min_max_mean_stdev(semi_axis_b)
+min_semi_axis_c, max_semi_axis_c, mean_semi_axis_c, stdev_semi_axis_c = min_max_mean_stdev(semi_axis_c)
+min_density, max_density, mean_density, stdev_density = min_max_mean_stdev(density)
+min_altitude, max_altitude, mean_altitude, stdev_altitude = min_max_mean_stdev(altitude)
+min_mass, max_mass, mean_mass, stdev_mass = min_max_mean_stdev(mass)
+min_velocity, max_velocity, mean_velocity, stdev_velocity = min_max_mean_stdev(velocity)
 
-plt.subplot(15,1,2)
-plt.hist(velocity, num_bins)
-plt.title('Velocity')
+def print_stats(name, val_min, val_max, val_mean, val_stdev):
+	print("{0}: min: {1}, max: {2}, mean: {3}, stdev: {4}".format(name, val_min, val_max, val_mean, val_stdev))
 
-plt.subplot(15,1,3)
-plt.hist(velocity_vertical[:, 0], num_bins)
-plt.title('Velocity Vertical X')
-
-plt.subplot(15,1,4)
-plt.hist(velocity_vertical[:,1], num_bins)
-plt.title('Velocity Vertical Y')
-
-plt.subplot(15,1,5)
-plt.hist(velocity_vertical[:,2], num_bins)
-plt.title('Velocity Vertical Z')
-
-plt.subplot(15,1,6)
-plt.hist(velocity_horizontal[:,0], num_bins)
-plt.title('Velocity Horizontal X')
-
-plt.subplot(15,1,7)
-plt.hist(velocity_horizontal[:,1], num_bins)
-plt.title('Velocity Horizontal Y')
-
-plt.subplot(15,1,8)
-plt.hist(velocity_horizontal[:,2], num_bins)
-plt.title('Velocity Horizontal Z')
-
-plt.subplot(15,1,9)
-plt.hist(velocity_vertical[:, 0] / height * scaling, num_bins)
-plt.title('Velocity Vertical X / Height')
-
-plt.subplot(15,1,10)
-plt.hist(velocity_vertical[:,1] / height * scaling, num_bins)
-plt.title('Velocity Vertical Y / Height')
-
-plt.subplot(15,1,11)
-plt.hist(velocity_vertical[:,2] / height * scaling, num_bins)
-plt.title('Velocity Vertical Z / Height')
-
-plt.subplot(15,1,12)
-plt.hist(velocity_horizontal[:,0] / height * scaling, num_bins)
-plt.title('Velocity Horizontal X / Height')
-
-plt.subplot(15,1,13)
-plt.hist(velocity_horizontal[:,1] / height * scaling, num_bins)
-plt.title('Velocity Horizontal Y / Height')
-
-plt.subplot(15,1,14)
-plt.hist(velocity_horizontal[:,2] / height * scaling, num_bins)
-plt.title('Velocity Horizontal Z / Height')
-
-
-plt.subplot(15,1,15)
-plt.hist(frequency, num_bins)
-plt.title('Frequency')
-
-#print(min(height))
-#print(max(height))
-#print(min(velocity_vertical / height))
-#print(max(velocity_vertical / height))
-#print(min(velocity_horizontal / height))
-#print(max(velocity_horizontal / height))
-#print(min(velocity))
-#print(max(velocity))
-#print(mean(frequency))
-plt.show()
-
-
-
+print("# samples: {0}".format(num_samples))
+print_stats("frequency", min_frequency, max_frequency, mean_frequency, stdev_frequency)
+print_stats("semi_axis_a", min_semi_axis_a, max_semi_axis_a, mean_semi_axis_a, stdev_semi_axis_a)
+print_stats("semi_axis_b", min_semi_axis_b, max_semi_axis_b, mean_semi_axis_b, stdev_semi_axis_b)
+print_stats("semi_axis_c", min_semi_axis_c, max_semi_axis_c, mean_semi_axis_c, stdev_semi_axis_c)
+print_stats("density", min_density, max_density, mean_density, stdev_density)
+print_stats("normalized altitude", min_altitude, max_altitude, mean_altitude, stdev_altitude)
+print_stats("mass", min_mass, max_mass, mean_mass, stdev_mass)
+print_stats("velocity", min_velocity, max_velocity, mean_velocity, stdev_velocity)
 
