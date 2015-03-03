@@ -198,7 +198,7 @@ static void ConvexityCheck(pagmo::problem::hovering_problem_neural_network &prob
 void TestNeuralNetworkController(const unsigned int &random_seed) {
     ConfigurationPaGMO();
 
-    const pagmo::decision_vector &solution = {-1.603629943, -10.97035379, 4.042207563, 10.02671764, 7.357829712, -6.510311188, -8.705268789, 0.7793879416, 1.41349973, -6.259795725, 9.57791023, -5.934022084, -5.21823705, 15.43786058, 7.66979968, -12.08536152, 5.735715547, -9.330935834, 6.822578782, -9.01576485, -6.348998882, -8.474528529, 12.80920092, 6.790347427};
+    const pagmo::decision_vector &solution = {0.5401631282, 7.257346123, -4.282854018, -2.362597793, 2.227488057, -0.5876259382, -2.94902682, -0.07172406249, -3.8824835, -4.572101736, -9.227555412, -3.497265452, 1.717785541, 3.69895156, -0.7423079981, 0.9323669695, -0.484434079, 2.27834119, 5.659618236, 6.00005778, 15.39023388, -0.07947335838, -3.374968364, -1.000399581, 3.009353768, -10.02633743, -0.2228626708, 9.968910942, -1.092074594, 2.639263828, 4.954799374, -1.746685692, -0.3478076584, 0.1301276299, -0.3311717982, 0.01998654607, 0.683886355, -3.651111108, 0.4913448465, 4.942472818, -11.79090881, 2.119377126, -1.564864275, 4.89560814, -3.149859806, 3.717373893, -5.910412988, 3.078283942, 1.659036183, 3.853488205, -1.525907721, -0.6188927141, 0.5456796068, 0.2547953214, 3.854675999, -7.669181681, -3.04347995, -0.4163846137, -2.002702952, 3.998892271, 4.394440506, -0.8107435942, 2.145205736};
 
 
     std::cout << std::setprecision(10);
@@ -217,8 +217,8 @@ void TestNeuralNetworkController(const unsigned int &random_seed) {
     */
 
     std::cout << "Checking NN controller fitness... ";
-    //const double fitness = prob.objfun_seeded(random_seed, solution)[0];
-    //std::cout << fitness << std::endl;
+    const double fitness = prob.objfun_seeded(random_seed, solution)[0];
+    std::cout << fitness << std::endl;
 
     std::cout << "Simulating NN controller ... ";
     PaGMOSimulationNeuralNetwork simulation(random_seed, 10.0 * 86400.0, kNumHiddenNeurons, solution);
@@ -230,7 +230,6 @@ void TestNeuralNetworkController(const unsigned int &random_seed) {
     const std::vector<Vector3D> &thrusts = boost::get<5>(result);
     std::cout << "done." << std::endl;
 
-    return;
     std::cout << "Writing visualization file ... ";
     FileWriter writer_visualization(PATH_TO_NEURO_TRAJECTORY_FILE);
     writer_visualization.CreateTrajectoryFile(simulation.ControlFrequency(), simulation.AsteroidOfSystem(), positions, heights);
