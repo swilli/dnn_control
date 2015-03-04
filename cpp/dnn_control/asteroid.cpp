@@ -100,7 +100,7 @@ double Asteroid::EvaluatePointWithStandardEquation(const Vector3D &position) con
     return result;
 }
 
-double Asteroid::NewtonRaphsonEllipse(const Vector2D &semi_axis_mul_pos, const Vector2D &semi_axis_pow2) {
+double Asteroid::NewtonRaphsonNearestPointOnSurfaceToPositionEllipse(const Vector2D &semi_axis_mul_pos, const Vector2D &semi_axis_pow2) {
     const double tolerance = 1e-3;
     double root = 0.0;
     double old_root = root;
@@ -126,7 +126,7 @@ double Asteroid::NewtonRaphsonEllipse(const Vector2D &semi_axis_mul_pos, const V
     return root;
 }
 
-double Asteroid::NewtonRaphsonEllipsoid(const Vector3D &semi_axis_mul_pos, const Vector3D &semi_axis_pow2) {
+double Asteroid::NewtonRaphsonNearestPointOnSurfaceToPositionEllipsoid(const Vector3D &semi_axis_mul_pos, const Vector3D &semi_axis_pow2) {
     const double tolerance = 1e-3;
     double root = 0.0;
     double old_root = root;
@@ -141,6 +141,32 @@ double Asteroid::NewtonRaphsonEllipsoid(const Vector3D &semi_axis_mul_pos, const
         double df_root = 0.0;
         for (unsigned int i = 0; i < 3; ++i) {
             df_root += (semi_axis_mul_pos[i] * semi_axis_mul_pos[i]) * (-2.0) / ((root + semi_axis_pow2[i]) * (root + semi_axis_pow2[i]) * (root + semi_axis_pow2[i]));
+        }
+        root = root - f_root/df_root;
+        error = root - old_root;
+        error = (error < 0.0 ? -error : error);
+        if (std::isinf(root) || std::isnan(root)) {
+            throw PositionInsideException();
+        }
+    } while (error > tolerance);
+    return root;
+}
+
+double Asteroid::NewtonRaphsonIntersectLineToCenterFromPosition(const Vector3D &position_div_semi_axis_pow2) {
+    const double tolerance = 1e-3;
+    double root = 1.0;
+    double old_root = root;
+    double error = 0.0;
+    do {
+        old_root = root;
+        double f_root = 0.0;
+        for (unsigned int i = 0; i < 3; ++i) {
+            f_root += root * root * position_div_semi_axis_pow2[i];
+        }
+        f_root -= 1.0;
+        double df_root = 0.0;
+        for (unsigned int i = 0; i < 3; ++i) {
+            df_root += 2 * root * position_div_semi_axis_pow2[i];
         }
         root = root - f_root/df_root;
         error = root - old_root;
@@ -249,6 +275,20 @@ boost::tuple<Vector3D, double> Asteroid::NearestPointOnSurfaceToPosition(const V
     return make_tuple(point, distance);
 }
 
+Vector3D Asteroid::IntersectLineToCenterFromPosition(const Vector3D &position) const {
+    double root = 0.0;
+
+    for (unsigned int i = 0; i < 3; ++i) {
+        root += position[i] * position[i] / semi_axis_pow2_[i];
+    }
+    root = 1.0 / sqrt( root);
+
+    // Compute the intersection
+    const Vector3D point = {root * position[0], root * position[1], root * position[2]};
+
+    return point;
+}
+
 Vector2D Asteroid::ConstructorAngularVelocitiesXZ() const {
     return constructor_angular_velocities_xz_;
 }
@@ -262,7 +302,7 @@ Vector3D Asteroid::NearestPointOnEllipsoidFirstQuadrant(const Vector3D &position
             if (position[0] > 0.0) {
                 // Perform bisection to find the root (David Eberly eq (26))
                 Vector3D semi_axis_mul_pos = {semi_axis_[0] * position[0], semi_axis_[1] * position[1], semi_axis_[2] * position[2]};
-                const double time = NewtonRaphsonEllipsoid(semi_axis_mul_pos, semi_axis_pow2_);
+                const double time = NewtonRaphsonNearestPointOnSurfaceToPositionEllipsoid(semi_axis_mul_pos, semi_axis_pow2_);
                 point[0] = semi_axis_pow2_[0] * position[0] / (time + semi_axis_pow2_[0]);
                 point[1] = semi_axis_pow2_[1] * position[1] / (time + semi_axis_pow2_[1]);
                 point[2] = semi_axis_pow2_[2] * position[2] / (time + semi_axis_pow2_[2]);
@@ -335,7 +375,7 @@ Vector2D Asteroid::NearestPointOnEllipseFirstQuadrant(const Vector2D &semi_axis,
         if (position[0] > 0.0) {
             // Perform bisection to find the root (David Eberly eq (11))
             Vector2D semi_axis_mul_pos = {semi_axis_[0] * position[0], semi_axis_[1] * position[1]};
-            const double time = NewtonRaphsonEllipse(semi_axis_mul_pos, semi_axis_pow2);
+            const double time = NewtonRaphsonNearestPointOnSurfaceToPositionEllipse(semi_axis_mul_pos, semi_axis_pow2);
             point[0] = semi_axis_pow2[0] * position[0] / (time + semi_axis_pow2[0]);
             point[1] = semi_axis_pow2[1] * position[1] / (time + semi_axis_pow2[1]);
         } else {
