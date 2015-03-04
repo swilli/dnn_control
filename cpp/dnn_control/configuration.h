@@ -15,7 +15,7 @@
 #define ER_NUM_GENERATIONS  1000
 #define ER_POPULATION_SIZE  20
 #define ER_NUM_ISLANDS  24
-#define ER_SIMULATION_TIME  3.0 * 60.0 * 60.0
+//#define ER_SIMULATION_TIME  3.0 * 60.0 * 60.0
 #define ER_EVALUATIONS  10
 #define ER_NUM_HIDDEN_NODES 6
 
@@ -138,7 +138,11 @@ inline void ConfigurationPaGMO() {
     std::cout << "ER_POPULATION_SIZE   " << ER_POPULATION_SIZE << std::endl;
     std::cout << "ER_EVALUATIONS   " << ER_EVALUATIONS << std::endl;
     std::cout << "ER_NUM_GENERATIONS   " << ER_NUM_GENERATIONS << std::endl;
+#ifdef ER_SIMULATION_TIME
     std::cout << "ER_SIMULATION_TIME   " << ER_SIMULATION_TIME << std::endl;
+#else
+    std::cout << "ER_SIMULATION_TIME   dynamic" << std::endl;
+#endif
     std::cout << "ER_NUM_HIDDEN_NODES   " << ER_NUM_HIDDEN_NODES << std::endl;
 #ifdef HP_FIXED_SEED
     std::cout << "HP_FIXED_SEED   " << HP_FIXED_SEED << std::endl;

@@ -14,7 +14,7 @@ class __PAGMO_VISIBLE hovering_problem_proportional_derivative : public base_sto
     * The optimization problem is to find a proportional derivative controller which minimizes the objective function.
     */
 public:
-    hovering_problem_proportional_derivative(const unsigned int &seed=0, const unsigned int &n_evaluations=4, const double &simulation_time=3600.0);
+    hovering_problem_proportional_derivative(const unsigned int &seed=0, const unsigned int &n_evaluations=10, const double &simulation_time=0.0);
 
     hovering_problem_proportional_derivative(const hovering_problem_proportional_derivative &other);
 
