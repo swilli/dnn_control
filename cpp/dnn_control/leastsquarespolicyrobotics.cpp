@@ -408,7 +408,7 @@ void TestLeastSquaresPolicyController(const unsigned int &random_seed) {
 
     std::cout << "Writing evaluation file ... ";
     FileWriter writer_evaluation(PATH_TO_LSPI_EVALUATION_FILE);
-    writer_evaluation.CreateEvaluationFile(random_seed, target_position, times, positions, velocities, thrusts);
+    writer_evaluation.CreateEvaluationFile(random_seed, target_position, simulator.AsteroidOfSystem(), times, positions, velocities, thrusts);
     std::cout << "done." << std::endl;
 
     std::cout << "Performing post evaluation ... ";

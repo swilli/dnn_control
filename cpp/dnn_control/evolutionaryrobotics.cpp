@@ -237,7 +237,7 @@ void TestNeuralNetworkController(const unsigned int &random_seed) {
 
     std::cout << "Writing evaluation file ... ";
     FileWriter writer_evaluation(PATH_TO_NEURO_EVALUATION_FILE);
-    writer_evaluation.CreateEvaluationFile(random_seed, simulation.TargetPosition(), times, positions, velocities, thrusts);
+    writer_evaluation.CreateEvaluationFile(random_seed, simulation.TargetPosition(), simulation.AsteroidOfSystem(), times, positions, velocities, thrusts);
     std::cout << "done." << std::endl;
 
     std::cout << "Performing post evaluation ... ";
@@ -283,7 +283,7 @@ void TestProportionalDerivativeController(const unsigned int &random_seed) {
 
     std::cout << "Writing evaluation file ... ";
     FileWriter writer_evaluation(PATH_TO_FULL_STATE_EVALUATION_FILE);
-    writer_evaluation.CreateEvaluationFile(random_seed, simulation.TargetPosition(), times, positions, velocities, thrusts);
+    writer_evaluation.CreateEvaluationFile(random_seed, simulation.TargetPosition(), simulation.AsteroidOfSystem(), times, positions, velocities, thrusts);
     std::cout << "done." << std::endl;
 
     std::cout << "Performing post evaluation ... ";

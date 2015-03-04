@@ -14,8 +14,8 @@
 int main(int argc, char *argv[]) {
     srand(time(0));
 
-    //TestNeuralNetworkController(265339091);
-    //return 0;
+    TestNeuralNetworkController(265339091);
+    return 0;
 
     //TestFullStateController(0);
     //return 0;
