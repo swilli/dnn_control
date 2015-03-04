@@ -89,7 +89,7 @@ double hovering_problem_neural_network::single_fitness(PaGMOSimulationNeuralNetw
 
     // punish unfinished simulations (crash / out of fuel)
 #if HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED
-    double time_diff = evaluated_times.back() - m_simulation_time;
+    double time_diff = evaluated_times.back() - simulation.SimulationTime();
     time_diff = (time_diff < 0.0 ? -time_diff : time_diff);
     if (time_diff > 0.1) {
         fitness += 1e30;
