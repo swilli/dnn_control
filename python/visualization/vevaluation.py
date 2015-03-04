@@ -32,6 +32,7 @@ result_file = open(file_name, 'r')
 
 simulation_seed = int(result_file.readline())
 target_position = array([float(value) for value in result_file.readline().split(',')])
+asteroid_params = result_file.readline()
 
 lines = result_file.readlines()
 result_file.close()
