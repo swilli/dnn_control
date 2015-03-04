@@ -76,6 +76,21 @@ bp::list BoostAsteroid::SemiAxis() const {
     return semi_axis_py;
 }
 
+bp::list BoostAsteroid::IntersectLineToCenterFromPosition(const bp::list &position) const {
+    const Vector3D position_cpp = {bp::extract<double>(position[0]),
+        bp::extract<double>(position[1]),
+        bp::extract<double>(position[2])};
+
+    const Vector3D surface_point_cpp = asteroid_cpp_->IntersectLineToCenterFromPosition(position_cpp);
+
+    bp::list surface_point_py;
+    surface_point_py.append(surface_point_cpp[0]);
+    surface_point_py.append(surface_point_cpp[1]);
+    surface_point_py.append(surface_point_cpp[2]);
+
+    return surface_point_py;
+}
+
 BOOST_PYTHON_MODULE(boost_asteroid)
 {
     bp::class_<BoostAsteroid>("BoostAsteroid", bp::init<const bp::list &, const double &, const bp::list &, const double &>())
@@ -83,6 +98,7 @@ BOOST_PYTHON_MODULE(boost_asteroid)
             .def("angular_velocity_and_acceleration_at_time", &BoostAsteroid::AngularVelocityAndAccelerationAtTime)
             .def("nearest_point_on_surface_to_position", &BoostAsteroid::NearestPointOnSurfaceToPosition)
             .def("semi_axis", &BoostAsteroid::SemiAxis)
+            .def("intersect_line_to_center_from_position", &BoostAsteroid::IntersectLineToCenterFromPosition)
             ;
 }
 
