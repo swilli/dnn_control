@@ -171,7 +171,7 @@ double hovering_problem_proportional_derivative::single_fitness(PaGMOSimulationP
 
             const Vector3D &optical_flow = {velocity_horizontal[0] * coef_norm_height, velocity_horizontal[1] * coef_norm_height, velocity_horizontal[2] * coef_norm_height};
 
-            fitness += VectorNorm(optical_flow) + divergence - HP_OBJ_FUN_COEF_DIVERGENCE;
+            fitness += VectorNorm(optical_flow) + divergence + HP_OBJ_FUN_COEF_DIVERGENCE;
 
             considered_samples++;
         }
