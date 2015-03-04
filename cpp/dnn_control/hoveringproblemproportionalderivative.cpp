@@ -199,7 +199,7 @@ boost::tuple<double, double, double> hovering_problem_proportional_derivative::s
 
     // punish unfinished simulations (crash / out of fuel)
 #if HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED
-    double time_diff = evaluated_times.back() - m_simulation_time;
+    double time_diff = evaluated_times.back() - simulation.SimulationTime();
     time_diff = (time_diff < 0.0 ? -time_diff : time_diff);
     if (time_diff > 0.1) {
         mean_error += 1e30;
