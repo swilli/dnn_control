@@ -70,6 +70,8 @@ Asteroid::Asteroid(const Vector3D &semi_axis, const double &density, const Vecto
     elliptic_modulus_ = (inertia[1] - inertia[0]) * (energy_mul2_ * inertia[2] - momentum_pow2_) / ((inertia[2] - inertia[1]) * (momentum_pow2_ - energy_mul2_ * inertia[0]));
 
     mass_gravitational_constant_ = mass_ * kGravitationalConstant;
+
+    estimated_rotational_period_ = 2.0 * kPi / VectorNorm(boost::get<0>(AngularVelocityAndAccelerationAtTime(0)));
 }
 
 Vector3D Asteroid::SemiAxis() const {
@@ -98,6 +100,10 @@ double Asteroid::EvaluatePointWithStandardEquation(const Vector3D &position) con
         result += position[i] * position[i] / semi_axis_pow2_[i];
     }
     return result;
+}
+
+double Asteroid::RotationalPeriod() const {
+    return estimated_rotational_period_;
 }
 
 double Asteroid::NewtonRaphsonNearestPointOnSurfaceToPositionEllipse(const Vector2D &semi_axis_mul_pos, const Vector2D &semi_axis_pow2) {

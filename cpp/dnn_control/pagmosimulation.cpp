@@ -7,6 +7,12 @@
 #include "constants.h"
 #include "configuration.h"
 
+PaGMOSimulation::PaGMOSimulation(const unsigned int &random_seed)
+    : random_seed_(random_seed), simulation_time_(0.0) {
+    Init();
+    simulation_time_ = asteroid_.RotationalPeriod() * 0.5;
+}
+
 PaGMOSimulation::PaGMOSimulation(const unsigned int &random_seed, const double &simulation_time)
     : random_seed_(random_seed), simulation_time_(simulation_time) {
     Init();

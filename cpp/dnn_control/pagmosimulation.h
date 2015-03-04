@@ -12,6 +12,7 @@ class PaGMOSimulation {
     * This abstract class represents a full simulation of a spacecraft placed next to an asteroid.
     */
 public:
+    PaGMOSimulation(const unsigned int &random_seed);
     PaGMOSimulation(const unsigned int &random_seed, const double &simulation_time);
 
     virtual ~PaGMOSimulation();
