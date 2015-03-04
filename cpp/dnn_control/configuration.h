@@ -27,9 +27,11 @@
 #define HP_OBJ_FUN_METHOD_4     4   // Compare mean distance to target point, also consider fuel consumption. Transient response aware.
 #define HP_OBJ_FUN_METHOD_5     5   // Compare mean distance to target point, also consider velocity, punish later offsets more.
 #define HP_OBJ_FUN_METHOD_6     6   // Mean velocity. Transient response aware.
+#define HP_OBJ_FUN_METHOD_7     7   // Mean optical flow, constant divergence. Transient response aware.
 
-#define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_3
+#define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_7
 #define HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME  150.0
+#define HP_OBJ_FUN_COEF_DIVERGENCE  0.1
 #define HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED    true
 //#define HP_FIXED_SEED  1990
 
@@ -46,8 +48,8 @@
 
 #define PGMOS_IC_VELOCITY_TYPE  PGMOS_IC_BODY_RANDOM_VELOCITY
 #define PGMOS_IC_POSITION_OFFSET_ENABLED    true
-#define PGMOS_ENABLE_ODOMETRY   true
-#define PGMOS_ENABLE_OPTICAL_FLOW   false
+#define PGMOS_ENABLE_ODOMETRY   false
+#define PGMOS_ENABLE_OPTICAL_FLOW   true
 #define PGMOS_ENABLE_VELOCITY   false
 #define PGMOS_ENABLE_VELOCITY_OVER_HEIGHT   false
 #define PGMOS_ENABLE_DIRECTION_SENSOR   false
@@ -146,6 +148,7 @@ inline void ConfigurationPaGMO() {
     std::cout << "HP_OBJECTIVE_FUNCTION_METHOD   " << HP_OBJECTIVE_FUNCTION_METHOD << std::endl;
     std::cout << "HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED   " << ToString(HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED) << std::endl;
     std::cout << "HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME   " << HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME << std::endl;
+    std::cout << "HP_OBJ_FUN_COEF_DIVERGENCE   " << HP_OBJ_FUN_COEF_DIVERGENCE << std::endl;
     std::cout << "PGMOS_IC_VELOCITY_TYPE   " << PGMOS_IC_VELOCITY_TYPE << std::endl;
     std::cout << "PGMOS_IC_POSITION_OFFSET_ENABLED   " << ToString(PGMOS_IC_POSITION_OFFSET_ENABLED) << std::endl;
     std::cout << "PGMOS_ENABLE_ODOMETRY   " << ToString(PGMOS_ENABLE_ODOMETRY) << std::endl;
