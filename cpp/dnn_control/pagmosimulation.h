@@ -62,6 +62,9 @@ public:
     // Returns the spacecraft's Isp
     double SpacecraftSpecificImpulse() const;
 
+    // Change the simulation time manually
+    void SetSimulationTime(const double &simulation_time);
+
     // PaGMOSimulation can throw the following exceptions
     class Exception {};
     class SizeMismatchException : public Exception {};
