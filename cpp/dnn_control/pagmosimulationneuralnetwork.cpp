@@ -8,24 +8,24 @@
 #include "controllerneuralnetwork.h"
 #include "configuration.h"
 
-PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &random_seed, const double &simulation_time)
-    : PaGMOSimulation(random_seed, simulation_time) {
+PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &random_seed)
+    : PaGMOSimulation(random_seed) {
     neural_network_hidden_nodes_ = kHiddenNodes;
 }
 
-PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &random_seed,  const double &simulation_time, const unsigned int &hidden_nodes)
-    : PaGMOSimulation(random_seed, simulation_time) {
+PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &random_seed, const unsigned int &hidden_nodes)
+    : PaGMOSimulation(random_seed) {
     neural_network_hidden_nodes_ = hidden_nodes;
 }
 
-PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &random_seed, const double &simulation_time, const std::vector<double> &neural_network_weights)
-    : PaGMOSimulation(random_seed, simulation_time) {
+PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &random_seed, const std::vector<double> &neural_network_weights)
+    : PaGMOSimulation(random_seed) {
     neural_network_hidden_nodes_ = kHiddenNodes;
     simulation_parameters_ = neural_network_weights;
 }
 
-PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &random_seed, const double &simulation_time, const unsigned int &hidden_nodes, const std::vector<double> &neural_network_weights)
-    : PaGMOSimulation(random_seed, simulation_time) {
+PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &random_seed, const unsigned int &hidden_nodes, const std::vector<double> &neural_network_weights)
+    : PaGMOSimulation(random_seed) {
     neural_network_hidden_nodes_ = hidden_nodes;
     simulation_parameters_ = neural_network_weights;
 }

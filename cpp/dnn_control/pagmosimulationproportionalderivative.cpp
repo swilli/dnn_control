@@ -8,12 +8,12 @@
 #include "controllerproportionalderivative.h"
 #include "configuration.h"
 
-PaGMOSimulationProportionalDerivative::PaGMOSimulationProportionalDerivative(const unsigned int &random_seed, const double &simulation_time)
-    : PaGMOSimulation(random_seed, simulation_time) {
+PaGMOSimulationProportionalDerivative::PaGMOSimulationProportionalDerivative(const unsigned int &random_seed)
+    : PaGMOSimulation(random_seed) {
 }
 
-PaGMOSimulationProportionalDerivative::PaGMOSimulationProportionalDerivative(const unsigned int &random_seed, const double &simulation_time, const std::vector<double> &pd_coefficients)
-    : PaGMOSimulation(random_seed, simulation_time) {
+PaGMOSimulationProportionalDerivative::PaGMOSimulationProportionalDerivative(const unsigned int &random_seed, const std::vector<double> &pd_coefficients)
+    : PaGMOSimulation(random_seed) {
     simulation_parameters_ = pd_coefficients;
 }
 

@@ -6,7 +6,7 @@
 namespace pagmo { namespace problem {
 
 hovering_problem_proportional_derivative::hovering_problem_proportional_derivative(const unsigned int &seed, const unsigned int &n_evaluations, const double &simulation_time)
-    : base_stochastic(PaGMOSimulationProportionalDerivative(0, 0.0).ChromosomeSize(), seed),
+    : base_stochastic(PaGMOSimulationProportionalDerivative(0).ChromosomeSize(), seed),
       m_n_evaluations(n_evaluations), m_simulation_time(simulation_time) {
 
     set_lb(-1.0);
@@ -28,7 +28,10 @@ base_ptr hovering_problem_proportional_derivative::clone() const {
 }
 
 fitness_vector hovering_problem_proportional_derivative::objfun_seeded(const unsigned int &seed, const decision_vector &x) const {
-    PaGMOSimulationProportionalDerivative simulation(seed, m_simulation_time, x);
+    PaGMOSimulationProportionalDerivative simulation(seed, x);
+    if (m_simulation_time > 0.0) {
+        simulation.SetSimulationTime(m_simulation_time);
+    }
     fitness_vector f(1);
     f[0] = single_fitness(simulation);
     return f;
@@ -50,7 +53,10 @@ void hovering_problem_proportional_derivative::objfun_impl(fitness_vector &f, co
 #endif
 
         // PD Controller simulation
-        PaGMOSimulationProportionalDerivative simulation(current_seed, m_simulation_time, x);
+        PaGMOSimulationProportionalDerivative simulation(current_seed, x);
+        if (m_simulation_time > 0.0) {
+            simulation.SetSimulationTime(m_simulation_time);
+        }
         f[0] += single_fitness(simulation);
     }
     f[0] /= m_n_evaluations;
@@ -243,7 +249,10 @@ boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<std::pa
     for (unsigned int i = 0; i < num_tests; ++i) {
         const unsigned int current_seed = used_random_seeds.at(i);
 
-        PaGMOSimulationProportionalDerivative simulation(current_seed, m_simulation_time, x);
+        PaGMOSimulationProportionalDerivative simulation(current_seed, x);
+        if (m_simulation_time > 0.0) {
+            simulation.SetSimulationTime(m_simulation_time);
+        }
 
         const boost::tuple<double, double, double> result = single_post_evaluation(simulation);
 

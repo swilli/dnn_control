@@ -12,6 +12,7 @@ class PaGMOSimulation {
     * This abstract class represents a full simulation of a spacecraft placed next to an asteroid.
     */
 public:
+    PaGMOSimulation(const unsigned int &random_seed);
     PaGMOSimulation(const unsigned int &random_seed, const double &simulation_time);
 
     virtual ~PaGMOSimulation();
@@ -60,6 +61,9 @@ public:
 
     // Returns the spacecraft's Isp
     double SpacecraftSpecificImpulse() const;
+
+    // Change the simulation time manually
+    void SetSimulationTime(const double &simulation_time);
 
     // PaGMOSimulation can throw the following exceptions
     class Exception {};

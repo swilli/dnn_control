@@ -61,6 +61,9 @@ public:
     // Returns x^2/a^2 + y^2/b^2 + z^2/c^2
     double EvaluatePointWithStandardEquation(const Vector3D &position) const;
 
+    // The estimated time for the asteroid to make one rotation
+    double RotationalPeriod() const;
+
     class Exception {};
     class PositionInsideException : public Exception {};
     class InvalidParametersException: public Exception {};
@@ -125,6 +128,9 @@ private:
 
     // True if momentum_pow2_ < energy_mul2_ * inertia_[1]
     bool inversion_;
+
+    // Estimated rotational period
+    double estimated_rotational_period_;
 };
 
 #endif // ASTEROID_H

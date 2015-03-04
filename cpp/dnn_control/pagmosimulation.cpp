@@ -7,6 +7,12 @@
 #include "constants.h"
 #include "configuration.h"
 
+PaGMOSimulation::PaGMOSimulation(const unsigned int &random_seed)
+    : random_seed_(random_seed), simulation_time_(0.0) {
+    Init();
+    simulation_time_ = (int) (asteroid_.RotationalPeriod() * 0.5);
+}
+
 PaGMOSimulation::PaGMOSimulation(const unsigned int &random_seed, const double &simulation_time)
     : random_seed_(random_seed), simulation_time_(simulation_time) {
     Init();
@@ -38,6 +44,10 @@ double PaGMOSimulation::SpacecraftMaximumMass() const {
 
 double PaGMOSimulation::SpacecraftMinimumMass() const {
     return spacecraft_minimum_mass_;
+}
+
+void PaGMOSimulation::SetSimulationTime(const double &simulation_time) {
+    simulation_time_ = simulation_time;
 }
 
 unsigned int PaGMOSimulation::RandomSeed() const {

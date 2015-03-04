@@ -10,7 +10,11 @@
 static const unsigned int kNumGenerations = ER_NUM_GENERATIONS;
 static const unsigned int kPopulationSize = ER_POPULATION_SIZE;
 static const unsigned int kNumIslands = ER_NUM_ISLANDS;
+#ifdef ER_SIMULATION_TIME
 static const double kSimulationTime = ER_SIMULATION_TIME;
+#else
+static const double kSimulationTime = 0.0;
+#endif
 static const unsigned int kNumEvaluations = ER_EVALUATIONS;
 static const unsigned int kNumHiddenNeurons = ER_NUM_HIDDEN_NODES;
 
@@ -221,7 +225,8 @@ void TestNeuralNetworkController(const unsigned int &random_seed) {
     std::cout << fitness << std::endl;
 
     std::cout << "Simulating NN controller ... ";
-    PaGMOSimulationNeuralNetwork simulation(random_seed, 86400.0, kNumHiddenNeurons, solution);
+    PaGMOSimulationNeuralNetwork simulation(random_seed, kNumHiddenNeurons, solution);
+    simulation.SetSimulationTime(86400.0);
     const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = simulation.EvaluateAdaptive();
     const std::vector<double> &times = boost::get<0>(result);
     const std::vector<Vector3D> &positions = boost::get<2>(result);
@@ -267,7 +272,8 @@ void TestProportionalDerivativeController(const unsigned int &random_seed) {
     std::cout << fitness << std::endl;
 
     std::cout << "Simulating PD controller ... ";
-    PaGMOSimulationProportionalDerivative simulation(random_seed, 86400.0, solution);
+    PaGMOSimulationProportionalDerivative simulation(random_seed, solution);
+    simulation.SetSimulationTime(86400.0);
     const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = simulation.EvaluateAdaptive();
     const std::vector<double> &times = boost::get<0>(result);
     const std::vector<Vector3D> &positions = boost::get<2>(result);
