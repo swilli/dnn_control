@@ -1,9 +1,12 @@
 '''
 usage:
-./python2.7 vpostevaluation.py <data_file>
+./python2.7 vpostevaluation.py <data_file> [threshold] [skip_outliers]
+
+default for threshold is 1.0, default for skip_outliers is False
 
 examples:
 ./python2.7 vpostevaluation.py post_evaluation.txt
+./python2.7 vpostevaluation.py post_evaluation.txt True
 '''
 
 import sys
@@ -13,7 +16,13 @@ from numpy.matlib import repmat
 from numpy.linalg import norm
 
 file_name = sys.argv[1]
-labels = sys.argv[2:]
+skip_outliers = False
+threshold = 1.0
+
+if len(sys.argv) > 2:
+	threshold = float(sys.argv[2])
+	if len(sys.argv) > 3:
+		skip_outliers = bool(sys.argv[3])
 
 print("preparing data... ")
 
@@ -28,11 +37,13 @@ data = [[int(line[0])] + [float(value) for value in line[1:]] for line in data]
 filtered_data = []
 outliers = 0
 for line in data:
-    if line[1] >= 0.5:
+    if line[1] >= threshold:
         outliers += 1
-        continue
-    else:
-        filtered_data += [line]
+        print(line)
+        if skip_outliers:
+        	continue
+
+    filtered_data += [line]
 
 data = array(filtered_data)
 
@@ -49,11 +60,15 @@ ssde_min = min(delta_errors)
 ssde_max = max(delta_errors)
 
 print("Outliers: {0}".format(outliers))
-print("SSME: mean={0}, stdev={1}, min={2}, max={3}".format(ssme_mean, ssme_stdev, ssme_min, ssme_max))
-print("SSDE: mean={0}, stdev={1}, min={2}, max={3}".format(ssde_mean, ssde_stdev, ssde_min, ssde_max))
 
-plt.boxplot(data[:, 1], labels=labels)
-plt.title("Post Evaluation for 25000 different Initial Conditions")
+subtitle1 = "SSME: mean=%.5f, stdev=%.5f, min=%.5f, max=%.5f" % (ssme_mean, ssme_stdev, ssme_min, ssme_max)
+subtitle2 = "SSDE: mean=%.5f, stdev=%.5f, min=%.5f, max=%.5f" % (ssde_mean, ssde_stdev, ssde_min, ssde_max)
+
+print(subtitle1)
+print(subtitle2)
+
+plt.boxplot(data[:, 1])
+plt.title("Post Evaluation for {0} different Initial Conditions".format(num_samples)) # + '\n' + subtitle1 + '\n' + subtitle2)
 plt.xlabel('Controller')
 plt.ylabel('Fitness')
 plt.show()

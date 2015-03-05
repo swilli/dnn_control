@@ -57,9 +57,13 @@ void FileWriter::CreateSensorDataFile(const unsigned int &random_seed, const dou
     }
 }
 
-void FileWriter::CreateEvaluationFile(const unsigned int &random_seed, const Vector3D &target_position, const std::vector<double> &times, const std::vector<Vector3D> &positions, const std::vector<Vector3D> &velocities, const std::vector<Vector3D> &thrusts) {
+void FileWriter::CreateEvaluationFile(const unsigned int &random_seed, const Vector3D &target_position, const Asteroid &asteroid, const std::vector<double> &times, const std::vector<Vector3D> &positions, const std::vector<Vector3D> &velocities, const std::vector<Vector3D> &thrusts) {
+    const Vector3D semi_axis = asteroid.SemiAxis();
+    const Vector2D angular_velocity_xz = asteroid.ConstructorAngularVelocitiesXZ();
+
     file_ << random_seed << std::endl;
     file_ << target_position[0] << ",\t"  << target_position[1] << ",\t"  << target_position[2] << std::endl;
+    file_ << semi_axis[0] << ",\t"  << semi_axis[1] << ",\t"  << semi_axis[2] << ",\t"  << asteroid.Density() << ",\t" << angular_velocity_xz[0] << ",\t"  << angular_velocity_xz[1] << ",\t"  << asteroid.TimeBias() << std::endl;
 
     for(unsigned int i = 0; i < times.size(); ++i) {
         const double &time = times.at(i);

@@ -6,7 +6,7 @@
 namespace pagmo { namespace problem {
 
 hovering_problem_neural_network::hovering_problem_neural_network(const unsigned int &seed, const unsigned int &n_evaluations, const double &simulation_time, const unsigned int &n_hidden_neurons)
-    : base_stochastic(PaGMOSimulationNeuralNetwork(0, 0.0, n_hidden_neurons).ChromosomeSize(), seed),
+    : base_stochastic(PaGMOSimulationNeuralNetwork(0, n_hidden_neurons).ChromosomeSize(), seed),
       m_n_evaluations(n_evaluations), m_n_hidden_neurons(n_hidden_neurons), m_simulation_time(simulation_time) {
 
     set_lb(-1.0);
@@ -29,7 +29,10 @@ base_ptr hovering_problem_neural_network::clone() const {
 }
 
 fitness_vector hovering_problem_neural_network::objfun_seeded(const unsigned int &seed, const decision_vector &x) const {
-    PaGMOSimulationNeuralNetwork simulation(seed, m_simulation_time, m_n_hidden_neurons, x);
+    PaGMOSimulationNeuralNetwork simulation(seed, m_n_hidden_neurons, x);
+    if (m_simulation_time > 0) {
+        simulation.SetSimulationTime(m_simulation_time);
+    }
     fitness_vector f(1);
     f[0] = single_fitness(simulation);
     return f;
@@ -51,7 +54,10 @@ void hovering_problem_neural_network::objfun_impl(fitness_vector &f, const decis
 #endif
 
         // Neural Network simulation
-        PaGMOSimulationNeuralNetwork simulation(current_seed, m_simulation_time, m_n_hidden_neurons, x);
+        PaGMOSimulationNeuralNetwork simulation(current_seed, m_n_hidden_neurons, x);
+        if (m_simulation_time > 0.0) {
+            simulation.SetSimulationTime(m_simulation_time);
+        }
         f[0] += single_fitness(simulation);
     }
     f[0] /= m_n_evaluations;
@@ -83,7 +89,7 @@ double hovering_problem_neural_network::single_fitness(PaGMOSimulationNeuralNetw
 
     // punish unfinished simulations (crash / out of fuel)
 #if HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED
-    double time_diff = evaluated_times.back() - m_simulation_time;
+    double time_diff = evaluated_times.back() - simulation.SimulationTime();
     time_diff = (time_diff < 0.0 ? -time_diff : time_diff);
     if (time_diff > 0.1) {
         fitness += 1e30;
@@ -148,6 +154,35 @@ double hovering_problem_neural_network::single_fitness(PaGMOSimulationNeuralNetw
     }
     fitness /= considered_samples;
 
+#elif HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_7
+    // Method 7 : Mean optical flow, constant divergence. Transient response aware.
+    unsigned int considered_samples = 0;
+    for (unsigned int i = 0; i < num_samples; ++i) {
+        if (evaluated_times.at(i) >= HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME) {
+            const Vector3D &height = evaluated_heights.at(i);
+            const Vector3D &velocity = evaluated_velocities.at(i);
+
+            const double coef_norm_height = 1.0 / VectorNorm(height);
+            const Vector3D &normalized_height = {height[0] * coef_norm_height, height[1] * coef_norm_height, height[2] * coef_norm_height};
+            const double velocity_dot_height = VectorDotProduct(velocity, height);
+
+            const double divergence = velocity_dot_height * coef_norm_height;
+
+            const Vector3D &velocity_vertical = {divergence * normalized_height[0], divergence * normalized_height[1], divergence * normalized_height[2]};
+            const Vector3D velocity_horizontal = VectorSub(velocity, velocity_vertical);
+
+            const Vector3D &optical_flow = {velocity_horizontal[0] * coef_norm_height, velocity_horizontal[1] * coef_norm_height, velocity_horizontal[2] * coef_norm_height};
+
+            double error_divergence = divergence + HP_OBJ_FUN_COEF_DIVERGENCE;
+            error_divergence = HP_OBJ_FUN_ERROR_DIVERGENCE_WEIGHT * (error_divergence < 0.0 ? -error_divergence : error_divergence);
+
+            const double error_optical_flow = VectorNorm(optical_flow);
+            fitness += error_optical_flow + error_divergence;
+
+            considered_samples++;
+        }
+    }
+    fitness /= considered_samples;
 #endif
 
     return fitness;
@@ -243,7 +278,10 @@ boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<std::pa
     for (unsigned int i = 0; i < num_tests; ++i) {
         const unsigned int current_seed = used_random_seeds.at(i);
 
-        PaGMOSimulationNeuralNetwork simulation(current_seed, m_simulation_time, m_n_hidden_neurons, x);
+        PaGMOSimulationNeuralNetwork simulation(current_seed, m_n_hidden_neurons, x);
+        if (m_simulation_time > 0.0) {
+            simulation.SetSimulationTime(m_simulation_time);
+        }
 
         const boost::tuple<double, double, double> result = single_post_evaluation(simulation);
 

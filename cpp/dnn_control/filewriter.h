@@ -19,7 +19,7 @@ public:
     void CreateSensorDataFile(const unsigned int &random_seed, const double &control_frequency, const double &simulation_time, const Asteroid &asteroid, const SystemState &system_state, const std::vector<std::vector<double> > &labels, const std::vector<std::vector<double> > &sensor_data);
 
     // Create a file which can be visualized using vevaluation.py
-    void CreateEvaluationFile(const unsigned int &random_seed, const Vector3D &target_position, const std::vector<double> &times, const std::vector<Vector3D> &positions, const std::vector<Vector3D> &velocities, const std::vector<Vector3D> &thrusts);
+    void CreateEvaluationFile(const unsigned int &random_seed, const Vector3D &target_position, const Asteroid &asteroid, const std::vector<double> &times, const std::vector<Vector3D> &positions, const std::vector<Vector3D> &velocities, const std::vector<Vector3D> &thrusts);
 
     // Create a file which can be visualized using vpostevaluation.py
     void CreatePostEvaluationFile(const std::vector<unsigned int> &random_seeds, const std::vector<double> &mean_errors, const std::vector<std::pair<double, double> > &min_max_errors);

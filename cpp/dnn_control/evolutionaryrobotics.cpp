@@ -10,7 +10,11 @@
 static const unsigned int kNumGenerations = ER_NUM_GENERATIONS;
 static const unsigned int kPopulationSize = ER_POPULATION_SIZE;
 static const unsigned int kNumIslands = ER_NUM_ISLANDS;
+#ifdef ER_SIMULATION_TIME
 static const double kSimulationTime = ER_SIMULATION_TIME;
+#else
+static const double kSimulationTime = 0.0;
+#endif
 static const unsigned int kNumEvaluations = ER_EVALUATIONS;
 static const unsigned int kNumHiddenNeurons = ER_NUM_HIDDEN_NODES;
 
@@ -198,7 +202,7 @@ static void ConvexityCheck(pagmo::problem::hovering_problem_neural_network &prob
 void TestNeuralNetworkController(const unsigned int &random_seed) {
     ConfigurationPaGMO();
 
-    const pagmo::decision_vector &solution = {-1.603629943, -10.97035379, 4.042207563, 10.02671764, 7.357829712, -6.510311188, -8.705268789, 0.7793879416, 1.41349973, -6.259795725, 9.57791023, -5.934022084, -5.21823705, 15.43786058, 7.66979968, -12.08536152, 5.735715547, -9.330935834, 6.822578782, -9.01576485, -6.348998882, -8.474528529, 12.80920092, 6.790347427};
+    const pagmo::decision_vector &solution = {0.009211411225, 8.044150857, -4.478341233, -3.689309249, -1.208452439, 2.342907666, -4.118098628, -0.09508708199, -3.244153776, -4.047010092, -12.07092855, -5.936808682, 2.488916666, 4.756041127, -0.659196638, -0.3366040583, -0.5081139051, 3.645135965, 7.886586458, 10.67020095, 16.28190894, -0.1354475421, -3.848208455, -1.53265097, 2.947644763, -10.07162263, -0.9305021368, 9.663628626, -1.041992751, 5.852359805, 9.430462737, -2.762324442, 0.4698082463, 0.6163589632, 0.1105973807, -0.004697488372, 0.8398035282, -4.761607611, 1.290313032, 2.777723485, -13.69179122, 2.020360834, -1.905074338, 4.881414712, -3.096962921, 3.807554858, -5.952366196, 4.324670241, 2.619511799, 4.019394796, -1.637994765, -0.7550631548, 0.185279146, -0.6479304367, 4.290134687, -7.530079996, -3.172773956, -0.3988782147, -2.432579725, 3.92469938, 4.996738208, -1.160775722, 2.358713194};
 
 
     std::cout << std::setprecision(10);
@@ -217,11 +221,12 @@ void TestNeuralNetworkController(const unsigned int &random_seed) {
     */
 
     std::cout << "Checking NN controller fitness... ";
-    //const double fitness = prob.objfun_seeded(random_seed, solution)[0];
-    //std::cout << fitness << std::endl;
+    const double fitness = prob.objfun_seeded(random_seed, solution)[0];
+    std::cout << fitness << std::endl;
 
     std::cout << "Simulating NN controller ... ";
-    PaGMOSimulationNeuralNetwork simulation(random_seed, 10.0 * 86400.0, kNumHiddenNeurons, solution);
+    PaGMOSimulationNeuralNetwork simulation(random_seed, kNumHiddenNeurons, solution);
+    simulation.SetSimulationTime(86400.0);
     const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = simulation.EvaluateAdaptive();
     const std::vector<double> &times = boost::get<0>(result);
     const std::vector<Vector3D> &positions = boost::get<2>(result);
@@ -230,7 +235,6 @@ void TestNeuralNetworkController(const unsigned int &random_seed) {
     const std::vector<Vector3D> &thrusts = boost::get<5>(result);
     std::cout << "done." << std::endl;
 
-    return;
     std::cout << "Writing visualization file ... ";
     FileWriter writer_visualization(PATH_TO_NEURO_TRAJECTORY_FILE);
     writer_visualization.CreateTrajectoryFile(simulation.ControlFrequency(), simulation.AsteroidOfSystem(), positions, heights);
@@ -238,7 +242,7 @@ void TestNeuralNetworkController(const unsigned int &random_seed) {
 
     std::cout << "Writing evaluation file ... ";
     FileWriter writer_evaluation(PATH_TO_NEURO_EVALUATION_FILE);
-    writer_evaluation.CreateEvaluationFile(random_seed, simulation.TargetPosition(), times, positions, velocities, thrusts);
+    writer_evaluation.CreateEvaluationFile(random_seed, simulation.TargetPosition(), simulation.AsteroidOfSystem(), times, positions, velocities, thrusts);
     std::cout << "done." << std::endl;
 
     std::cout << "Performing post evaluation ... ";
@@ -268,7 +272,8 @@ void TestProportionalDerivativeController(const unsigned int &random_seed) {
     std::cout << fitness << std::endl;
 
     std::cout << "Simulating PD controller ... ";
-    PaGMOSimulationProportionalDerivative simulation(random_seed, 86400.0, solution);
+    PaGMOSimulationProportionalDerivative simulation(random_seed, solution);
+    simulation.SetSimulationTime(86400.0);
     const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = simulation.EvaluateAdaptive();
     const std::vector<double> &times = boost::get<0>(result);
     const std::vector<Vector3D> &positions = boost::get<2>(result);
@@ -284,7 +289,7 @@ void TestProportionalDerivativeController(const unsigned int &random_seed) {
 
     std::cout << "Writing evaluation file ... ";
     FileWriter writer_evaluation(PATH_TO_FULL_STATE_EVALUATION_FILE);
-    writer_evaluation.CreateEvaluationFile(random_seed, simulation.TargetPosition(), times, positions, velocities, thrusts);
+    writer_evaluation.CreateEvaluationFile(random_seed, simulation.TargetPosition(), simulation.AsteroidOfSystem(), times, positions, velocities, thrusts);
     std::cout << "done." << std::endl;
 
     std::cout << "Performing post evaluation ... ";

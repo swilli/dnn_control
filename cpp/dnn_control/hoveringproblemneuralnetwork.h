@@ -14,7 +14,7 @@ class __PAGMO_VISIBLE hovering_problem_neural_network : public base_stochastic {
     * The optimization problem is to find a neural network controller which minimizes the objective function.
     */
 public:
-    hovering_problem_neural_network(const unsigned int &seed=0, const unsigned int &n_evaluations=4, const double &simulation_time=3600.0, const unsigned int &n_hidden_neurons=6);
+    hovering_problem_neural_network(const unsigned int &seed=0, const unsigned int &n_evaluations=10, const double &simulation_time=0.0, const unsigned int &n_hidden_neurons=6);
 
     hovering_problem_neural_network(const hovering_problem_neural_network &other);
 

@@ -25,6 +25,14 @@ inline Vector3D VectorSub(const Vector3D &first, const Vector3D &second) {
     return result;
 }
 
+inline Vector3D VectorAdd(const Vector3D &first, const Vector3D &second) {
+    Vector3D result;
+    result[0] = first[0] + second[0];
+    result[1] = first[1] + second[1];
+    result[2] = first[2] + second[2];
+    return result;
+}
+
 // n = ||vector||
 inline double VectorNorm(const Vector3D &vector) {
     double result = 0.0;

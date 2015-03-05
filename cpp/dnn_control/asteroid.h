@@ -37,8 +37,8 @@ public:
     // Computes the distance "distance" and orthogonal projection of a position "position" outside the asteroid onto the asteroid's surface "point" in asteroid centered RF
     boost::tuple<Vector3D, double> NearestPointOnSurfaceToPosition(const Vector3D &position) const;
 
-    // Returns the euler angles (theta, psi, phi) in an inertial reference frame where the axis coalign with the rotating body frame in the beginning
-    Vector3D InertialEulerAnglesAtTime(const double &time) const;
+    // Computes the intersection of a direct line directed to the asteroid's center with the Asteroid's surface
+    Vector3D IntersectLineToCenterFromPosition(const Vector3D &position) const;
 
     // Returns the initially in the constructor provided angular velocity in x and z dimension
     Vector2D ConstructorAngularVelocitiesXZ() const;
@@ -61,14 +61,20 @@ public:
     // Returns x^2/a^2 + y^2/b^2 + z^2/c^2
     double EvaluatePointWithStandardEquation(const Vector3D &position) const;
 
+    // The estimated time for the asteroid to make one rotation
+    double RotationalPeriod() const;
+
     class Exception {};
     class PositionInsideException : public Exception {};
     class InvalidParametersException: public Exception {};
 
 private:
     // Helper functions for NearestPointOnSurfaceToPosition
-    static double NewtonRaphsonEllipse(const Vector2D &semi_axis_mul_pos, const Vector2D &semi_axis_pow2);
-    static double NewtonRaphsonEllipsoid(const Vector3D &semi_axis_mul_pos, const Vector3D &semi_axis_pow2);
+    static double NewtonRaphsonNearestPointOnSurfaceToPositionEllipse(const Vector2D &semi_axis_mul_pos, const Vector2D &semi_axis_pow2);
+    static double NewtonRaphsonNearestPointOnSurfaceToPositionEllipsoid(const Vector3D &semi_axis_mul_pos, const Vector3D &semi_axis_pow2);
+
+    // Helper functions for IntersectLineToCenterFromPosition
+    static double NewtonRaphsonIntersectLineToCenterFromPosition(const Vector3D &position_div_semi_axis_pow2);
 
     // Helper function for NearestPointOnSurfaceToPosition since we assume a symmetric ellipsoid. Position "position" has to be in first quadrant.
     Vector3D NearestPointOnEllipsoidFirstQuadrant(const Vector3D &position) const;
@@ -122,6 +128,9 @@ private:
 
     // True if momentum_pow2_ < energy_mul2_ * inertia_[1]
     bool inversion_;
+
+    // Estimated rotational period
+    double estimated_rotational_period_;
 };
 
 #endif // ASTEROID_H

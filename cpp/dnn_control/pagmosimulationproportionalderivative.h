@@ -8,8 +8,8 @@ class PaGMOSimulationProportionalDerivative : public PaGMOSimulation {
     * This class represents a full simulation with a PD controller.
     */
 public:
-    PaGMOSimulationProportionalDerivative(const unsigned int &random_seed, const double &simulation_time);
-    PaGMOSimulationProportionalDerivative(const unsigned int &random_seed, const double &simulation_time, const std::vector<double> &pd_coefficients);
+    PaGMOSimulationProportionalDerivative(const unsigned int &random_seed);
+    PaGMOSimulationProportionalDerivative(const unsigned int &random_seed, const std::vector<double> &pd_coefficients);
 
 
     // Simulates the configured simulation, used an adaptive integrator

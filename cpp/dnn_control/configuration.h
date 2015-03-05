@@ -11,12 +11,13 @@
 // Task Name
 #define TASK_NAME   "task0"
 
+
 // Evolutionary Robotics configs
 #define ER_NUM_GENERATIONS  1000
-#define ER_POPULATION_SIZE  30
-#define ER_NUM_ISLANDS  16
-#define ER_SIMULATION_TIME  1.3 * 60.0 * 60.0
-#define ER_EVALUATIONS  8
+#define ER_POPULATION_SIZE  20
+#define ER_NUM_ISLANDS  24
+//#define ER_SIMULATION_TIME  3.0 * 60.0 * 60.0
+#define ER_EVALUATIONS  10
 #define ER_NUM_HIDDEN_NODES 6
 
 
@@ -27,9 +28,13 @@
 #define HP_OBJ_FUN_METHOD_4     4   // Compare mean distance to target point, also consider fuel consumption. Transient response aware.
 #define HP_OBJ_FUN_METHOD_5     5   // Compare mean distance to target point, also consider velocity, punish later offsets more.
 #define HP_OBJ_FUN_METHOD_6     6   // Mean velocity. Transient response aware.
+#define HP_OBJ_FUN_METHOD_7     7   // Mean optical flow, constant divergence. Transient response aware.
+
 
 #define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_3
 #define HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME  150.0
+#define HP_OBJ_FUN_COEF_DIVERGENCE  0.1
+#define HP_OBJ_FUN_ERROR_DIVERGENCE_WEIGHT  2.0
 #define HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED    true
 //#define HP_FIXED_SEED  1990
 
@@ -136,7 +141,11 @@ inline void ConfigurationPaGMO() {
     std::cout << "ER_POPULATION_SIZE   " << ER_POPULATION_SIZE << std::endl;
     std::cout << "ER_EVALUATIONS   " << ER_EVALUATIONS << std::endl;
     std::cout << "ER_NUM_GENERATIONS   " << ER_NUM_GENERATIONS << std::endl;
+#ifdef ER_SIMULATION_TIME
     std::cout << "ER_SIMULATION_TIME   " << ER_SIMULATION_TIME << std::endl;
+#else
+    std::cout << "ER_SIMULATION_TIME   dynamic" << std::endl;
+#endif
     std::cout << "ER_NUM_HIDDEN_NODES   " << ER_NUM_HIDDEN_NODES << std::endl;
 #ifdef HP_FIXED_SEED
     std::cout << "HP_FIXED_SEED   " << HP_FIXED_SEED << std::endl;
@@ -146,6 +155,8 @@ inline void ConfigurationPaGMO() {
     std::cout << "HP_OBJECTIVE_FUNCTION_METHOD   " << HP_OBJECTIVE_FUNCTION_METHOD << std::endl;
     std::cout << "HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED   " << ToString(HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED) << std::endl;
     std::cout << "HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME   " << HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME << std::endl;
+    std::cout << "HP_OBJ_FUN_COEF_DIVERGENCE   " << HP_OBJ_FUN_COEF_DIVERGENCE << std::endl;
+    std::cout << "HP_OBJ_FUN_ERROR_DIVERGENCE_WEIGHT   " << HP_OBJ_FUN_ERROR_DIVERGENCE_WEIGHT << std::endl;
     std::cout << "PGMOS_IC_VELOCITY_TYPE   " << PGMOS_IC_VELOCITY_TYPE << std::endl;
     std::cout << "PGMOS_IC_POSITION_OFFSET_ENABLED   " << ToString(PGMOS_IC_POSITION_OFFSET_ENABLED) << std::endl;
     std::cout << "PGMOS_ENABLE_ODOMETRY   " << ToString(PGMOS_ENABLE_ODOMETRY) << std::endl;
