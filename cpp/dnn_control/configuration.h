@@ -9,7 +9,7 @@
  */
 
 // Task Name
-#define TASK_NAME   "task7"
+#define TASK_NAME   "master"
 
 // Evolutionary Robotics configs
 #define ER_NUM_GENERATIONS  1000
@@ -32,6 +32,7 @@
 #define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_7
 #define HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME  150.0
 #define HP_OBJ_FUN_COEF_DIVERGENCE  0.1
+#define HP_OBJ_FUN_ERROR_DIVERGENCE_WEIGHT  2.0
 #define HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED    true
 //#define HP_FIXED_SEED  1990
 
@@ -153,6 +154,7 @@ inline void ConfigurationPaGMO() {
     std::cout << "HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED   " << ToString(HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED) << std::endl;
     std::cout << "HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME   " << HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME << std::endl;
     std::cout << "HP_OBJ_FUN_COEF_DIVERGENCE   " << HP_OBJ_FUN_COEF_DIVERGENCE << std::endl;
+    std::cout << "HP_OBJ_FUN_ERROR_DIVERGENCE_WEIGHT   " << HP_OBJ_FUN_ERROR_DIVERGENCE_WEIGHT << std::endl;
     std::cout << "PGMOS_IC_VELOCITY_TYPE   " << PGMOS_IC_VELOCITY_TYPE << std::endl;
     std::cout << "PGMOS_IC_POSITION_OFFSET_ENABLED   " << ToString(PGMOS_IC_POSITION_OFFSET_ENABLED) << std::endl;
     std::cout << "PGMOS_ENABLE_ODOMETRY   " << ToString(PGMOS_ENABLE_ODOMETRY) << std::endl;

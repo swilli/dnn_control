@@ -174,9 +174,10 @@ double hovering_problem_neural_network::single_fitness(PaGMOSimulationNeuralNetw
             const Vector3D &optical_flow = {velocity_horizontal[0] * coef_norm_height, velocity_horizontal[1] * coef_norm_height, velocity_horizontal[2] * coef_norm_height};
 
             double error_divergence = divergence + HP_OBJ_FUN_COEF_DIVERGENCE;
-            error_divergence = (error_divergence < 0.0 ? -error_divergence : error_divergence);
+            error_divergence = HP_OBJ_FUN_ERROR_DIVERGENCE_WEIGHT * (error_divergence < 0.0 ? -error_divergence : error_divergence);
 
-            fitness += VectorNorm(optical_flow) + error_divergence;
+            const double error_optical_flow = VectorNorm(optical_flow);
+            fitness += error_optical_flow + error_divergence;
 
             considered_samples++;
         }
