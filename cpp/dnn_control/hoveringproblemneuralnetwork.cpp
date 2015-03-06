@@ -206,7 +206,7 @@ boost::tuple<double, double, double> hovering_problem_neural_network::single_pos
 
     // punish unfinished simulations (crash / out of fuel)
 #if HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED
-    double time_diff = evaluated_times.back() - m_simulation_time;
+    double time_diff = evaluated_times.back() - simulation.SimulationTime();
     time_diff = (time_diff < 0.0 ? -time_diff : time_diff);
     if (time_diff > 0.1) {
         mean_error += 1e30;
@@ -226,7 +226,7 @@ boost::tuple<double, double, double> hovering_problem_neural_network::single_pos
             } else if(error < min_error) {
                 min_error = error;
                 if (max_error == -std::numeric_limits<double>::max()){
-                        max_error = min_error;
+                    max_error = min_error;
                 }
             }
             mean_error += error;
@@ -234,6 +234,46 @@ boost::tuple<double, double, double> hovering_problem_neural_network::single_pos
         }
     }
     mean_error /= considered_samples;
+#else
+#if HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_7
+    unsigned int considered_samples = 0;
+    for (unsigned int i = 0; i < num_samples; ++i) {
+        if (evaluated_times.at(i) >= HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME) {
+            const Vector3D &height = evaluated_heights.at(i);
+            const Vector3D &velocity = evaluated_velocities.at(i);
+
+            const double coef_norm_height = 1.0 / VectorNorm(height);
+            const Vector3D &normalized_height = {height[0] * coef_norm_height, height[1] * coef_norm_height, height[2] * coef_norm_height};
+            const double velocity_dot_height = VectorDotProduct(velocity, height);
+
+            const double divergence = velocity_dot_height * coef_norm_height;
+
+            const Vector3D &velocity_vertical = {divergence * normalized_height[0], divergence * normalized_height[1], divergence * normalized_height[2]};
+            const Vector3D velocity_horizontal = VectorSub(velocity, velocity_vertical);
+
+            const Vector3D &optical_flow = {velocity_horizontal[0] * coef_norm_height, velocity_horizontal[1] * coef_norm_height, velocity_horizontal[2] * coef_norm_height};
+
+            double error_divergence = divergence + HP_OBJ_FUN_COEF_DIVERGENCE;
+            error_divergence = HP_OBJ_FUN_ERROR_DIVERGENCE_WEIGHT * (error_divergence < 0.0 ? -error_divergence : error_divergence);
+
+            const double error_optical_flow = VectorNorm(optical_flow);
+
+            const double error = error_optical_flow + error_divergence;
+            if (error > max_error) {
+                max_error = error;
+                if (min_error == std::numeric_limits<double>::max()) {
+                    min_error = max_error;
+                }
+            } else if(error < min_error) {
+                min_error = error;
+                if (max_error == -std::numeric_limits<double>::max()){
+                    max_error = min_error;
+                }
+            }
+
+            considered_samples++;
+        }
+    }
 #else
     unsigned int considered_samples = 0;
     for (unsigned int i = 0; i < num_samples; ++i) {
@@ -247,7 +287,7 @@ boost::tuple<double, double, double> hovering_problem_neural_network::single_pos
             } else if(error < min_error) {
                 min_error = error;
                 if (max_error == -std::numeric_limits<double>::max()){
-                        max_error = min_error;
+                    max_error = min_error;
                 }
             }
             mean_error += error;
@@ -255,6 +295,7 @@ boost::tuple<double, double, double> hovering_problem_neural_network::single_pos
         }
     }
     mean_error /= considered_samples;
+#endif
 #endif
     return boost::make_tuple(mean_error, min_error, max_error);
 }
