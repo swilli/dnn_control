@@ -254,27 +254,31 @@ def unit_test_angular_acceleration():
 
 def unit_test_gravity_direction():
     from numpy import random, array, mgrid, sin, cos
-    from math import copysign
+    from math import copysign, sqrt
     from boost_asteroid import boost_asteroid
     Asteroid = boost_asteroid.BoostAsteroid
 
     from utility import sample_positions_outside_ellipsoid
     from mayavi import mlab
-    from constants import PI
+    from constants import PI, GRAVITATIONAL_CONSTANT
 
     signs = [-1.0, 1.0]
 
     num_samples = 1000
 
-    axis = []
-    [axis.append(random.uniform(1000.0, 12000.0)) for i in range(3)]
-    semi_axis = sorted(axis, reverse=True)
+    c_semi_axis = random.uniform(100.0, 8000.0)
+    b_semi_axis_n = random.uniform(1.1, 2.0)
+    a_semi_axis_n = random.uniform(1.1 * b_semi_axis_n, 4.0)
+    semi_axis = [a_semi_axis_n * c_semi_axis, b_semi_axis_n * c_semi_axis, c_semi_axis]
 
     density = random.uniform(1500.0, 3000.0)
-    angular_velocity = [random.choice(signs) * random.uniform(0.0002, 0.0008),
-                        random.choice(signs) * random.uniform(0.0002, 0.0008)]
+    angular_velocity = 0.85 * sqrt((GRAVITATIONAL_CONSTANT * 4.0/3.0 * PI * semi_axis[0] * semi_axis[1] * semi_axis[2]
+                                    * density) / (semi_axis[0] * semi_axis[0] * semi_axis[0]))
 
-    asteroid = Asteroid(semi_axis, density, angular_velocity, 0.0)
+    angular_velocity_xz = [random.choice(signs) * random.uniform(angular_velocity * 0.5, angular_velocity),
+                           random.choice(signs) * random.uniform(angular_velocity * 0.5, angular_velocity)]
+
+    asteroid = Asteroid(semi_axis, density, angular_velocity_xz, 0.0)
 
     positions = sample_positions_outside_ellipsoid(semi_axis, 1.1, 4.0, num_samples)
     gravities = [asteroid.gravity_acceleration_at_position(pos) for pos in positions]
@@ -306,9 +310,9 @@ def unit_test_gravity_direction():
     field = mlab.quiver3d(positions[:, 0], positions[:, 1], positions[:, 2],
                           gravities[:, 0], gravities[:, 1], gravities[:, 2], mode="arrow")
 
-    title_start = "a = {0} b = {1} c = {2} rho = {3}".format(semi_axis[0], semi_axis[1], semi_axis[2], density)
+    #title_start = "a = {0} b = {1} c = {2} rho = {3}".format(semi_axis[0], semi_axis[1], semi_axis[2], density)
 
-    mlab.title(title_start)
+    #mlab.title(title_start)
     #mlab.axes(color=(.7, .7, .7), ranges=(positions[:, 0].min(), positions[:, 0].max(),
     #                                      positions[:, 1].min(), positions[:, 1].max(),
     #                                      positions[:, 2].min(), positions[:, 2].max()),
