@@ -153,6 +153,7 @@ SensorData SensorSimulatorPartialState::Simulate(const SystemState &state, const
                 - euler_acceleration[i]
                 - centrifugal_acceleration[i];
 
+        sensor_value *= 100.0;
 #if SSPS_WITH_NOISE
         sensor_value+= sensor_value * sample_factory_.SampleNormal(0.0, noise_configurations_.at(offset + i));
 #endif
