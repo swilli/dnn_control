@@ -16,7 +16,8 @@ void SensorDataGenerator::Generate(const unsigned int &num_datasets, const unsig
 
     for (unsigned int data_iter = 0; data_iter < num_datasets; ++data_iter) {
         std::cout << "generation " << (data_iter + 1) << " : " << std::endl;
-        PaGMOSimulationNeuralNetwork simulation(sample_factory.SampleRandomInteger(), data_set_time_);
+        PaGMOSimulationNeuralNetwork simulation(sample_factory.SampleRandomInteger());
+        simulation.SetSimulationTime(data_set_time_);
 
         std::cout << "   running simulation ... ";
         const boost::tuple<std::vector<std::vector<double> >, std::vector<std::vector<double> >, std::vector<Vector3D>, std::vector<Vector3D> > result = simulation.GenerateSensorDataSet();
