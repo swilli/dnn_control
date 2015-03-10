@@ -188,9 +188,9 @@ double hovering_problem_neural_network::single_fitness(PaGMOSimulationNeuralNetw
     fitness /= considered_samples;
 
 #elif HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_8
-    // Method 8 : Mean optical flow, constant divergence. Punish height gain. Transient response aware.
+    // Method 8 : Mean optical flow, constant divergence. Punish distance gain. Transient response aware.
     unsigned int considered_samples = 0;
-    const double height_begin = VectorNorm(evaluated_positions.at(0));
+    const double position_begin = VectorNorm(evaluated_positions.at(0));
     for (unsigned int i = 0; i < num_samples; ++i) {
         if (evaluated_times.at(i) >= HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME) {
             const Vector3D &height = evaluated_heights.at(i);
@@ -217,11 +217,11 @@ double hovering_problem_neural_network::single_fitness(PaGMOSimulationNeuralNetw
             considered_samples++;
         }
     }
-    const double height_end = VectorNorm(evaluated_positions.back());
+    const double position_end= VectorNorm(evaluated_positions.back());
 
     fitness /= considered_samples;
 
-    if (height_end > height_begin) {
+    if (position_end > position_begin) {
         fitness += 1e30;
     }
 #endif
