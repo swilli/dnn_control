@@ -38,20 +38,17 @@ SensorData SensorSimulatorPartialState::Simulate(const SystemState &state, const
     const Vector3D &position = {state[0], state[1], state[2]};
     const Vector3D &velocity = {state[3], state[4], state[5]};
 
-    const double norm_height_pow2 = VectorDotProduct(height, height);
-    const double norm_height = sqrt(norm_height_pow2);
-    const double coef_norm_height = 1000.0 / norm_height;
+    const double coef_norm_height = 1.0 / VectorNorm(height);
 
 #if PGMOS_ENABLE_OPTICAL_FLOW
-    const double velocity_dot_height = VectorDotProduct(velocity, height);
-    const double scaling = velocity_dot_height / norm_height_pow2;
-
-    const Vector3D &velocity_vertical = {scaling * height[0], scaling * height[1], scaling * height[2]};
-    const Vector3D velocity_horizontal = VectorSub(velocity, velocity_vertical);
+    const Vector3D &normalized_height = {height[0] * coef_norm_height, height[1] * coef_norm_height, height[2] * coef_norm_height};
+    const double magn_velocity_parallel = VectorDotProduct(velocity, normalized_height);
+    const Vector3D &velocity_parallel = {magn_velocity_parallel * normalized_height[0], magn_velocity_parallel * normalized_height[1], magn_velocity_parallel * normalized_height[2]};
+    const Vector3D velocity_perpendicular = VectorSub(velocity, velocity_parallel);
 
     for (unsigned int i = 0; i < 3; ++i) {
-        sensor_data[i] = velocity_vertical[i] * coef_norm_height;
-        sensor_data[3+i] = velocity_horizontal[i] * coef_norm_height;
+        sensor_data[i] = 1000.0 * velocity_parallel[i] * coef_norm_height;
+        sensor_data[3+i] = 1000.0 * velocity_perpendicular[i] * coef_norm_height;
     }
 
 #if SSPS_WITH_NOISE
@@ -90,9 +87,9 @@ SensorData SensorSimulatorPartialState::Simulate(const SystemState &state, const
 #if PGMOS_ENABLE_VELOCITY_OVER_HEIGHT
     offset = PGMOS_ENABLE_OPTICAL_FLOW * 6 + PGMOS_ENABLE_VELOCITY * 3;
 
-    sensor_data[offset] = velocity[0] * coef_norm_height;
-    sensor_data[offset + 1] = velocity[1] * coef_norm_height;
-    sensor_data[offset + 2] = velocity[2] * coef_norm_height;
+    sensor_data[offset] = velocity[0] * 1000.0 * coef_norm_height;
+    sensor_data[offset + 1] = velocity[1] * 1000.0 * coef_norm_height;
+    sensor_data[offset + 2] = velocity[2] * 1000.0 * coef_norm_height;
 
 #if SSPS_WITH_NOISE
     for (unsigned int i = 0; i < 3; ++i) {
