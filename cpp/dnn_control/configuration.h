@@ -9,7 +9,7 @@
  */
 
 // Task Name
-#define TASK_NAME   "master"
+#define TASK_NAME   "task17"
 
 // Evolutionary Robotics configs
 #define ER_NUM_GENERATIONS  1000
