@@ -214,10 +214,6 @@ void PaGMOSimulation::Init() {
     if (spacecraft_position[0] > 1.0 || spacecraft_position[0] < -1.0) {
         choices.push_back(2);
     }
-    if (choices.size() == 0) {
-        std::cout << "WOW... WTF... " << random_seed_ << std::endl;
-        exit(1);
-    }
     const unsigned int choice = choices.at(sample_factory.SampleRandomInteger() % choices.size());
     switch (choice) {
         case 0:
