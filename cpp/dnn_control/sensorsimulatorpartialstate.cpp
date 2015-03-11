@@ -47,8 +47,8 @@ SensorData SensorSimulatorPartialState::Simulate(const SystemState &state, const
     const Vector3D velocity_perpendicular = VectorSub(velocity, velocity_parallel);
 
     for (unsigned int i = 0; i < 3; ++i) {
-        sensor_data[i] = 10000.0 * velocity_parallel[i] * coef_norm_height;
-        sensor_data[3+i] = 10000.0 * velocity_perpendicular[i] * coef_norm_height;
+        sensor_data[i] = 100000.0 * velocity_parallel[i] * coef_norm_height;
+        sensor_data[3+i] = 100000.0 * velocity_perpendicular[i] * coef_norm_height;
     }
 
 #if SSPS_WITH_NOISE
@@ -87,9 +87,9 @@ SensorData SensorSimulatorPartialState::Simulate(const SystemState &state, const
 #if PGMOS_ENABLE_VELOCITY_OVER_HEIGHT
     offset = PGMOS_ENABLE_OPTICAL_FLOW * 6 + PGMOS_ENABLE_VELOCITY * 3;
 
-    sensor_data[offset] = velocity[0] * 10000.0 * coef_norm_height;
-    sensor_data[offset + 1] = velocity[1] * 10000.0 * coef_norm_height;
-    sensor_data[offset + 2] = velocity[2] * 10000.0 * coef_norm_height;
+    sensor_data[offset] = velocity[0] * 100000.0 * coef_norm_height;
+    sensor_data[offset + 1] = velocity[1] * 100000.0 * coef_norm_height;
+    sensor_data[offset + 2] = velocity[2] * 100000.0 * coef_norm_height;
 
 #if SSPS_WITH_NOISE
     for (unsigned int i = 0; i < 3; ++i) {
