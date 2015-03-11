@@ -246,11 +246,11 @@ boost::tuple<double, double, double> hovering_problem_neural_network::single_pos
 
             const double coef_norm_height = 1.0 / VectorNorm(height);
             const Vector3D &normalized_height = {height[0] * coef_norm_height, height[1] * coef_norm_height, height[2] * coef_norm_height};
-            const double velocity_dot_height = VectorDotProduct(velocity, height);
 
-            const double divergence = velocity_dot_height * coef_norm_height;
+            const double magn_velocity_parallel = VectorDotProduct(velocity, normalized_height);
+            const double divergence = magn_velocity_parallel * coef_norm_height;
 
-            const Vector3D &velocity_vertical = {divergence * normalized_height[0], divergence * normalized_height[1], divergence * normalized_height[2]};
+            const Vector3D &velocity_vertical = {magn_velocity_parallel * normalized_height[0], magn_velocity_parallel * normalized_height[1], magn_velocity_parallel * normalized_height[2]};
             const Vector3D velocity_horizontal = VectorSub(velocity, velocity_vertical);
 
             const Vector3D &optical_flow = {velocity_horizontal[0] * coef_norm_height, velocity_horizontal[1] * coef_norm_height, velocity_horizontal[2] * coef_norm_height};
@@ -261,6 +261,7 @@ boost::tuple<double, double, double> hovering_problem_neural_network::single_pos
             const double error_optical_flow = VectorNorm(optical_flow);
 
             const double error = error_optical_flow + error_divergence;
+
             if (error > max_error) {
                 max_error = error;
                 if (min_error == std::numeric_limits<double>::max()) {
@@ -272,10 +273,11 @@ boost::tuple<double, double, double> hovering_problem_neural_network::single_pos
                     max_error = min_error;
                 }
             }
-
+            mean_error += error;
             considered_samples++;
         }
     }
+    mean_error /= considered_samples;
 #else
     unsigned int considered_samples = 0;
     for (unsigned int i = 0; i < num_samples; ++i) {
