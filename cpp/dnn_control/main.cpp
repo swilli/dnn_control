@@ -12,7 +12,7 @@
 int main(int argc, char *argv[]) {
     srand(time(0));
 
-    //TestNeuralNetworkController(265339091);
+    //TestNeuralNetworkController(0);
     //return 0;
 
     //TestFullStateController(0);
@@ -33,8 +33,10 @@ int main(int argc, char *argv[]) {
     //TrainLeastSquaresPolicyController();
     //return 0;
 
-    //SensorDataGenerator generator(PATH_TO_SENSOR_DATA_FOLDER, 24.0 * 60.0 * 60.0);
-    //generator.Generate(100, rand());
+    //SensorDataGenerator generator(PATH_TO_SENSOR_DATA_FOLDER, 10.0 * 24.0 * 60.0 * 60.0);
+    //const unsigned int seed = rand();
+    //std::cout << seed << std::endl;
+    //generator.Generate(1, seed);
     //return 0;
 
     //return 0;
