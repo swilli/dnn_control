@@ -36,14 +36,21 @@ data = [line.split(',') for line in lines]
 data = [[int(line[0])] + [float(value) for value in line[1:]] for line in data]
 filtered_data = []
 outliers = 0
+worst_case_seed = -1
+worst_case_value = 0.0
 for line in data:
-    if line[1] >= threshold:
-        outliers += 1
-        print(line)
+	mean_error = line[1]
+	if mean_error > worst_case_value:
+		worst_case_value = mean_error
+		worst_case_seed = line[0]
+
+	if mean_error >= threshold:
+		outliers += 1
+		print(line)
         if skip_outliers:
         	continue
 
-    filtered_data += [line]
+	filtered_data += [line]
 
 data = array(filtered_data)
 
@@ -66,9 +73,10 @@ subtitle2 = "SSDE: mean=%.5f, stdev=%.5f, min=%.5f, max=%.5f" % (ssde_mean, ssde
 
 print(subtitle1)
 print(subtitle2)
+print("Worst case seed: {0}".format(worst_case_seed))
 
 plt.boxplot(data[:, 1])
-plt.title("Post Evaluation for {0} different Initial Conditions".format(num_samples)) # + '\n' + subtitle1 + '\n' + subtitle2)
-plt.xlabel('Controller')
-plt.ylabel('Fitness')
+#plt.title("Post Evaluation for {0} different Initial Conditions".format(num_samples)) # + '\n' + subtitle1 + '\n' + subtitle2)
+#plt.xlabel('Controller')
+plt.ylabel('Utility')
 plt.show()
