@@ -202,6 +202,8 @@ static void ConvexityCheck(pagmo::problem::hovering_problem_neural_network &prob
 void TestNeuralNetworkController(const unsigned int &random_seed) {
     ConfigurationPaGMO();
 
+    const unsigned int worst_case_seed = 2219375877;
+
     const pagmo::decision_vector &solution = {0.1257435762, -4.393217578, -5.088278152, 12.79457528, -9.619560236, 1.84323572, 0.9043928026, 0.03307936687, 0.005108165992, -3.079204776, -5.483935086, -7.18401306, -2.685465983, -17.52764864, 2.484939975, -2.365873338, 0.4437299199, 3.091839921, -4.672508584, -1.7029324, 5.239970477, -0.2957594836, -19.92990522, 0.6478485068, -7.748456307, -3.573637709, -2.209799145, -4.179988454, -0.4883468614, 8.308186355, 0.8751278989, 0.6421287721, 16.73051772, 1.993104343, -1.264191833, -0.1845810096, 0.5397372113, 9.930376056, 0.8992046511, -7.488057466, 15.61170728, -3.235207517, 2.04491186, -3.743253854, 0.9911108317, -0.7995093032, -4.228119263, 8.002738991, -2.302391543, -0.8473874197, -1.816443013, -4.432361724, -1.413361716, 1.052831653, -2.229837337, 12.67655027, -0.8303756074, 4.057023863, -8.240327338, 4.496694629, -1.122371878, -1.507073069, -0.5052202112};
 
     std::cout << std::setprecision(10);
@@ -224,7 +226,7 @@ void TestNeuralNetworkController(const unsigned int &random_seed) {
     std::cout << fitness << std::endl;
 
     std::cout << "Simulating NN controller ... ";
-    PaGMOSimulationNeuralNetwork simulation(random_seed, kNumHiddenNeurons, solution);
+    PaGMOSimulationNeuralNetwork simulation(worst_case_seed, kNumHiddenNeurons, solution);
     simulation.SetSimulationTime(86400.0);
     const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = simulation.EvaluateAdaptive();
     const std::vector<double> &times = boost::get<0>(result);
