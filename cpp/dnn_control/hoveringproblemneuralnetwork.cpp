@@ -203,16 +203,13 @@ double hovering_problem_neural_network::single_fitness(PaGMOSimulationNeuralNetw
     // Method 8: Mean offset to optimal landing path.
     Vector3D direction = evaluated_heights.at(0);
     Vector3D landing_point = VectorSub(evaluated_positions.at(0), direction);
-    const double norm_direction = VectorNorm(direction);
     const double dt = 1.0 / simulation.ControlFrequency();
-    direction[0] /= norm_direction;
-    direction[1] /= norm_direction;
-    direction[2] /= norm_direction;
-    double t = - log(norm_direction) / HP_OBJ_FUN_COEF_DIVERGENCE;
+    double t = 0;
     for (unsigned int i = 0; i < num_samples; ++i) {
         const double magn = exp(-HP_OBJ_FUN_COEF_DIVERGENCE * t);
-        const Vector3D target_height = VectorAdd(landing_point, VectorMul(magn, direction));
-        const double error = VectorNorm(VectorSub(target_height, evaluated_positions.at(i)));
+        const Vector3D target_path_position = VectorAdd(landing_point, VectorMul(magn, direction));
+        const Vector3D &actual_position = evaluated_positions.at(i);
+        const double error = VectorNorm(VectorSub(target_path_position, actual_position));
         fitness += error;
         t += dt;
     }
