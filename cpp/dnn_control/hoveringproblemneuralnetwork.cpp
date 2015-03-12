@@ -92,7 +92,21 @@ double hovering_problem_neural_network::single_fitness(PaGMOSimulationNeuralNetw
     double time_diff = evaluated_times.back() - simulation.SimulationTime();
     time_diff = (time_diff < 0.0 ? -time_diff : time_diff);
     if (time_diff > 0.1) {
-        fitness += 1e30;
+        const double norm_height = VectorNorm(evaluated_heights.back());
+        if (norm_height < 1.0) {
+            const double norm_velocity = VectorNorm(evaluated_velocities.back());
+            if (norm_velocity > 0.1) {
+                fitness += 1e30;
+            } else {
+                double error_mass = evaluated_masses.back() - simulation.SpacecraftMinimumMass();
+                error_mass = (error_mass < 0.0 ? -error_mass : error_mass);
+                if (error_mass < 0.1) {
+                    fitness += 1e15;
+                }
+            }
+        } else {
+            fitness += 1e30;
+        }
     }
 #endif
 
@@ -185,6 +199,24 @@ double hovering_problem_neural_network::single_fitness(PaGMOSimulationNeuralNetw
     }
     fitness /= considered_samples;
 
+#elif HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_8
+    // Method 8: Mean offset to optimal landing path.
+    Vector3D direction = evaluated_heights.at(0);
+    Vector3D landing_point = VectorSub(evaluated_positions.at(0), direction);
+    const double norm_direction = VectorNorm(direction);
+    const double dt = 1.0 / simulation.ControlFrequency();
+    direction[0] /= norm_direction;
+    direction[1] /= norm_direction;
+    direction[2] /= norm_direction;
+    double t = - log(norm_direction) / HP_OBJ_FUN_COEF_DIVERGENCE;
+    for (unsigned int i = 0; i < num_samples; ++i) {
+        const double magn = exp(-HP_OBJ_FUN_COEF_DIVERGENCE * t);
+        const Vector3D target_height = VectorAdd(landing_point, VectorMul(magn, direction));
+        const double error = VectorNorm(VectorSub(target_height, evaluated_positions.at(i)));
+        fitness += error;
+        t += dt;
+    }
+    fitness /= num_samples;
 #endif
 
     return fitness;
@@ -197,6 +229,7 @@ boost::tuple<double, double, double> hovering_problem_neural_network::single_pos
 
     const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = simulation.EvaluateAdaptive();
     const std::vector<double> &evaluated_times = boost::get<0>(result);
+    const std::vector<double> &evaluated_masses = boost::get<1>(result);
     const std::vector<Vector3D> &evaluated_positions = boost::get<2>(result);
     const std::vector<Vector3D> &evaluated_heights = boost::get<3>(result);
     const std::vector<Vector3D> &evaluated_velocities = boost::get<4>(result);
@@ -211,7 +244,21 @@ boost::tuple<double, double, double> hovering_problem_neural_network::single_pos
     double time_diff = evaluated_times.back() - simulation.SimulationTime();
     time_diff = (time_diff < 0.0 ? -time_diff : time_diff);
     if (time_diff > 0.1) {
-        mean_error += 1e30;
+        const double norm_height = VectorNorm(evaluated_heights.back());
+        if (norm_height < 1.0) {
+            const double norm_velocity = VectorNorm(evaluated_velocities.back());
+            if (norm_velocity > 0.1) {
+                mean_error += 1e30;
+            } else {
+                double error_mass = evaluated_masses.back() - simulation.SpacecraftMinimumMass();
+                error_mass = (error_mass < 0.0 ? -error_mass : error_mass);
+                if (error_mass < 0.1) {
+                    mean_error += 1e15;
+                }
+            }
+        } else {
+            mean_error += 1e30;
+        }
     }
 #endif
 

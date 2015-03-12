@@ -9,13 +9,13 @@
  */
 
 // Task Name
-#define TASK_NAME   "master"
+#define TASK_NAME   "task7"
 
 
 // Evolutionary Robotics configs
 #define ER_NUM_GENERATIONS  1000
-#define ER_POPULATION_SIZE  20
-#define ER_NUM_ISLANDS  24
+#define ER_POPULATION_SIZE  15
+#define ER_NUM_ISLANDS  32
 //#define ER_SIMULATION_TIME  3.0 * 60.0 * 60.0
 #define ER_EVALUATIONS  10
 #define ER_NUM_HIDDEN_NODES 6
@@ -29,9 +29,9 @@
 #define HP_OBJ_FUN_METHOD_5     5   // Compare mean distance to target point, also consider velocity, punish later offsets more.
 #define HP_OBJ_FUN_METHOD_6     6   // Mean velocity. Transient response aware.
 #define HP_OBJ_FUN_METHOD_7     7   // Mean optical flow, constant divergence. Transient response aware.
+#define HP_OBJ_FUN_METHOD_8     8   // Mean offset to optimal landing path.
 
-
-#define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_7
+#define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_8
 #define HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME  0.0
 #define HP_OBJ_FUN_COEF_DIVERGENCE  0.0001
 #define HP_OBJ_FUN_ERROR_DIVERGENCE_WEIGHT  1.0
@@ -128,6 +128,13 @@
 #if PGMOS_ENABLE_ODOMETRY == false
 #undef PGMOS_IC_POSITION_OFFSET_ENABLED
 #define PGMOS_IC_POSITION_OFFSET_ENABLED false
+#endif
+
+#if HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_8
+#undef PGMOS_IC_POSITION_OFFSET_ENABLED
+#define PGMOS_IC_POSITION_OFFSET_ENABLED false
+#undef HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME
+#define HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME 0.0
 #endif
 
 static inline std::string ToString(const bool &value) {
