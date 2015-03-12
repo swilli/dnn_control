@@ -9,7 +9,7 @@
  */
 
 // Task Name
-#define TASK_NAME   "task7"
+#define TASK_NAME   "master"
 
 
 // Evolutionary Robotics configs
