@@ -93,7 +93,7 @@ double hovering_problem_neural_network::single_fitness(PaGMOSimulationNeuralNetw
     time_diff = (time_diff < 0.0 ? -time_diff : time_diff);
     if (time_diff > 0.1) {
         const double norm_height = VectorNorm(evaluated_heights.back());
-        if (norm_height < 1.0) {
+        if (norm_height < 2.0) {
             const double norm_velocity = VectorNorm(evaluated_velocities.back());
             if (norm_velocity > 0.1) {
                 fitness += 1e30;
@@ -245,7 +245,7 @@ boost::tuple<double, double, double> hovering_problem_neural_network::single_pos
     time_diff = (time_diff < 0.0 ? -time_diff : time_diff);
     if (time_diff > 0.1) {
         const double norm_height = VectorNorm(evaluated_heights.back());
-        if (norm_height < 1.0) {
+        if (norm_height < 2.0) {
             const double norm_velocity = VectorNorm(evaluated_velocities.back());
             if (norm_velocity > 0.1) {
                 mean_error += 1e30;
