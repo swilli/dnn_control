@@ -31,5 +31,7 @@ lines = [float(val) for val in lines]
 data = array(lines)
 
 plt.plot(lines)
+plt.xlabel("Evolution")
+plt.ylabel("Fitness")
 plt.show()
 
