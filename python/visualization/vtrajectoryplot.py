@@ -45,6 +45,7 @@ result_file.close()
 
 num_samples = len(lines)
 total_time = num_samples / frequency
+print(total_time)
 states = [line.split(',') for line in lines]
 states = array([[float(value) for value in line] for line in states])
 
@@ -92,6 +93,13 @@ ax.plot(positions[:, 0], positions[:, 1], positions[:, 2], label="Spacecraft tra
 ax.plot([positions[0,0]],[positions[0,1]], [positions[0,2]], 'go', label="Start")
 ax.plot([positions[-1,0]], [positions[-1,1]], [positions[-1,2]], 'ro', label="End")
 ax.legend()
+min_x = ax.get_xlim()[1]
+min_y = ax.get_ylim()[1]
+min_z = ax.get_zlim()[1]
+max_dim = max(min_x, max(min_y, min_z))
+ax.set_xlim([-max_dim, max_dim])
+ax.set_ylim([-max_dim, max_dim])
+ax.set_zlim([-max_dim, max_dim])
 plt.show()
 
 

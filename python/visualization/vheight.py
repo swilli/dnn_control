@@ -50,7 +50,7 @@ heights = data[:,3:7]
 magn_height = norm(heights, axis=1)
 
 def d_dt(y,t0):
-	return -divergence * y
+	return -0.0001 * y
 
 t = linspace(0.0, end_time, len(data))
 correct_heights = odeint(d_dt, magn_height[0], t)
