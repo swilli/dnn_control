@@ -9,7 +9,7 @@
  */
 
 // Task Name
-#define TASK_NAME   "task8"
+#define TASK_NAME   "master"
 
 
 // Evolutionary Robotics configs
@@ -18,7 +18,7 @@
 #define ER_NUM_ISLANDS  24
 //#define ER_SIMULATION_TIME  3.0 * 60.0 * 60.0
 #define ER_EVALUATIONS  10
-#define ER_NUM_HIDDEN_NODES 9
+#define ER_NUM_HIDDEN_NODES 6
 
 
 // Class hovering_problem configs
