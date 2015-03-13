@@ -129,8 +129,8 @@ SensorData SensorSimulatorPartialState::Simulate(const SystemState &state, const
     const Vector3D gravity_acceleration = asteroid_.GravityAccelerationAtPosition(position);
 
     const boost::tuple<Vector3D, Vector3D> result_angular = asteroid_.AngularVelocityAndAccelerationAtTime(time);
-    const Vector3D angular_velocity = boost::get<0>(result_angular);
-    const Vector3D angular_acceleration = boost::get<1>(result_angular);
+    const Vector3D &angular_velocity = boost::get<0>(result_angular);
+    const Vector3D &angular_acceleration = boost::get<1>(result_angular);
 
     const Vector3D euler_acceleration = VectorCrossProduct(angular_acceleration, position);
     const Vector3D centrifugal_acceleration = VectorCrossProduct(angular_velocity, VectorCrossProduct(angular_velocity, position));
@@ -150,7 +150,7 @@ SensorData SensorSimulatorPartialState::Simulate(const SystemState &state, const
                 - euler_acceleration[i]
                 - centrifugal_acceleration[i];
 
-        sensor_value *= 100.0;
+        sensor_value *= 10000.0;
 #if SSPS_WITH_NOISE
         sensor_value+= sensor_value * sample_factory_.SampleNormal(0.0, noise_configurations_.at(offset + i));
 #endif

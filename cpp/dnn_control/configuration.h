@@ -9,7 +9,7 @@
  */
 
 // Task Name
-#define TASK_NAME   "master"
+#define TASK_NAME   "task8"
 
 
 // Evolutionary Robotics configs
@@ -18,7 +18,7 @@
 #define ER_NUM_ISLANDS  24
 //#define ER_SIMULATION_TIME  3.0 * 60.0 * 60.0
 #define ER_EVALUATIONS  10
-#define ER_NUM_HIDDEN_NODES 6
+#define ER_NUM_HIDDEN_NODES 9
 
 
 // Class hovering_problem configs
@@ -61,7 +61,7 @@
 #define PGMOS_ENABLE_VELOCITY   false
 #define PGMOS_ENABLE_VELOCITY_OVER_HEIGHT   false
 #define PGMOS_ENABLE_DIRECTION_SENSOR   false
-#define PGMOS_ENABLE_ACCELEROMETER  false
+#define PGMOS_ENABLE_ACCELEROMETER  true
 
 
 // Class ControllerNeuralNetwork configs
