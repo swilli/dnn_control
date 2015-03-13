@@ -9,7 +9,7 @@
  */
 
 // Task Name
-#define TASK_NAME   "master"
+#define TASK_NAME   "sensor_data"
 
 
 // Evolutionary Robotics configs
@@ -18,7 +18,7 @@
 #define ER_NUM_ISLANDS  24
 //#define ER_SIMULATION_TIME  3.0 * 60.0 * 60.0
 #define ER_EVALUATIONS  10
-#define ER_NUM_HIDDEN_NODES 6
+#define ER_NUM_HIDDEN_NODES 9
 
 
 // Class hovering_problem configs
@@ -54,7 +54,7 @@
 #define PGMOS_IC_BODY_ZERO_VELOCITY          2
 #define PGMOS_IC_BODY_RANDOM_VELOCITY        3
 
-#define PGMOS_IC_VELOCITY_TYPE  PGMOS_IC_BODY_RANDOM_VELOCITY
+#define PGMOS_IC_VELOCITY_TYPE  PGMOS_IC_INERTIAL_ORBITAL_VELOCITY
 #define PGMOS_IC_POSITION_OFFSET_ENABLED    true
 #define PGMOS_ENABLE_ODOMETRY   false
 #define PGMOS_ENABLE_OPTICAL_FLOW   true
@@ -82,10 +82,11 @@
 
 
 // Class TraingDataGenerator configs
-#define TDG_DATA_WITH_NOISE true
+#define TDG_DATA_WITH_NOISE false
+#define TDG_NORMALIZE_SENSOR_VALUES false
 #define TDG_DATA_DIMENSIONS  6
 #define TDG_DATA_MULTIPLIER  3
-#define TDG_DATA_HISTORY     0
+#define TDG_DATA_HISTORY     2
 
 
 
@@ -184,6 +185,7 @@ inline void ConfigurationPaGMO() {
     std::cout << "SSPS_NORMALIZE_SENSOR_VALUES   " << ToString(SSPS_NORMALIZE_SENSOR_VALUES) << std::endl;
     std::cout << "SSFS_WITH_NOISE   " << ToString(SSFS_WITH_NOISE) << std::endl;
     std::cout << "TDG_DATA_WITH_NOISE   " << ToString(TDG_DATA_WITH_NOISE) << std::endl;
+    std::cout << "TDG_NORMALIZE_SENSOR_VALUES   " << ToString(TDG_NORMALIZE_SENSOR_VALUES) << std::endl;
     std::cout << "TDG_DATA_DIMENSIONS   " << TDG_DATA_DIMENSIONS << std::endl;
     std::cout << "TDG_DATA_MULTIPLIER   " << TDG_DATA_MULTIPLIER << std::endl;
     std::cout << "TDG_DATA_HISTORY   " << TDG_DATA_HISTORY << std::endl;

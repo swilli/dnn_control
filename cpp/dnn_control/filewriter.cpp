@@ -44,6 +44,9 @@ void FileWriter::CreateSensorDataFile(const unsigned int &random_seed, const dou
 
     for (unsigned int i = 0; i < sensor_data.size(); ++i) {
         const std::vector<double> &labels = label_data.at(i);
+        if (labels.size() == 0) {
+            continue;
+        }
         const std::vector<double> &data = sensor_data.at(i);
         file_ << labels[0];
         for (unsigned int j = 1; j < labels.size(); ++j) {

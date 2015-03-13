@@ -176,7 +176,6 @@ double SensorSimulatorPartialState::Normalize(const double &sensor_value, const 
 
 #endif
 
-
     return normalized_sensor_value;
 }
 

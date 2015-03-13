@@ -25,6 +25,10 @@ public:
     void Reset();
 
 private:
+
+    static double Normalize(const double &sensor_value, const double &max_abs_sensor_value);
+
+
     // How large is the sensor data space
     unsigned int dimensions_;
 
