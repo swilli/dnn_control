@@ -96,6 +96,7 @@ def load_sensor_files(data_path, num_training_samples=100000, num_test_samples=1
     if normalized:
         min_max_scaler = preprocessing.MinMaxScaler()
         total_training_set = min_max_scaler.fit_transform(total_training_set)
+        min_max_scaler = preprocessing.MinMaxScaler()
         total_test_set = min_max_scaler.fit_transform(total_test_set)
 
     if shared:

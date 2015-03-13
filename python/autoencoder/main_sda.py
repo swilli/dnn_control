@@ -38,8 +38,7 @@ sda = StackedDenoisingAutoencoder(
     # PRETRAINING THE MODEL #
     #########################
 print '... getting the pretraining functions'
-pretraining_fns = sda.pretraining_functions(train_set_x=training_set,
-                                                batch_size=batch_size)
+pretraining_fns = sda.pretraining_functions(train_set_x=training_set, batch_size=batch_size)
 
 print '... pre-training the model'
 start_time = clock()
