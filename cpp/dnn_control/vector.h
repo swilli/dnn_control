@@ -33,6 +33,14 @@ inline Vector3D VectorAdd(const Vector3D &first, const Vector3D &second) {
     return result;
 }
 
+inline Vector3D VectorMul(const double &scalar, const Vector3D &vector) {
+    Vector3D result;
+    result[0] = scalar * vector[0];
+    result[1] = scalar * vector[1];
+    result[2] = scalar * vector[2];
+    return result;
+}
+
 // n = ||vector||
 inline double VectorNorm(const Vector3D &vector) {
     double result = 0.0;

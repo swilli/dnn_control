@@ -29,6 +29,7 @@
 #define HP_OBJ_FUN_METHOD_5     5   // Compare mean distance to target point, also consider velocity, punish later offsets more.
 #define HP_OBJ_FUN_METHOD_6     6   // Mean velocity. Transient response aware.
 #define HP_OBJ_FUN_METHOD_7     7   // Mean optical flow, constant divergence. Transient response aware.
+#define HP_OBJ_FUN_METHOD_8     8   // Mean offset to optimal landing path.
 
 #define HP_POST_EVAL_METHOD_1   1   // Compare mean distance to target point. Transient response aware.
 #define HP_POST_EVAL_METHOD_2   2   // Compare mean velocity. Transient response aware.
@@ -37,8 +38,9 @@
 #define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_3
 #define HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME  0.0
 #define HP_OBJ_FUN_COEF_DIVERGENCE  0.0001
-#define HP_OBJ_FUN_ERROR_DIVERGENCE_WEIGHT  1.0
+#define HP_POST_EVALUATION_METHOD   HP_POST_EVAL_METHOD_1
 #define HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED    true
+
 //#define HP_FIXED_SEED  1990
 
 
@@ -133,6 +135,13 @@
 #define PGMOS_IC_POSITION_OFFSET_ENABLED false
 #endif
 
+#if HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_8
+#undef PGMOS_IC_POSITION_OFFSET_ENABLED
+#define PGMOS_IC_POSITION_OFFSET_ENABLED false
+#undef HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME
+#define HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME 0.0
+#endif
+
 static inline std::string ToString(const bool &value) {
     return (value ? "true" : "false");
 }
@@ -159,7 +168,7 @@ inline void ConfigurationPaGMO() {
     std::cout << "HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED   " << ToString(HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED) << std::endl;
     std::cout << "HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME   " << HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME << std::endl;
     std::cout << "HP_OBJ_FUN_COEF_DIVERGENCE   " << HP_OBJ_FUN_COEF_DIVERGENCE << std::endl;
-    std::cout << "HP_OBJ_FUN_ERROR_DIVERGENCE_WEIGHT   " << HP_OBJ_FUN_ERROR_DIVERGENCE_WEIGHT << std::endl;
+    std::cout << "HP_POST_EVALUATION_METHOD   " << HP_POST_EVALUATION_METHOD << std::endl;
     std::cout << "PGMOS_IC_VELOCITY_TYPE   " << PGMOS_IC_VELOCITY_TYPE << std::endl;
     std::cout << "PGMOS_IC_POSITION_OFFSET_ENABLED   " << ToString(PGMOS_IC_POSITION_OFFSET_ENABLED) << std::endl;
     std::cout << "PGMOS_ENABLE_ODOMETRY   " << ToString(PGMOS_ENABLE_ODOMETRY) << std::endl;

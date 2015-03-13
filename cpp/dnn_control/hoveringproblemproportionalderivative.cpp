@@ -87,10 +87,24 @@ double hovering_problem_proportional_derivative::single_fitness(PaGMOSimulationP
 
     // punish unfinished simulations (crash / out of fuel)
 #if HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED
-    double time_diff = evaluated_times.back() - m_simulation_time;
+    double time_diff = evaluated_times.back() - simulation.SimulationTime();
     time_diff = (time_diff < 0.0 ? -time_diff : time_diff);
     if (time_diff > 0.1) {
-        fitness += 1e30;
+        const double norm_height = VectorNorm(evaluated_heights.back());
+        if (norm_height < 2.0) {
+            const double norm_velocity = VectorNorm(evaluated_velocities.back());
+            if (norm_velocity > 0.1) {
+                fitness += 1e30;
+            } else {
+                double error_mass = evaluated_masses.back() - simulation.SpacecraftMinimumMass();
+                error_mass = (error_mass < 0.0 ? -error_mass : error_mass);
+                if (error_mass < 0.1) {
+                    fitness += 1e15;
+                }
+            }
+        } else {
+            fitness += 1e30;
+        }
     }
 #endif
 
@@ -195,8 +209,10 @@ boost::tuple<double, double, double> hovering_problem_proportional_derivative::s
 
     const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = simulation.EvaluateAdaptive();
     const std::vector<double> &evaluated_times = boost::get<0>(result);
+    const std::vector<double> &evaluated_masses = boost::get<1>(result);
     const std::vector<Vector3D> &evaluated_positions = boost::get<2>(result);
     const std::vector<Vector3D> &evaluated_heights = boost::get<3>(result);
+    const std::vector<Vector3D> &evaluated_velocities = boost::get<4>(result);
 
     const unsigned int num_samples = evaluated_times.size();
 
@@ -208,10 +224,26 @@ boost::tuple<double, double, double> hovering_problem_proportional_derivative::s
     double time_diff = evaluated_times.back() - simulation.SimulationTime();
     time_diff = (time_diff < 0.0 ? -time_diff : time_diff);
     if (time_diff > 0.1) {
-        mean_error += 1e30;
+        const double norm_height = VectorNorm(evaluated_heights.back());
+        if (norm_height < 2.0) {
+            const double norm_velocity = VectorNorm(evaluated_velocities.back());
+            if (norm_velocity > 0.1) {
+                mean_error += 1e30;
+            } else {
+                double error_mass = evaluated_masses.back() - simulation.SpacecraftMinimumMass();
+                error_mass = (error_mass < 0.0 ? -error_mass : error_mass);
+                if (error_mass < 0.1) {
+                    mean_error += 1e15;
+                }
+            }
+        } else {
+            mean_error += 1e30;
+        }
     }
 #endif
 
+#if HP_POST_EVALUATION_METHOD == HP_POST_EVAL_METHOD_1
+    // Compare mean distance to target point. Transient response aware.
     unsigned int considered_samples = 0;
     for (unsigned int i = 0; i < num_samples; ++i) {
         if (evaluated_times.at(i) >= HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME) {
@@ -232,6 +264,58 @@ boost::tuple<double, double, double> hovering_problem_proportional_derivative::s
         }
     }
     mean_error /= considered_samples;
+
+#elif HP_POST_EVALUATION_METHOD == HP_POST_EVAL_METHOD_2
+    // Compare mean velocity. Transient response aware.
+    unsigned int considered_samples = 0;
+    for (unsigned int i = 0; i < num_samples; ++i) {
+        if (evaluated_times.at(i) >= HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME) {
+            const double error = VectorNorm(evaluated_velocities.at(i));
+            if (error > max_error) {
+                max_error = error;
+                if (min_error == std::numeric_limits<double>::max()) {
+                    min_error = max_error;
+                }
+            } else if(error < min_error) {
+                min_error = error;
+                if (max_error == -std::numeric_limits<double>::max()){
+                    max_error = min_error;
+                }
+            }
+            mean_error += error;
+            considered_samples++;
+        }
+    }
+    mean_error /= considered_samples;
+
+#elif HP_POST_EVALUATION_METHOD == HP_POST_EVAL_METHOD_3
+    // Compare mean distance to target path.
+    Vector3D direction = evaluated_heights.at(0);
+    Vector3D landing_point = VectorSub(evaluated_positions.at(0), direction);
+    const double dt = 1.0 / simulation.ControlFrequency();
+    double t = 0;
+    for (unsigned int i = 0; i < num_samples; ++i) {
+        const double magn = exp(-HP_OBJ_FUN_COEF_DIVERGENCE * t);
+        const Vector3D target_path_position = VectorAdd(landing_point, VectorMul(magn, direction));
+        const Vector3D &actual_position = evaluated_positions.at(i);
+        const double error = VectorNorm(VectorSub(target_path_position, actual_position));
+
+        if (error > max_error) {
+            max_error = error;
+            if (min_error == std::numeric_limits<double>::max()) {
+                min_error = max_error;
+            }
+        } else if(error < min_error) {
+            min_error = error;
+            if (max_error == -std::numeric_limits<double>::max()){
+                max_error = min_error;
+            }
+        }
+        mean_error += error;
+        t += dt;
+    }
+    mean_error /= num_samples;
+#endif
 
     return boost::make_tuple(mean_error, min_error, max_error);
 }
