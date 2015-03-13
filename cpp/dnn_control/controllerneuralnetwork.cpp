@@ -29,7 +29,7 @@ void ControllerNeuralNetwork::SetWeights(const std::vector<double> &weights) {
     }
 }
 
-Vector3D ControllerNeuralNetwork::GetThrustForSensorData(const SensorData &sensor_data) {
+Vector3D ControllerNeuralNetwork::GetThrustForSensorData(const std::vector<double> &sensor_data) {
 #if CNN_ENABLE_CORRECT_THRUST_OUTPUT
     const std::vector<double> normalized_u_v_t = neural_network_.Evaluate(sensor_data);
     const double u = 2.0 * kPi * normalized_u_v_t[0];

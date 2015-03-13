@@ -22,7 +22,7 @@ void FileWriter::CreateTrajectoryFile(const double &control_frequency, const Ast
     }
 }
 
-void FileWriter::CreateSensorDataFile(const unsigned int &random_seed, const double &control_frequency, const double &simulation_time, const Asteroid &asteroid, const SystemState &system_state, const std::vector<std::vector<double> > &label_data, const std::vector<std::vector<double> > &sensor_data) {
+void FileWriter::CreateSensorDataFile(const unsigned int &random_seed, const double &control_frequency, const double &simulation_time, const Asteroid &asteroid, const SystemState &system_state, const std::vector<Vector3D> &thrusts, const std::vector<std::vector<double> > &sensor_data) {
     const Vector2D angular_velocity_xz = asteroid.ConstructorAngularVelocitiesXZ();
     const Vector3D semi_axis = asteroid.SemiAxis();
 
@@ -43,20 +43,15 @@ void FileWriter::CreateSensorDataFile(const unsigned int &random_seed, const dou
     file_ << "#" << std::endl;
 
     for (unsigned int i = 0; i < sensor_data.size(); ++i) {
-        const std::vector<double> &labels = label_data.at(i);
-        if (labels.size() == 0) {
-            continue;
-        }
         const std::vector<double> &data = sensor_data.at(i);
-        file_ << labels[0];
-        for (unsigned int j = 1; j < labels.size(); ++j) {
-            file_ << ", " << labels.at(j);
-        }
-        file_ << " | " << data[0];
+        file_ << data[0];
         for (unsigned int j = 1; j < data.size(); ++j) {
             file_ << ", " << data[j];
         }
-        file_ << std::endl;
+        file_ << " | ";
+
+        const Vector3D &thrust = thrusts.at(i);
+        file_ << thrust[0] << ", " << thrust[1] << ", " << thrust[2] << std::endl;
     }
 }
 

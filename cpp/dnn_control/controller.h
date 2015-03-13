@@ -2,7 +2,6 @@
 #define SPACECRAFTCONTROLLER_H
 
 #include "vector.h"
-#include "sensorsimulator.h"
 
 class Controller {
         /*
@@ -15,7 +14,7 @@ public:
     virtual ~Controller();
 
     // thrust = F(sensor_data), whereas F can be eg., a PD controller, a NN, ...
-    virtual Vector3D GetThrustForSensorData(const SensorData &sensor_data) = 0;
+    virtual Vector3D GetThrustForSensorData(const std::vector<double> &sensor_data) = 0;
 
     // The number of dimensions the controller works on in the function GetThrustForSensorData
     unsigned int Dimensions() const;

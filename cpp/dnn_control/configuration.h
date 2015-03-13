@@ -9,7 +9,7 @@
  */
 
 // Task Name
-#define TASK_NAME   "sensor_data"
+#define TASK_NAME   "master"
 
 
 // Evolutionary Robotics configs
@@ -18,7 +18,7 @@
 #define ER_NUM_ISLANDS  24
 //#define ER_SIMULATION_TIME  3.0 * 60.0 * 60.0
 #define ER_EVALUATIONS  10
-#define ER_NUM_HIDDEN_NODES 9
+#define ER_NUM_HIDDEN_NODES 6
 
 
 // Class hovering_problem configs
@@ -35,7 +35,7 @@
 #define HP_POST_EVAL_METHOD_2   2   // Compare mean velocity. Transient response aware.
 #define HP_POST_EVAL_METHOD_3   3   // Compare mean distance to target path.
 
-#define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_8
+#define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_3
 #define HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME  0.0
 #define HP_OBJ_FUN_COEF_DIVERGENCE  0.0001
 #define HP_POST_EVALUATION_METHOD   HP_POST_EVAL_METHOD_1
@@ -54,14 +54,14 @@
 #define PGMOS_IC_BODY_ZERO_VELOCITY          2
 #define PGMOS_IC_BODY_RANDOM_VELOCITY        3
 
-#define PGMOS_IC_VELOCITY_TYPE  PGMOS_IC_INERTIAL_ORBITAL_VELOCITY
+#define PGMOS_IC_VELOCITY_TYPE  PGMOS_IC_BODY_RANDOM_VELOCITY
 #define PGMOS_IC_POSITION_OFFSET_ENABLED    true
 #define PGMOS_ENABLE_ODOMETRY   false
 #define PGMOS_ENABLE_OPTICAL_FLOW   true
 #define PGMOS_ENABLE_VELOCITY   false
 #define PGMOS_ENABLE_VELOCITY_OVER_HEIGHT   false
 #define PGMOS_ENABLE_DIRECTION_SENSOR   false
-#define PGMOS_ENABLE_ACCELEROMETER  true
+#define PGMOS_ENABLE_ACCELEROMETER  false
 
 
 // Class ControllerNeuralNetwork configs
@@ -74,7 +74,7 @@
 
 // Class SensorSimulatorPartialState configs
 #define SSPS_NORMALIZE_SENSOR_VALUES    false
-#define SSPS_WITH_NOISE true
+#define SSPS_WITH_NOISE false
 
 
 // Class SensorSimulatorFullState configs

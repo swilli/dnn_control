@@ -26,7 +26,7 @@ void ControllerProportionalDerivative::SetCoefficients(const std::vector<double>
     }
 }
 
-Vector3D ControllerProportionalDerivative::GetThrustForSensorData(const SensorData &sensor_data) {
+Vector3D ControllerProportionalDerivative::GetThrustForSensorData(const std::vector<double> &sensor_data) {
 #if CPD_ENABLE_CORRECT_THRUST_OUTPUT
     const std::vector<double> unboxed_thrust = neural_network_.Evaluate(sensor_data);
     Vector3D thrust = {unboxed_thrust[0], unboxed_thrust[1], unboxed_thrust[2]};

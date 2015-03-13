@@ -18,16 +18,13 @@ public:
     virtual ~PaGMOSimulation();
 
     // Simulates the configured simulation, used an adaptive integrator
-    virtual boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > EvaluateAdaptive() = 0;
+    virtual boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<std::vector<double> > > EvaluateAdaptive() = 0;
 
     // Simulates the configured simulation, used a fixed integrator
-    virtual boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > EvaluateFixed() = 0;
+    virtual boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<std::vector<double> > > EvaluateFixed() = 0;
 
     // Returns the number of parameters the controller has. 
     virtual unsigned int ChromosomeSize() const = 0;
-
-    // Simulates the configured simulation without a controller, returns the resulting sensor data stream, positions and heights
-    virtual boost::tuple<std::vector<std::vector<double > >, std::vector<std::vector<double> >, std::vector<Vector3D>, std::vector<Vector3D> > GenerateSensorDataSet();
 
     // Returns the target position, the spacecraft should stay at
     Vector3D TargetPosition() const;

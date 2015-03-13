@@ -11,20 +11,20 @@ SensorDataGenerator::SensorDataGenerator(const std::string &path_to_output_folde
 
 }
 
-void SensorDataGenerator::Generate(const unsigned int &num_datasets, const unsigned int &random_seed) {
+void SensorDataGenerator::Generate(const unsigned int &num_datasets, const unsigned int &random_seed, const std::vector<double> &neural_network_weights) {
     SampleFactory sample_factory(random_seed);
 
     for (unsigned int data_iter = 0; data_iter < num_datasets; ++data_iter) {
         std::cout << "generation " << (data_iter + 1) << " : " << std::endl;
-        PaGMOSimulationNeuralNetwork simulation(sample_factory.SampleRandomInteger());
+        PaGMOSimulationNeuralNetwork simulation(sample_factory.SampleRandomInteger(), 6, neural_network_weights);
         simulation.SetSimulationTime(data_set_time_);
 
         std::cout << "   running simulation ... ";
-        const boost::tuple<std::vector<std::vector<double> >, std::vector<std::vector<double> >, std::vector<Vector3D>, std::vector<Vector3D> > result = simulation.GenerateSensorDataSet();
-        const std::vector<std::vector<double> > &data_set = boost::get<0>(result);
-        const std::vector<std::vector<double> > &labels = boost::get<1>(result);
+        const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<std::vector<double> > > result = simulation.EvaluateAdaptive();
         const std::vector<Vector3D> &positions = boost::get<2>(result);
         const std::vector<Vector3D> &heights = boost::get<3>(result);
+        const std::vector<Vector3D> &thrusts = boost::get<5>(result);
+        const std::vector<std::vector<double> > &data_set = boost::get<6>(result);
         std::cout << "done." << std::endl;
 
         time_t raw_time;
@@ -54,7 +54,7 @@ void SensorDataGenerator::Generate(const unsigned int &num_datasets, const unsig
 
         std::cout << "   writing sensor data to file " << path_to_sensor_data_file << " ... ";
         FileWriter writer_sensor_data(path_to_sensor_data_file);
-        writer_sensor_data.CreateSensorDataFile(random_seed, control_frequency, data_set_time_, simulation.AsteroidOfSystem(), system_state, labels, data_set);
+        writer_sensor_data.CreateSensorDataFile(random_seed, control_frequency, data_set_time_, simulation.AsteroidOfSystem(), system_state,  thrusts, data_set);
         std::cout << "done." << std::endl;
         std::cout << "   writing trajectory to file " << path_to_trajectory_file << " ... ";
         FileWriter writer_trajectory(path_to_trajectory_file);

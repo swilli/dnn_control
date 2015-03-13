@@ -202,10 +202,9 @@ static void ConvexityCheck(pagmo::problem::hovering_problem_neural_network &prob
 void TestNeuralNetworkController(const unsigned int &random_seed) {
     ConfigurationPaGMO();
 
-    const unsigned int worst_case_seed = 2219375877;
+    const unsigned int worst_case_seed = random_seed;
 
-    const pagmo::decision_vector &solution = {-0.5678757608, 6.124535316, -0.6817737783, 1.86727002, 6.649107944, 1.841788808, -0.670639635, 0.9957450994, 1.733207147, 0.7074104463, -3.188468637, 0.7948219319, -5.450926114, 0.1160336424, -0.7742233817, -6.059091271, 7.902823536, -0.4541905803, -3.36204108, 6.334840471, 0.9801597652, -2.732378151, -4.10512854, 2.770419808, 4.23059301, 2.362094421, 3.08290218, 0.9263659753, 0.1800107297, 4.661138941, 5.328447639, -1.543081532, 2.883798781, 3.654828958, -2.252502881, 0.1773457231, -1.355635826, 1.94358557, 6.399421667, -3.385776871, 0.1513643709, 10.25082804, 1.882861407, -5.766312639, -1.632812609, 2.492486692, 0.3772143709, -2.5997176, 3.482140194, 0.0733163082, 0.4225051978, 2.500557378, -4.80502379, 1.690525079, -3.598590354, 2.709854226, 3.299616543, -2.132930388, 1.226227968, 1.134577937, -0.1289701925, -2.798598212, -4.177738554};
-
+    const pagmo::decision_vector &solution = {-0.09026912926, 8.138242141, 1.179279962, 0.9967504316, 9.107872994, 2.495094098, 1.21491874, 1.075098664, 6.478080265, -1.760053375, -5.557077224, 0.07087069288, -3.857047326, -1.142817024, -0.04177031103, -5.545367675, 6.897913933, -0.868805931, -5.581981788, 6.81000191, -0.6537881697, -3.01382613, -3.460458177, -1.222132272, 6.661425517, -0.8429447432, 1.847847975, -0.4622668776, 0.2102273386, 4.604822609, 6.7988227, -1.35256986, 3.409805751, 5.066750139, -2.000987524, 0.2158515067, -1.844968104, 2.081369052, 7.031798061, -3.251052176, 3.378869104, 7.205035636, 1.779003246, -4.6738817, -1.964513429, 3.136008676, -0.5397410952, -3.366847512, 4.220415052, 0.05860299037, 0.9929627838, 2.300526511, -4.63787856, 1.556752539, -3.874841742, 3.831621996, 3.293583417, -1.845062421, 1.584113831, 0.6596747896, 0.06139593008, -2.663128882, -4.332896525};
 
 
     std::cout << std::setprecision(10);
@@ -230,7 +229,7 @@ void TestNeuralNetworkController(const unsigned int &random_seed) {
     std::cout << "Simulating NN controller ... ";
     PaGMOSimulationNeuralNetwork simulation(worst_case_seed, kNumHiddenNeurons, solution);
     simulation.SetSimulationTime(86400.0);
-    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = simulation.EvaluateAdaptive();
+    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<std::vector<double> > > result = simulation.EvaluateAdaptive();
     const std::vector<double> &times = boost::get<0>(result);
     const std::vector<Vector3D> &positions = boost::get<2>(result);
     const std::vector<Vector3D> &heights = boost::get<3>(result);
@@ -247,6 +246,8 @@ void TestNeuralNetworkController(const unsigned int &random_seed) {
     FileWriter writer_evaluation(PATH_TO_NEURO_EVALUATION_FILE);
     writer_evaluation.CreateEvaluationFile(random_seed, simulation.TargetPosition(), simulation.AsteroidOfSystem(), times, positions, velocities, thrusts);
     std::cout << "done." << std::endl;
+
+    return;
 
     std::cout << "Performing post evaluation ... ";
     const boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<std::pair<double, double> > > post_evaluation = prob.post_evaluate(solution, random_seed);
@@ -277,7 +278,7 @@ void TestProportionalDerivativeController(const unsigned int &random_seed) {
     std::cout << "Simulating PD controller ... ";
     PaGMOSimulationProportionalDerivative simulation(random_seed, solution);
     simulation.SetSimulationTime(86400.0);
-    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = simulation.EvaluateAdaptive();
+    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<std::vector<double> > > result = simulation.EvaluateAdaptive();
     const std::vector<double> &times = boost::get<0>(result);
     const std::vector<Vector3D> &positions = boost::get<2>(result);
     const std::vector<Vector3D> &heights = boost::get<3>(result);

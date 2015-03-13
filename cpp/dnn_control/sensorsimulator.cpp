@@ -15,7 +15,7 @@ unsigned int SensorSimulator::Dimensions() const {
     return dimensions_;
 }
 
-std::string SensorSimulator::SensorDataToString(const SensorData &data) {
+std::string SensorSimulator::SensorDataToString(const std::vector<double> &data) {
     std::stringstream result;
     if (data.size()) {
         result << data[0];

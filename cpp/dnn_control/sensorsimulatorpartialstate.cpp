@@ -30,8 +30,8 @@ SensorSimulatorPartialState::SensorSimulatorPartialState(SampleFactory &sample_f
 
 }
 
-SensorData SensorSimulatorPartialState::Simulate(const SystemState &state, const Vector3D &height, const Vector3D &perturbations_acceleration, const double &time) {
-    SensorData sensor_data(dimensions_, 0.0);
+std::vector<double> SensorSimulatorPartialState::Simulate(const SystemState &state, const Vector3D &height, const Vector3D &perturbations_acceleration, const double &time) {
+    std::vector<double> sensor_data(dimensions_, 0.0);
     unsigned int offset = 0;
     double max_abs_sensor_value = 0.0;
 

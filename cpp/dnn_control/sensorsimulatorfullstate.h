@@ -16,7 +16,7 @@ public:
 
 
     // Generates (simulates) sensor data based on the current spacecraft state "state" and time "time"
-    virtual SensorData Simulate(const SystemState &state, const Vector3D  &, const Vector3D &, const double &time);
+    virtual std::vector<double> Simulate(const SystemState &state, const Vector3D  &, const Vector3D &, const double &time);
 
 private:
 	// The target position the spacecraft is supposed to hover over

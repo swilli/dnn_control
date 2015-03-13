@@ -10,8 +10,8 @@ SensorSimulatorFullState::SensorSimulatorFullState(SampleFactory &sample_factory
     target_position_ = target_position;
 }
 
-SensorData SensorSimulatorFullState::Simulate(const SystemState &state, const Vector3D &, const Vector3D &, const double &time) {
-    SensorData sensor_data(dimensions_, 0.0);
+std::vector<double> SensorSimulatorFullState::Simulate(const SystemState &state, const Vector3D &, const Vector3D &, const double &time) {
+    std::vector<double> sensor_data(dimensions_, 0.0);
 
     for (unsigned int i = 0; i < 3; ++i) {
         sensor_data[i] = target_position_[i] - state[i];

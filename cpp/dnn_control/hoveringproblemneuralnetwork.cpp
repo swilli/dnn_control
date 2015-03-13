@@ -75,7 +75,7 @@ std::string hovering_problem_neural_network::human_readable_extra() const {
 double hovering_problem_neural_network::single_fitness(PaGMOSimulationNeuralNetwork &simulation) const {
     double fitness = 0.0;
 
-    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = simulation.EvaluateAdaptive();
+    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<std::vector<double> > > result = simulation.EvaluateAdaptive();
     const std::vector<double> &evaluated_times = boost::get<0>(result);
     const std::vector<double> &evaluated_masses = boost::get<1>(result);
     const std::vector<Vector3D> &evaluated_positions = boost::get<2>(result);
@@ -224,7 +224,7 @@ boost::tuple<double, double, double> hovering_problem_neural_network::single_pos
     double min_error = std::numeric_limits<double>::max();
     double max_error = -std::numeric_limits<double>::max();
 
-    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = simulation.EvaluateAdaptive();
+    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<std::vector<double> > > result = simulation.EvaluateAdaptive();
     const std::vector<double> &evaluated_times = boost::get<0>(result);
     const std::vector<double> &evaluated_masses = boost::get<1>(result);
     const std::vector<Vector3D> &evaluated_positions = boost::get<2>(result);

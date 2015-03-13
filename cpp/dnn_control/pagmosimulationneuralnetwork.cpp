@@ -30,7 +30,7 @@ PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &r
     simulation_parameters_ = neural_network_weights;
 }
 
-boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > PaGMOSimulationNeuralNetwork::EvaluateAdaptive() {
+boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<std::vector<double> > > PaGMOSimulationNeuralNetwork::EvaluateAdaptive() {
     typedef odeint::runge_kutta_cash_karp54<SystemState> ErrorStepper;
     typedef odeint::modified_controlled_runge_kutta<ErrorStepper> ControlledStepper;
 
@@ -61,11 +61,13 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     std::vector<Vector3D> evaluated_velocities(num_iterations + 1);
     std::vector<Vector3D> evaluated_heights(num_iterations + 1);
     std::vector<Vector3D> evaluated_thrusts(num_iterations +1);
+    std::vector<std::vector<double> > evaluated_sensor_data(num_iterations + 1);
 
     SystemState system_state(initial_system_state_);
 
     Vector3D perturbations_acceleration;
     Vector3D thrust;
+    std::vector<double> sensor_data;
 
     double current_time = 0.0;
     double current_time_observer = 0.0;
@@ -92,7 +94,10 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
                 perturbations_acceleration[i] = sample_factory.SampleNormal(perturbation_mean_, perturbation_noise_);
             }
 
-            const SensorData sensor_data = sensor_simulator.Simulate(system_state, height, perturbations_acceleration, current_time);
+            sensor_data = sensor_simulator.Simulate(system_state, height, perturbations_acceleration, current_time);
+
+            evaluated_sensor_data.at(iteration) = sensor_data;
+
             thrust = controller.GetThrustForSensorData(sensor_data);
             evaluated_thrusts.at(iteration) = thrust;
 
@@ -119,6 +124,7 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
         evaluated_positions.resize(new_size);
         evaluated_velocities.resize(new_size);
         evaluated_heights.resize(new_size);
+        evaluated_sensor_data.resize(new_size);
         evaluated_thrusts.resize(new_size);
     }
 
@@ -134,12 +140,13 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     evaluated_positions.back() = position;
     evaluated_velocities.back() = velocity;
     evaluated_heights.back() = height;
+    evaluated_sensor_data.back() = sensor_data;
     evaluated_thrusts.back() = thrust;
 
-    return boost::make_tuple(evaluated_times, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities, evaluated_thrusts);
+    return boost::make_tuple(evaluated_times, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities, evaluated_thrusts, evaluated_sensor_data);
 }
 
-boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > PaGMOSimulationNeuralNetwork::EvaluateFixed() {
+boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<std::vector<double> > > PaGMOSimulationNeuralNetwork::EvaluateFixed() {
     SampleFactory sample_factory(random_seed_);
     SampleFactory sf_sensor_simulator(sample_factory.SampleRandomInteger());
 
@@ -165,11 +172,13 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     std::vector<Vector3D> evaluated_velocities;
     std::vector<Vector3D> evaluated_heights;
     std::vector<Vector3D> evaluated_thrusts;
+    std::vector<std::vector<double> > evaluated_sensor_data;
 
     SystemState system_state(initial_system_state_);
 
     Vector3D perturbations_acceleration;
     Vector3D thrust;
+    std::vector<double> sensor_data;
 
     double current_time = 0.0;
     double engine_noise = 0.0;
@@ -194,7 +203,10 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
                 perturbations_acceleration[i] = sample_factory.SampleNormal(perturbation_mean_, perturbation_noise_);
             }
 
-            const SensorData sensor_data = sensor_simulator.Simulate(system_state, height, perturbations_acceleration, current_time);
+            sensor_data = sensor_simulator.Simulate(system_state, height, perturbations_acceleration, current_time);
+
+            evaluated_sensor_data.push_back(sensor_data);
+
             thrust = controller.GetThrustForSensorData(sensor_data);
             evaluated_thrusts.push_back(thrust);
 
@@ -213,7 +225,7 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
         //std::cout << "The spacecraft is out of fuel." << std::endl;
     }
 
-    return boost::make_tuple(evaluated_times, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities,evaluated_thrusts);
+    return boost::make_tuple(evaluated_times, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities,evaluated_thrusts, evaluated_sensor_data);
 }
 
 unsigned int PaGMOSimulationNeuralNetwork::ChromosomeSize() const {

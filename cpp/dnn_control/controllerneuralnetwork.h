@@ -20,7 +20,7 @@ public:
 
 
     // thrust = F(sensor_data), whereas F is a FFNN
-    virtual Vector3D GetThrustForSensorData(const SensorData &sensor_data);
+    virtual Vector3D GetThrustForSensorData(const std::vector<double> &sensor_data);
 
     // Change the controller's behaviour by changing the NN's weights
     void SetWeights(const std::vector<double> &weights);
