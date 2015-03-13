@@ -30,6 +30,9 @@
 #define HP_OBJ_FUN_METHOD_6     6   // Mean velocity. Transient response aware.
 #define HP_OBJ_FUN_METHOD_7     7   // Mean optical flow, constant divergence. Transient response aware.
 
+#define HP_POST_EVAL_METHOD_1   1   // Compare mean distance to target point. Transient response aware.
+#define HP_POST_EVAL_METHOD_2   2   // Compare mean velocity. Transient response aware.
+#define HP_POST_EVAL_METHOD_3   3   // Compare mean distance to target path.
 
 #define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_3
 #define HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME  0.0
