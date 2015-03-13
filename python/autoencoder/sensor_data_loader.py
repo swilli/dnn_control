@@ -28,11 +28,12 @@ def load_sensor_file(file_path):
     return shared_data_set
 
 
-def load_sensor_files(data_path, num_training_samples=100000, num_test_samples=10000, shared=True):
+def load_sensor_files(data_path, num_training_samples=100000, num_test_samples=10000, normalized=True, shared=True):
     from numpy import array
     from os import listdir
     from random import sample
     from random import shuffle
+    from sklearn import preprocessing
 
     file_names = listdir(data_path)
     file_names = [name for name in file_names if "trajectory" not in name]
@@ -92,9 +93,13 @@ def load_sensor_files(data_path, num_training_samples=100000, num_test_samples=1
     total_test_set = array(total_test_set[:num_test_samples])
     total_test_label_set = array(total_test_label_set[:num_test_samples])
 
+    if normalized:
+        min_max_scaler = preprocessing.MinMaxScaler()
+        total_training_set = min_max_scaler.fit_transform(total_training_set)
+        total_test_set = min_max_scaler.fit_transform(total_test_set)
+
     if shared:
         total_training_set = shared_dataset(total_training_set)
         total_training_label_set = shared_dataset(total_training_label_set)
 
     return total_training_set, total_training_label_set, total_test_set, total_test_label_set
-
