@@ -2,7 +2,7 @@
 #define SENSORDATAGENERATOR_H
 
 #include <string>
-#include <vector.h>
+#include <vector>
 
 class SensorDataGenerator {
 	/*
