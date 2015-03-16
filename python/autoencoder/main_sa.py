@@ -9,7 +9,8 @@ from random import sample
 learning_rate = 0.01
 training_epochs = 50
 batch_size = 1
-hidden_layer_sizes = [200, 200, 100, 50, 25, 5]
+#hidden_layer_sizes = [200, 200, 100, 50, 25, 5]
+hidden_layer_sizes = [90, 90, 45, 20, 10, 5]
 corruption_level = 0.2
 history_length = 10
 data_path = "/home/willist/Documents/dnn/data/"
@@ -35,7 +36,7 @@ pretraining_fns = stacked_autoencoder.pretraining_functions(train_set_x=training
 
 print '... pre-training the model'
 start_time = clock()
-## Pre-train layer-wise
+# Pre-train layer-wise
 for i in xrange(stacked_autoencoder.n_layers):
     # go through pretraining epochs
     for epoch in xrange(training_epochs):
@@ -65,6 +66,13 @@ for sample in test_samples:
     num_tests += 1
     print("avg error: {0}".format(mean_error / num_tests))
     print("")
+
+
+result_path += "conf_" + "_".join([str(value) for value in hidden_layer_sizes])
+if not os.path.exists(result_path):
+    os.makedirs(result_path)
+
+result_path += "/"
 
 for i in xrange(stacked_autoencoder.n_layers):
     output_path = result_path + "layer_{0}_W.txt".format(i+1)
