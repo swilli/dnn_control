@@ -6,15 +6,16 @@ from stacked_autoencoder import StackedAutoencoder
 from numpy.linalg import norm
 from random import sample
 
-pretraining_epochs = 2000
-pretraining_learning_rate = 0.05
+pretraining_epochs = 500
+pretraining_learning_rate = 0.1
 batch_size = 20
-hidden_layer_sizes = [27, 18, 9, 6, 3]
+hidden_layer_sizes = [90, 90, 30, 10, 6]
 corruption_level = 0.2
+history_length = 10
 data_path = "/home/willist/Documents/dnn/data/"
 result_path = "/home/willist/Documents/dnn/autoencoder/"
 
-training_set, test_set = load_sensor_files(data_path)
+training_set, test_set = load_sensor_files(data_path, history_length=history_length)
 
 # compute number of minibatches for training, validation and testing
 n_train_batches = training_set.get_value(borrow=True).shape[0]

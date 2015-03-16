@@ -81,14 +81,6 @@
 #define SSFS_WITH_NOISE true
 
 
-// Class TraingDataGenerator configs
-#define TDG_DATA_WITH_NOISE false
-#define TDG_NORMALIZE_SENSOR_VALUES false
-#define TDG_DATA_DIMENSIONS  6
-#define TDG_DATA_MULTIPLIER  3
-#define TDG_DATA_HISTORY     2
-
-
 
 // Least Squares Policy Robotics configs
 #define LSPR_IC_BODY_ZERO_VELOCITY          0
@@ -184,11 +176,6 @@ inline void ConfigurationPaGMO() {
     std::cout << "SSPS_WITH_NOISE   " << ToString(SSPS_WITH_NOISE) << std::endl;
     std::cout << "SSPS_NORMALIZE_SENSOR_VALUES   " << ToString(SSPS_NORMALIZE_SENSOR_VALUES) << std::endl;
     std::cout << "SSFS_WITH_NOISE   " << ToString(SSFS_WITH_NOISE) << std::endl;
-    std::cout << "TDG_DATA_WITH_NOISE   " << ToString(TDG_DATA_WITH_NOISE) << std::endl;
-    std::cout << "TDG_NORMALIZE_SENSOR_VALUES   " << ToString(TDG_NORMALIZE_SENSOR_VALUES) << std::endl;
-    std::cout << "TDG_DATA_DIMENSIONS   " << TDG_DATA_DIMENSIONS << std::endl;
-    std::cout << "TDG_DATA_MULTIPLIER   " << TDG_DATA_MULTIPLIER << std::endl;
-    std::cout << "TDG_DATA_HISTORY   " << TDG_DATA_HISTORY << std::endl;
     std::cout << std::endl;
 }
 
