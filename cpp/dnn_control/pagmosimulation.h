@@ -59,6 +59,9 @@ public:
     // Returns the spacecraft's Isp
     double SpacecraftSpecificImpulse() const;
 
+    // Returns the spacecraft's maximum thrust
+    double SpacecraftMaximumThrust() const;
+
     // Change the simulation time manually
     void SetSimulationTime(const double &simulation_time);
 

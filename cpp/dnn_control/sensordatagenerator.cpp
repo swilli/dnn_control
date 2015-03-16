@@ -51,10 +51,17 @@ void SensorDataGenerator::Generate(const unsigned int &num_datasets, const unsig
         const unsigned int random_seed = simulation.RandomSeed();
         const SystemState system_state = simulation.InitialSystemState();
         const double control_frequency = simulation.ControlFrequency();
+        const double maximum_thrust = simulation.SpacecraftMaximumThrust();
+
+        std::vector<Vector3D> actions(thrusts.size());
+        const Vector3D &mean = {0.5, 0.5, 0.5};
+        for (unsigned int i = 0; i < thrusts.size(); ++i) {
+            actions.at(i) = VectorAdd(mean, VectorMul(1.0 / (2.0 * maximum_thrust), thrusts.at(i)));
+        }
 
         std::cout << "   writing sensor data to file " << path_to_sensor_data_file << " ... ";
         FileWriter writer_sensor_data(path_to_sensor_data_file);
-        writer_sensor_data.CreateSensorDataFile(random_seed, control_frequency, data_set_time_, simulation.AsteroidOfSystem(), system_state,  thrusts, data_set);
+        writer_sensor_data.CreateSensorDataFile(random_seed, control_frequency, data_set_time_, simulation.AsteroidOfSystem(), system_state, actions, data_set);
         std::cout << "done." << std::endl;
         std::cout << "   writing trajectory to file " << path_to_trajectory_file << " ... ";
         FileWriter writer_trajectory(path_to_trajectory_file);

@@ -9,12 +9,11 @@ from random import sample
 pretraining_epochs = 2000
 pretraining_learning_rate = 0.05
 batch_size = 100
-input_size = 18
-hidden_layer_sizes = [48, 9, 4]
+hidden_layer_sizes = [27, 18, 9, 6, 3]
 corruption_levels = [0.05, 0.0001, 0.0000001]
 data_path = "/home/willist/Documents/dnn/data/"
 
-training_set, training_labels, test_set, test_labels = load_sensor_files(data_path)
+training_set, test_set = load_sensor_files(data_path)
 
 # compute number of minibatches for training, validation and testing
 n_train_batches = training_set.get_value(borrow=True).shape[0]
@@ -29,7 +28,7 @@ print '... building the model'
 
 sda = StackedDenoisingAutoencoder(
         numpy_rng=numpy_rng,
-        n_ins=input_size,
+        n_ins=training_set.get_value(borrow=True).shape[1],
         hidden_layers_sizes=hidden_layer_sizes)
 
 

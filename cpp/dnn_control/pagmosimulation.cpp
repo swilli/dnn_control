@@ -45,6 +45,10 @@ double PaGMOSimulation::SpacecraftMinimumMass() const {
     return spacecraft_minimum_mass_;
 }
 
+double PaGMOSimulation::SpacecraftMaximumThrust() const {
+    return spacecraft_maximum_thrust_;
+}
+
 void PaGMOSimulation::SetSimulationTime(const double &simulation_time) {
     simulation_time_ = simulation_time;
 }

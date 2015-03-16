@@ -8,14 +8,13 @@ from random import sample
 
 pretraining_epochs = 2000
 pretraining_learning_rate = 0.05
-batch_size = 100
-input_size = 18
-hidden_layer_sizes = [18, 9, 4]
+batch_size = 20
+hidden_layer_sizes = [27, 18, 9, 6, 3]
 corruption_level = 0.2
-data_path = "/home/willist/Documents/dnn/data/labeled/"
+data_path = "/home/willist/Documents/dnn/data/"
 result_path = "/home/willist/Documents/dnn/autoencoder/"
 
-training_set, training_labels, test_set, test_labels = load_sensor_files(data_path)
+training_set, test_set = load_sensor_files(data_path)
 
 # compute number of minibatches for training, validation and testing
 n_train_batches = training_set.get_value(borrow=True).shape[0]
@@ -28,7 +27,7 @@ numpy_rng = random.RandomState(89677)
 print '... building the model'
 # construct the stacked denoising autoencoder class
 
-stacked_autoencoder = StackedAutoencoder(numpy_rng=numpy_rng, n_ins=input_size, hidden_layers_sizes=hidden_layer_sizes)
+stacked_autoencoder = StackedAutoencoder(numpy_rng=numpy_rng, n_ins=training_set.get_value(borrow=True).shape[1], hidden_layers_sizes=hidden_layer_sizes)
 
 print '... getting the pretraining functions'
 pretraining_fns = stacked_autoencoder.pretraining_functions(train_set_x=training_set, batch_size=batch_size)
@@ -50,7 +49,6 @@ end_time = clock()
 
 print 'The pretraining code for file ' + os.path.split(__file__)[1] + ' ran for %.2fm' % ((end_time - start_time) / 60.)
 
-samples = training_set.get_value(borrow=True)
 num_test_samples = 100
 test_samples = sample(test_set, num_test_samples)
 mean_error = 0.0
