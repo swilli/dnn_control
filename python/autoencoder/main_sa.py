@@ -6,10 +6,10 @@ from stacked_autoencoder import StackedAutoencoder
 from numpy.linalg import norm
 from random import sample
 
-pretraining_epochs = 500
-pretraining_learning_rate = 0.1
-batch_size = 20
-hidden_layer_sizes = [90, 90, 30, 10, 6]
+learning_rate = 0.01
+training_epochs = 50
+batch_size = 1
+hidden_layer_sizes = [200, 200, 100, 50, 25, 5]
 corruption_level = 0.2
 history_length = 10
 data_path = "/home/willist/Documents/dnn/data/"
@@ -38,11 +38,11 @@ start_time = clock()
 ## Pre-train layer-wise
 for i in xrange(stacked_autoencoder.n_layers):
     # go through pretraining epochs
-    for epoch in xrange(pretraining_epochs):
+    for epoch in xrange(training_epochs):
         # go through the training set
         c = []
         for batch_index in xrange(n_train_batches):
-            c.append(pretraining_fns[i](index=batch_index, corruption=corruption_level, lr=pretraining_learning_rate))
+            c.append(pretraining_fns[i](index=batch_index, corruption=corruption_level, lr=learning_rate))
         print 'Pre-training layer %i, epoch %d, cost ' % (i, epoch),
         print mean(c)
 
