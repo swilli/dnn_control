@@ -3,7 +3,6 @@
 #include "odeint.h"
 #include "modifiedcontrolledrungekutta.h"
 #include "odesystem.h"
-#include "trainingdatagenerator.h"
 #include "constants.h"
 #include "configuration.h"
 
