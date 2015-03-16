@@ -45,6 +45,7 @@ data = array(data)
 times = data[:, 0]
 times = [val for val in times if val <= end_time]
 num_samples = len(times)
+print(times[-1])
 positions = data[0:num_samples, 1:4]
 thrusts = data[0:num_samples, 4:7]
 velocities = data[0:num_samples, 7:10]
