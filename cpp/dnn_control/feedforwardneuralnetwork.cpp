@@ -1,6 +1,11 @@
 #include "feedforwardneuralnetwork.h"
 #include <cmath>
 
+FeedForwardNeuralNetwork::FeedForwardNeuralNetwork()
+    : NeuralNetwork(), dimension_input_layer_(0), input_layer_enable_bias_(false) {
+
+}
+
 FeedForwardNeuralNetwork::FeedForwardNeuralNetwork(const unsigned int &dimension_input_layer, const bool &input_layer_enable_bias, const std::vector<boost::tuple<unsigned int, bool, ActivationFunctionType> > &layer_configurations)
     : NeuralNetwork(), dimension_input_layer_(dimension_input_layer), input_layer_enable_bias_(input_layer_enable_bias), layer_configurations_(layer_configurations) {
 

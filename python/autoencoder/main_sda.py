@@ -1,7 +1,7 @@
 from numpy import random, mean
 import os
 from time import clock
-from sensor_data_loader import load_sensor_files
+from data_loader import load_sensor_files
 from stacked_denoising_autoencoder import StackedDenoisingAutoencoder
 from numpy.linalg import norm
 from random import sample

@@ -65,6 +65,7 @@
 
 
 // Class ControllerNeuralNetwork configs
+#define CNN_ENABLE_AUTOENCODER  true
 #define CNN_ENABLE_CORRECT_THRUST_OUTPUT    false
 
 
@@ -116,7 +117,7 @@
 #define PATH_TO_LSPI_WEIGHT_VECTOR_FILE OUTPUT_ROOT_PATH "results/lspi_weights.txt"
 #define PATH_TO_COMPARISON_POST_EVALUATION_FILE     OUTPUT_ROOT_PATH "results/post_evaluation_comparison.txt"
 #define PATH_TO_SENSOR_DATA_FOLDER  OUTPUT_ROOT_PATH    "data/"
-
+#define PATH_TO_AUTOENCODER_LAYER_CONFIGURATION OUTPUT_ROOT_PATH "autoencoder/conf_90_45_35_25_15_6/"
 
 #ifdef HP_FIXED_SEED
 #undef ER_EVALUATIONS

@@ -1,22 +1,26 @@
 from numpy import random, mean
 import os
 from time import clock
-from sensor_data_loader import load_sensor_files
+from data_loader import load_sensor_files, load_autoencoder_weights
 from stacked_autoencoder import StackedAutoencoder
 from numpy.linalg import norm
 from random import sample
 
 learning_rate = 0.01
-training_epochs = 50
+training_epochs = 15
 batch_size = 1
-hidden_layer_sizes = [90, 45, 35, 25, 15, 6]
-#hidden_layer_sizes = [90, 90, 45, 20, 10, 5]
+num_training_samples = 1000000
+num_test_samples = 10000
+hidden_layer_sizes = [90, 70, 50, 30, 15, 6]
 corruption_level = 0.0
 history_length = 10
 data_path = "/home/willist/Documents/dnn/data/"
 result_path = "/home/willist/Documents/dnn/autoencoder/"
+autoencoder_weights_path = "/home/willist/Documents/dnn/autoencoder/"
 
-training_set, test_set = load_sensor_files(data_path, history_length=history_length)
+training_set, test_set = load_sensor_files(data_path, history_length=history_length,
+                                           num_training_samples=num_training_samples,
+                                           num_test_samples=num_test_samples)
 
 # compute number of minibatches for training, validation and testing
 n_train_batches = training_set.get_value(borrow=True).shape[0]
@@ -29,7 +33,8 @@ numpy_rng = random.RandomState(89677)
 print '... building the model'
 # construct the stacked denoising autoencoder class
 
-stacked_autoencoder = StackedAutoencoder(numpy_rng=numpy_rng, n_ins=training_set.get_value(borrow=True).shape[1], hidden_layers_sizes=hidden_layer_sizes)
+stacked_autoencoder = StackedAutoencoder(numpy_rng=numpy_rng, n_ins=training_set.get_value(borrow=True).shape[1],
+                                         hidden_layers_sizes=hidden_layer_sizes)
 
 print '... getting the pretraining functions'
 pretraining_fns = stacked_autoencoder.pretraining_functions(train_set_x=training_set, batch_size=batch_size)
@@ -51,8 +56,33 @@ end_time = clock()
 
 print 'The pretraining code for file ' + os.path.split(__file__)[1] + ' ran for %.2fm' % ((end_time - start_time) / 60.)
 
-num_test_samples = 100
-test_samples = sample(test_set, num_test_samples)
+result_path += "conf_" + "_".join([str(value) for value in hidden_layer_sizes])
+if not os.path.exists(result_path):
+    os.makedirs(result_path)
+
+result_path += "/"
+
+for i in xrange(stacked_autoencoder.n_layers):
+    output_path = result_path + "l{0}W.txt".format(i)
+    output_file = open(output_path, 'w+')
+    W = stacked_autoencoder.dA_layers[i].W.get_value(borrow=True).T.tolist()
+    W_str = "\n".join(", ".join(map(str, value)) for value in W)
+    output_file.write(W_str)
+    output_file.close()
+    output_path = result_path + "l{0}b.txt".format(i)
+    output_file = open(output_path, 'w+')
+    b = stacked_autoencoder.dA_layers[i].b.get_value(borrow=True).T.tolist()
+    b_str = ", ".join(str(value) for value in b)
+    output_file.write(b_str)
+    output_file.close()
+    output_path = result_path + "l{0}b_prime.txt".format(i)
+    output_file = open(output_path, 'w+')
+    b_prime = stacked_autoencoder.dA_layers[i].b_prime.get_value(borrow=True).T.tolist()
+    b_str = ", ".join(str(value) for value in b_prime)
+    output_file.write(b_str)
+    output_file.close()
+
+test_samples = test_set
 mean_error = 0.0
 num_tests = 0
 for sample in test_samples:
@@ -68,22 +98,4 @@ for sample in test_samples:
     print("")
 
 
-result_path += "conf_" + "_".join([str(value) for value in hidden_layer_sizes])
-if not os.path.exists(result_path):
-    os.makedirs(result_path)
 
-result_path += "/"
-
-for i in xrange(stacked_autoencoder.n_layers):
-    output_path = result_path + "layer_{0}_W.txt".format(i+1)
-    output_file = open(output_path, 'w+')
-    W = stacked_autoencoder.dA_layers[i].W.get_value(borrow=True).T.tolist()
-    W_str = "\n".join(", ".join(map(str, value)) for value in W)
-    output_file.write(W_str)
-    output_file.close()
-    output_path = result_path + "layer_{0}_b.txt".format(i+1)
-    output_file = open(output_path, 'w+')
-    b = stacked_autoencoder.dA_layers[i].b.get_value(borrow=True).T.tolist()
-    b_str = ", ".join(str(value) for value in b)
-    output_file.write(b_str)
-    output_file.close()

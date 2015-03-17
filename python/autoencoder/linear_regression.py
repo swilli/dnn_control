@@ -1,4 +1,4 @@
-from sensor_data_loader import load_sensor_files
+from data_loader import load_sensor_files
 from sklearn.linear_model import LinearRegression
 import numpy as np
 

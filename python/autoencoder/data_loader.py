@@ -1,9 +1,12 @@
-def shared_dataset(data, borrow=True):
+def shared_dataset(data, borrow=True, name=None):
     from theano import shared
     from theano import config as theano_config
     from numpy import asarray
 
-    shared_data = shared(asarray(data, dtype=theano_config.floatX), borrow=borrow)
+    if name is None:
+        shared_data = shared(asarray(data, dtype=theano_config.floatX), borrow=borrow)
+    else:
+        shared_data = shared(asarray(data, dtype=theano_config.floatX), borrow=borrow, name=name)
     return shared_data
 
 
@@ -96,7 +99,7 @@ def load_data_set(file_paths, num_training_samples, history_length):
 
 
 def load_sensor_files(data_path,
-                      num_training_samples=100000,
+                      num_training_samples=1000000,
                       num_test_samples=10000,
                       shared=True,
                       history_length=3):
@@ -125,3 +128,35 @@ def load_sensor_files(data_path,
         training_data = shared_dataset(training_data)
 
     return training_data, test_data
+
+
+def load_autoencoder_weights(path_to_autoencoder_weights):
+    from os import listdir
+    from numpy import array
+
+    file_names = listdir(path_to_autoencoder_weights)
+    file_names = sorted(file_names)
+    file_paths = [path_to_autoencoder_weights + name for name in file_names]
+
+    all_weights = []
+    for i in xrange(len(file_paths)/3):
+        weights_file = open(file_paths[3*i], 'r')
+        bias_file = open(file_paths[3*i + 1], 'r')
+        bias_prime_file = open(file_paths[3*i + 2], 'r')
+
+        bias_data = bias_file.readline()
+        bias = array([float(value) for value in bias_data.split(",")])
+
+        bias_prime_data = bias_prime_file.readline()
+        bias_prime = array([float(value) for value in bias_prime_data.split(",")])
+
+        weights_data = weights_file.read()
+        weights = array([[float(value) for value in line.split(",")] for line in weights_data.split('\n')]).T
+
+        bias = shared_dataset(bias, name="b")
+        bias_prime = shared_dataset(bias_prime)
+        weights = shared_dataset(weights, name="W")
+
+        all_weights.append((weights, bias, bias_prime))
+
+    return all_weights

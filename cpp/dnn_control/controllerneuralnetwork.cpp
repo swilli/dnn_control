@@ -8,6 +8,11 @@ const unsigned int ControllerNeuralNetwork::kDimensions = 6;
 const unsigned int ControllerNeuralNetwork::kDimensions = PGMOS_ENABLE_OPTICAL_FLOW * 6 + PGMOS_ENABLE_VELOCITY * 3 + PGMOS_ENABLE_VELOCITY_OVER_HEIGHT * 3 + PGMOS_ENABLE_DIRECTION_SENSOR * 3 + PGMOS_ENABLE_ACCELEROMETER * 3;
 #endif
 
+#if CNN_ENABLE_AUTOENCODER
+#include "autoencoder.h"
+static Autoencoder kAutoEncoder(PATH_TO_AUTOENCODER_LAYER_CONFIGURATION);
+#endif
+
 ControllerNeuralNetwork::ControllerNeuralNetwork(const double &maximum_thrust, const unsigned int &num_hidden)
     : Controller(kDimensions, maximum_thrust), neural_network_(kDimensions, true, {boost::make_tuple(num_hidden, true, NeuralNetwork::ActivationFunctionType::Sigmoid),
                                                                boost::make_tuple(3, false, NeuralNetwork::ActivationFunctionType::Sigmoid)}) {
