@@ -34,6 +34,7 @@ std::vector<double> SensorSimulatorPartialState::Simulate(const SystemState &sta
     std::vector<double> sensor_data(dimensions_, 0.0);
     unsigned int offset = 0;
     double max_abs_sensor_value = 0.0;
+    const double up_scale = 1000000.0;
 
     const Vector3D &position = {state[0], state[1], state[2]};
     const Vector3D &velocity = {state[3], state[4], state[5]};
@@ -47,8 +48,8 @@ std::vector<double> SensorSimulatorPartialState::Simulate(const SystemState &sta
     const Vector3D velocity_perpendicular = VectorSub(velocity, velocity_parallel);
 
     for (unsigned int i = 0; i < 3; ++i) {
-        sensor_data[i] = 100000.0 * velocity_parallel[i] * coef_norm_height;
-        sensor_data[3+i] = 100000.0 * velocity_perpendicular[i] * coef_norm_height;
+        sensor_data[i] = up_scale * velocity_parallel[i] * coef_norm_height;
+        sensor_data[3+i] = up_scale * velocity_perpendicular[i] * coef_norm_height;
     }
 
 #if SSPS_WITH_NOISE
@@ -87,9 +88,9 @@ std::vector<double> SensorSimulatorPartialState::Simulate(const SystemState &sta
 #if PGMOS_ENABLE_VELOCITY_OVER_HEIGHT
     offset = PGMOS_ENABLE_OPTICAL_FLOW * 6 + PGMOS_ENABLE_VELOCITY * 3;
 
-    sensor_data[offset] = velocity[0] * 100000.0 * coef_norm_height;
-    sensor_data[offset + 1] = velocity[1] * 100000.0 * coef_norm_height;
-    sensor_data[offset + 2] = velocity[2] * 100000.0 * coef_norm_height;
+    sensor_data[offset] = velocity[0] * up_scale * coef_norm_height;
+    sensor_data[offset + 1] = velocity[1] * up_scale * coef_norm_height;
+    sensor_data[offset + 2] = velocity[2] * up_scale * coef_norm_height;
 
 #if SSPS_WITH_NOISE
     for (unsigned int i = 0; i < 3; ++i) {
@@ -150,7 +151,7 @@ std::vector<double> SensorSimulatorPartialState::Simulate(const SystemState &sta
                 - euler_acceleration[i]
                 - centrifugal_acceleration[i];
 
-        sensor_value *= 10000.0;
+        sensor_value *= up_scale
 #if SSPS_WITH_NOISE
         sensor_value+= sensor_value * sample_factory_.SampleNormal(0.0, noise_configurations_.at(offset + i));
 #endif

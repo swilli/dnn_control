@@ -9,7 +9,7 @@
  */
 
 // Task Name
-#define TASK_NAME   "master"
+#define TASK_NAME   "task6"
 
 
 // Evolutionary Robotics configs
@@ -35,7 +35,7 @@
 #define HP_POST_EVAL_METHOD_2   2   // Compare mean velocity. Transient response aware.
 #define HP_POST_EVAL_METHOD_3   3   // Compare mean distance to target path.
 
-#define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_3
+#define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_4
 #define HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME  0.0
 #define HP_OBJ_FUN_COEF_DIVERGENCE  0.0001
 #define HP_POST_EVALUATION_METHOD   HP_POST_EVAL_METHOD_1
@@ -74,7 +74,7 @@
 
 // Class SensorSimulatorPartialState configs
 #define SSPS_NORMALIZE_SENSOR_VALUES    false
-#define SSPS_WITH_NOISE false
+#define SSPS_WITH_NOISE true
 
 
 // Class SensorSimulatorFullState configs
