@@ -9,9 +9,9 @@ from random import sample
 learning_rate = 0.01
 training_epochs = 50
 batch_size = 1
-#hidden_layer_sizes = [200, 200, 100, 50, 25, 5]
-hidden_layer_sizes = [90, 90, 45, 20, 10, 5]
-corruption_level = 0.2
+hidden_layer_sizes = [90, 45, 35, 25, 15, 6]
+#hidden_layer_sizes = [90, 90, 45, 20, 10, 5]
+corruption_level = 0.0
 history_length = 10
 data_path = "/home/willist/Documents/dnn/data/"
 result_path = "/home/willist/Documents/dnn/autoencoder/"
