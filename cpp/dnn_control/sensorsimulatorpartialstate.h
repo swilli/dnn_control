@@ -24,7 +24,7 @@ public:
 
 private:
 
-    static double Normalize(const double &sensor_value, const double &max_abs_sensor_value);
+    static double Normalize(const double &sensor_value, const std::pair<double, double> &min_max_values);
 
 #if PGMOS_ENABLE_DIRECTION_SENSOR
     Vector3D surface_point_;

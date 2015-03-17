@@ -3,13 +3,15 @@
 
 SampleFactory::SampleFactory() {
     srand(time(0));
-    generator_ = boost::mt19937(rand());
+    seed_ = rand();
+    generator_ = boost::mt19937(seed_);
     uniform_distribution_ = boost::random::uniform_real_distribution<>(0.0, 1.0);
     normal_distribution_ = boost::random::normal_distribution<>(0.0, 1.0);
 }
 
 SampleFactory::SampleFactory(const unsigned int &random_seed) {
-    generator_ = boost::mt19937(random_seed);
+    seed_ = random_seed;
+    generator_ = boost::mt19937(seed_);
     uniform_distribution_ = boost::random::uniform_real_distribution<>(0.0, 1.0);
     normal_distribution_ = boost::random::normal_distribution<>(0.0, 1.0);
 }
@@ -61,4 +63,8 @@ boost::tuple<Vector3D, double, double> SampleFactory::SamplePointOnEllipsoidSurf
 
 void SampleFactory::SetSeed(const unsigned int &random_seed) {
     generator_.seed(random_seed);
+}
+
+unsigned int SampleFactory::Seed() const {
+    return seed_;
 }

@@ -9,7 +9,7 @@
  */
 
 // Task Name
-#define TASK_NAME   "master"
+#define TASK_NAME   "autoencoder"
 
 
 // Evolutionary Robotics configs
@@ -26,7 +26,7 @@
 #define HP_OBJ_FUN_METHOD_2     2   // Compare mean distance to target point. Transient response aware.
 #define HP_OBJ_FUN_METHOD_3     3   // Compare mean distance to target point, also consider velocity. Transient response aware.
 #define HP_OBJ_FUN_METHOD_4     4   // Compare mean distance to target point, also consider fuel consumption. Transient response aware.
-#define HP_OBJ_FUN_METHOD_5     5   // Compare mean distance to target point, also consider velocity, punish later offsets more.
+#define HP_OBJ_FUN_METHOD_5     5   // Compare mean distance to target point, , also consider velocity, also consider fuel consumption. Transient response aware.
 #define HP_OBJ_FUN_METHOD_6     6   // Mean velocity. Transient response aware.
 #define HP_OBJ_FUN_METHOD_7     7   // Mean optical flow, constant divergence. Transient response aware.
 #define HP_OBJ_FUN_METHOD_8     8   // Mean offset to optimal landing path.
@@ -35,8 +35,8 @@
 #define HP_POST_EVAL_METHOD_2   2   // Compare mean velocity. Transient response aware.
 #define HP_POST_EVAL_METHOD_3   3   // Compare mean distance to target path.
 
-#define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_4
-#define HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME  0.0
+#define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_3
+#define HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME  150.0
 #define HP_OBJ_FUN_COEF_DIVERGENCE  0.0001
 #define HP_POST_EVALUATION_METHOD   HP_POST_EVAL_METHOD_1
 #define HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED    true
@@ -54,23 +54,22 @@
 #define PGMOS_IC_BODY_ZERO_VELOCITY          2
 #define PGMOS_IC_BODY_RANDOM_VELOCITY        3
 
+
+
 #define PGMOS_IC_VELOCITY_TYPE  PGMOS_IC_BODY_RANDOM_VELOCITY
 #define PGMOS_IC_POSITION_OFFSET_ENABLED    true
-#define PGMOS_ENABLE_ODOMETRY   false
+#define PGMOS_ENABLE_ODOMETRY   true
 #define PGMOS_ENABLE_OPTICAL_FLOW   true
 #define PGMOS_ENABLE_VELOCITY   false
 #define PGMOS_ENABLE_VELOCITY_OVER_HEIGHT   false
 #define PGMOS_ENABLE_DIRECTION_SENSOR   false
 #define PGMOS_ENABLE_ACCELEROMETER  false
+#define PGMOS_ENABLE_SENSOR_DATA_RECORDING  true
 
 
 // Class ControllerNeuralNetwork configs
-#define CNN_ENABLE_AUTOENCODER  false
-#define CNN_ENABLE_CORRECT_THRUST_OUTPUT    false
-
-
-// Class ControllerProportionalDerivative configs
-#define CPD_ENABLE_CORRECT_THRUST_OUTPUT    false
+#define CNN_ENABLE_STACKED_AUTOENCODER  false
+#define CNN_STACKED_AUTOENCODER_DIMENSIONS    90
 
 
 // Class SensorSimulatorPartialState configs
@@ -80,7 +79,6 @@
 
 // Class SensorSimulatorFullState configs
 #define SSFS_WITH_NOISE true
-
 
 
 // Least Squares Policy Robotics configs
@@ -171,9 +169,10 @@ inline void ConfigurationPaGMO() {
     std::cout << "PGMOS_ENABLE_ACCELEROMETER   " << ToString(PGMOS_ENABLE_ACCELEROMETER) << std::endl;
     std::cout << "PGMOS_ENABLE_VELOCITY   " << ToString(PGMOS_ENABLE_VELOCITY) << std::endl;
     std::cout << "PGMOS_ENABLE_VELOCITY_OVER_HEIGHT   " << ToString(PGMOS_ENABLE_VELOCITY_OVER_HEIGHT) << std::endl;
+    std::cout << "PGMOS_ENABLE_SENSOR_DATA_RECORDING   " << ToString(PGMOS_ENABLE_SENSOR_DATA_RECORDING) << std::endl;
     std::cout << "ODES_FUEL_ENABLED   " << ToString(ODES_FUEL_ENABLED) << std::endl;
-    std::cout << "CNN_ENABLE_CORRECT_THRUST_OUTPUT   " << ToString(CNN_ENABLE_CORRECT_THRUST_OUTPUT) << std::endl;
-    std::cout << "CPD_ENABLE_CORRECT_THRUST_OUTPUT   " << ToString(CPD_ENABLE_CORRECT_THRUST_OUTPUT) << std::endl;
+    std::cout << "CNN_ENABLE_STACKED_AUTOENCODER   " << ToString(CNN_ENABLE_STACKED_AUTOENCODER) << std::endl;
+    std::cout << "CNN_STACKED_AUTOENCODER_DIMENSIONS   " << CNN_STACKED_AUTOENCODER_DIMENSIONS << std::endl;
     std::cout << "SSPS_WITH_NOISE   " << ToString(SSPS_WITH_NOISE) << std::endl;
     std::cout << "SSPS_NORMALIZE_SENSOR_VALUES   " << ToString(SSPS_NORMALIZE_SENSOR_VALUES) << std::endl;
     std::cout << "SSFS_WITH_NOISE   " << ToString(SSFS_WITH_NOISE) << std::endl;

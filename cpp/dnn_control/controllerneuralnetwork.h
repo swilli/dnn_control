@@ -3,7 +3,11 @@
 
 #include "controller.h"
 #include "feedforwardneuralnetwork.h"
+#include "configuration.h"
 
+#if CNN_ENABLE_STACKED_AUTOENCODER
+#include <boost/circular_buffer.hpp>
+#endif
 
 class ControllerNeuralNetwork : public Controller {
 	/*
@@ -28,6 +32,10 @@ public:
 private:
 	// The behaviour, implemented using a FFNN 
     FeedForwardNeuralNetwork neural_network_;
+
+#if CNN_ENABLE_STACKED_AUTOENCODER
+    boost::circular_buffer<double> state_action_history_;
+#endif
 };
 
 #endif // CONTROLLERNEURALNETWORK_H

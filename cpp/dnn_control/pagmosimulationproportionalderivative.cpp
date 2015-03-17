@@ -30,6 +30,11 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     SensorSimulatorPartialState sensor_simulator(sf_sensor_simulator, asteroid_);
 #endif
 
+#if PGMOS_ENABLE_SENSOR_DATA_RECORDING
+    SampleFactory sf_sensor_recording(sf_sensor_simulator.Seed());
+    SensorSimulatorPartialState sensor_recorder(sf_sensor_recording, asteroid_);
+#endif
+
     ControllerProportionalDerivative controller(spacecraft_maximum_thrust_);
 
     if (simulation_parameters_.size()) {
@@ -55,6 +60,9 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     Vector3D perturbations_acceleration;
     Vector3D thrust;
     std::vector<double> sensor_data;
+#if PGMOS_ENABLE_SENSOR_DATA_RECORDING
+    std::vector<double> sensor_recording;
+#endif
 
     double current_time = 0.0;
     double current_time_observer = 0.0;
@@ -83,7 +91,12 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
 
             sensor_data = sensor_simulator.Simulate(system_state, height, perturbations_acceleration, current_time);
 
+#if PGMOS_ENABLE_SENSOR_DATA_RECORDING
+            sensor_recording = sensor_recorder.Simulate(system_state, height,perturbations_acceleration, current_time);
+            evaluated_sensor_data.at(iteration) = sensor_recording;
+#else
             evaluated_sensor_data.at(iteration) = sensor_data;
+#endif
 
             thrust = controller.GetThrustForSensorData(sensor_data);
             evaluated_thrusts.at(iteration) = thrust;
@@ -127,7 +140,11 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     evaluated_positions.back() = position;
     evaluated_velocities.back() = velocity;
     evaluated_heights.back() = height;
+#if PGMOS_ENABLE_SENSOR_DATA_RECORDING
+    evaluated_sensor_data.back() = sensor_recording;
+#else
     evaluated_sensor_data.back() = sensor_data;
+#endif
     evaluated_thrusts.back() = thrust;
 
     return boost::make_tuple(evaluated_times, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities, evaluated_thrusts, evaluated_sensor_data);
@@ -141,6 +158,11 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     SensorSimulatorFullState sensor_simulator(sf_sensor_simulator, asteroid_, target_position_);
 #else
     SensorSimulatorPartialState sensor_simulator(sf_sensor_simulator, asteroid_);
+#endif
+
+#if PGMOS_ENABLE_SENSOR_DATA_RECORDING
+    SampleFactory sf_sensor_recording(sf_sensor_simulator.Seed());
+    SensorSimulatorPartialState sensor_recorder(sf_sensor_recording, asteroid_);
 #endif
 
     ControllerProportionalDerivative controller(spacecraft_maximum_thrust_);
@@ -191,7 +213,12 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
 
             sensor_data = sensor_simulator.Simulate(system_state, height, perturbations_acceleration, current_time);
 
+#if PGMOS_ENABLE_SENSOR_DATA_RECORDING
+            const std::vector<double> sensor_recording = sensor_recorder.Simulate(system_state, height, perturbations_acceleration, current_time);
+            evaluated_sensor_data.push_back(sensor_recording);
+#else
             evaluated_sensor_data.push_back(sensor_data);
+#endif
 
             thrust = controller.GetThrustForSensorData(sensor_data);
             evaluated_thrusts.push_back(thrust);

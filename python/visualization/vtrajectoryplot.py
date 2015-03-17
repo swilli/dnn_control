@@ -2,11 +2,11 @@
 usage:
 ./python2.7 vtrajectoryplot.py <data_file> [reference frame]
 
-default reference frame is inertial.
+default reference frame is body.
 
 examples:
-./python2.7 vtrajectoryplot.py trajectory.txt body
 ./python2.7 vtrajectoryplot.py trajectory.txt inertial
+./python2.7 vtrajectoryplot.py trajectory.txt body
 ./python2.7 vtrajectoryplot.py trajectory.txt
 
 '''
@@ -21,7 +21,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from numpy import array, linspace
 from scipy.integrate import odeint
 
-reference_frame = "inertial"
+reference_frame = "body"
 
 file_name = sys.argv[1]
 if len(sys.argv) > 2:

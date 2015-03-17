@@ -42,7 +42,13 @@ public:
     // Set the seed of the factory
     void SetSeed(const unsigned int &random_seed);
 
+    // Get the seed of the factory
+    unsigned int Seed() const;
+
 private:
+    // The seed the random number generator is initialized with
+    unsigned int seed_;
+
     // The random number generator used for producing different samples
     boost::mt19937 generator_;
 

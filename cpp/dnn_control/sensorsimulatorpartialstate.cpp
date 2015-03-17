@@ -58,9 +58,9 @@ std::vector<double> SensorSimulatorPartialState::Simulate(const SystemState &sta
     }
 #endif
 
-    max_abs_sensor_value = 1e-3;
+    const std::vector<std::pair<double, double> > min_max_sensor_values(6, std::make_pair(-1.0,1.0));
     for (unsigned int i = 0; i < 6; ++i) {
-        sensor_data[i] = Normalize(sensor_data[i], max_abs_sensor_value);
+        sensor_data[i] = Normalize(sensor_data[i], min_max_sensor_values.at(i));
     }
 
 #endif
@@ -164,16 +164,17 @@ std::vector<double> SensorSimulatorPartialState::Simulate(const SystemState &sta
     return sensor_data;
 }
 
-double SensorSimulatorPartialState::Normalize(const double &sensor_value, const double &max_abs_sensor_value) {
+double SensorSimulatorPartialState::Normalize(const double &sensor_value, const std::pair<double, double> &min_max_values) {
     double normalized_sensor_value = sensor_value;
 
 #if SSPS_NORMALIZE_SENSOR_VALUES
-    if (normalized_sensor_value > max_abs_sensor_value) {
-        normalized_sensor_value = max_abs_sensor_value;
-    } else if (normalized_sensor_value < -max_abs_sensor_value) {
-        normalized_sensor_value = -max_abs_sensor_value;
+    const double range = min_max_values.second - min_max_values.first;
+    if (normalized_sensor_value > min_max_values.second) {
+        normalized_sensor_value = min_max_values.second;
+    } else if (normalized_sensor_value < min_max_values.first) {
+        normalized_sensor_value = min_max_values.first;
     }
-    normalized_sensor_value = normalized_sensor_value * 0.5 / max_abs_sensor_value + 0.5;
+    normalized_sensor_value = (normalized_sensor_value - min_max_values.first) / range;
 
 #endif
 

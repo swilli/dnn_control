@@ -149,11 +149,16 @@ double hovering_problem_proportional_derivative::single_fitness(PaGMOSimulationP
     fitness += 200.0 * (simulation.SpacecraftMaximumMass() / evaluated_masses.back() - 1.0);
 
 #elif HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_5
-    // Method 5 : Compare mean distance to target point, also consider velocity, punish later offsets more.
+    // Method 5 : Compare mean distance to target point, also consider velocity, also consider fuel consumption. Transient response aware.
+    unsigned int considered_samples = 0;
     for (unsigned int i = 0; i < num_samples; ++i) {
-        fitness += (i + 1) * (VectorNorm(VectorSub(target_position, evaluated_positions.at(i))) + VectorNorm(evaluated_velocities.at(i)));
+        if (evaluated_times.at(i) >= HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME) {
+            fitness += VectorNorm(VectorSub(target_position, evaluated_positions.at(i))) + VectorNorm(evaluated_velocities.at(i));
+            considered_samples++;
+        }
     }
-    fitness /= num_samples;
+    fitness /= considered_samples;
+    fitness += 200.0 * (simulation.SpacecraftMaximumMass() / evaluated_masses.back() - 1.0);
 
 #elif HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_6
     // Method 6 : Mean velocity. Transient response aware.
