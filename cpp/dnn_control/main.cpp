@@ -9,7 +9,7 @@
 
 #include "leastsquarespolicyrobotics.h"
 
-#include "autoencoder.h"
+#include "stackedautoencoder.h"
 
 int main(int argc, char *argv[]) {
     srand(time(0));
@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
         values.push_back(tmp_doubles);
     }
 
-    Autoencoder sda(PATH_TO_AUTOENCODER_LAYER_CONFIGURATION);
+    StackedAutoencoder sda(PATH_TO_AUTOENCODER_LAYER_CONFIGURATION);
 
     const unsigned int num_tests = values.size()/2;
     double error = 0.0;

@@ -1,4 +1,4 @@
-#include "autoencoder.h"
+#include "stackedautoencoder.h"
 
 #include <boost/iostreams/device/mapped_file.hpp>
 #include <boost/filesystem.hpp>
@@ -6,7 +6,7 @@
 #include <fstream>
 #include <sstream>
 
-Autoencoder::Autoencoder(const std::string &path_to_layer_configurations) {
+StackedAutoencoder::StackedAutoencoder(const std::string &path_to_layer_configurations) {
     using namespace boost::filesystem;
 
     path configuration_dir(path_to_layer_configurations);
@@ -51,11 +51,11 @@ Autoencoder::Autoencoder(const std::string &path_to_layer_configurations) {
     neural_network_.SetWeights(encoder_weights);
 }
 
-std::vector<double> Autoencoder::Compress(const std::vector<double> &input) {
+std::vector<double> StackedAutoencoder::Compress(const std::vector<double> &input) {
     return neural_network_.Evaluate(input);
 }
 
-std::vector<std::vector<double> > Autoencoder::ParseWeightMatrix(const std::string &path_to_matrix) {
+std::vector<std::vector<double> > StackedAutoencoder::ParseWeightMatrix(const std::string &path_to_matrix) {
     std::ifstream reader;
     reader.open(path_to_matrix);
     std::vector<std::string> file_data_string;
@@ -84,7 +84,7 @@ std::vector<std::vector<double> > Autoencoder::ParseWeightMatrix(const std::stri
     return weights;
 }
 
-std::vector<double> Autoencoder::ParseBiasVector(const std::string &path_to_vector) {
+std::vector<double> StackedAutoencoder::ParseBiasVector(const std::string &path_to_vector) {
     std::ifstream reader;
     reader.open(path_to_vector);
     std::string file_data_string;

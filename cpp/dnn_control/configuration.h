@@ -65,7 +65,7 @@
 
 
 // Class ControllerNeuralNetwork configs
-#define CNN_ENABLE_AUTOENCODER  true
+#define CNN_ENABLE_AUTOENCODER  false
 #define CNN_ENABLE_CORRECT_THRUST_OUTPUT    false
 
 
