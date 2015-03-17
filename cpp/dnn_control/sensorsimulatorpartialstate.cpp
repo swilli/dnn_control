@@ -151,9 +151,9 @@ std::vector<double> SensorSimulatorPartialState::Simulate(const SystemState &sta
                 - euler_acceleration[i]
                 - centrifugal_acceleration[i];
 
-        sensor_value *= up_scale
+        sensor_value *= up_scale;
 #if SSPS_WITH_NOISE
-        sensor_value+= sensor_value * sample_factory_.SampleNormal(0.0, noise_configurations_.at(offset + i));
+        sensor_value += sensor_value * sample_factory_.SampleNormal(0.0, noise_configurations_.at(offset + i));
 #endif
 
         sensor_data[offset + i] = Normalize(sensor_value, max_abs_sensor_value);
