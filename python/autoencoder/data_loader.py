@@ -47,6 +47,9 @@ def normalize(data_sets):
     max_values *= 1.1
     min_values *= 1.1
 
+    print("maximum values in data set: {0}".format(max_values))
+    print("minimum values in data set: {0}".format(min_values))
+
     for data_set in data_sets:
         data_set = array(data_set)
         for i in range(data_set.shape[1]):
