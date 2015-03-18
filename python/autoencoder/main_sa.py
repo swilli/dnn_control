@@ -7,7 +7,7 @@ from numpy.linalg import norm
 from random import sample
 
 learning_rate = 0.01
-training_epochs = 15
+training_epochs = 30
 batch_size = 1
 num_training_samples = 1500000
 num_training_samples_per_file = 250

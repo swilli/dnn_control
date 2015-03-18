@@ -217,9 +217,9 @@ Vector3D Asteroid::GravityAccelerationAtPosition(const Vector3D &position) const
     }
 
     // Improvement of Dario Izzo
-    acceleration[0] = -mass_gravitational_constant_ * gsl_sf_ellint_RD(semi_axis_pow2_[2] + kappa, semi_axis_pow2_[1] + kappa, semi_axis_pow2_[0] + kappa, 0) * position[0];
+    acceleration[0] = -mass_gravitational_constant_ * gsl_sf_ellint_RD(semi_axis_pow2_[1] + kappa, semi_axis_pow2_[2] + kappa, semi_axis_pow2_[0] + kappa, 0) * position[0];
     acceleration[1] = -mass_gravitational_constant_ * gsl_sf_ellint_RD(semi_axis_pow2_[0] + kappa, semi_axis_pow2_[2] + kappa, semi_axis_pow2_[1] + kappa, 0) * position[1];
-    acceleration[2] = -mass_gravitational_constant_ * gsl_sf_ellint_RD(semi_axis_pow2_[1] + kappa, semi_axis_pow2_[0] + kappa, semi_axis_pow2_[2] + kappa, 0) * position[2];
+    acceleration[2] = -mass_gravitational_constant_ * gsl_sf_ellint_RD(semi_axis_pow2_[0] + kappa, semi_axis_pow2_[1] + kappa, semi_axis_pow2_[2] + kappa, 0) * position[2];
 
     return acceleration;
 }
