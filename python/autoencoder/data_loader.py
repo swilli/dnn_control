@@ -10,12 +10,14 @@ def shared_dataset(data, borrow=True, name=None):
     return shared_data
 
 
+def window_stack(a, stepsize=1, width=3):
+    from numpy import hstack
+
+    return hstack(a[i:1+i-width or None:stepsize] for i in range(0, width))
+
+
 def historify(state_sets, action_sets, length):
     from numpy import array, concatenate
-
-    def window_stack(a, stepsize=1, width=3):
-        from numpy import hstack
-        return hstack(a[i:1+i-width or None:stepsize] for i in range(0, width))
 
     result = []
     for states, actions in zip(state_sets, action_sets):
@@ -64,11 +66,15 @@ def normalize(data_sets):
 
 
 def load_sensor_file(file_path, num_lines=1000):
-    sensor_data_file = open(file_path, 'r')
-    lines = sensor_data_file.readlines()
-    sensor_data_file.close()
-    lines = [line for line in lines if not line.startswith("#")]
-    lines = lines[:num_lines]
+    lines = []
+    with open(file_path, 'r') as sensor_data_file:
+        for line in sensor_data_file:
+            if line.startswith("#"):
+                continue
+            lines += [line]
+            if len(lines) == num_lines:
+                break
+
     lines = [line.split('|') for line in lines]
     states = [state for state, _ in lines]
     actions = [action for _, action in lines]
@@ -80,18 +86,19 @@ def load_sensor_file(file_path, num_lines=1000):
     return states, actions
 
 
-def load_data_set(file_paths, num_training_samples, history_length):
+def load_data_set(file_paths, num_samples_per_file, history_length):
     total_states = []
     total_actions = []
     for file_path in file_paths:
-        print '... loading data file ' + file_path
-        states, actions = load_sensor_file(file_path, num_training_samples / len(file_paths))
+        print '... loading ' + str(num_samples_per_file) + ' samples from data file ' + file_path
+        states, actions = load_sensor_file(file_path, num_samples_per_file)
         total_states = total_states + [states]
         total_actions = total_actions + [actions]
 
     normalized_states = normalize(total_states)
     normalized_actions = total_actions
 
+    print '... historifying data'
     state_action_pairs_with_history_set = historify(normalized_states, normalized_actions, history_length)
 
     total_data_set = []
@@ -103,7 +110,9 @@ def load_data_set(file_paths, num_training_samples, history_length):
 
 def load_sensor_files(data_path,
                       num_training_samples=1000000,
+                      num_training_samples_per_file=600,
                       num_test_samples=10000,
+                      num_test_samples_per_file=10,
                       shared=True,
                       history_length=3):
 
@@ -113,18 +122,23 @@ def load_sensor_files(data_path,
 
     file_names = listdir(data_path)
     file_names = [name for name in file_names if "trajectory" not in name]
-    training_file_names = sample(file_names, len(file_names) / 2)
+    num_training_files = min([len(file_names), max([1, num_training_samples / num_training_samples_per_file])])
+    training_file_names = sample(file_names, num_training_files)
     shuffle(training_file_names)
+
     test_file_names = [file_name for file_name in file_names if file_name not in training_file_names]
+    num_test_files = min([len(test_file_names), max([1, num_test_samples / num_test_samples_per_file])])
+    test_file_names = sample(test_file_names, num_test_files)
     shuffle(test_file_names)
+
     training_file_paths = [data_path + name for name in training_file_names]
     test_file_paths = [data_path + name for name in test_file_names]
 
     print("Loading training data")
-    training_data = load_data_set(training_file_paths, num_training_samples, history_length)
+    training_data = load_data_set(training_file_paths, num_training_samples_per_file, history_length)
     print("{0} training samples loaded.".format(len(training_data)))
     print("Loading test data")
-    test_data = load_data_set(test_file_paths, num_test_samples, history_length)
+    test_data = load_data_set(test_file_paths, num_test_samples_per_file, history_length)
     print("{0} test samples loaded.".format(len(test_data)))
 
     if shared:
@@ -148,12 +162,15 @@ def load_autoencoder_weights(path_to_autoencoder_weights):
         bias_prime_file = open(file_paths[3*i + 2], 'r')
 
         bias_data = bias_file.readline()
+        bias_file.close()
         bias = array([float(value) for value in bias_data.split(",")])
 
         bias_prime_data = bias_prime_file.readline()
+        bias_prime_file.close()
         bias_prime = array([float(value) for value in bias_prime_data.split(",")])
 
         weights_data = weights_file.read()
+        weights_file.close()
         weights = array([[float(value) for value in line.split(",")] for line in weights_data.split('\n')]).T
 
         bias = shared_dataset(bias, name="b")
