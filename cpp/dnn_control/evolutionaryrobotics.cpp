@@ -212,7 +212,7 @@ void TestNeuralNetworkController(const unsigned int &random_seed) {
     pagmo::problem::hovering_problem_neural_network prob(random_seed, kNumEvaluations, kSimulationTime, kNumHiddenNeurons);
 
 
-    /*
+
     SampleFactory sample_factory(random_seed);
     pagmo::decision_vector rand_guess;
     for (unsigned int i = 0; i < solution.size(); ++i) {
@@ -220,7 +220,7 @@ void TestNeuralNetworkController(const unsigned int &random_seed) {
     }
     ConvexityCheck(prob, random_seed, rand_guess);
     return;
-    */
+
 
     std::cout << "Checking NN controller fitness... ";
     const double fitness = prob.objfun_seeded(random_seed, solution)[0];

@@ -15,6 +15,7 @@ int main(int argc, char *argv[]) {
     srand(time(0));
 
 
+    /*
     std::ifstream reader;
     reader.open("/home/willist/Documents/dnn/results/encoder_test.text");
     std::vector<std::string> file_data_string;
@@ -59,10 +60,10 @@ int main(int argc, char *argv[]) {
     }
     std::cout << error/num_tests << std::endl;
     return 0;
+    */
 
-
-    //TestNeuralNetworkController(0);
-    //return 0;
+    TestNeuralNetworkController(0);
+    return 0;
 
     //TestProportionalDerivativeController(0);
     //return 0;
