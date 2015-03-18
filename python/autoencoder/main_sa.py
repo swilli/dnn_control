@@ -7,10 +7,12 @@ from numpy.linalg import norm
 from random import sample
 
 learning_rate = 0.01
-training_epochs = 2
+training_epochs = 15
 batch_size = 1
-num_training_samples = 1000000
+num_training_samples = 1500000
+num_training_samples_per_file = 300
 num_test_samples = 10000
+num_test_samples_per_file = 100
 hidden_layer_sizes = [90, 70, 50, 30, 15, 6]
 corruption_level = 0.0
 history_length = 10
@@ -20,7 +22,9 @@ autoencoder_weights_path = "/home/willist/Documents/dnn/autoencoder/"
 
 training_set, test_set = load_sensor_files(data_path, history_length=history_length,
                                            num_training_samples=num_training_samples,
-                                           num_test_samples=num_test_samples)
+                                           num_training_samples_per_file=num_training_samples_per_file,
+                                           num_test_samples=num_test_samples,
+                                           num_test_samples_per_file=num_test_samples_per_file)
 
 # compute number of minibatches for training, validation and testing
 n_train_batches = training_set.get_value(borrow=True).shape[0]
@@ -96,6 +100,5 @@ for sample in test_samples:
     num_tests += 1
     print("avg error: {0}".format(mean_error / num_tests))
     print("")
-
 
 

@@ -10,10 +10,16 @@ def shared_dataset(data, borrow=True, name=None):
     return shared_data
 
 
-def window_stack(a, stepsize=1, width=3):
-    from numpy import hstack
-
-    return hstack(a[i:1+i-width or None:stepsize] for i in range(0, width))
+def sliding_window(data, width=3):
+    result = []
+    window_index = range(width - 1, -1, -1)
+    data_index = range(len(data) - width + 1)
+    for i in data_index:
+        sample = []
+        for j in window_index:
+            sample += data[i+j][:]
+        result += [sample]
+    return result
 
 
 def historify(state_sets, action_sets, length):
@@ -23,15 +29,15 @@ def historify(state_sets, action_sets, length):
     for states, actions in zip(state_sets, action_sets):
         states = array(states)
         actions = array(actions)
-        state_action_pairs = concatenate((states, actions), axis=1)
-        historyfied_set = window_stack(state_action_pairs, 1, length)
-        result += [historyfied_set.tolist()]
+        state_action_pairs = concatenate((states, actions), axis=1).tolist()
+        historyfied_set = sliding_window(state_action_pairs, length)
+        result += [historyfied_set]
 
     return result
 
 
 def normalize(data_sets):
-    from numpy import array, max, min
+    from numpy import array, max, min, argmax, argmin
 
     result = []
     max_values = []
@@ -43,14 +49,13 @@ def normalize(data_sets):
 
     max_values = array(max_values)
     min_values = array(min_values)
+    max_indexes = argmax(max_values, axis=0)
     max_values = max(max_values, axis=0)
+    min_indexes = argmin(min_values, axis=0)
     min_values = min(min_values, axis=0)
 
-    max_values *= 1.1
     min_values *= 1.1
-
-    print("maximum values in data set: {0}".format(max_values))
-    print("minimum values in data set: {0}".format(min_values))
+    max_values *= 1.1
 
     for data_set in data_sets:
         data_set = array(data_set)
@@ -62,7 +67,7 @@ def normalize(data_sets):
 
         result += [data_set.tolist()]
 
-    return result
+    return result, min_values, max_values, min_indexes, max_indexes
 
 
 def load_sensor_file(file_path, num_lines=1000):
@@ -95,7 +100,7 @@ def load_data_set(file_paths, num_samples_per_file, history_length):
         total_states = total_states + [states]
         total_actions = total_actions + [actions]
 
-    normalized_states = normalize(total_states)
+    normalized_states, min_values, max_values, min_indexes, max_indexes = normalize(total_states)
     normalized_actions = total_actions
 
     print '... historifying data'
@@ -105,7 +110,7 @@ def load_data_set(file_paths, num_samples_per_file, history_length):
     for data_set in state_action_pairs_with_history_set:
         total_data_set.extend(data_set)
 
-    return total_data_set
+    return total_data_set, min_values, max_values, min_indexes, max_indexes
 
 
 def load_sensor_files(data_path,
@@ -119,6 +124,7 @@ def load_sensor_files(data_path,
     from os import listdir
     from random import sample
     from random import shuffle
+    import sys
 
     file_names = listdir(data_path)
     file_names = [name for name in file_names if "trajectory" not in name]
@@ -135,11 +141,18 @@ def load_sensor_files(data_path,
     test_file_paths = [data_path + name for name in test_file_names]
 
     print("Loading training data")
-    training_data = load_data_set(training_file_paths, num_training_samples_per_file, history_length)
-    print("{0} training samples loaded.".format(len(training_data)))
+    training_data, min_values, max_values, min_indexes, max_indexes = load_data_set(training_file_paths,
+                                                                                num_training_samples_per_file,
+                                                                                history_length)
     print("Loading test data")
-    test_data = load_data_set(test_file_paths, num_test_samples_per_file, history_length)
+    test_data, _, _, _, _ = load_data_set(test_file_paths, num_test_samples_per_file, history_length)
+
+    print("{0} training samples loaded.".format(len(training_data)))
     print("{0} test samples loaded.".format(len(test_data)))
+
+    print("minimum values in training data set: {0}".format(min_values))
+    print("maximum values in training data set: {0} for example for dimension 1 in file {1}".format(max_values,
+                                                                                                    training_file_paths[max_indexes[0]]))
 
     if shared:
         training_data = shared_dataset(training_data)
