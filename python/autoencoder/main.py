@@ -10,9 +10,9 @@ from random import sample
 
 from denoising_autoencoder import DenoisingAutoencoder
 
-learning_rate = 0.01
+learning_rate = 0.001
 training_epochs = 5000
-batch_size = 20
+batch_size = 1
 num_hidden_nodes = 15
 num_visible_size = 15
 corruption_level = 0.1

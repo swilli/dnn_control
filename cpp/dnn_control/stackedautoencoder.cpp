@@ -9,6 +9,8 @@
 StackedAutoencoder::StackedAutoencoder(const std::string &path_to_layer_configurations) {
     using namespace boost::filesystem;
 
+    const unsigned int num_files_per_layer = 4;
+
     path configuration_dir(path_to_layer_configurations);
 
     directory_iterator end_itr;
@@ -25,13 +27,14 @@ StackedAutoencoder::StackedAutoencoder(const std::string &path_to_layer_configur
     std::sort(file_paths.begin(), file_paths.end());
 
     unsigned int dim_input = 0;
-    const unsigned int num_hidden_layers = file_paths.size() / 3;
+
+    const unsigned int num_hidden_layers = file_paths.size() / num_files_per_layer;
 
     std::vector<boost::tuple<unsigned int, bool, NeuralNetwork::ActivationFunctionType> > layer_configurations;
     std::vector<double> encoder_weights;
     for (unsigned int i = 0; i < num_hidden_layers; ++i) {
-        const std::vector<std::vector<double> > weights = ParseWeightMatrix(file_paths.at(3*i));
-        const std::vector<double> bias = ParseBiasVector(file_paths.at(3*i + 1));
+        const std::vector<std::vector<double> > weights = ParseWeightMatrix(file_paths.at(num_files_per_layer*i));
+        const std::vector<double> bias = ParseBiasVector(file_paths.at(num_files_per_layer*i + 2));
 
         const unsigned int dim_layer_input = weights.at(0).size();
         if (i == 0) {

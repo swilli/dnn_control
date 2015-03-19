@@ -188,15 +188,18 @@ def load_autoencoder_weights(path_to_autoencoder_weights):
     from os import listdir
     from numpy import array
 
+    num_files_per_layer = 4
+
     file_names = listdir(path_to_autoencoder_weights)
     file_names = sorted(file_names)
     file_paths = [path_to_autoencoder_weights + name for name in file_names]
 
     all_weights = []
-    for i in xrange(len(file_paths)/3):
-        weights_file = open(file_paths[3*i], 'r')
-        bias_file = open(file_paths[3*i + 1], 'r')
-        bias_prime_file = open(file_paths[3*i + 2], 'r')
+    for i in xrange(len(file_paths)/num_files_per_layer):
+        weights_file = open(file_paths[num_files_per_layer*i], 'r')
+        weights_prime_file = open(file_paths[num_files_per_layer*i + 1], 'r')
+        bias_file = open(file_paths[num_files_per_layer*i + 2], 'r')
+        bias_prime_file = open(file_paths[num_files_per_layer*i + 3], 'r')
 
         bias_data = bias_file.readline()
         bias_file.close()
@@ -210,10 +213,15 @@ def load_autoencoder_weights(path_to_autoencoder_weights):
         weights_file.close()
         weights = array([[float(value) for value in line.split(",")] for line in weights_data.split('\n')]).T
 
-        bias = shared_dataset(bias, name="b")
-        bias_prime = shared_dataset(bias_prime)
-        weights = shared_dataset(weights, name="W")
+        weights_prime_data = weights_prime_file.read()
+        weights_prime_file.close()
+        weights_prime = array([[float(value) for value in line.split(",")] for line in weights_prime_data.split('\n')]).T
 
-        all_weights.append((weights, bias, bias_prime))
+        weights = shared_dataset(weights, name="W")
+        bias = shared_dataset(bias, name="b")
+        weights_prime = shared_dataset(weights_prime)
+        bias_prime = shared_dataset(bias_prime)
+
+        all_weights.append((weights, bias, weights_prime, bias_prime))
 
     return all_weights
