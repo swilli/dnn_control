@@ -9,7 +9,7 @@
  */
 
 // Task Name
-#define TASK_NAME   "autoencoder"
+#define TASK_NAME   "master"
 
 
 // Evolutionary Robotics configs
@@ -31,15 +31,18 @@
 #define HP_OBJ_FUN_METHOD_7     7   // Mean optical flow, constant divergence. Transient response aware.
 #define HP_OBJ_FUN_METHOD_8     8   // Mean offset to optimal landing path.
 
+#define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_3
+
+#define HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME  150.0
+#define HP_OBJ_FUN_COEF_DIVERGENCE  0.0001
+#define HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED    true
+
+
 #define HP_POST_EVAL_METHOD_1   1   // Compare mean distance to target point. Transient response aware.
 #define HP_POST_EVAL_METHOD_2   2   // Compare mean velocity. Transient response aware.
 #define HP_POST_EVAL_METHOD_3   3   // Compare mean distance to target path.
 
-#define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_3
-#define HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME  150.0
-#define HP_OBJ_FUN_COEF_DIVERGENCE  0.0001
 #define HP_POST_EVALUATION_METHOD   HP_POST_EVAL_METHOD_1
-#define HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED    true
 
 //#define HP_FIXED_SEED  1990
 
@@ -53,7 +56,6 @@
 #define PGMOS_IC_INERTIAL_ORBITAL_VELOCITY   1
 #define PGMOS_IC_BODY_ZERO_VELOCITY          2
 #define PGMOS_IC_BODY_RANDOM_VELOCITY        3
-
 
 
 #define PGMOS_IC_VELOCITY_TYPE  PGMOS_IC_BODY_RANDOM_VELOCITY
