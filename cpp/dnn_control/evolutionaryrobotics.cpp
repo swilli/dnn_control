@@ -105,7 +105,7 @@ void TrainNeuralNetworkController() {
         pagmo::population pop_temp(prob, kPopulationSize);
 
         // We make the bounds larger to allow neurons weights to grow
-        prob.set_bounds(-20,20);
+        prob.set_bounds(-30.0,30.0);
 
         // We create an empty population on the new prolem (-10,10)
         pagmo::population pop(prob);
@@ -148,7 +148,7 @@ void TrainProportionalDerivativeController() {
         pagmo::population pop_temp(prob, kPopulationSize);
 
         // We make the bounds larger to allow neurons weights to grow
-        prob.set_bounds(-20,20);
+        prob.set_bounds(-30.0,30.0);
 
         // We create an empty population on the new prolem (-10,10)
         pagmo::population pop(prob);

@@ -119,7 +119,7 @@ def load_data_set(file_paths, num_samples_per_file, history_length):
         total_states = total_states + [states]
         total_actions = total_actions + [actions]
 
-    normalized_states = normalize(total_states)
+    normalized_states = total_states  # normalize(total_states)
     normalized_actions = total_actions
 
     print '... historifying data'

@@ -7,15 +7,21 @@ from numpy.linalg import norm
 from random import sample
 
 learning_rate = 0.01
-training_epochs = 30
+training_epochs = 15
 batch_size = 1
-num_training_samples = 1500000
+num_training_samples = 100000
 num_training_samples_per_file = 250
 num_test_samples = 10000
 num_test_samples_per_file = 100
-hidden_layer_sizes = [45, 45, 30, 15, 10, 6]
-corruption_level = 0.0
+
+
 history_length = 5
+corruption_level = 0.0
+
+hidden_layer_sizes = [45, 24, 12, 6]
+tied_weights = [False, False, False, False]
+linear_reconstructions = [True, True, True, True]
+
 data_path = "/home/willist/Documents/dnn/data/"
 result_path = "/home/willist/Documents/dnn/autoencoder/"
 autoencoder_weights_path = "/home/willist/Documents/dnn/autoencoder/"
@@ -38,7 +44,8 @@ print '... building the model'
 # construct the stacked denoising autoencoder class
 
 stacked_autoencoder = StackedAutoencoder(numpy_rng=numpy_rng, n_ins=training_set.get_value(borrow=True).shape[1],
-                                         hidden_layers_sizes=hidden_layer_sizes)
+                                         hidden_layers_sizes=hidden_layer_sizes, tied_weights=tied_weights,
+                                         linear_reconstructions=linear_reconstructions)
 
 print '... getting the pretraining functions'
 pretraining_fns = stacked_autoencoder.pretraining_functions(train_set_x=training_set, batch_size=batch_size)
@@ -73,32 +80,41 @@ for i in xrange(stacked_autoencoder.n_layers):
     W_str = "\n".join(", ".join(map(str, value)) for value in W)
     output_file.write(W_str)
     output_file.close()
+
     output_path = result_path + "l{0}b.txt".format(i)
     output_file = open(output_path, 'w+')
     b = stacked_autoencoder.dA_layers[i].b.get_value(borrow=True).T.tolist()
     b_str = ", ".join(str(value) for value in b)
     output_file.write(b_str)
     output_file.close()
+
+    output_path = result_path + "l{0}W_prime.txt".format(i)
+    output_file = open(output_path, 'w+')
+    W_prime = stacked_autoencoder.dA_layers[i].W_prime.get_value(borrow=True).T.tolist()
+    W_prime_str = ", ".join(str(value) for value in W_prime)
+    output_file.write(W_prime_str)
+    output_file.close()
+
     output_path = result_path + "l{0}b_prime.txt".format(i)
     output_file = open(output_path, 'w+')
     b_prime = stacked_autoencoder.dA_layers[i].b_prime.get_value(borrow=True).T.tolist()
-    b_str = ", ".join(str(value) for value in b_prime)
-    output_file.write(b_str)
+    b_prime_str = ", ".join(str(value) for value in b_prime)
+    output_file.write(b_prime_str)
     output_file.close()
 
 test_samples = test_set
 mean_error = 0.0
 num_tests = 0
 for sample in test_samples:
-    print("===")
     s_compr = stacked_autoencoder.compress(sample)
     s_decompr = stacked_autoencoder.decompress(s_compr)
-    print("x: {0}".format(sample))
-    print("y: {0}".format(s_compr))
-    print("z: {0}".format(s_decompr))
+    #print("===")
+    #print("x: {0}".format(sample))
+    #print("y: {0}".format(s_compr))
+    #print("z: {0}".format(s_decompr))
     mean_error += norm(sample - s_decompr)
     num_tests += 1
     print("avg error: {0}".format(mean_error / num_tests))
-    print("")
+    #print("")
 
 

@@ -9,7 +9,8 @@ from autoencoder import Autoencoder
 # start-snippet-1
 class StackedAutoencoder(object):
 
-    def __init__(self, numpy_rng, theano_rng=None, n_ins=10, hidden_layers_sizes=[40, 20], autoencoder_weights=None):
+    def __init__(self, numpy_rng, theano_rng=None, n_ins=10, hidden_layers_sizes=[40, 20], tied_weights=[True,True],
+                 linear_reconstructions=[False, False], autoencoder_weights=None):
 
         self.sigmoid_layers = []
         self.dA_layers = []
@@ -44,7 +45,8 @@ class StackedAutoencoder(object):
 
                 dA_layer = Autoencoder(numpy_rng=numpy_rng, theano_rng=theano_rng, input=layer_input,
                                        n_visible=input_size, n_hidden=hidden_layers_sizes[i],
-                                       W=sigmoid_layer.W, bhid=sigmoid_layer.b)
+                                       W=sigmoid_layer.W, bhid=sigmoid_layer.b, tied_weights=tied_weights[i],
+                                       linear_reconstruction=linear_reconstructions[i])
 
                 self.dA_layers.append(dA_layer)
         else:
@@ -69,7 +71,9 @@ class StackedAutoencoder(object):
 
                 dA_layer = Autoencoder(numpy_rng=numpy_rng, theano_rng=theano_rng, input=layer_input,
                                        n_visible=input_size, n_hidden=hidden_layers_sizes[i],
-                                       W=sigmoid_layer.W, bhid=sigmoid_layer.b, bvis=autoencoder_weights[i][2])
+                                       W=sigmoid_layer.W, bhid=sigmoid_layer.b, Whid=autoencoder_weights[i][2],
+                                       bvis=autoencoder_weights[i][3], tied_weights=tied_weights[i],
+                                       linear_reconstruction=linear_reconstructions[i])
 
                 self.dA_layers.append(dA_layer)
 

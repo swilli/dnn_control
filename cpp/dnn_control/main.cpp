@@ -62,8 +62,8 @@ int main(int argc, char *argv[]) {
     return 0;
     */
 
-    TestNeuralNetworkController(0);
-    return 0;
+    //TestNeuralNetworkController(0);
+    //return 0;
 
     //TestProportionalDerivativeController(0);
     //return 0;
