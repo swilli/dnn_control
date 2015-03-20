@@ -6,6 +6,7 @@ from data_loader import load_sensor_files, load_autoencoder_weights
 from stacked_autoencoder import StackedAutoencoder
 from numpy.linalg import norm
 from random import sample
+import time
 
 ENABLE_FINE_TUNING = False
 fine_tuning_epochs = 100
@@ -84,6 +85,8 @@ for i in xrange(stacked_autoencoder.n_layers):
         for batch_index in xrange(n_train_batches):
             cur_cost = pretraining_fns[i](index=batch_index, corruption=corruption_level, lr=learning_rate)
             online_mean += (cur_cost - online_mean) / (batch_index + 1)
+
+        print time.strftime("%c")
         print 'Pre-training layer %i, epoch %d, cost ' % (i, epoch),
         print mean(online_mean)
 
