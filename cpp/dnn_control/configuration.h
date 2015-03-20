@@ -61,27 +61,27 @@
 #define PGMOS_IC_VELOCITY_TYPE  PGMOS_IC_BODY_RANDOM_VELOCITY
 #define PGMOS_IC_POSITION_OFFSET_ENABLED    true
 #define PGMOS_ENABLE_ODOMETRY   true
-#define PGMOS_ENABLE_OPTICAL_FLOW   false
+#define PGMOS_ENABLE_OPTICAL_FLOW   true
 #define PGMOS_ENABLE_VELOCITY   false
 #define PGMOS_ENABLE_VELOCITY_OVER_HEIGHT   false
 #define PGMOS_ENABLE_DIRECTION_SENSOR   false
 #define PGMOS_ENABLE_ACCELEROMETER  false
-#define PGMOS_ENABLE_SENSOR_DATA_RECORDING  false
+#define PGMOS_ENABLE_SENSOR_DATA_RECORDING  true
 
 
 // Class ControllerNeuralNetwork configs
-#define CNN_ENABLE_STACKED_AUTOENCODER  true
-#define CNN_STACKED_AUTOENCODER_CONFIGURATION   "45_24_12_6"
+#define CNN_ENABLE_STACKED_AUTOENCODER  false
+#define CNN_STACKED_AUTOENCODER_CONFIGURATION   "96_48_24_12_6"
 #define CNN_STACKED_AUTOENCODER_DIMENSIONS    45
 
 
 // Class SensorSimulatorPartialState configs
 #define SSPS_NORMALIZE_SENSOR_VALUES    false
-#define SSPS_WITH_NOISE true
+#define SSPS_WITH_NOISE false
 
 
 // Class SensorSimulatorFullState configs
-#define SSFS_WITH_NOISE true
+#define SSFS_WITH_NOISE false
 
 
 // Least Squares Policy Robotics configs

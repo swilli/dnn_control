@@ -132,7 +132,7 @@ def load_data_set(file_paths, num_samples_per_file, history_length):
     return total_data_set
 
 
-def load_sensor_files(data_path,
+def load_sensor_files(training_data_path, testing_data_path,
                       num_training_samples=1000000,
                       num_training_samples_per_file=600,
                       num_test_samples=10000,
@@ -150,25 +150,26 @@ def load_sensor_files(data_path,
 
     #min_max_values(data_path)
 
-    data_set_min_values = array([-3994.3042216, -8327.502227, -11097.702649, -8428.7475976, -10442.7092077, -10654.8025452])
-    data_set_max_values = array([3916.9638035, 6798.05434, 10873.8216037, 11264.354926, 8495.9342369, 13091.503392])
+    #data_set_min_values = array([-3994.3042216, -8327.502227, -11097.702649, -8428.7475976, -10442.7092077, -10654.8025452])
+    #data_set_max_values = array([3916.9638035, 6798.05434, 10873.8216037, 11264.354926, 8495.9342369, 13091.503392])
 
-    print("minimum values in training data set: {0}".format(data_set_min_values))
-    print("maximum values in training data set: {0}".format(data_set_max_values))
+    #print("minimum values in training data set: {0}".format(data_set_min_values))
+    #print("maximum values in training data set: {0}".format(data_set_max_values))
 
-    file_names = listdir(data_path)
+    file_names = listdir(training_data_path)
     file_names = [name for name in file_names if "trajectory" not in name]
     num_training_files = min([len(file_names), max([1, num_training_samples / num_training_samples_per_file])])
     training_file_names = sample(file_names, num_training_files)
     shuffle(training_file_names)
 
-    test_file_names = [file_name for file_name in file_names if file_name not in training_file_names]
-    num_test_files = min([len(test_file_names), max([1, num_test_samples / num_test_samples_per_file])])
-    test_file_names = sample(test_file_names, num_test_files)
+    file_names = listdir(testing_data_path)
+    file_names = [name for name in file_names if "trajectory" not in name]
+    num_test_files = min([len(file_names), max([1, num_test_samples / num_test_samples_per_file])])
+    test_file_names = sample(file_names, num_test_files)
     shuffle(test_file_names)
 
-    training_file_paths = [data_path + name for name in training_file_names]
-    test_file_paths = [data_path + name for name in test_file_names]
+    training_file_paths = [training_data_path + name for name in training_file_names]
+    test_file_paths = [testing_data_path + name for name in test_file_names]
 
     print("Loading training data")
     training_data = load_data_set(training_file_paths, num_training_samples_per_file, history_length)

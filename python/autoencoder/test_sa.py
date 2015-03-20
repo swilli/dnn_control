@@ -11,8 +11,8 @@ sample_dimension = 9
 history_length = 1
 #hidden_layer_sizes = [45, 24, 12, 6]
 #tied_weights = [True, True, True, True]
-#linear_compressions = [True, True, True, True]
-#linear_reconstructions = [True, True, True, True]
+#sigmoid_compressions = [True, True, True, True]
+#sigmoid_reconstructions = [True, True, True, True]
 hidden_layer_sizes = [9]
 tied_weights = [False]
 linear_compressions = [True]
@@ -27,8 +27,8 @@ stacked_autoencoder = StackedAutoencoder(numpy_rng=numpy_rng, n_ins=sample_dimen
                                          hidden_layers_sizes=hidden_layer_sizes,
                                          autoencoder_weights=autoencoder_weights,
                                          tied_weights=tied_weights,
-                                         linear_compressions=linear_compressions,
-                                         linear_reconstructions=linear_reconstructions)
+                                         sigmoid_compressions=linear_compressions,
+                                         sigmoid_reconstructions=linear_reconstructions)
 
 num_training_samples = 0
 num_test_samples = 10
