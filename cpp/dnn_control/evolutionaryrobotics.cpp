@@ -289,12 +289,12 @@ void TestProportionalDerivativeController(const unsigned int &random_seed) {
     std::cout << "done." << std::endl;
 
     std::cout << "Writing visualization file ... ";
-    FileWriter writer_visualization(PATH_TO_FULL_STATE_TRAJECTORY_FILE);
+    FileWriter writer_visualization(PATH_TO_PROPORTIONAL_DERIVATIVE_TRAJECTORY_FILE);
     writer_visualization.CreateTrajectoryFile(simulation.ControlFrequency(), simulation.AsteroidOfSystem(), positions, heights);
     std::cout << "done." << std::endl;
 
     std::cout << "Writing evaluation file ... ";
-    FileWriter writer_evaluation(PATH_TO_FULL_STATE_EVALUATION_FILE);
+    FileWriter writer_evaluation(PATH_TO_PROPORTIONAL_DERIVATIVE_EVALUATION_FILE);
     writer_evaluation.CreateEvaluationFile(random_seed, simulation.TargetPosition(), simulation.AsteroidOfSystem(), times, positions, velocities, thrusts);
     std::cout << "done." << std::endl;
 
@@ -305,7 +305,7 @@ void TestProportionalDerivativeController(const unsigned int &random_seed) {
     const std::vector<std::pair<double, double> > &min_max_errors = boost::get<2>(post_evaluation);
 
     std::cout << "done." << std::endl << "Writing post evaluation file ... ";
-    FileWriter writer_post_evaluation(PATH_TO_FULL_STATE_POST_EVALUATION_FILE);
+    FileWriter writer_post_evaluation(PATH_TO_PROPORTIONAL_DERIVATIVE_POST_EVALUATION_FILE);
     writer_post_evaluation.CreatePostEvaluationFile(random_seeds, mean_errors, min_max_errors);
     std::cout << "done." << std::endl;
 }
@@ -339,7 +339,7 @@ void TestNeuralNetworkVSFullStateController(const unsigned int &random_seed) {
     FileWriter writer_neural_network(PATH_TO_NEURO_POST_EVALUATION_FILE);
     writer_neural_network.CreatePostEvaluationFile(random_seeds, mean_errors_neural_network, min_max_errors_neural_network);
 
-    FileWriter writer_full_state(PATH_TO_FULL_STATE_POST_EVALUATION_FILE);
+    FileWriter writer_full_state(PATH_TO_PROPORTIONAL_DERIVATIVE_POST_EVALUATION_FILE);
     writer_full_state.CreatePostEvaluationFile(random_seeds, mean_errors_full_state, min_max_errors_full_state);
     std::cout << "done." << std::endl;
 }
