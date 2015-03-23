@@ -20,9 +20,9 @@ skip_outliers = False
 threshold = 1.0
 
 if len(sys.argv) > 2:
-	threshold = float(sys.argv[2])
-	if len(sys.argv) > 3:
-		skip_outliers = bool(sys.argv[3])
+    threshold = float(sys.argv[2])
+    if len(sys.argv) > 3:
+        skip_outliers = bool(sys.argv[3])
 
 print("preparing data... ")
 
@@ -39,22 +39,22 @@ outliers = 0
 worst_case_seed = -1
 worst_case_value = 0.0
 for line in data:
-	mean_error = line[1]
-	if mean_error > worst_case_value:
-		worst_case_value = mean_error
-		worst_case_seed = line[0]
+    mean_error = line[1]
+    if mean_error > worst_case_value:
+        worst_case_value = mean_error
+        worst_case_seed = line[0]
 
-	if mean_error >= threshold:
-		outliers += 1
-		print(line)
+    if mean_error >= threshold:
+        outliers += 1
+        print(line)
         if skip_outliers:
-        	continue
+            continue
 
-	filtered_data += [line]
+    filtered_data += [line]
 
 data = array(filtered_data)
 
-mean_errors = data[:,1]
+mean_errors = data[:, 1]
 ssme_mean = mean(mean_errors,axis=0)
 ssme_stdev = std(mean_errors, axis=0)
 ssme_min = min(mean_errors)
