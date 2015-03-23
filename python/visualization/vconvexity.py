@@ -28,9 +28,9 @@ def visualize_convexity(file_path, save=False):
 	    return data
 
 	plt.plot(data[:,0], discontinuous(data[:,1]))
-	plt.title("Convexity of problem (seed: {0}, dimension: {1})".format(seed, dimension))
+	#plt.title("Convexity of problem (seed: {0}, dimension: {1})".format(seed, dimension))
 	plt.xlabel('Parameter value')
-	plt.ylabel('Fitness')
+	plt.ylabel('Utility')
 	if save:
 		plt.savefig(file_path.replace(".txt", ".svg"))
 		plt.close()
