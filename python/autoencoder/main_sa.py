@@ -27,14 +27,14 @@ hidden_layer_sizes = [400, 300, 200, 150, 100, 75, 50, 25, 10]
 corruption_levels = [0.1 ** (i+1) for i in range(len(hidden_layer_sizes))]
 training_epochs = [800, 400, 400, 400, 400, 400, 400, 400, 400]
 training_epochs = [val / 1 for val in training_epochs]
-learning_rates = [0.00001, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01]
+learning_rates = [0.000001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001]
 tied_weights =              [False, True, True, True, True, True, True, True, True]
 sigmoid_compressions =      [True, True, True, True, True, True, True, True, True]
 sigmoid_reconstructions =   [False, True, True, True, True, True, True, True, True]
 
 
-training_path = "/home/willist/Documents/dnn/data/old/training/"
-testing_path = "/home/willist/Documents/dnn/data/old/testing/"
+training_path = "/home/willist/Documents/dnn/data/training/"
+testing_path = "/home/willist/Documents/dnn/data/testing/"
 
 result_path = "/home/willist/Documents/dnn/autoencoder/"
 autoencoder_weights_path = "/home/willist/Documents/dnn/autoencoder/"
