@@ -29,10 +29,10 @@ history_length = 5
 
 hidden_layer_sizes = [100, 100]
 corruption_levels = [0.1 ** (i+1) for i in range(len(hidden_layer_sizes))]
-learning_rates = [0.001, 0.1, 0.1, 0.1, 0.1]
-tied_weights =              [False, True, True, True, True]
+learning_rates = [0.1, 0.1, 0.1, 0.1, 0.1]
+tied_weights =              [True, True, True, True, True]
 sigmoid_compressions =      [True, True, True, True, True]
-sigmoid_reconstructions =   [False, True, True, True, True]
+sigmoid_reconstructions =   [True, True, True, True, True]
 
 
 training_path = "/home/willist/Documents/dnn/data/training/"

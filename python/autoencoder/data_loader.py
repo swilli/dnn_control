@@ -64,7 +64,9 @@ def load_sensor_file(file_path, num_lines=1000):
 
 def normalize(data_sets):
     from numpy import array
-    from sklearn.preprocessing import scale
+    from sklearn.preprocessing import MinMaxScaler
+
+    scaler = MinMaxScaler()
 
     all_samples = []
     for data_set in data_sets:
@@ -72,7 +74,7 @@ def normalize(data_sets):
 
     all_samples = array(all_samples)
 
-    all_samples = scale(all_samples)
+    all_samples = scaler.fit_transform(all_samples)
 
     result = []
     start = 0
