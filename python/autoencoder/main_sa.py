@@ -11,7 +11,7 @@ import time
 import sys
 
 ENABLE_FINE_TUNING = True
-fine_tune_learning_rate = 0.00001
+fine_tune_learning_rate = 0.000001
 fine_tune_epochs = 1000
 training_epochs = 2
 
