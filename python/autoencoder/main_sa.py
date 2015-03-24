@@ -2,7 +2,7 @@ from numpy import random, mean
 import os
 from sys import exit
 from time import clock
-from data_loader import load_sensor_files, load_autoencoder_weights
+from data_loader import load_sensor_files
 from stacked_autoencoder import StackedAutoencoder
 from numpy.linalg import norm
 from numpy import inf
@@ -11,25 +11,25 @@ import time
 import sys
 
 ENABLE_FINE_TUNING = True
-fine_tune_learning_rate = 0.000001
+fine_tune_learning_rate = 0.1
 fine_tune_epochs = 1000
-training_epochs = 2
+pretraining_epochs = 100
 
 path_suffix = "master"
 
 batch_size = 1
 num_training_samples = 1000000
 num_training_samples_per_file = 250
-num_test_samples = 1000
+num_test_samples = 10000
 num_test_samples_per_file = 100
 
 
 history_length = 5
 
 
-hidden_layer_sizes = [45, 36, 27, 18, 9]
+hidden_layer_sizes = [100, 100]
 corruption_levels = [0.1 ** (i+1) for i in range(len(hidden_layer_sizes))]
-learning_rates = [0.000001, 0.001, 0.001, 0.001, 0.001]
+learning_rates = [0.001, 0.1, 0.1, 0.1, 0.1]
 tied_weights =              [False, True, True, True, True]
 sigmoid_compressions =      [True, True, True, True, True]
 sigmoid_reconstructions =   [False, True, True, True, True]
@@ -41,10 +41,12 @@ testing_path = "/home/willist/Documents/dnn/data/testing/"
 result_path = "/home/willist/Documents/dnn/autoencoder/"
 autoencoder_weights_path = "/home/willist/Documents/dnn/autoencoder/"
 
+
 training_set, training_labels, test_set, test_labels = load_sensor_files(training_path, testing_path,
                                                                          history_length=history_length,
                                                                          num_training_samples=num_training_samples,
                                                                          num_training_samples_per_file=num_training_samples_per_file,
+                                                                         num_test_samples=num_test_samples,
                                                                          num_test_samples_per_file=num_test_samples_per_file)
 
 # compute number of minibatches for training, validation and testing
@@ -90,7 +92,7 @@ for i in xrange(stacked_autoencoder.n_layers):
     # go through pretraining epochs
     learning_rate = learning_rates[i]
     corruption_level = corruption_levels[i]
-    for epoch in range(training_epochs):
+    for epoch in range(pretraining_epochs):
         # go through the training set
         c = []
         for batch_index in xrange(n_train_batches):

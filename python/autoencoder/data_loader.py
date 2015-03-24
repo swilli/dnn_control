@@ -1,7 +1,3 @@
-data_set_min_values = []
-data_set_max_values = []
-
-
 def shared_dataset(data, borrow=True, name=None):
     from theano import shared
     from theano import config as theano_config
@@ -66,51 +62,23 @@ def load_sensor_file(file_path, num_lines=1000):
     return states, actions
 
 
-def min_max_values(data_path):
-    from os import listdir
-    from numpy import max, min, maximum, minimum
-
-    global data_set_min_values
-    global data_set_max_values
-
-    file_names = listdir(data_path)
-    file_names = [name for name in file_names if "trajectory" not in name]
-    file_names = sorted(file_names)
-    file_paths = [data_path + name for name in file_names]
-    max_values = []
-    min_values = []
-    for file_path in file_paths:
-        print '... loading all samples from data file ' + file_path
-        states, _ = load_sensor_file(file_path, 1000000)
-        cur_max = max(states, axis=0)
-        cur_min = min(states, axis=0)
-        if len(max_values) == 0:
-            max_values = cur_max
-            min_values = cur_min
-        else:
-            max_values = maximum(max_values, cur_max)
-            min_values = minimum(min_values, cur_min)
-
-    data_set_min_values = min_values * 1.1
-    data_set_max_values = max_values * 1.1
-
-
 def normalize(data_sets):
     from numpy import array
+    from sklearn.preprocessing import scale
 
-    global data_set_min_values
-    global data_set_max_values
+    all_samples = []
+    for data_set in data_sets:
+        all_samples.extend(data_set)
+
+    all_samples = array(all_samples)
+
+    all_samples = scale(all_samples)
 
     result = []
+    start = 0
     for data_set in data_sets:
-        data_set = array(data_set)
-        for i in range(data_set.shape[1]):
-            min_value = data_set_min_values[i]
-            max_value = data_set_max_values[i]
-            range_value = max_value - min_value
-            data_set[:, i] = (data_set[:, i] - min_value) / range_value
-
-        result += [data_set.tolist()]
+        result += [all_samples[start:start+len(data_set), :].tolist()]
+        start += len(data_set)
 
     return result
 
@@ -124,11 +92,12 @@ def load_data_set(file_paths, num_samples_per_file, history_length):
         total_states = total_states + [states]
         total_actions = total_actions + [actions]
 
-    normalized_states = total_states  # normalize(total_states)
-    normalized_actions = total_actions
+    print '... normalizing data'
+    total_states = normalize(total_states)
+    total_actions = normalize(total_actions)
 
     print '... historifying and labelling data'
-    state_action_pairs_with_history_set, labels_set = historify_and_label(normalized_states, normalized_actions, history_length)
+    state_action_pairs_with_history_set, labels_set = historify_and_label(total_states, total_actions, history_length)
 
     total_data_set = []
     total_label_set = []
@@ -152,16 +121,6 @@ def load_sensor_files(training_data_path, testing_data_path,
     from random import shuffle
     from numpy import array
 
-    global data_set_min_values
-    global data_set_max_values
-
-    #min_max_values(data_path)
-
-    #data_set_min_values = array([-3994.3042216, -8327.502227, -11097.702649, -8428.7475976, -10442.7092077, -10654.8025452])
-    #data_set_max_values = array([3916.9638035, 6798.05434, 10873.8216037, 11264.354926, 8495.9342369, 13091.503392])
-
-    #print("minimum values in training data set: {0}".format(data_set_min_values))
-    #print("maximum values in training data set: {0}".format(data_set_max_values))
 
     file_names = listdir(training_data_path)
     file_names = [name for name in file_names if "trajectory" not in name]
