@@ -9,7 +9,7 @@ from autoencoder import Autoencoder
 # start-snippet-1
 class StackedAutoencoder(object):
 
-    def __init__(self, numpy_rng, theano_rng=None, n_ins=10, hidden_layers_sizes=[40, 20], tied_weights=[True, True],
+    def __init__(self, numpy_rng, theano_rng=None, n_ins=10, n_outs=5, hidden_layers_sizes=[40, 20], tied_weights=[True, True],
                  sigmoid_compressions=[True, True], sigmoid_reconstructions=[True, True],
                  autoencoder_weights=None):
 
@@ -18,7 +18,7 @@ class StackedAutoencoder(object):
         self.params = []
         self.n_layers = 0
         self.x = T.matrix('x')
-        self.y = T.ivector('y')
+        self.y = T.matrix('y')
         self.n_layers = len(hidden_layers_sizes)
 
         if not theano_rng:
@@ -47,7 +47,7 @@ class StackedAutoencoder(object):
                                             n_out=hidden_layers_sizes[i], activation=None)
 
                 self.mlp_layers.append(mlp_layer)
-
+                self.params.extend(mlp_layer.params)
 
                 autoencoder_layer = Autoencoder(numpy_rng=numpy_rng, theano_rng=theano_rng, input=layer_input,
                                        n_visible=input_size, n_hidden=hidden_layers_sizes[i],
@@ -55,9 +55,18 @@ class StackedAutoencoder(object):
                                        sigmoid_compression=sigmoid_compressions[i],
                                        sigmoid_reconstruction=sigmoid_reconstructions[i])
 
-                self.params.extend(autoencoder_layer.params)
 
                 self.autoencoder_layers.append(autoencoder_layer)
+
+            # Add a linear regression layer on top of it
+            self.linreg_layer = HiddenLayer(rng=numpy_rng, input=self.mlp_layers[-1].output,
+                                            n_in=hidden_layers_sizes[-1],
+                                            n_out=n_outs, activation=None)
+
+            self.params.extend(self.linreg_layer.params)
+
+            self.finetune_cost = T.mean(T.sum((self.linreg_layer.output - self.y)**2, axis=1))
+
         else:
             for i in xrange(len(autoencoder_weights)):
                 if i == 0:
@@ -92,10 +101,6 @@ class StackedAutoencoder(object):
 
                 self.autoencoder_layers.append(autoencoder_layer)
 
-    def get_corrupted_input(self, input, corruption_level):
-        #return self.theano_rng.binomial(size=input.shape, n=1, p=1.0 - corruption_level) * input
-        return input + input * self.theano_rng.normal(size=input.shape, avg=0.0, std=corruption_level)
-
     def pretraining_functions(self, train_set_x, batch_size):
         index = T.lscalar('index')
         learning_rate = T.scalar('lr')
@@ -123,41 +128,53 @@ class StackedAutoencoder(object):
 
         return pretrain_fns
 
-    def finetune_function(self, train_set_x, batch_size):
-        index = T.lscalar('index')
-        learning_rate = T.scalar('lr')
-        corruption_level = T.scalar('corruption')
-        batch_begin = index * batch_size
-        batch_end = batch_begin + batch_size
+    def finetune_functions(self, training_set, training_labels, test_set, test_labels, batch_size, learning_rate):
+        index = T.lscalar('index')  # index to a [mini]batch
 
-        result = self.get_corrupted_input(self.x, corruption_level)
+        # compute number of minibatches for training, validation and testing
+        n_valid_batches = test_set.get_value(borrow=True).shape[0]
+        n_valid_batches /= batch_size
 
-        for enc in self.autoencoder_layers:
-            result = enc.get_hidden_values(result)
+        # compute the gradients with respect to the model parameters
+        gparams = T.grad(self.finetune_cost, self.params)
 
-        for enc in self.autoencoder_layers[::-1]:
-            result = enc.get_reconstructed_input(result)
+        # compute list of fine-tuning updates
+        updates = [(param, param - gparam * learning_rate) for param, gparam in zip(self.params, gparams)]
 
-        cost = T.mean(T.sum((self.x - result)**2, axis=1))
-
-        gparams = T.grad(cost, self.params)
-
-        updates = [(param, param - learning_rate * gparam) for param, gparam in zip(self.params, gparams)]
-
-        fn = theano.function(
-            inputs=[
-                index,
-                theano.Param(corruption_level, default=0.0),
-                theano.Param(learning_rate, default=0.05)
-            ],
-            outputs=cost,
+        train_fn = theano.function(
+            inputs=[index],
+            outputs=self.finetune_cost,
             updates=updates,
             givens={
-                self.x: train_set_x[batch_begin: batch_end]
-            }
+                self.x: training_set[
+                    index * batch_size: (index + 1) * batch_size
+                ],
+                self.y: training_labels[
+                    index * batch_size: (index + 1) * batch_size
+                ]
+            },
+            name='train'
         )
 
-        return fn
+        valid_score_i = theano.function(
+            [index],
+            self.finetune_cost,
+            givens={
+                self.x: test_set[
+                    index * batch_size: (index + 1) * batch_size
+                ],
+                self.y: test_labels[
+                    index * batch_size: (index + 1) * batch_size
+                ]
+            },
+            name='valid'
+        )
+
+        # Create a function that scans the entire validation set
+        def valid_score():
+            return [valid_score_i(i) for i in xrange(n_valid_batches)]
+
+        return train_fn, valid_score
 
     def compress(self, data):
         from numpy import array

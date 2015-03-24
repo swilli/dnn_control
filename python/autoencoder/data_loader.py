@@ -15,29 +15,34 @@ def shared_dataset(data, borrow=True, name=None):
 
 
 def sliding_window(data, width=3):
-    result = []
-    window_index = range(width - 1, -1, -1)
-    data_index = range(len(data) - width + 1)
+    design_matrix = []
+    labels = []
+    window_index = range(width)
+    data_index = range(len(data) - width)
     for i in data_index:
         sample = []
         for j in window_index:
             sample += data[i+j][:]
-        result += [sample]
-    return result
+        label = data[i+width][:-3]
+        design_matrix += [sample]
+        labels += [label]
+    return design_matrix, labels
 
 
-def historify(state_sets, action_sets, length):
+def historify_and_label(state_sets, action_sets, length):
     from numpy import array, concatenate
 
     result = []
+    labels = []
     for states, actions in zip(state_sets, action_sets):
         states = array(states)
         actions = array(actions)
         state_action_pairs = concatenate((states, actions), axis=1).tolist()
-        historyfied_set = sliding_window(state_action_pairs, length)
+        historyfied_set, label_set = sliding_window(state_action_pairs, length)
         result += [historyfied_set]
+        labels += [label_set]
 
-    return result
+    return result, labels
 
 
 def load_sensor_file(file_path, num_lines=1000):
@@ -122,14 +127,16 @@ def load_data_set(file_paths, num_samples_per_file, history_length):
     normalized_states = total_states  # normalize(total_states)
     normalized_actions = total_actions
 
-    print '... historifying data'
-    state_action_pairs_with_history_set = historify(normalized_states, normalized_actions, history_length)
+    print '... historifying and labelling data'
+    state_action_pairs_with_history_set, labels_set = historify_and_label(normalized_states, normalized_actions, history_length)
 
     total_data_set = []
-    for data_set in state_action_pairs_with_history_set:
+    total_label_set = []
+    for data_set, label_set in zip(state_action_pairs_with_history_set, labels_set):
         total_data_set.extend(data_set)
+        total_label_set.extend(label_set)
 
-    return total_data_set
+    return total_data_set, total_label_set
 
 
 def load_sensor_files(training_data_path, testing_data_path,
@@ -172,17 +179,20 @@ def load_sensor_files(training_data_path, testing_data_path,
     test_file_paths = [testing_data_path + name for name in test_file_names]
 
     print("Loading training data")
-    training_data = load_data_set(training_file_paths, num_training_samples_per_file, history_length)
+    training_data, training_labels = load_data_set(training_file_paths, num_training_samples_per_file, history_length)
     print("Loading test data")
-    test_data = load_data_set(test_file_paths, num_test_samples_per_file, history_length)
+    test_data, test_labels = load_data_set(test_file_paths, num_test_samples_per_file, history_length)
 
     print("{0} training samples loaded.".format(len(training_data)))
     print("{0} test samples loaded.".format(len(test_data)))
 
     if shared:
         training_data = shared_dataset(training_data)
+        training_labels = shared_dataset(training_labels)
+        test_data = shared_dataset(test_data)
+        test_labels = shared_dataset(test_labels)
 
-    return training_data, test_data
+    return training_data, training_labels, test_data, test_labels
 
 
 def load_autoencoder_weights(path_to_autoencoder_weights):
