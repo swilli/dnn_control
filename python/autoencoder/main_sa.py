@@ -134,12 +134,12 @@ if ENABLE_FINE_TUNING:
             if (iter + 1) % validation_frequency == 0:
                 validation_losses = validate_model()
                 this_validation_loss = mean(validation_losses)
-                print 'epoch %i, minibatch %i/%i, validation error %f %%' % (epoch, minibatch_index + 1, n_train_batches, this_validation_loss * 100.)
+                print 'epoch %i, minibatch %i/%i, validation error %f' % (epoch, minibatch_index + 1, n_train_batches,
+                                                                          this_validation_loss)
 
                 # if we got the best validation score until now
                 if this_validation_loss < best_validation_loss:
-
-                    #improve patience if loss improvement is good enough
+                    # improve patience if loss improvement is good enough
                     if this_validation_loss < best_validation_loss * improvement_threshold:
                         patience = max(patience, iter * patience_increase)
 
@@ -152,8 +152,10 @@ if ENABLE_FINE_TUNING:
                 break
 
     end_time = time.clock()
-    print 'Optimization complete with best validation score of %f on iteration %i, ' % (best_validation_loss, best_iter + 1)
-    print 'The training code for file ' + os.path.split(__file__)[1] + ' ran for %.2fm' % ((end_time - start_time) / 60.)
+    print 'Optimization complete with best validation score of %f on iteration %i' % (best_validation_loss,
+                                                                                      best_iter + 1)
+    print 'The training code for file ' + os.path.split(__file__)[1] + ' ran for %.2fm' %\
+                                                                       ((end_time - start_time) / 60.)
 
 
 result_path += "conf_" + "_".join([str(value) for value in hidden_layer_sizes]) + "_" + path_suffix
