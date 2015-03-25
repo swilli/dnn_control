@@ -71,5 +71,6 @@ Vector3D ControllerNeuralNetwork::GetThrustForSensorData(const std::vector<doubl
         state_action_history_.push_front(sensor_data.at(i));
     }
 #endif
+
     return thrust;
 }

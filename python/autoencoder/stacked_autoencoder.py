@@ -61,7 +61,7 @@ class StackedAutoencoder(object):
             # Add a supervised layer on top of it
             self.supervised_layer = HiddenLayer(rng=numpy_rng, input=self.mlp_layers[-1].output,
                                             n_in=hidden_layers_sizes[-1],
-                                            n_out=n_outs, activation=T.nnet.sigmoid)
+                                            n_out=n_outs, activation=None)
 
             self.params.extend(self.supervised_layer.params)
 
@@ -105,7 +105,7 @@ class StackedAutoencoder(object):
             self.supervised_layer = HiddenLayer(rng=numpy_rng, input=self.mlp_layers[-1].output,
                                             n_in=hidden_layers_sizes[-1],
                                             n_out=n_outs, W=autoencoder_weights[-1][0], b=autoencoder_weights[-1][1],
-                                            activation=T.nnet.sigmoid)
+                                            activation=None)
 
             self.params.extend(self.supervised_layer.params)
 

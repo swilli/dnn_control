@@ -48,7 +48,6 @@ def load_sensor_file(file_path, num_lines=None):
             data = sensor_data_file.read()
             lines = data.split('\n')
             lines = [line for line in lines if not line.startswith("#") and not line == ""]
-            #lines = [line + '\n' for line in lines]
         else:
             for line in sensor_data_file:
                 if line.startswith("#"):
@@ -66,29 +65,6 @@ def load_sensor_file(file_path, num_lines=None):
     actions = [[float(label) for label in label_line] for label_line in actions]
 
     return states, actions
-
-
-def normalize(data_sets):
-    from numpy import array
-    from sklearn.preprocessing import MinMaxScaler
-
-    scaler = MinMaxScaler()
-
-    all_samples = []
-    for data_set in data_sets:
-        all_samples.extend(data_set)
-
-    all_samples = array(all_samples)
-
-    all_samples = scaler.fit_transform(all_samples)
-
-    result = []
-    start = 0
-    for data_set in data_sets:
-        result += [all_samples[start:start+len(data_set), :].tolist()]
-        start += len(data_set)
-
-    return result
 
 
 def load_data_set(file_paths, num_samples_per_file, history_length):

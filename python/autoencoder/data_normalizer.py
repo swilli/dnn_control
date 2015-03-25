@@ -23,7 +23,7 @@ def create_histograms(data, path_to_data):
         create_and_save_hist(data, i, output_folder)
 
 
-def load_data(data_folder):
+def load_data(data_folder, num_lines=None):
     from os import listdir
     from data_loader import load_sensor_file
 
@@ -35,9 +35,14 @@ def load_data(data_folder):
     set_sizes = []
     total_states = []
     total_actions = []
+    num_loaded = 0
     for file_path in file_paths:
-        print '... loading all samples from data file ' + file_path
-        states, actions = load_sensor_file(file_path)
+        #print '... loading samples from data file ' + file_path
+        states, actions = load_sensor_file(file_path, num_lines)
+        num_loaded += 1
+        if (num_loaded % 1000) == 0:
+            print(num_loaded)
+
         set_sizes.append(len(states))
         total_states.extend(states)
         total_actions.extend(actions)
@@ -61,18 +66,32 @@ def write_state_action_sets_files(data_path, state_sets, action_sets):
 
 
 def normalize_folder_data(input_data_path, output_data_path):
-    from numpy import array
-    from sklearn.preprocessing import MinMaxScaler
+    from numpy import array, concatenate, mean, std
+    from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
-    total_states, total_actions, set_sizes = load_data(input_data_path)
+    total_states, total_actions, set_sizes = load_data(input_data_path, 60)
     total_states = array(total_states)
     total_actions = array(total_actions)
 
-    states_scaler = MinMaxScaler()
+    states_scaler = StandardScaler()
     actions_scaler = MinMaxScaler()
 
-    total_states = states_scaler.fit_transform(total_states)
-    total_actions = actions_scaler.fit_transform(total_actions)
+    states_scaler.fit(total_states)
+    total_states = states_scaler.transform(total_states)
+    total_states *= 0.25
+    total_states += 0.5
+
+    actions_scaler.fit(total_actions)
+    total_actions = actions_scaler.transform(total_actions)
+
+    print("States distribution:")
+    print(mean(total_states, axis=0))
+    print(std(total_states, axis=0))
+    print("Actions distribution:")
+    print(mean(total_actions, axis=0))
+    print(std(total_actions, axis=0))
+
+    create_histograms(concatenate((total_states, total_actions), axis=1), output_data_path)
 
     normalized_states_sets = []
     normalized_actions_sets = []
@@ -113,21 +132,37 @@ def normalize_folder_data(input_data_path, output_data_path):
 
 
 def analyze_folder_data(input_data_path, output_data_path):
-    from numpy import array, concatenate
-    total_states, total_actions, set_sizes = load_data(input_data_path)
+    from numpy import array, concatenate, std, mean
+    from sklearn.preprocessing import StandardScaler, MinMaxScaler
+
+    total_states, total_actions, set_sizes = load_data(input_data_path, 60)
+
     total_states = array(total_states)
     total_actions = array(total_actions)
 
-    create_histograms(concatenate((total_states, total_actions), axis=1), output_data_path)
+    total_states = StandardScaler().fit_transform(total_states)
+    total_states *= 0.25
+    total_states += 0.5
 
+    total_actions = MinMaxScaler().fit_transform(total_actions)
+
+    print("States distribution:")
+    print(mean(total_states, axis=0))
+    print(std(total_states, axis=0))
+    print("Actions distribution:")
+    print(mean(total_actions, axis=0))
+    print(std(total_actions, axis=0))
+
+    create_histograms(concatenate((total_states, total_actions), axis=1), output_data_path)
 
 if __name__ == '__main__':
     from numpy.random import shuffle
     import os
 
-    input_data_path = "/home/willist/Documents/dnn/data/raw/"
+    input_data_path = "/home/willist/Documents/dnn/data/raw2/"
     output_data_path = "/home/willist/Documents/dnn/data/"
-    analyze_folder_data(input_data_path, output_data_path)
-    #normalize_folder_data(input_data_path, output_data_path)
+
+    # analyze_folder_data(input_data_path, output_data_path)
+    normalize_folder_data(input_data_path, output_data_path)
 
 

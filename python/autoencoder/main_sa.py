@@ -12,16 +12,16 @@ import sys
 
 path_suffix = "master"
 
-training_path = "/home/willist/Documents/dnn/data/old/training/"
-testing_path = "/home/willist/Documents/dnn/data/old/testing/"
+training_path = "/home/willist/Documents/dnn/data/training/"
+testing_path = "/home/willist/Documents/dnn/data/testing/"
 
 result_path = "/home/willist/Documents/dnn/autoencoder/"
 autoencoder_weights_path = "/home/willist/Documents/dnn/autoencoder/"
 
 num_training_samples = 1000000
-num_training_samples_per_file = 250
+num_training_samples_per_file = 50
 num_test_samples = 10000
-num_test_samples_per_file = 100
+num_test_samples_per_file = 50
 history_length = 5
 batch_size = 1
 
@@ -30,10 +30,10 @@ pretraining_epochs = 100
 ENABLE_FINE_TUNING = True
 fine_tune_learning_rate = 0.005
 
-hidden_layer_sizes = [60, 40, 27, 18, 12, 8]
-corruption_levels = [0.1 ** (i+1) for i in range(len(hidden_layer_sizes))]
+hidden_layer_sizes = [50, 40, 30, 20, 15, 9]
+corruption_levels = [0.01 ** (i+1) for i in range(len(hidden_layer_sizes))]
 learning_rates = [0.01, 0.01, 0.01, 0.01, 0.01, 0.01]
-tied_weights =              [True, True, True, True, True, True]
+tied_weights =              [False, False, False, False, False, False]
 sigmoid_compressions =      [True, True, True, True, True, True]
 sigmoid_reconstructions =   [True, True, True, True, True, True]
 

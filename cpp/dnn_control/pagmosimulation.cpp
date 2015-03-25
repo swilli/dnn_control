@@ -173,6 +173,18 @@ void PaGMOSimulation::Init() {
     for (unsigned int i = 0 ; i < 3; ++i) {
         spacecraft_velocity[i] = sample_factory.SampleUniform(-0.3, 0.3);
     }
+
+#elif PGMOS_IC_VELOCITY_TYPE == PGMOS_IC_BODY_PROPORTIONAL_VELOCITY
+    // velocity proportional to height
+    const double up_scale = 1000000.0;
+    const double max_initital_sensor_value = 10.0;
+    const double norm_height = boost::get<1>(asteroid_.NearestPointOnSurfaceToPosition(spacecraft_position));
+    const double magn_velocity = max_initital_sensor_value * norm_height / up_scale;
+    Vector3D spacecraft_velocity;
+    for (unsigned int i = 0 ; i < 3; ++i) {
+        spacecraft_velocity[i] = sample_factory.SampleUniform(-magn_velocity, magn_velocity);
+    }
+
 #endif
 
     for (unsigned int i = 0; i < 3; ++i) {
