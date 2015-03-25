@@ -58,14 +58,14 @@ class StackedAutoencoder(object):
 
                 self.autoencoder_layers.append(autoencoder_layer)
 
-            # Add a linear regression layer on top of it
-            self.linreg_layer = HiddenLayer(rng=numpy_rng, input=self.mlp_layers[-1].output,
+            # Add a supervised layer on top of it
+            self.supervised_layer = HiddenLayer(rng=numpy_rng, input=self.mlp_layers[-1].output,
                                             n_in=hidden_layers_sizes[-1],
-                                            n_out=n_outs, activation=None)
+                                            n_out=n_outs, activation=T.nnet.sigmoid)
 
-            self.params.extend(self.linreg_layer.params)
+            self.params.extend(self.supervised_layer.params)
 
-            self.finetune_cost = T.mean(T.sum((self.linreg_layer.output - self.y)**2, axis=1))
+            self.finetune_cost = T.mean(T.sum((self.supervised_layer.output - self.y)**2, axis=1))
 
         else:
             for i in xrange(len(autoencoder_weights)):
@@ -100,6 +100,16 @@ class StackedAutoencoder(object):
                 self.params.extend(autoencoder_layer.params)
 
                 self.autoencoder_layers.append(autoencoder_layer)
+
+            # Add a supervised layer on top of it
+            self.supervised_layer = HiddenLayer(rng=numpy_rng, input=self.mlp_layers[-1].output,
+                                            n_in=hidden_layers_sizes[-1],
+                                            n_out=n_outs, W=autoencoder_weights[-1][0], b=autoencoder_weights[-1][1],
+                                            activation=T.nnet.sigmoid)
+
+            self.params.extend(self.supervised_layer.params)
+
+            self.finetune_cost = T.mean(T.sum((self.supervised_layer.output - self.y)**2, axis=1))
 
     def pretraining_functions(self, train_set_x, batch_size):
         index = T.lscalar('index')

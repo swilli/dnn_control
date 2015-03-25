@@ -10,36 +10,33 @@ from random import sample
 import time
 import sys
 
-ENABLE_FINE_TUNING = True
-fine_tune_learning_rate = 0.1
-fine_tune_epochs = 1000
-pretraining_epochs = 100
-
 path_suffix = "master"
 
-batch_size = 1
+training_path = "/home/willist/Documents/dnn/data/old/training/"
+testing_path = "/home/willist/Documents/dnn/data/old/testing/"
+
+result_path = "/home/willist/Documents/dnn/autoencoder/"
+autoencoder_weights_path = "/home/willist/Documents/dnn/autoencoder/"
+
 num_training_samples = 1000000
 num_training_samples_per_file = 250
 num_test_samples = 10000
 num_test_samples_per_file = 100
-
-
 history_length = 5
+batch_size = 1
 
+pretraining_epochs = 100
 
-hidden_layer_sizes = [100, 100]
+ENABLE_FINE_TUNING = True
+fine_tune_learning_rate = 0.005
+
+hidden_layer_sizes = [60, 40, 27, 18, 12, 8]
 corruption_levels = [0.1 ** (i+1) for i in range(len(hidden_layer_sizes))]
-learning_rates = [0.1, 0.1, 0.1, 0.1, 0.1]
-tied_weights =              [True, True, True, True, True]
-sigmoid_compressions =      [True, True, True, True, True]
-sigmoid_reconstructions =   [True, True, True, True, True]
+learning_rates = [0.01, 0.01, 0.01, 0.01, 0.01, 0.01]
+tied_weights =              [True, True, True, True, True, True]
+sigmoid_compressions =      [True, True, True, True, True, True]
+sigmoid_reconstructions =   [True, True, True, True, True, True]
 
-
-training_path = "/home/willist/Documents/dnn/data/training/"
-testing_path = "/home/willist/Documents/dnn/data/testing/"
-
-result_path = "/home/willist/Documents/dnn/autoencoder/"
-autoencoder_weights_path = "/home/willist/Documents/dnn/autoencoder/"
 
 
 training_set, training_labels, test_set, test_labels = load_sensor_files(training_path, testing_path,
@@ -113,7 +110,7 @@ if ENABLE_FINE_TUNING:
     patience = 10 * n_train_batches  # look as this many examples regardless
     patience_increase = 2.  # wait this much longer when a new best is
                             # found
-    improvement_threshold = 0.995  # a relative improvement of this much is
+    improvement_threshold = 0.99999  # a relative improvement of this much is
                                    # considered significant
     validation_frequency = min(n_train_batches, patience / 2)
                                   # go through this many
@@ -127,7 +124,7 @@ if ENABLE_FINE_TUNING:
     done_looping = False
     epoch = 0
 
-    while (epoch < fine_tune_epochs) and (not done_looping):
+    while not done_looping:
         epoch += 1
         for minibatch_index in xrange(n_train_batches):
             minibatch_avg_cost = finetune_fn(minibatch_index)
@@ -197,6 +194,20 @@ for i in xrange(stacked_autoencoder.n_layers):
     b_prime_str = ", ".join(str(value) for value in b_prime)
     output_file.write(b_prime_str)
     output_file.close()
+
+output_path = result_path + "lsupW.txt".format(i)
+output_file = open(output_path, 'w+')
+W = stacked_autoencoder.supervised_layer.W.get_value(borrow=True).T.tolist()
+W_str = "\n".join(", ".join(map(str, value)) for value in W)
+output_file.write(W_str)
+output_file.close()
+
+output_path = result_path + "lsupb.txt".format(i)
+output_file = open(output_path, 'w+')
+b = stacked_autoencoder.supervised_layer.b.get_value(borrow=True).T.tolist()
+b_str = ", ".join(str(value) for value in b)
+output_file.write(b_str)
+output_file.close()
 
 test_samples = []
 mean_error = 0.0

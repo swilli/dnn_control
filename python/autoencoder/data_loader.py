@@ -41,15 +41,21 @@ def historify_and_label(state_sets, action_sets, length):
     return result, labels
 
 
-def load_sensor_file(file_path, num_lines=1000):
+def load_sensor_file(file_path, num_lines=None):
     lines = []
     with open(file_path, 'r') as sensor_data_file:
-        for line in sensor_data_file:
-            if line.startswith("#"):
-                continue
-            lines += [line]
-            if len(lines) == num_lines:
-                break
+        if num_lines is None:
+            data = sensor_data_file.read()
+            lines = data.split('\n')
+            lines = [line for line in lines if not line.startswith("#") and not line == ""]
+            #lines = [line + '\n' for line in lines]
+        else:
+            for line in sensor_data_file:
+                if line.startswith("#"):
+                    continue
+                lines += [line]
+                if len(lines) == num_lines:
+                    break
 
     lines = [line.split('|') for line in lines]
     states = [state for state, _ in lines]
@@ -94,9 +100,9 @@ def load_data_set(file_paths, num_samples_per_file, history_length):
         total_states = total_states + [states]
         total_actions = total_actions + [actions]
 
-    print '... normalizing data'
-    total_states = normalize(total_states)
-    total_actions = normalize(total_actions)
+    #print '... normalizing data'
+    #total_states = normalize(total_states)
+    #total_actions = normalize(total_actions)
 
     print '... historifying and labelling data'
     state_action_pairs_with_history_set, labels_set = historify_and_label(total_states, total_actions, history_length)
