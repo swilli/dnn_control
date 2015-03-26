@@ -59,7 +59,7 @@
 #define PGMOS_IC_BODY_PROPORTIONAL_VELOCITY 4
 
 #define PGMOS_IC_VELOCITY_TYPE  PGMOS_IC_BODY_RANDOM_VELOCITY
-#define PGMOS_IC_POSITION_OFFSET_ENABLED    false
+#define PGMOS_IC_POSITION_OFFSET_ENABLED    true
 #define PGMOS_ENABLE_ODOMETRY   true
 #define PGMOS_ENABLE_OPTICAL_FLOW   true
 #define PGMOS_ENABLE_VELOCITY   false
@@ -71,8 +71,8 @@
 
 // Class ControllerNeuralNetwork configs
 #define CNN_ENABLE_STACKED_AUTOENCODER  false
-#define CNN_STACKED_AUTOENCODER_CONFIGURATION   "96_48_24_12_6"
-#define CNN_STACKED_AUTOENCODER_DIMENSIONS    45
+#define CNN_STACKED_AUTOENCODER_CONFIGURATION   "100_80_60_40_20_10_master"
+#define CNN_STACKED_AUTOENCODER_INPUT_SIZE    90
 
 
 // Class SensorSimulatorPartialState configs
@@ -175,7 +175,7 @@ inline void ConfigurationPaGMO() {
     std::cout << "PGMOS_ENABLE_SENSOR_DATA_RECORDING   " << ToString(PGMOS_ENABLE_SENSOR_DATA_RECORDING) << std::endl;
     std::cout << "ODES_FUEL_ENABLED   " << ToString(ODES_FUEL_ENABLED) << std::endl;
     std::cout << "CNN_ENABLE_STACKED_AUTOENCODER   " << ToString(CNN_ENABLE_STACKED_AUTOENCODER) << std::endl;
-    std::cout << "CNN_STACKED_AUTOENCODER_DIMENSIONS   " << CNN_STACKED_AUTOENCODER_DIMENSIONS << std::endl;
+    std::cout << "CNN_STACKED_AUTOENCODER_DIMENSIONS   " << CNN_STACKED_AUTOENCODER_INPUT_SIZE << std::endl;
     std::cout << "SSPS_WITH_NOISE   " << ToString(SSPS_WITH_NOISE) << std::endl;
     std::cout << "SSPS_NORMALIZE_SENSOR_VALUES   " << ToString(SSPS_NORMALIZE_SENSOR_VALUES) << std::endl;
     std::cout << "SSFS_WITH_NOISE   " << ToString(SSFS_WITH_NOISE) << std::endl;

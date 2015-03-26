@@ -2,7 +2,7 @@ from numpy import random, mean
 import os
 from sys import exit
 from time import clock
-from data_loader import load_sensor_files
+from data_loader import load_sensor_files, load_autoencoder_weights
 from stacked_autoencoder import StackedAutoencoder
 from numpy.linalg import norm
 from numpy import inf
@@ -12,30 +12,31 @@ import sys
 
 path_suffix = "master"
 
-training_path = "/home/willist/Documents/dnn/data/training/"
-testing_path = "/home/willist/Documents/dnn/data/testing/"
+training_path = "/home/willist/Documents/dnn/data/raw/training/"
+testing_path = "/home/willist/Documents/dnn/data/raw/testing/"
 
 result_path = "/home/willist/Documents/dnn/autoencoder/"
 autoencoder_weights_path = "/home/willist/Documents/dnn/autoencoder/"
 
 num_training_samples = 1000000
-num_training_samples_per_file = 50
+num_training_samples_per_file = 150
 num_test_samples = 10000
 num_test_samples_per_file = 50
-history_length = 5
+history_length = 10
 batch_size = 1
 
-pretraining_epochs = 100
+pretraining_epochs = 20
 
 ENABLE_FINE_TUNING = True
-fine_tune_learning_rate = 0.005
+fine_tune_learning_rate = 0.0005
 
-hidden_layer_sizes = [50, 40, 30, 20, 15, 9]
-corruption_levels = [0.01 ** (i+1) for i in range(len(hidden_layer_sizes))]
-learning_rates = [0.01, 0.01, 0.01, 0.01, 0.01, 0.01]
+hidden_layer_sizes = [100, 80, 60, 40, 20, 10]
+corruption_levels = [0.05 ** (i+1) for i in range(len(hidden_layer_sizes))]
+
+pretraining_learning_rates = [0.001, 0.01, 0.01, 0.01, 0.01, 0.01]
 tied_weights =              [False, False, False, False, False, False]
 sigmoid_compressions =      [True, True, True, True, True, True]
-sigmoid_reconstructions =   [True, True, True, True, True, True]
+sigmoid_reconstructions =   [False, True, True, True, True, True]
 
 
 
@@ -69,7 +70,7 @@ stacked_autoencoder = StackedAutoencoder(numpy_rng=numpy_rng, n_ins=sample_dimen
 
 
 print '... getting the pre-training functions'
-pretraining_fns = stacked_autoencoder.pretraining_functions(train_set_x=training_set, batch_size=batch_size)
+pretraining_fns = stacked_autoencoder.pretraining_functions(training_set=training_set, batch_size=batch_size)
 
 
 if ENABLE_FINE_TUNING:
@@ -87,7 +88,7 @@ start_time = clock()
 # Pre-train layer-wise
 for i in xrange(stacked_autoencoder.n_layers):
     # go through pretraining epochs
-    learning_rate = learning_rates[i]
+    learning_rate = pretraining_learning_rates[i]
     corruption_level = corruption_levels[i]
     for epoch in range(pretraining_epochs):
         # go through the training set
@@ -110,7 +111,7 @@ if ENABLE_FINE_TUNING:
     patience = 10 * n_train_batches  # look as this many examples regardless
     patience_increase = 2.  # wait this much longer when a new best is
                             # found
-    improvement_threshold = 0.99999  # a relative improvement of this much is
+    improvement_threshold = 0.9999  # a relative improvement of this much is
                                    # considered significant
     validation_frequency = min(n_train_batches, patience / 2)
                                   # go through this many
@@ -209,19 +210,20 @@ b_str = ", ".join(str(value) for value in b)
 output_file.write(b_str)
 output_file.close()
 
-test_samples = []
-mean_error = 0.0
-num_tests = 0
-for sample in test_samples:
-    s_compr = stacked_autoencoder.compress(sample)
-    s_decompr = stacked_autoencoder.decompress(s_compr)
-    #print("===")
-    #print("x: {0}".format(sample))
-    #print("y: {0}".format(s_compr))
-    #print("z: {0}".format(s_decompr))
-    mean_error += norm(sample - s_decompr)
-    num_tests += 1
-    print("avg error: {0}".format(mean_error / num_tests))
-    #print("")
+autoencoder_weights_path += "conf_" + "_".join([str(value) for value in hidden_layer_sizes]) + "_" + path_suffix + "/"
+autoencoder_weights = load_autoencoder_weights(autoencoder_weights_path)
+
+exit()
+
+reloaded_sa = StackedAutoencoder(numpy_rng=numpy_rng, n_ins=sample_dimension, n_outs=label_dimension,
+                                 hidden_layers_sizes=hidden_layer_sizes, tied_weights=tied_weights,
+                                 sigmoid_compressions=sigmoid_compressions,
+                                 sigmoid_reconstructions=sigmoid_reconstructions,
+                                 autoencoder_weights=autoencoder_weights)
+from numpy.random import rand
+test_set = rand(100, 90) * 1000.0
+errors = []
+for sample in test_set:
+    print(", ".join(str(val) for val in sample) + '\n' + ", ".join(str(val) for val in stacked_autoencoder.compress(sample)))
 
 

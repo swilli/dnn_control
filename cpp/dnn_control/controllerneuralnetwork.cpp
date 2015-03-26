@@ -41,7 +41,7 @@ void ControllerNeuralNetwork::SetWeights(const std::vector<double> &weights) {
 Vector3D ControllerNeuralNetwork::GetThrustForSensorData(const std::vector<double> &sensor_data) {
 #if CNN_ENABLE_STACKED_AUTOENCODER
     std::vector<double> unboxed_thrust;
-    if (state_action_history_.size() < CNN_STACKED_AUTOENCODER_DIMENSIONS) {
+    if (state_action_history_.size() < CNN_STACKED_AUTOENCODER_INPUT_SIZE) {
         unboxed_thrust = {0.0, 0.0, 0.0};
     } else {
         const std::vector<double> state_actions(state_action_history_.begin(), state_action_history_.end());

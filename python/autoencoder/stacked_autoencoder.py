@@ -13,7 +13,7 @@ class StackedAutoencoder(object):
                  sigmoid_compressions=[True, True], sigmoid_reconstructions=[True, True],
                  autoencoder_weights=None):
 
-        self.mlp_layers = []
+        self.hidden_layers = []
         self.autoencoder_layers = []
         self.params = []
         self.n_layers = 0
@@ -37,21 +37,21 @@ class StackedAutoencoder(object):
                 if i == 0:
                     layer_input = self.x
                 else:
-                    layer_input = self.mlp_layers[-1].output
+                    layer_input = self.hidden_layers[-1].output
 
                 if sigmoid_compressions[i]:
-                    mlp_layer = HiddenLayer(rng=numpy_rng, input=layer_input, n_in=input_size,
+                    hidden_layer = HiddenLayer(rng=numpy_rng, input=layer_input, n_in=input_size,
                                             n_out=hidden_layers_sizes[i], activation=T.nnet.sigmoid)
                 else:
-                    mlp_layer = HiddenLayer(rng=numpy_rng, input=layer_input, n_in=input_size,
+                    hidden_layer = HiddenLayer(rng=numpy_rng, input=layer_input, n_in=input_size,
                                             n_out=hidden_layers_sizes[i], activation=None)
 
-                self.mlp_layers.append(mlp_layer)
-                self.params.extend(mlp_layer.params)
+                self.hidden_layers.append(hidden_layer)
+                self.params.extend(hidden_layer.params)
 
                 autoencoder_layer = Autoencoder(numpy_rng=numpy_rng, theano_rng=theano_rng, input=layer_input,
                                        n_visible=input_size, n_hidden=hidden_layers_sizes[i],
-                                       W=mlp_layer.W, bhid=mlp_layer.b, tied_weights=tied_weights[i],
+                                       W=hidden_layer.W, bhid=hidden_layer.b, tied_weights=tied_weights[i],
                                        sigmoid_compression=sigmoid_compressions[i],
                                        sigmoid_reconstruction=sigmoid_reconstructions[i])
 
@@ -59,7 +59,7 @@ class StackedAutoencoder(object):
                 self.autoencoder_layers.append(autoencoder_layer)
 
             # Add a supervised layer on top of it
-            self.supervised_layer = HiddenLayer(rng=numpy_rng, input=self.mlp_layers[-1].output,
+            self.supervised_layer = HiddenLayer(rng=numpy_rng, input=self.hidden_layers[-1].output,
                                             n_in=hidden_layers_sizes[-1],
                                             n_out=n_outs, activation=None)
 
@@ -77,22 +77,22 @@ class StackedAutoencoder(object):
                 if i == 0:
                     layer_input = self.x
                 else:
-                    layer_input = self.mlp_layers[-1].output
+                    layer_input = self.hidden_layers[-1].output
 
                 if sigmoid_compressions[i]:
-                    mlp_layer = HiddenLayer(rng=numpy_rng, input=layer_input, n_in=input_size,
+                    hidden_layer = HiddenLayer(rng=numpy_rng, input=layer_input, n_in=input_size,
                                             n_out=hidden_layers_sizes[i], activation=T.nnet.sigmoid,
                                             W=autoencoder_weights[i][0], b=autoencoder_weights[i][1])
                 else:
-                    mlp_layer = HiddenLayer(rng=numpy_rng, input=layer_input, n_in=input_size,
+                    hidden_layer = HiddenLayer(rng=numpy_rng, input=layer_input, n_in=input_size,
                                             n_out=hidden_layers_sizes[i], activation=None,
                                             W=autoencoder_weights[i][0], b=autoencoder_weights[i][1])
 
-                self.mlp_layers.append(mlp_layer)
+                self.hidden_layers.append(hidden_layer)
 
                 autoencoder_layer = Autoencoder(numpy_rng=numpy_rng, theano_rng=theano_rng, input=layer_input,
                                        n_visible=input_size, n_hidden=hidden_layers_sizes[i],
-                                       W=mlp_layer.W, bhid=mlp_layer.b, Whid=autoencoder_weights[i][2],
+                                       W=hidden_layer.W, bhid=hidden_layer.b, Whid=autoencoder_weights[i][2],
                                        bvis=autoencoder_weights[i][3], tied_weights=tied_weights[i],
                                        sigmoid_compression=sigmoid_compressions[i],
                                        sigmoid_reconstruction=sigmoid_reconstructions[i])
@@ -102,16 +102,16 @@ class StackedAutoencoder(object):
                 self.autoencoder_layers.append(autoencoder_layer)
 
             # Add a supervised layer on top of it
-            self.supervised_layer = HiddenLayer(rng=numpy_rng, input=self.mlp_layers[-1].output,
-                                            n_in=hidden_layers_sizes[-1],
-                                            n_out=n_outs, W=autoencoder_weights[-1][0], b=autoencoder_weights[-1][1],
-                                            activation=None)
+            #self.supervised_layer = HiddenLayer(rng=numpy_rng, input=self.hidden_layers[-1].output,
+                                            #n_in=hidden_layers_sizes[-1],
+                                            #n_out=n_outs, W=autoencoder_weights[-1][0], b=autoencoder_weights[-1][1],
+                                            #activation=None)
 
-            self.params.extend(self.supervised_layer.params)
+            #self.params.extend(self.supervised_layer.params)
 
-            self.finetune_cost = T.mean(T.sum((self.supervised_layer.output - self.y)**2, axis=1))
+            #self.finetune_cost = T.mean(T.sum((self.supervised_layer.output - self.y)**2, axis=1))
 
-    def pretraining_functions(self, train_set_x, batch_size):
+    def pretraining_functions(self, training_set, batch_size):
         index = T.lscalar('index')
         learning_rate = T.scalar('lr')
         corruption_level = T.scalar('corruption')
@@ -130,7 +130,7 @@ class StackedAutoencoder(object):
                 outputs=cost,
                 updates=updates,
                 givens={
-                    self.x: train_set_x[batch_begin: batch_end]
+                    self.x: training_set[batch_begin: batch_end]
                 }
             )
 

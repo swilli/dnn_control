@@ -22,6 +22,7 @@ def sliding_window(data, width=3):
         label = data[i+width][:-3]
         design_matrix += [sample]
         labels += [label]
+
     return design_matrix, labels
 
 
@@ -142,6 +143,7 @@ def load_autoencoder_weights(path_to_autoencoder_weights):
     from os import listdir
     from numpy import array
 
+    num_supervised_layer_files = 2
     num_files_per_layer = 4
 
     file_names = listdir(path_to_autoencoder_weights)
@@ -149,7 +151,7 @@ def load_autoencoder_weights(path_to_autoencoder_weights):
     file_paths = [path_to_autoencoder_weights + name for name in file_names]
 
     all_weights = []
-    for i in xrange(len(file_paths)/num_files_per_layer):
+    for i in xrange((len(file_paths) - num_supervised_layer_files)/num_files_per_layer):
         weights_file = open(file_paths[num_files_per_layer*i], 'r')
         weights_prime_file = open(file_paths[num_files_per_layer*i + 1], 'r')
         bias_file = open(file_paths[num_files_per_layer*i + 2], 'r')

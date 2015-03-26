@@ -65,11 +65,11 @@ def write_state_action_sets_files(data_path, state_sets, action_sets):
             output_file.write(data_str)
 
 
-def normalize_folder_data(input_data_path, output_data_path):
+def normalize_folder_data(input_data_path, output_data_path, num_samples=None):
     from numpy import array, concatenate, mean, std
     from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
-    total_states, total_actions, set_sizes = load_data(input_data_path, 60)
+    total_states, total_actions, set_sizes = load_data(input_data_path, num_samples)
     total_states = array(total_states)
     total_actions = array(total_actions)
 
@@ -83,13 +83,6 @@ def normalize_folder_data(input_data_path, output_data_path):
 
     actions_scaler.fit(total_actions)
     total_actions = actions_scaler.transform(total_actions)
-
-    print("States distribution:")
-    print(mean(total_states, axis=0))
-    print(std(total_states, axis=0))
-    print("Actions distribution:")
-    print(mean(total_actions, axis=0))
-    print(std(total_actions, axis=0))
 
     create_histograms(concatenate((total_states, total_actions), axis=1), output_data_path)
 
@@ -130,28 +123,38 @@ def normalize_folder_data(input_data_path, output_data_path):
     write_state_action_sets_files(training_path, training_states_set, training_actions_set)
     write_state_action_sets_files(testing_path, testing_states_set, testing_actions_set)
 
+    print("States standardization: Means: {0}, Stdevs: {1}".format(states_scaler.mean_, states_scaler.std_))
+    print("States distribution: Means: {0}, Stdevs: {1}".format(mean(total_states, axis=0), std(total_states, axis=0)))
 
-def analyze_folder_data(input_data_path, output_data_path):
+    print("Actions standardization: Minima: {0}, Ranges: {1}".format(actions_scaler.data_min, actions_scaler.data_range))
+    print("Actions distribution: Means: {0}, Stdevs: {1}".format(mean(total_actions, axis=0), std(total_actions, axis=0)))
+
+
+def analyze_folder_data(input_data_path, output_data_path, num_samples=None):
     from numpy import array, concatenate, std, mean
     from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
-    total_states, total_actions, set_sizes = load_data(input_data_path, 60)
+    total_states, total_actions, set_sizes = load_data(input_data_path, num_samples)
 
     total_states = array(total_states)
     total_actions = array(total_actions)
 
-    total_states = StandardScaler().fit_transform(total_states)
+    states_scaler = StandardScaler()
+    actions_scaler = MinMaxScaler()
+
+    states_scaler.fit(total_states)
+    total_states = states_scaler.transform(total_states)
     total_states *= 0.25
     total_states += 0.5
 
-    total_actions = MinMaxScaler().fit_transform(total_actions)
+    actions_scaler.fit(total_actions)
+    total_actions = actions_scaler.transform(total_actions)
 
-    print("States distribution:")
-    print(mean(total_states, axis=0))
-    print(std(total_states, axis=0))
-    print("Actions distribution:")
-    print(mean(total_actions, axis=0))
-    print(std(total_actions, axis=0))
+    print("States standardization: Means: {0}, Stdevs: {1}".format(states_scaler.mean_, states_scaler.std_))
+    print("States distribution: Means: {0}, Stdevs: {1}".format(mean(total_states, axis=0), std(total_states, axis=0)))
+
+    print("Actions standardization: Minima: {0}, Ranges: {1}".format(actions_scaler.data_min, actions_scaler.data_range))
+    print("Actions distribution: Means: {0}, Stdevs: {1}".format(mean(total_actions, axis=0), std(total_actions, axis=0)))
 
     create_histograms(concatenate((total_states, total_actions), axis=1), output_data_path)
 
@@ -159,10 +162,11 @@ if __name__ == '__main__':
     from numpy.random import shuffle
     import os
 
-    input_data_path = "/home/willist/Documents/dnn/data/raw2/"
-    output_data_path = "/home/willist/Documents/dnn/data/"
+    input_data_path = "/home/willist/Documents/dnn/data/raw/"
+    output_data_path = "/home/willist/Documents/dnn/data/raw/"
 
-    # analyze_folder_data(input_data_path, output_data_path)
-    normalize_folder_data(input_data_path, output_data_path)
+    num_samples = 150
+    #analyze_folder_data(input_data_path, output_data_path, num_samples)
+    normalize_folder_data(input_data_path, output_data_path, num_samples)
 
 
