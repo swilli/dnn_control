@@ -9,7 +9,7 @@
  */
 
 // Task Name
-#define TASK_NAME   "task4"
+#define TASK_NAME   "task8"
 
 
 // Evolutionary Robotics configs
@@ -18,7 +18,7 @@
 #define ER_NUM_ISLANDS  24
 //#define ER_SIMULATION_TIME  3.0 * 60.0 * 60.0
 #define ER_EVALUATIONS  10
-#define ER_NUM_HIDDEN_NODES 10
+#define ER_NUM_HIDDEN_NODES 6
 
 
 // Class hovering_problem configs
@@ -71,7 +71,7 @@
 
 // Class ControllerNeuralNetwork configs
 #define CNN_ENABLE_STACKED_AUTOENCODER  true
-#define CNN_STACKED_AUTOENCODER_CONFIGURATION   "100_80_60_40_20_10_" TASK_NAME
+#define CNN_STACKED_AUTOENCODER_CONFIGURATION   "100_80_60_40_20_10_6_" TASK_NAME
 
 // Class SensorSimulatorPartialState configs
 #define SSPS_STANDARDIZE_SENSOR_VALUES    true
