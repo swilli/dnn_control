@@ -29,6 +29,7 @@ pretraining_epochs = 20
 
 ENABLE_FINE_TUNING = True
 fine_tune_learning_rate = 0.0005
+fine_tune_epochs = 200
 
 hidden_layer_sizes = [100, 80, 60, 40, 20, 14, 7]
 corruption_levels = [0.1 / (i+1) for i in range(len(hidden_layer_sizes))]
@@ -125,7 +126,7 @@ if ENABLE_FINE_TUNING:
     done_looping = False
     epoch = 0
 
-    while not done_looping:
+    while epoch < fine_tune_epochs and not done_looping:
         epoch += 1
         for minibatch_index in xrange(n_train_batches):
             minibatch_avg_cost = finetune_fn(minibatch_index)
@@ -134,6 +135,7 @@ if ENABLE_FINE_TUNING:
             if (iter + 1) % validation_frequency == 0:
                 validation_losses = validate_model()
                 this_validation_loss = mean(validation_losses)
+                print time.strftime("%c")
                 print 'epoch %i, minibatch %i/%i, validation error %f' % (epoch, minibatch_index + 1, n_train_batches,
                                                                           this_validation_loss)
 
