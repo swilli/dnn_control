@@ -9,7 +9,7 @@
  */
 
 // Task Name
-#define TASK_NAME   "master"
+#define TASK_NAME   "task4"
 
 
 // Evolutionary Robotics configs
@@ -18,7 +18,7 @@
 #define ER_NUM_ISLANDS  24
 //#define ER_SIMULATION_TIME  3.0 * 60.0 * 60.0
 #define ER_EVALUATIONS  10
-#define ER_NUM_HIDDEN_NODES 6
+#define ER_NUM_HIDDEN_NODES 10
 
 
 // Class hovering_problem configs
@@ -31,9 +31,9 @@
 #define HP_OBJ_FUN_METHOD_7     7   // Mean optical flow, constant divergence. Transient response aware.
 #define HP_OBJ_FUN_METHOD_8     8   // Mean offset to optimal landing path.
 
-#define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_3
+#define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_4
 
-#define HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME  150.0
+#define HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME  10.0
 #define HP_OBJ_FUN_COEF_DIVERGENCE  0.0001
 #define HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED    true
 
@@ -60,28 +60,26 @@
 
 #define PGMOS_IC_VELOCITY_TYPE  PGMOS_IC_BODY_RANDOM_VELOCITY
 #define PGMOS_IC_POSITION_OFFSET_ENABLED    true
-#define PGMOS_ENABLE_ODOMETRY   true
+#define PGMOS_ENABLE_ODOMETRY   false
 #define PGMOS_ENABLE_OPTICAL_FLOW   true
 #define PGMOS_ENABLE_VELOCITY   false
 #define PGMOS_ENABLE_VELOCITY_OVER_HEIGHT   false
 #define PGMOS_ENABLE_DIRECTION_SENSOR   false
 #define PGMOS_ENABLE_ACCELEROMETER  false
-#define PGMOS_ENABLE_SENSOR_DATA_RECORDING  true
+#define PGMOS_ENABLE_SENSOR_DATA_RECORDING  false
 
 
 // Class ControllerNeuralNetwork configs
-#define CNN_ENABLE_STACKED_AUTOENCODER  false
-#define CNN_STACKED_AUTOENCODER_CONFIGURATION   "100_80_60_40_20_10_master"
-#define CNN_STACKED_AUTOENCODER_INPUT_SIZE    90
-
+#define CNN_ENABLE_STACKED_AUTOENCODER  true
+#define CNN_STACKED_AUTOENCODER_CONFIGURATION   "100_80_60_40_20_10_" TASK_NAME
 
 // Class SensorSimulatorPartialState configs
-#define SSPS_NORMALIZE_SENSOR_VALUES    false
-#define SSPS_WITH_NOISE false
+#define SSPS_STANDARDIZE_SENSOR_VALUES    true
+#define SSPS_WITH_NOISE true
 
 
 // Class SensorSimulatorFullState configs
-#define SSFS_WITH_NOISE false
+#define SSFS_WITH_NOISE true
 
 
 // Least Squares Policy Robotics configs
@@ -175,9 +173,9 @@ inline void ConfigurationPaGMO() {
     std::cout << "PGMOS_ENABLE_SENSOR_DATA_RECORDING   " << ToString(PGMOS_ENABLE_SENSOR_DATA_RECORDING) << std::endl;
     std::cout << "ODES_FUEL_ENABLED   " << ToString(ODES_FUEL_ENABLED) << std::endl;
     std::cout << "CNN_ENABLE_STACKED_AUTOENCODER   " << ToString(CNN_ENABLE_STACKED_AUTOENCODER) << std::endl;
-    std::cout << "CNN_STACKED_AUTOENCODER_DIMENSIONS   " << CNN_STACKED_AUTOENCODER_INPUT_SIZE << std::endl;
+    std::cout << "CNN_STACKED_AUTOENCODER_CONFIGURATION   " << CNN_STACKED_AUTOENCODER_CONFIGURATION << std::endl;
     std::cout << "SSPS_WITH_NOISE   " << ToString(SSPS_WITH_NOISE) << std::endl;
-    std::cout << "SSPS_NORMALIZE_SENSOR_VALUES   " << ToString(SSPS_NORMALIZE_SENSOR_VALUES) << std::endl;
+    std::cout << "SSPS_STANDARDIZE_SENSOR_VALUES   " << ToString(SSPS_STANDARDIZE_SENSOR_VALUES) << std::endl;
     std::cout << "SSFS_WITH_NOISE   " << ToString(SSFS_WITH_NOISE) << std::endl;
     std::cout << std::endl;
 }

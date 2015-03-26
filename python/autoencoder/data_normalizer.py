@@ -150,13 +150,14 @@ def analyze_folder_data(input_data_path, output_data_path, num_samples=None):
     actions_scaler.fit(total_actions)
     total_actions = actions_scaler.transform(total_actions)
 
+    create_histograms(concatenate((total_states, total_actions), axis=1), output_data_path)
+
     print("States standardization: Means: {0}, Stdevs: {1}".format(states_scaler.mean_, states_scaler.std_))
     print("States distribution: Means: {0}, Stdevs: {1}".format(mean(total_states, axis=0), std(total_states, axis=0)))
 
     print("Actions standardization: Minima: {0}, Ranges: {1}".format(actions_scaler.data_min, actions_scaler.data_range))
     print("Actions distribution: Means: {0}, Stdevs: {1}".format(mean(total_actions, axis=0), std(total_actions, axis=0)))
 
-    create_histograms(concatenate((total_states, total_actions), axis=1), output_data_path)
 
 if __name__ == '__main__':
     from numpy.random import shuffle
@@ -166,7 +167,7 @@ if __name__ == '__main__':
     output_data_path = "/home/willist/Documents/dnn/data/raw/"
 
     num_samples = 150
-    #analyze_folder_data(input_data_path, output_data_path, num_samples)
-    normalize_folder_data(input_data_path, output_data_path, num_samples)
+    analyze_folder_data(input_data_path, output_data_path, num_samples)
+    # normalize_folder_data(input_data_path, output_data_path, num_samples)
 
 

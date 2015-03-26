@@ -6,6 +6,7 @@
 #include "sensorsimulatorfullstate.h"
 #include "sensorsimulatorpartialstate.h"
 #include "controllerneuralnetwork.h"
+#include "controllerdeepneuralnetwork.h"
 #include "configuration.h"
 
 PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &random_seed)
@@ -48,7 +49,11 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     SensorSimulatorPartialState sensor_recorder(sf_sensor_recording, asteroid_);
 #endif
 
+#if CNN_ENABLE_STACKED_AUTOENCODER
+    ControllerDeepNeuralNetwork controller(spacecraft_maximum_thrust_, neural_network_hidden_nodes_);
+#else
     ControllerNeuralNetwork controller(spacecraft_maximum_thrust_, neural_network_hidden_nodes_);
+#endif
 
     if (simulation_parameters_.size()) {
         controller.SetWeights(simulation_parameters_);
@@ -256,6 +261,10 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
 }
 
 unsigned int PaGMOSimulationNeuralNetwork::ChromosomeSize() const {
+#if CNN_ENABLE_STACKED_AUTOENCODER
+    return ControllerDeepNeuralNetwork(spacecraft_maximum_thrust_, neural_network_hidden_nodes_).NumberOfParameters();
+#else
     return ControllerNeuralNetwork(spacecraft_maximum_thrust_, neural_network_hidden_nodes_).NumberOfParameters();
+#endif
 }
 

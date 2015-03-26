@@ -58,9 +58,18 @@ std::vector<double> SensorSimulatorPartialState::Simulate(const SystemState &sta
     }
 #endif
 
-    const std::vector<std::pair<double, double> > min_max_sensor_values(6, std::make_pair(-1.0,1.0));
+    //[-0.03463882  0.02018794  0.0136428  -0.21504075 -0.12640421  0.17355207], Stdevs: [  63.67401648   84.41036097  126.9019051   150.14346025  124.2915949 109.63196917]
+
+    const std::vector<std::pair<double, double> > mean_std_values = {
+        {-0.03463882, 63.67401648},
+        {0.02018794, 84.41036097},
+        {0.0136428, 126.9019051},
+        {-0.21504075, 150.14346025},
+        {-0.12640421, 124.2915949},
+        {0.17355207, 109.63196917}
+    };
     for (unsigned int i = 0; i < 6; ++i) {
-        sensor_data[i] = Normalize(sensor_data[i], min_max_sensor_values.at(i));
+        sensor_data[i] = Standardize(sensor_data[i], mean_std_values.at(i));
     }
 
 #endif
@@ -164,18 +173,13 @@ std::vector<double> SensorSimulatorPartialState::Simulate(const SystemState &sta
     return sensor_data;
 }
 
-double SensorSimulatorPartialState::Normalize(const double &sensor_value, const std::pair<double, double> &min_max_values) {
+double SensorSimulatorPartialState::Standardize(const double &sensor_value, const std::pair<double, double> &mean_std_values) {
     double normalized_sensor_value = sensor_value;
 
-#if SSPS_NORMALIZE_SENSOR_VALUES
-    const double range = min_max_values.second - min_max_values.first;
-    if (normalized_sensor_value > min_max_values.second) {
-        normalized_sensor_value = min_max_values.second;
-    } else if (normalized_sensor_value < min_max_values.first) {
-        normalized_sensor_value = min_max_values.first;
-    }
-    normalized_sensor_value = (normalized_sensor_value - min_max_values.first) / range;
-
+#if SSPS_STANDARDIZE_SENSOR_VALUES
+    normalized_sensor_value = (sensor_value - mean_std_values.first) / mean_std_values.second;
+    normalized_sensor_value *= 0.25;
+    normalized_sensor_value += 0.5;
 #endif
 
     return normalized_sensor_value;

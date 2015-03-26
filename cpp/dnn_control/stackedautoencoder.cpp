@@ -12,6 +12,9 @@ StackedAutoencoder::StackedAutoencoder(const std::string &path_to_layer_configur
     const unsigned int num_files_per_layer = 4;
 
     path configuration_dir(path_to_layer_configurations);
+    if (!exists(configuration_dir)) {
+        throw ConfigurationFolderDoesNotExist();
+    }
 
     directory_iterator end_itr;
 
@@ -26,7 +29,8 @@ StackedAutoencoder::StackedAutoencoder(const std::string &path_to_layer_configur
 
     std::sort(file_paths.begin(), file_paths.end());
 
-    unsigned int dim_input = 0;
+    input_size_ = 0;
+    output_size_ = 0;
 
     const unsigned int num_hidden_layers = file_paths.size() / num_files_per_layer;
 
@@ -37,10 +41,12 @@ StackedAutoencoder::StackedAutoencoder(const std::string &path_to_layer_configur
         const std::vector<double> bias = ParseBiasVector(file_paths.at(num_files_per_layer*i + 2));
 
         const unsigned int dim_layer_input = weights.at(0).size();
-        if (i == 0) {
-            dim_input = dim_layer_input;
-        }
         const unsigned int dim_layer_output = weights.size();
+        if (i == 0) {
+            input_size_ = dim_layer_input;
+        } else if (i == (num_hidden_layers - 1)) {
+            output_size_ = dim_layer_output;
+        }
         layer_configurations.push_back(boost::make_tuple(dim_layer_output, true, NeuralNetwork::ActivationFunctionType::Sigmoid));
         for (unsigned int i = 0; i < dim_layer_output; ++i) {
             encoder_weights.push_back(bias.at(i));
@@ -50,12 +56,20 @@ StackedAutoencoder::StackedAutoencoder(const std::string &path_to_layer_configur
         }
     }
 
-    neural_network_ = FeedForwardNeuralNetwork(dim_input, true, layer_configurations);
+    neural_network_ = FeedForwardNeuralNetwork(input_size_, true, layer_configurations);
     neural_network_.SetWeights(encoder_weights);
 }
 
 std::vector<double> StackedAutoencoder::Compress(const std::vector<double> &input) {
     return neural_network_.Evaluate(input);
+}
+
+unsigned int StackedAutoencoder::InputSize() const {
+    return input_size_;
+}
+
+unsigned int StackedAutoencoder::OutputSize() const {
+    return output_size_;
 }
 
 std::vector<std::vector<double> > StackedAutoencoder::ParseWeightMatrix(const std::string &path_to_matrix) {

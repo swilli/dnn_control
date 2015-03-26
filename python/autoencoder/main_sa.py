@@ -10,7 +10,7 @@ from random import sample
 import time
 import sys
 
-path_suffix = "master"
+path_suffix = "task4"
 
 training_path = "/home/willist/Documents/dnn/data/raw/training/"
 testing_path = "/home/willist/Documents/dnn/data/raw/testing/"
@@ -33,7 +33,7 @@ fine_tune_learning_rate = 0.0005
 hidden_layer_sizes = [100, 80, 60, 40, 20, 10]
 corruption_levels = [0.05 ** (i+1) for i in range(len(hidden_layer_sizes))]
 
-pretraining_learning_rates = [0.001, 0.01, 0.01, 0.01, 0.01, 0.01]
+pretraining_learning_rates = [0.0001, 0.01, 0.01, 0.01, 0.01, 0.01]
 tied_weights =              [False, False, False, False, False, False]
 sigmoid_compressions =      [True, True, True, True, True, True]
 sigmoid_reconstructions =   [False, True, True, True, True, True]

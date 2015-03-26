@@ -13,7 +13,21 @@ public:
     // Returns the compressed version of the input by forward passing the input to the output layer
     std::vector<double> Compress(const std::vector<double> &input);
 
+    unsigned int InputSize() const;
+
+    unsigned int OutputSize() const;
+
+    // StackedAutoencoder can throw the following exceptions
+    class Exception {};
+    class ConfigurationFolderDoesNotExist : public Exception {};
+
 private:
+    // The size of the first layer
+    unsigned int input_size_;
+
+    // The size of the last layer
+    unsigned int output_size_;
+
     // The Autoencoder weights come from a theano learned stacked autoencoder. This method parses a weight matrix W of one layer
     std::vector<std::vector<double> > ParseWeightMatrix(const std::string &path_to_matrix);
 
