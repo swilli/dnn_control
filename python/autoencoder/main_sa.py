@@ -10,7 +10,7 @@ from random import sample
 import time
 import sys
 
-path_suffix = "task8"
+path_suffix = "task9"
 
 training_path = "/home/willist/Documents/dnn/data/raw/training/"
 testing_path = "/home/willist/Documents/dnn/data/raw/testing/"
@@ -30,8 +30,8 @@ pretraining_epochs = 20
 ENABLE_FINE_TUNING = True
 fine_tune_learning_rate = 0.0005
 
-hidden_layer_sizes = [100, 80, 60, 40, 20, 10, 6]
-corruption_levels = [0.05 ** (i+1) for i in range(len(hidden_layer_sizes))]
+hidden_layer_sizes = [100, 80, 60, 40, 20, 14, 7]
+corruption_levels = [0.1 / (i+1) for i in range(len(hidden_layer_sizes))]
 
 pretraining_learning_rates = [0.0001, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01]
 tied_weights =              [False, False, False, False, False, False, False]

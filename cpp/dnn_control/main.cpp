@@ -9,8 +9,6 @@
 
 #include "leastsquarespolicyrobotics.h"
 
-#include "stackedautoencoder.h"
-
 int main(int argc, char *argv[]) {
     srand(time(0));
 
