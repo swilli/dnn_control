@@ -32,8 +32,9 @@
 #define HP_OBJ_FUN_METHOD_6     6   // Mean velocity. Transient response aware.
 #define HP_OBJ_FUN_METHOD_7     7   // Mean optical flow, constant divergence. Transient response aware.
 #define HP_OBJ_FUN_METHOD_8     8   // Mean offset to optimal landing path.
+#define HP_OBJ_FUN_METHOD_9     9   // Mean distance to target point, target point set to position after the deep controller starts to work.
 
-#define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_4
+#define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_9
 
 #define HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME  10.0
 #define HP_OBJ_FUN_COEF_DIVERGENCE  0.0001

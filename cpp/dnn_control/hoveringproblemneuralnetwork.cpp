@@ -205,7 +205,7 @@ double hovering_problem_neural_network::single_fitness(PaGMOSimulationNeuralNetw
     fitness /= considered_samples;
 
 #elif HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_8
-    // Method 8: Mean offset to optimal landing path.
+    // Method 8 : Mean offset to optimal landing path.
     Vector3D direction = evaluated_heights.at(0);
     Vector3D landing_point = VectorSub(evaluated_positions.at(0), direction);
     const double dt = 1.0 / simulation.ControlFrequency();
@@ -219,6 +219,27 @@ double hovering_problem_neural_network::single_fitness(PaGMOSimulationNeuralNetw
         t += dt;
     }
     fitness /= num_samples;
+
+#elif HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_9
+    // Method 9 : Mean distance to target point, target point set to position after the deep controller starts to work.
+    Vector3D first_counting_position;
+    const double init_phase = 10.0;
+    bool initialized = false;
+    unsigned int considered_samples = 0;
+    for (unsigned int i = 0; i < num_samples; ++i) {
+        if (evaluated_times.at(i) >= init_phase) {
+            const Vector3D &actual_position = evaluated_positions.at(i);
+            if (!initialized) {
+                initialized = true;
+                first_counting_position = actual_position;
+            }
+            const double error = VectorNorm(VectorSub(first_counting_position, actual_position));
+            fitness += error;
+            considered_samples++;
+        }
+    }
+    fitness /= considered_samples;
+
 #endif
 
     return fitness;
