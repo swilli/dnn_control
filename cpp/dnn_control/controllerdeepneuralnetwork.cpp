@@ -40,7 +40,10 @@ Vector3D ControllerDeepNeuralNetwork::GetThrustForSensorData(const std::vector<d
         unboxed_thrust = {0.0, 0.0, 0.0};
     } else {
         const std::vector<double> state_actions(state_action_history_.begin(), state_action_history_.end());
-        const std::vector<double> compressed_state = kStackedAutoencoder.Compress(state_actions);
+        std::vector<double> compressed_state = kStackedAutoencoder.Compress(state_actions);
+        for (unsigned int i = 0; i < compressed_state.size(); ++i) {
+            compressed_state[i] *= 10.0;
+        }
         unboxed_thrust = neural_network_.Evaluate(compressed_state);
     }
 
