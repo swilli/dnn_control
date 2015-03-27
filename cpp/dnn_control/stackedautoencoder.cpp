@@ -10,6 +10,7 @@ StackedAutoencoder::StackedAutoencoder(const std::string &path_to_layer_configur
     using namespace boost::filesystem;
 
     const unsigned int num_files_per_layer = 4;
+    const unsigned int num_supervised_layer_files = 2;
 
     path configuration_dir(path_to_layer_configurations);
     if (!exists(configuration_dir)) {
@@ -32,7 +33,7 @@ StackedAutoencoder::StackedAutoencoder(const std::string &path_to_layer_configur
     input_size_ = 0;
     output_size_ = 0;
 
-    const unsigned int num_hidden_layers = file_paths.size() / num_files_per_layer;
+    const unsigned int num_hidden_layers = (file_paths.size() - num_supervised_layer_files) / num_files_per_layer;
 
     std::vector<boost::tuple<unsigned int, bool, NeuralNetwork::ActivationFunctionType> > layer_configurations;
     std::vector<double> encoder_weights;

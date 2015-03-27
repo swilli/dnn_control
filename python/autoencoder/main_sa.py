@@ -112,7 +112,7 @@ if ENABLE_FINE_TUNING:
     patience = 10 * n_train_batches  # look as this many examples regardless
     patience_increase = 2.  # wait this much longer when a new best is
                             # found
-    improvement_threshold = 0.9999  # a relative improvement of this much is
+    improvement_threshold = 0.99999  # a relative improvement of this much is
                                    # considered significant
     validation_frequency = min(n_train_batches, patience / 2)
                                   # go through this many
