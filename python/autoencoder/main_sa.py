@@ -10,7 +10,7 @@ from random import sample
 import time
 import sys
 
-path_suffix = "task9"
+path_suffix = "task10"
 
 training_path = "/home/willist/Documents/dnn/data/raw/training/"
 testing_path = "/home/willist/Documents/dnn/data/raw/testing/"
@@ -25,19 +25,19 @@ num_test_samples_per_file = 50
 history_length = 10
 batch_size = 1
 
-pretraining_epochs = 20
+pretraining_epochs = 30
 
 ENABLE_FINE_TUNING = True
 fine_tune_learning_rate = 0.0005
 fine_tune_epochs = 450
 
-hidden_layer_sizes = [100, 80, 60, 40, 20, 14, 7]
+hidden_layer_sizes = [100, 50, 7]
 corruption_levels = [0.1 / (i+1) for i in range(len(hidden_layer_sizes))]
 
-pretraining_learning_rates = [0.0001, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01]
-tied_weights =              [False, False, False, False, False, False, False]
-sigmoid_compressions =      [True, True, True, True, True, True, True]
-sigmoid_reconstructions =   [False, True, True, True, True, True, True]
+pretraining_learning_rates = [0.0001, 0.01, 0.01]
+tied_weights =              [False, False, False]
+sigmoid_compressions =      [True, True, True]
+sigmoid_reconstructions =   [False, True, True]
 
 
 
