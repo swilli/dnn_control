@@ -29,7 +29,7 @@ pretraining_epochs = 20
 
 ENABLE_FINE_TUNING = True
 fine_tune_learning_rate = 0.0005
-fine_tune_epochs = 200
+fine_tune_epochs = 450
 
 hidden_layer_sizes = [100, 80, 60, 40, 20, 14, 7]
 corruption_levels = [0.1 / (i+1) for i in range(len(hidden_layer_sizes))]

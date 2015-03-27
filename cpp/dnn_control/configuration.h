@@ -11,6 +11,8 @@
 // Task Name
 #define TASK_NAME   "task9"
 
+// Euler home or not
+#define ENABLE_EULER_HOME   true
 
 // Evolutionary Robotics configs
 #define ER_NUM_GENERATIONS  1000
@@ -101,7 +103,11 @@
 #define LSPR_WRITE_ACTION_SET_TO_FILE   true
 
 // Other stuff configs, not relevant for simulation
+#if ENABLE_EULER_HOME
+#define OUTPUT_ROOT_PATH   "/cluster/home/willist/"
+#else
 #define OUTPUT_ROOT_PATH   "/home/willist/Documents/dnn/"
+#endif
 #define PATH_TO_NEURO_TRAJECTORY_FILE   OUTPUT_ROOT_PATH    "results/trajectory_neuro_" TASK_NAME ".txt"
 #define PATH_TO_NEURO_EVALUATION_FILE  OUTPUT_ROOT_PATH "results/evaluation_neuro_" TASK_NAME ".txt"
 #define PATH_TO_NEURO_POST_EVALUATION_FILE    OUTPUT_ROOT_PATH  "results/post_evaluation_neuro_" TASK_NAME ".txt"
