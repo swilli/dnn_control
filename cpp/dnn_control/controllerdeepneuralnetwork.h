@@ -2,7 +2,7 @@
 #define CONTROLLERDEEPNEURALNETWORK_H
 
 #include "controller.h"
-#include "feedforwardneuralnetwork.h"
+#include "simplerecurrentneuralnetwork.h"
 
 #include <boost/circular_buffer.hpp>
 
@@ -29,7 +29,7 @@ public:
 
 private:
     // The behaviour, implemented using a FFNN
-    FeedForwardNeuralNetwork neural_network_;
+    SimpleRecurrentNeuralNetwork neural_network_;
 
     boost::circular_buffer<double> state_action_history_;
 };

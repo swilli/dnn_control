@@ -9,7 +9,7 @@
  */
 
 // Task Name
-#define TASK_NAME   "task9"
+#define TASK_NAME   "task10"
 
 // Euler home or not
 #define ENABLE_EULER_HOME   true
@@ -20,7 +20,7 @@
 #define ER_NUM_ISLANDS  24
 //#define ER_SIMULATION_TIME  3.0 * 60.0 * 60.0
 #define ER_EVALUATIONS  10
-#define ER_NUM_HIDDEN_NODES 7
+#define ER_NUM_HIDDEN_NODES 6
 
 
 // Class hovering_problem configs
@@ -34,9 +34,9 @@
 #define HP_OBJ_FUN_METHOD_8     8   // Mean offset to optimal landing path.
 #define HP_OBJ_FUN_METHOD_9     9   // Mean distance to target point, target point set to position after the deep controller starts to work.
 
-#define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_9
+#define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_4
 
-#define HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME  10.0
+#define HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME  0.0
 #define HP_OBJ_FUN_COEF_DIVERGENCE  0.0001
 #define HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED    true
 
@@ -62,7 +62,7 @@
 #define PGMOS_IC_BODY_PROPORTIONAL_VELOCITY 4
 
 #define PGMOS_IC_VELOCITY_TYPE  PGMOS_IC_BODY_RANDOM_VELOCITY
-#define PGMOS_IC_POSITION_OFFSET_ENABLED    true
+#define PGMOS_IC_POSITION_OFFSET_ENABLED    false
 #define PGMOS_ENABLE_ODOMETRY   false
 #define PGMOS_ENABLE_OPTICAL_FLOW   true
 #define PGMOS_ENABLE_VELOCITY   false
@@ -74,10 +74,10 @@
 
 // Class ControllerNeuralNetwork configs
 #define CNN_ENABLE_STACKED_AUTOENCODER  true
-#define CNN_STACKED_AUTOENCODER_CONFIGURATION   "100_80_60_40_20_14_7_" TASK_NAME
+#define CNN_STACKED_AUTOENCODER_CONFIGURATION   "100_50_7_" TASK_NAME
 
 // Class SensorSimulatorPartialState configs
-#define SSPS_STANDARDIZE_SENSOR_VALUES    true
+#define SSPS_STANDARDIZE_SENSOR_VALUES    false
 #define SSPS_WITH_NOISE true
 
 

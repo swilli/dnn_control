@@ -45,10 +45,12 @@ StackedAutoencoder::StackedAutoencoder(const std::string &path_to_layer_configur
         const unsigned int dim_layer_output = weights.size();
         if (i == 0) {
             input_size_ = dim_layer_input;
-        } else if (i == (num_hidden_layers - 1)) {
-            output_size_ = dim_layer_output;
         }
-        layer_configurations.push_back(boost::make_tuple(dim_layer_output, true, NeuralNetwork::ActivationFunctionType::Sigmoid));
+        if (i == (num_hidden_layers - 1)) {
+            output_size_ = dim_layer_output;
+        } else {
+            layer_configurations.push_back(boost::make_tuple(dim_layer_output, true, NeuralNetwork::ActivationFunctionType::Sigmoid));
+        }
         for (unsigned int i = 0; i < dim_layer_output; ++i) {
             encoder_weights.push_back(bias.at(i));
             for (unsigned int j = 0; j < dim_layer_input; ++j) {
@@ -57,7 +59,7 @@ StackedAutoencoder::StackedAutoencoder(const std::string &path_to_layer_configur
         }
     }
 
-    neural_network_ = FeedForwardNeuralNetwork(input_size_, true, layer_configurations);
+    neural_network_ = FeedForwardNeuralNetwork(input_size_, true, output_size_, NeuralNetwork::ActivationFunctionType::Sigmoid, layer_configurations);
     neural_network_.SetWeights(encoder_weights);
 }
 

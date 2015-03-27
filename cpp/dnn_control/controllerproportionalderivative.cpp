@@ -8,12 +8,12 @@ const unsigned int ControllerProportionalDerivative::kDimensions = PGMOS_ENABLE_
 #endif
 
 ControllerProportionalDerivative::ControllerProportionalDerivative(const double &maximum_thrust)
-    : Controller(kDimensions, maximum_thrust), neural_network_(kDimensions, false, {boost::make_tuple(3, false, NeuralNetwork::ActivationFunctionType::Linear)}) {
+    : Controller(kDimensions, maximum_thrust), neural_network_(kDimensions, false, 3, NeuralNetwork::ActivationFunctionType::Linear, {}) {
     number_of_parameters_ = neural_network_.Size();
 }
 
 ControllerProportionalDerivative::ControllerProportionalDerivative(const double &maximum_thrust, const std::vector<double> &pd_coefficients)
-    : Controller(kDimensions, maximum_thrust), neural_network_(kDimensions, false, {boost::make_tuple(3, false, NeuralNetwork::ActivationFunctionType::Linear)}) {
+    : Controller(kDimensions, maximum_thrust), neural_network_(kDimensions, false, 3, NeuralNetwork::ActivationFunctionType::Linear, {}) {
     number_of_parameters_ = neural_network_.Size();
     SetCoefficients(pd_coefficients);
 }

@@ -12,7 +12,7 @@ class FeedForwardNeuralNetwork : public NeuralNetwork {
 public:
     FeedForwardNeuralNetwork();
 
-    FeedForwardNeuralNetwork(const unsigned int &dimension_input_layer, const bool &input_layer_enable_bias, const std::vector<boost::tuple<unsigned int, bool, ActivationFunctionType> > &layer_configurations);
+    FeedForwardNeuralNetwork(const unsigned int &dimension_input_layer, const bool &input_layer_enable_bias, const unsigned int &dimension_output_layer, const ActivationFunctionType &output_layer_activation, const std::vector<boost::tuple<unsigned int, bool, ActivationFunctionType> > &layer_configurations);
 
     // Evaluate input data by a forward pass through the network
     virtual std::vector<double> Evaluate(const std::vector<double> &input);
@@ -20,12 +20,22 @@ public:
     // Change the FFNN output by changing its weights
     virtual void SetWeights(const std::vector<double> &weights);
 
+    unsigned int InputDimension() const;
+
+    unsigned int OutputDimension() const;
+
 private:
     // The input size
     unsigned int dimension_input_layer_;
 
     // Bias at input layer
     bool input_layer_enable_bias_;
+
+    // The output size
+    unsigned int dimension_output_layer_;
+
+    // Activation at output
+    ActivationFunctionType output_layer_activation_;
 
     // The layer configurations specified by (bias_enabled, dimension)
     std::vector<boost::tuple<unsigned int, bool, ActivationFunctionType> > layer_configurations_;

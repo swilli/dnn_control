@@ -11,15 +11,13 @@ const unsigned int ControllerDeepNeuralNetwork::kDimensions = PGMOS_ENABLE_OPTIC
 static StackedAutoencoder kStackedAutoencoder(PATH_TO_AUTOENCODER_LAYER_CONFIGURATION);
 
 ControllerDeepNeuralNetwork::ControllerDeepNeuralNetwork(const double &maximum_thrust, const unsigned int &num_hidden)
-    : Controller(kDimensions, maximum_thrust), neural_network_(kStackedAutoencoder.OutputSize(), true, {boost::make_tuple(num_hidden, true, NeuralNetwork::ActivationFunctionType::Sigmoid),
-                                                               boost::make_tuple(3, false, NeuralNetwork::ActivationFunctionType::Linear)}) {
+    : Controller(kDimensions, maximum_thrust), neural_network_(kDimensions, true, num_hidden, true, NeuralNetwork::ActivationFunctionType::Sigmoid, 3, NeuralNetwork::ActivationFunctionType::Linear) {
     number_of_parameters_ = neural_network_.Size();
     state_action_history_ = boost::circular_buffer<double>(kStackedAutoencoder.InputSize());
 }
 
 ControllerDeepNeuralNetwork::ControllerDeepNeuralNetwork(const double &maximum_thrust, const unsigned int &num_hidden, const std::vector<double> &weights)
-    : Controller(kDimensions, maximum_thrust), neural_network_(kStackedAutoencoder.OutputSize(), true, {boost::make_tuple(num_hidden, true, NeuralNetwork::ActivationFunctionType::Sigmoid),
-                                                               boost::make_tuple(3, false, NeuralNetwork::ActivationFunctionType::Linear)}) {
+    : Controller(kDimensions, maximum_thrust), neural_network_(kDimensions, true, num_hidden, true, NeuralNetwork::ActivationFunctionType::Sigmoid, 3, NeuralNetwork::ActivationFunctionType::Linear) {
     number_of_parameters_ = neural_network_.Size();
     SetWeights(weights);
 }
@@ -34,8 +32,9 @@ void ControllerDeepNeuralNetwork::SetWeights(const std::vector<double> &weights)
 
 
 Vector3D ControllerDeepNeuralNetwork::GetThrustForSensorData(const std::vector<double> &sensor_data) {
-    std::vector<double> unboxed_thrust;
+    std::vector<double> unboxed_thrust = neural_network_.Evaluate(sensor_data);
 
+    /*
     if (state_action_history_.size() < kStackedAutoencoder.InputSize()) {
         unboxed_thrust = {0.0, 0.0, 0.0};
     } else {
@@ -46,6 +45,7 @@ Vector3D ControllerDeepNeuralNetwork::GetThrustForSensorData(const std::vector<d
         }
         unboxed_thrust = neural_network_.Evaluate(compressed_state);
     }
+    */
 
     Vector3D thrust;
     for (unsigned int i = 0; i < 3; ++i) {
@@ -58,6 +58,7 @@ Vector3D ControllerDeepNeuralNetwork::GetThrustForSensorData(const std::vector<d
         thrust[i] = t;
     }
 
+    /*
     for (unsigned int i = 0; i < sensor_data.size(); ++i) {
         state_action_history_.push_back(sensor_data.at(i));
     }
@@ -65,6 +66,7 @@ Vector3D ControllerDeepNeuralNetwork::GetThrustForSensorData(const std::vector<d
         const double ranged_thrust = (thrust[i] / maximum_thrust_ * 0.5) + 0.5;
         state_action_history_.push_back(ranged_thrust);
     }
+    */
 
     return thrust;
 }
