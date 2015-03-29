@@ -3,6 +3,7 @@
 
 #include "controller.h"
 #include "simplerecurrentneuralnetwork.h"
+#include "stackedautoencoder.h"
 
 #include <boost/circular_buffer.hpp>
 
@@ -28,7 +29,10 @@ public:
 
 
 private:
-    // The behaviour, implemented using a FFNN
+    // The compression, linearization layer
+    static StackedAutoencoder stacked_autoencoder_;
+
+    // The behaviour, implemented using a SRNN
     SimpleRecurrentNeuralNetwork neural_network_;
 
     boost::circular_buffer<double> state_action_history_;

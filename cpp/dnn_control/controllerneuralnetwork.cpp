@@ -2,6 +2,8 @@
 #include "constants.h"
 #include "configuration.h"
 
+#include "samplefactory.h"
+
 #if PGMOS_ENABLE_ODOMETRY
 const unsigned int ControllerNeuralNetwork::kDimensions = 6;
 #else
@@ -27,6 +29,7 @@ void ControllerNeuralNetwork::SetWeights(const std::vector<double> &weights) {
     }
 }
 
+static SampleFactory sf(rand());
 Vector3D ControllerNeuralNetwork::GetThrustForSensorData(const std::vector<double> &sensor_data) {
     const std::vector<double> unboxed_thrust = neural_network_.Evaluate(sensor_data);
     Vector3D thrust;
@@ -38,6 +41,10 @@ Vector3D ControllerNeuralNetwork::GetThrustForSensorData(const std::vector<doubl
             t = -maximum_thrust_;
         }
         thrust[i] = t;
+    }
+
+    for (unsigned int i = 0; i < 3; ++i) {
+        thrust[i] = sf.SampleUniform(-maximum_thrust_, maximum_thrust_);
     }
     return thrust;
 }

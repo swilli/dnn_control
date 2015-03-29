@@ -28,6 +28,12 @@ StackedAutoencoder::StackedAutoencoder(const std::string &path_to_layer_configur
         }
     }
 
+    if (file_paths.size() == 0) {
+        input_size_ = 0;
+        output_size_ = 0;
+        return;
+    }
+
     std::sort(file_paths.begin(), file_paths.end());
 
     input_size_ = 0;

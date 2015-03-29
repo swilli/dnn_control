@@ -12,10 +12,13 @@
 int main(int argc, char *argv[]) {
     srand(time(0));
 
-    TestNeuralNetworkController(1);
-    return 0;
+    //TestNeuralNetworkController(1);
+    //return 0;
 
     //TrainNeuralNetworkController();
     //return 0;
+
+    SensorDataGenerator generator(PATH_TO_SENSOR_DATA_FOLDER, 240.0);
+    generator.Generate(15000, rand());
 }
 
