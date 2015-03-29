@@ -12,8 +12,8 @@ import sys
 
 path_suffix = "task10"
 
-training_path = "/home/willist/Documents/dnn/data/raw/"
-testing_path = "/home/willist/Documents/dnn/data/raw/"
+training_path = "/home/willist/Documents/dnn/data/training/"
+testing_path = "/home/willist/Documents/dnn/data/testing/"
 
 result_path = "/home/willist/Documents/dnn/autoencoder/"
 autoencoder_weights_path = "/home/willist/Documents/dnn/autoencoder/"
