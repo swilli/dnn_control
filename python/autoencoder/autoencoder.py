@@ -76,8 +76,10 @@ class Autoencoder(object):
             return T.dot(hidden, self.W_prime) + self.b_prime
 
     def get_corrupted_input(self, input, corruption_level):
-        return self.theano_rng.binomial(size=input.shape, n=1, p=1.0 - corruption_level) * input
-        #return input + input * self.theano_rng.normal(size=input.shape, avg=0.0, std=corruption_level)
+        import theano
+
+        # return self.theano_rng.binomial(size=input.shape, n=1, p=1.0 - corruption_level, dtype=theano.config.floatX) * input
+        return input + input * self.theano_rng.normal(size=input.shape, avg=0.0, std=corruption_level, dtype=theano.config.floatX)
 
     def get_cost_updates(self, corruption_level, learning_rate):
         tilde_x = self.get_corrupted_input(self.x, corruption_level)

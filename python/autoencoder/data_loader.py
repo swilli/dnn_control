@@ -1,12 +1,12 @@
 def shared_dataset(data, borrow=True, name=None):
-    from theano import shared
-    from theano import config as theano_config
+    import theano
     from numpy import asarray
 
     if name is None:
-        shared_data = shared(asarray(data, dtype=theano_config.floatX), borrow=borrow)
+        shared_data = theano.shared(asarray(data, dtype=theano.config.floatX), borrow=borrow)
     else:
-        shared_data = shared(asarray(data, dtype=theano_config.floatX), borrow=borrow, name=name)
+        shared_data = theano.shared(asarray(data, dtype=theano.config.floatX), borrow=borrow, name=name)
+
     return shared_data
 
 
@@ -77,10 +77,6 @@ def load_data_set(file_paths, num_samples_per_file, history_length):
         total_states = total_states + [states]
         total_actions = total_actions + [actions]
 
-    #print '... normalizing data'
-    #total_states = normalize(total_states)
-    #total_actions = normalize(total_actions)
-
     print '... historifying and labelling data'
     state_action_pairs_with_history_set, labels_set = historify_and_label(total_states, total_actions, history_length)
 
@@ -95,7 +91,7 @@ def load_data_set(file_paths, num_samples_per_file, history_length):
 
 def load_sensor_files(training_data_path, testing_data_path,
                       num_training_samples=1000000,
-                      num_training_samples_per_file=600,
+                      num_training_samples_per_file=100,
                       num_test_samples=10000,
                       num_test_samples_per_file=10,
                       shared=True,
@@ -108,7 +104,7 @@ def load_sensor_files(training_data_path, testing_data_path,
 
 
     file_names = listdir(training_data_path)
-    file_names = [name for name in file_names if "trajectory" not in name]
+    file_names = [name for name in file_names if "sensor_stream" in name]
     num_training_files = min([len(file_names), max([1, num_training_samples / num_training_samples_per_file])])
     training_file_names = sample(file_names, num_training_files)
     shuffle(training_file_names)
