@@ -12,7 +12,7 @@
 #define TASK_NAME   "task10"
 
 // Euler home or not
-#define ENABLE_EULER_HOME   true
+#define ENABLE_EULER_HOME   false
 
 // Evolutionary Robotics configs
 #define ER_NUM_GENERATIONS  1000
@@ -78,11 +78,11 @@
 
 // Class SensorSimulatorPartialState configs
 #define SSPS_STANDARDIZE_SENSOR_VALUES    false
-#define SSPS_WITH_NOISE true
+#define SSPS_WITH_NOISE false
 
 
 // Class SensorSimulatorFullState configs
-#define SSFS_WITH_NOISE true
+#define SSFS_WITH_NOISE false
 
 
 // Least Squares Policy Robotics configs

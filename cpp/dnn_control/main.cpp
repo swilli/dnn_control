@@ -12,10 +12,10 @@
 int main(int argc, char *argv[]) {
     srand(time(0));
 
-    //TestNeuralNetworkController(0);
-    //return 0;
-
-    TrainNeuralNetworkController();
+    TestNeuralNetworkController(1);
     return 0;
+
+    //TrainNeuralNetworkController();
+    //return 0;
 }
 
