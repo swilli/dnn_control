@@ -186,6 +186,60 @@ class StackedAutoencoder(object):
 
         return train_fn, valid_score
 
+    def finetune_functions_unsupervised(self, training_set, test_set, batch_size, learning_rate):
+        index = T.lscalar('index')  # index to a [mini]batch
+
+        # compute number of minibatches for training, validation and testing
+        n_valid_batches = test_set.get_value(borrow=True).shape[0]
+        n_valid_batches /= batch_size
+
+        params = []
+
+        z = self.autoencoder_layers[0].get_corrupted_input(self.x, 0.05)
+        for dA in self.autoencoder_layers:
+            params.extend(dA.params)
+            z = dA.get_hidden_values(z)
+
+        for dA in self.autoencoder_layers[::-1]:
+            z = dA.get_reconstructed_input(z)
+
+        cost = T.mean(T.sum((z - self.x)**2, axis=1))
+
+        # compute the gradients with respect to the model parameters
+        gparams = T.grad(cost, params)
+
+        # compute list of fine-tuning updates
+        updates = [(param, param - gparam * learning_rate) for param, gparam in zip(params, gparams)]
+
+        train_fn = theano.function(
+            inputs=[index],
+            outputs=cost,
+            updates=updates,
+            givens={
+                self.x: training_set[
+                    index * batch_size: (index + 1) * batch_size
+                ]
+            },
+            name='train'
+        )
+
+        valid_score_i = theano.function(
+            inputs=[index],
+            outputs=cost,
+            givens={
+                self.x: test_set[
+                    index * batch_size: (index + 1) * batch_size
+                ]
+            },
+            name='valid'
+        )
+
+        # Create a function that scans the entire validation set
+        def valid_score():
+            return [valid_score_i(i) for i in xrange(n_valid_batches)]
+
+        return train_fn, valid_score
+
     def compress(self, data):
         from numpy import array
 

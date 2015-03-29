@@ -10,7 +10,7 @@ from random import sample
 import time
 import sys
 
-path_suffix = "task10"
+path_suffix = "supervised"
 
 training_path = "/home/willist/Documents/dnn/data/training/"
 testing_path = "/home/willist/Documents/dnn/data/testing/"
@@ -19,7 +19,7 @@ result_path = "/home/willist/Documents/dnn/autoencoder/"
 autoencoder_weights_path = "/home/willist/Documents/dnn/autoencoder/"
 
 num_training_samples = 1000000
-num_training_samples_per_file = 150
+num_training_samples_per_file = 200
 num_test_samples = 10000
 num_test_samples_per_file = 50
 history_length = 10
@@ -76,12 +76,17 @@ pretraining_fns = stacked_autoencoder.pretraining_functions(training_set=trainin
 
 if ENABLE_FINE_TUNING:
     print '... getting the fine-tune function'
-    finetune_fn, validate_model = stacked_autoencoder.finetune_functions(training_set=training_set,
+    '''finetune_fn, validate_model = stacked_autoencoder.finetune_functions(training_set=training_set,
                                                                          training_labels=training_labels,
                                                                          test_set=test_set,
                                                                          test_labels=test_labels,
                                                                          batch_size=batch_size,
                                                                          learning_rate=fine_tune_learning_rate)
+                                                                         '''
+    finetune_fn, validate_model = stacked_autoencoder.finetune_functions_unsupervised(training_set=training_set,
+                                                                                      test_set=test_set,
+                                                                                      batch_size=batch_size,
+                                                                                      learning_rate=fine_tune_learning_rate)
 
 
 print '... pre-training the model'
