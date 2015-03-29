@@ -98,25 +98,25 @@ def load_sensor_files(training_data_path, testing_data_path,
                       history_length=3):
 
     from os import listdir
+    from os.path import isdir
     from random import sample
     from random import shuffle
     from numpy import array
 
-
     file_names = listdir(training_data_path)
-    file_names = [name for name in file_names if "sensor_stream" in name]
-    num_training_files = min([len(file_names), max([1, num_training_samples / num_training_samples_per_file])])
-    training_file_names = sample(file_names, num_training_files)
-    shuffle(training_file_names)
+    training_file_paths = [training_data_path + name for name in file_names]
+    training_file_paths = [path for path in training_file_paths if not (isdir(path) or "trajectory" in path)]
+    num_training_files = min([len(training_file_paths), max([1, num_training_samples / num_training_samples_per_file])])
+    training_file_paths = sample(training_file_paths, num_training_files)
+    shuffle(training_file_paths)
 
     file_names = listdir(testing_data_path)
-    file_names = [name for name in file_names if "trajectory" not in name]
-    num_test_files = min([len(file_names), max([1, num_test_samples / num_test_samples_per_file])])
-    test_file_names = sample(file_names, num_test_files)
-    shuffle(test_file_names)
+    test_file_paths = [testing_data_path + name for name in file_names]
+    test_file_paths = [path for path in test_file_paths if not (isdir(path) or "trajectory" in path)]
+    num_test_files = min([len(test_file_paths), max([1, num_test_samples / num_test_samples_per_file])])
+    test_file_paths = sample(test_file_paths, num_test_files)
+    shuffle(test_file_paths)
 
-    training_file_paths = [training_data_path + name for name in training_file_names]
-    test_file_paths = [testing_data_path + name for name in test_file_names]
 
     print("Loading training data")
     training_data, training_labels = load_data_set(training_file_paths, num_training_samples_per_file, history_length)
