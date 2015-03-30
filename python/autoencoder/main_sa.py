@@ -28,7 +28,7 @@ batch_size = 1
 pretraining_epochs = 2
 
 ENABLE_FINE_TUNING = True
-fine_tune_learning_rate = 0.00005
+fine_tune_learning_rate = 0.00001
 fine_tune_epochs = 450
 
 hidden_layer_sizes = [100, 50, 7]
