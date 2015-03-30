@@ -31,7 +31,7 @@ void ControllerDeepNeuralNetwork::SetWeights(const std::vector<double> &weights)
 }
 
 Vector3D ControllerDeepNeuralNetwork::GetThrustForSensorData(const std::vector<double> &sensor_data) {
-    std::vector<double> unboxed_thrust = neural_network_.Evaluate(sensor_data);
+    std::vector<double> unboxed_thrust;
 
     if (state_action_history_.size() < stacked_autoencoder_.InputSize()) {
         unboxed_thrust = {0.0, 0.0, 0.0};
@@ -39,7 +39,7 @@ Vector3D ControllerDeepNeuralNetwork::GetThrustForSensorData(const std::vector<d
         const std::vector<double> state_actions(state_action_history_.begin(), state_action_history_.end());
         std::vector<double> compressed_state = stacked_autoencoder_.Compress(state_actions);
         for (unsigned int i = 0; i < compressed_state.size(); ++i) {
-            compressed_state[i] *= 1000.0;
+            compressed_state[i] *= 1.0;
         }
         unboxed_thrust = neural_network_.Evaluate(compressed_state);
     }

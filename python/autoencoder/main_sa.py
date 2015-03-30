@@ -10,7 +10,7 @@ from random import sample
 import time
 import sys
 
-path_suffix = "supervised"
+path_suffix = "task13"
 
 training_path = "/home/willist/Documents/dnn/data/training/"
 testing_path = "/home/willist/Documents/dnn/data/testing/"
@@ -19,16 +19,16 @@ result_path = "/home/willist/Documents/dnn/autoencoder/"
 autoencoder_weights_path = "/home/willist/Documents/dnn/autoencoder/"
 
 num_training_samples = 1000000
-num_training_samples_per_file = 200
+num_training_samples_per_file = 150
 num_test_samples = 10000
 num_test_samples_per_file = 50
 history_length = 10
 batch_size = 1
 
-pretraining_epochs = 30
+pretraining_epochs = 2
 
 ENABLE_FINE_TUNING = True
-fine_tune_learning_rate = 0.0005
+fine_tune_learning_rate = 0.00005
 fine_tune_epochs = 450
 
 hidden_layer_sizes = [100, 50, 7]
