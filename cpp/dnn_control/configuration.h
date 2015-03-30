@@ -9,7 +9,7 @@
  */
 
 // Task Name
-#define TASK_NAME   "master"
+#define TASK_NAME   "task12"
 
 // Euler home or not
 #define ENABLE_EULER_HOME   false
@@ -20,7 +20,7 @@
 #define ER_NUM_ISLANDS  24
 //#define ER_SIMULATION_TIME  3.0 * 60.0 * 60.0
 #define ER_EVALUATIONS  10
-#define ER_NUM_HIDDEN_NODES 6
+#define ER_NUM_HIDDEN_NODES 7
 
 
 // Class hovering_problem configs
@@ -34,7 +34,7 @@
 #define HP_OBJ_FUN_METHOD_8     8   // Mean offset to optimal landing path.
 #define HP_OBJ_FUN_METHOD_9     9   // Mean distance to target point, target point set to position after the deep controller starts to work.
 
-#define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_4
+#define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_9
 
 #define HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME  0.0
 #define HP_OBJ_FUN_COEF_DIVERGENCE  0.0001
@@ -61,23 +61,23 @@
 #define PGMOS_IC_BODY_RANDOM_VELOCITY        3
 #define PGMOS_IC_BODY_PROPORTIONAL_VELOCITY 4
 
-#define PGMOS_IC_VELOCITY_TYPE  PGMOS_IC_BODY_ZERO_VELOCITY
+#define PGMOS_IC_VELOCITY_TYPE  PGMOS_IC_BODY_RANDOM_VELOCITY
 #define PGMOS_IC_POSITION_OFFSET_ENABLED    false
-#define PGMOS_ENABLE_ODOMETRY   true
+#define PGMOS_ENABLE_ODOMETRY   false
 #define PGMOS_ENABLE_OPTICAL_FLOW   true
 #define PGMOS_ENABLE_VELOCITY   false
 #define PGMOS_ENABLE_VELOCITY_OVER_HEIGHT   false
 #define PGMOS_ENABLE_DIRECTION_SENSOR   false
 #define PGMOS_ENABLE_ACCELEROMETER  false
-#define PGMOS_ENABLE_SENSOR_DATA_RECORDING  true
+#define PGMOS_ENABLE_SENSOR_DATA_RECORDING  false
 
 
 // Class ControllerNeuralNetwork configs
-#define CNN_ENABLE_STACKED_AUTOENCODER  false
-#define CNN_STACKED_AUTOENCODER_CONFIGURATION   "" TASK_NAME
+#define CNN_ENABLE_STACKED_AUTOENCODER  true
+#define CNN_STACKED_AUTOENCODER_CONFIGURATION   "100_50_7"
 
 // Class SensorSimulatorPartialState configs
-#define SSPS_STANDARDIZE_SENSOR_VALUES    false
+#define SSPS_STANDARDIZE_SENSOR_VALUES    true
 #define SSPS_WITH_NOISE false
 
 
@@ -123,7 +123,7 @@
 #define PATH_TO_LSPI_WEIGHT_VECTOR_FILE OUTPUT_ROOT_PATH "results/lspi_weights.txt"
 #define PATH_TO_COMPARISON_POST_EVALUATION_FILE     OUTPUT_ROOT_PATH "results/post_evaluation_comparison.txt"
 #define PATH_TO_SENSOR_DATA_FOLDER  OUTPUT_ROOT_PATH    "data/raw/"
-#define PATH_TO_AUTOENCODER_LAYER_CONFIGURATION OUTPUT_ROOT_PATH "autoencoder/conf_" CNN_STACKED_AUTOENCODER_CONFIGURATION "/"
+#define PATH_TO_AUTOENCODER_LAYER_CONFIGURATION OUTPUT_ROOT_PATH "autoencoder/conf_" CNN_STACKED_AUTOENCODER_CONFIGURATION "_" TASK_NAME "/"
 
 #ifdef HP_FIXED_SEED
 #undef ER_EVALUATIONS
