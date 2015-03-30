@@ -10,13 +10,13 @@ const unsigned int ControllerDeepNeuralNetwork::kDimensions = PGMOS_ENABLE_OPTIC
 StackedAutoencoder ControllerDeepNeuralNetwork::stacked_autoencoder_ = StackedAutoencoder(PATH_TO_AUTOENCODER_LAYER_CONFIGURATION);
 
 ControllerDeepNeuralNetwork::ControllerDeepNeuralNetwork(const double &maximum_thrust, const unsigned int &num_hidden)
-    : Controller(kDimensions, maximum_thrust), neural_network_(kDimensions, true, num_hidden, true, NeuralNetwork::ActivationFunctionType::Sigmoid, 3, NeuralNetwork::ActivationFunctionType::Linear) {
+    : Controller(kDimensions, maximum_thrust), neural_network_(stacked_autoencoder_.OutputSize(), true, num_hidden, true, NeuralNetwork::ActivationFunctionType::Sigmoid, 3, NeuralNetwork::ActivationFunctionType::Linear) {
     number_of_parameters_ = neural_network_.Size();
     state_action_history_ = boost::circular_buffer<double>(stacked_autoencoder_.InputSize());
 }
 
 ControllerDeepNeuralNetwork::ControllerDeepNeuralNetwork(const double &maximum_thrust, const unsigned int &num_hidden, const std::vector<double> &weights)
-    : Controller(kDimensions, maximum_thrust), neural_network_(kDimensions, true, num_hidden, true, NeuralNetwork::ActivationFunctionType::Sigmoid, 3, NeuralNetwork::ActivationFunctionType::Linear) {
+    : Controller(kDimensions, maximum_thrust), neural_network_(stacked_autoencoder_.OutputSize(), true, num_hidden, true, NeuralNetwork::ActivationFunctionType::Sigmoid, 3, NeuralNetwork::ActivationFunctionType::Linear) {
     number_of_parameters_ = neural_network_.Size();
     state_action_history_ = boost::circular_buffer<double>(stacked_autoencoder_.InputSize());
     SetWeights(weights);
