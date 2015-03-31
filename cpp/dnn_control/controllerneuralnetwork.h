@@ -12,11 +12,8 @@ class ControllerNeuralNetwork : public Controller {
     * The Neural Network controller is implemented using a FFNN with one hidden layer and a sigmoid activation function.
     */
 public:
-    // The number of input dimensions the controller works with
-    static const unsigned int kDimensions;
-
-    ControllerNeuralNetwork(const double &maximum_thrust, const unsigned int &num_hidden);
-    ControllerNeuralNetwork(const double &maximum_thrust, const unsigned int &num_hidden, const std::vector<double> &weights);
+    ControllerNeuralNetwork(const unsigned int &input_dimensions, const double &maximum_thrust, const unsigned int &num_hidden);
+    ControllerNeuralNetwork(const unsigned int &input_dimensions, const double &maximum_thrust, const unsigned int &num_hidden, const std::vector<double> &weights);
 
 
     // thrust = F(sensor_data), whereas F is a FFNN

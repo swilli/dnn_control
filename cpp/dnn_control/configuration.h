@@ -9,7 +9,7 @@
  */
 
 // Task Name
-#define TASK_NAME   "task12"
+#define TASK_NAME   "master"
 
 // Euler home or not
 #define ENABLE_EULER_HOME   false
@@ -20,7 +20,7 @@
 #define ER_NUM_ISLANDS  24
 //#define ER_SIMULATION_TIME  3.0 * 60.0 * 60.0
 #define ER_EVALUATIONS  10
-#define ER_NUM_HIDDEN_NODES 7
+#define ER_NUM_HIDDEN_NODES 6
 
 
 // Class hovering_problem configs
@@ -34,9 +34,9 @@
 #define HP_OBJ_FUN_METHOD_8     8   // Mean offset to optimal landing path.
 #define HP_OBJ_FUN_METHOD_9     9   // Mean distance to target point, target point set to position after the deep controller starts to work.
 
-#define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_9
+#define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_3
 
-#define HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME  0.0
+#define HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME  150.0
 #define HP_OBJ_FUN_COEF_DIVERGENCE  0.0001
 #define HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED    true
 
@@ -51,7 +51,7 @@
 
 
 // Class ODESystem configs
-#define ODES_FUEL_ENABLED   true
+#define ENABLE_ODES_FUEL   true
 
 
 // Class PaGMOSimulation configs
@@ -61,28 +61,24 @@
 #define PGMOS_IC_BODY_RANDOM_VELOCITY        3
 #define PGMOS_IC_BODY_PROPORTIONAL_VELOCITY 4
 
-#define PGMOS_IC_VELOCITY_TYPE  PGMOS_IC_BODY_RANDOM_VELOCITY
-#define PGMOS_IC_POSITION_OFFSET_ENABLED    false
-#define PGMOS_ENABLE_ODOMETRY   false
-#define PGMOS_ENABLE_OPTICAL_FLOW   true
+#define PGMOS_IC_VELOCITY_TYPE  PGMOS_IC_INERTIAL_ORBITAL_VELOCITY
+#define PGMOS_IC_ENABLE_POSITION_OFFSET    false
+#define PGMOS_ENABLE_RELATIVE_POSITION  false
 #define PGMOS_ENABLE_VELOCITY   false
-#define PGMOS_ENABLE_VELOCITY_OVER_HEIGHT   false
-#define PGMOS_ENABLE_DIRECTION_SENSOR   false
+#define PGMOS_ENABLE_OPTICAL_FLOW   false
 #define PGMOS_ENABLE_ACCELEROMETER  false
-#define PGMOS_ENABLE_SENSOR_DATA_RECORDING  false
+#define PGMOS_ENABLE_NOISE false
+#define PGMOS_STANDARDIZE_SENSOR_VALUES    false
+#define PGMOS_ENABLE_SENSOR_DATA_RECORDING  true
 
 
 // Class ControllerNeuralNetwork configs
-#define CNN_ENABLE_STACKED_AUTOENCODER  true
+#define CNN_ENABLE_STACKED_AUTOENCODER  false
 #define CNN_STACKED_AUTOENCODER_CONFIGURATION   "100_50_7"
 
 // Class SensorSimulatorPartialState configs
-#define SSPS_STANDARDIZE_SENSOR_VALUES    true
-#define SSPS_WITH_NOISE false
 
 
-// Class SensorSimulatorFullState configs
-#define SSFS_WITH_NOISE false
 
 
 // Least Squares Policy Robotics configs
@@ -130,18 +126,6 @@
 #define ER_EVALUATIONS  1
 #endif
 
-#if PGMOS_ENABLE_ODOMETRY == false
-#undef PGMOS_IC_POSITION_OFFSET_ENABLED
-#define PGMOS_IC_POSITION_OFFSET_ENABLED false
-#endif
-
-#if HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_8
-#undef PGMOS_IC_POSITION_OFFSET_ENABLED
-#define PGMOS_IC_POSITION_OFFSET_ENABLED false
-#undef HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME
-#define HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME 0.0
-#endif
-
 static inline std::string ToString(const bool &value) {
     return (value ? "true" : "false");
 }
@@ -170,20 +154,17 @@ inline void ConfigurationPaGMO() {
     std::cout << "HP_OBJ_FUN_COEF_DIVERGENCE   " << HP_OBJ_FUN_COEF_DIVERGENCE << std::endl;
     std::cout << "HP_POST_EVALUATION_METHOD   " << HP_POST_EVALUATION_METHOD << std::endl;
     std::cout << "PGMOS_IC_VELOCITY_TYPE   " << PGMOS_IC_VELOCITY_TYPE << std::endl;
-    std::cout << "PGMOS_IC_POSITION_OFFSET_ENABLED   " << ToString(PGMOS_IC_POSITION_OFFSET_ENABLED) << std::endl;
-    std::cout << "PGMOS_ENABLE_ODOMETRY   " << ToString(PGMOS_ENABLE_ODOMETRY) << std::endl;
-    std::cout << "PGMOS_ENABLE_OPTICAL_FLOW   " << ToString(PGMOS_ENABLE_OPTICAL_FLOW) << std::endl;
-    std::cout << "PGMOS_ENABLE_DIRECTION_SENSOR   " << ToString(PGMOS_ENABLE_DIRECTION_SENSOR) << std::endl;
-    std::cout << "PGMOS_ENABLE_ACCELEROMETER   " << ToString(PGMOS_ENABLE_ACCELEROMETER) << std::endl;
+    std::cout << "PGMOS_IC_ENABLE_POSITION_OFFSET   " << ToString(PGMOS_IC_ENABLE_POSITION_OFFSET) << std::endl;
+    std::cout << "PGMOS_ENABLE_RELATIVE_POSITION   " << ToString(PGMOS_ENABLE_RELATIVE_POSITION) << std::endl;
     std::cout << "PGMOS_ENABLE_VELOCITY   " << ToString(PGMOS_ENABLE_VELOCITY) << std::endl;
-    std::cout << "PGMOS_ENABLE_VELOCITY_OVER_HEIGHT   " << ToString(PGMOS_ENABLE_VELOCITY_OVER_HEIGHT) << std::endl;
+    std::cout << "PGMOS_ENABLE_OPTICAL_FLOW   " << ToString(PGMOS_ENABLE_OPTICAL_FLOW) << std::endl;
+    std::cout << "PGMOS_ENABLE_ACCELEROMETER   " << ToString(PGMOS_ENABLE_ACCELEROMETER) << std::endl;
+    std::cout << "PGMOS_ENABLE_NOISE   " << ToString(PGMOS_ENABLE_NOISE) << std::endl;
+    std::cout << "PGMOS_STANDARDIZE_SENSOR_VALUES   " << ToString(PGMOS_STANDARDIZE_SENSOR_VALUES) << std::endl;
     std::cout << "PGMOS_ENABLE_SENSOR_DATA_RECORDING   " << ToString(PGMOS_ENABLE_SENSOR_DATA_RECORDING) << std::endl;
-    std::cout << "ODES_FUEL_ENABLED   " << ToString(ODES_FUEL_ENABLED) << std::endl;
+    std::cout << "ENABLE_ODES_FUEL   " << ToString(ENABLE_ODES_FUEL) << std::endl;
     std::cout << "CNN_ENABLE_STACKED_AUTOENCODER   " << ToString(CNN_ENABLE_STACKED_AUTOENCODER) << std::endl;
     std::cout << "CNN_STACKED_AUTOENCODER_CONFIGURATION   " << CNN_STACKED_AUTOENCODER_CONFIGURATION << std::endl;
-    std::cout << "SSPS_WITH_NOISE   " << ToString(SSPS_WITH_NOISE) << std::endl;
-    std::cout << "SSPS_STANDARDIZE_SENSOR_VALUES   " << ToString(SSPS_STANDARDIZE_SENSOR_VALUES) << std::endl;
-    std::cout << "SSFS_WITH_NOISE   " << ToString(SSFS_WITH_NOISE) << std::endl;
     std::cout << std::endl;
 }
 

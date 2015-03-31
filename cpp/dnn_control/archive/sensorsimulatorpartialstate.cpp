@@ -1,7 +1,7 @@
 #include "sensorsimulatorpartialstate.h"
 #include "configuration.h"
 
-const unsigned int SensorSimulatorPartialState::kDimensions = PGMOS_ENABLE_OPTICAL_FLOW * 6 + PGMOS_ENABLE_VELOCITY * 3 + PGMOS_ENABLE_VELOCITY_OVER_HEIGHT * 3 + PGMOS_ENABLE_DIRECTION_SENSOR * 3 + PGMOS_ENABLE_ACCELEROMETER * 3;
+const unsigned int SensorSimulatorPartialState::kDimensions = PGMOS_ENABLE_RELATIVE_POSITION * 3 + PGMOS_ENABLE_VELOCITY * 3 + PGMOS_ENABLE_OPTICAL_FLOW * 6 + PGMOS_ENABLE_ACCELEROMETER * 3;
 
 SensorSimulatorPartialState::SensorSimulatorPartialState(SampleFactory &sample_factory, const Asteroid &asteroid)
     : SensorSimulator(kDimensions, sample_factory, asteroid) {

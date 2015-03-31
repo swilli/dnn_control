@@ -15,11 +15,8 @@ class ControllerDeepNeuralNetwork : public Controller {
     * In contrast to the standard neural network controller, this controller performs sensory compression and acts on the compressed sensor information.
     */
 public:
-    // The number of input dimensions the controller works with
-    static const unsigned int kDimensions;
-
-    ControllerDeepNeuralNetwork(const double &maximum_thrust, const unsigned int &num_hidden);
-    ControllerDeepNeuralNetwork(const double &maximum_thrust, const unsigned int &num_hidden, const std::vector<double> &weights);
+    ControllerDeepNeuralNetwork(const unsigned int &input_dimensions, const double &maximum_thrust, const unsigned int &num_hidden);
+    ControllerDeepNeuralNetwork(const unsigned int &input_dimensions, const double &maximum_thrust, const unsigned int &num_hidden, const std::vector<double> &weights);
 
     // thrust = F(sensor_data), whereas F is a FFNN
     virtual Vector3D GetThrustForSensorData(const std::vector<double> &sensor_data);

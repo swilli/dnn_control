@@ -6,18 +6,28 @@
 #include "samplefactory.h"
 
 #include <vector>
+#include <set>
+#include <map>
 
 class SensorSimulator {
     /*
-     * This abstract class generates the artificial sensor data required for a controller.
+     * This class generates the artificial sensor data for a controller.
      */
 public:
-    SensorSimulator(const unsigned int &dimensions, SampleFactory &sample_factory, const Asteroid &asteroid);
+    // The number of output dimensions the sensor simulator will generate
+    enum SensorType {
+        RelativePosition,
+        Velocity,
+        OpticalFlow,
+        Acceleration
+    };
 
-    virtual ~SensorSimulator();
+    const static std::map<SensorType, std::pair<unsigned int, double> > SensorTypeConfigurations;
+
+    SensorSimulator(SampleFactory &sample_factory, const Asteroid &asteroid, const std::set<SensorType> &sensor_types, const bool &enable_noise, const Vector3D &target_position={0.0, 0.0, 0.0}, const std::vector<std::pair<double, double> > &sensor_value_transformations={});
 
     // Generates (simulates) sensor data based on the current spacecraft state "state" and time "time"
-    virtual std::vector<double> Simulate(const SystemState &state, const Vector3D &height, const Vector3D &perturbations_acceleration, const double &time) = 0;
+    virtual std::vector<double> Simulate(const SystemState &state, const Vector3D &height, const Vector3D &perturbations_acceleration, const double &time);
 
     // The number of sensor data dimensions produced by the SensorSimulator
     unsigned int Dimensions() const;
@@ -29,6 +39,10 @@ public:
     static std::string SensorDataToString(const std::vector<double> &data);
 
 protected:
+    static double TransformValue(const double &sensor_value, const std::pair<double, double> &transformation_params);
+
+    double AddNoise(const double &sensor_value, const double &standard_deviation);
+
     // How large is the sensor data space
     unsigned int dimensions_;
 
@@ -38,8 +52,17 @@ protected:
     // The system's asteroid
     const Asteroid &asteroid_;
 
-    // The noise configuration for every sensor dimension
-    std::vector<double> noise_configurations_;
+    // The active sensor types
+    std::set<SensorType> sensor_types;
+
+    // Is noise enabled
+    bool noise_enabled_;
+
+    // The target position the spacecraft is supposed to hover over, if required.
+    Vector3D target_position_;
+
+    // Transform sensor variables. Allow two parameters
+    std::vector<std::pair<double, double> > sensor_value_transformations_;
 };
 
 #endif // SENSORSIMULATOR_H

@@ -1,22 +1,16 @@
 #include "controllerdeepneuralnetwork.h"
 #include "configuration.h"
 
-#if PGMOS_ENABLE_ODOMETRY
-const unsigned int ControllerDeepNeuralNetwork::kDimensions = 6;
-#else
-const unsigned int ControllerDeepNeuralNetwork::kDimensions = PGMOS_ENABLE_OPTICAL_FLOW * 6 + PGMOS_ENABLE_VELOCITY * 3 + PGMOS_ENABLE_VELOCITY_OVER_HEIGHT * 3 + PGMOS_ENABLE_DIRECTION_SENSOR * 3 + PGMOS_ENABLE_ACCELEROMETER * 3;
-#endif
-
 StackedAutoencoder ControllerDeepNeuralNetwork::stacked_autoencoder_ = StackedAutoencoder(PATH_TO_AUTOENCODER_LAYER_CONFIGURATION);
 
-ControllerDeepNeuralNetwork::ControllerDeepNeuralNetwork(const double &maximum_thrust, const unsigned int &num_hidden)
-    : Controller(kDimensions, maximum_thrust), neural_network_(stacked_autoencoder_.OutputSize(), true, num_hidden, true, NeuralNetwork::ActivationFunctionType::Sigmoid, 3, NeuralNetwork::ActivationFunctionType::Linear) {
+ControllerDeepNeuralNetwork::ControllerDeepNeuralNetwork(const unsigned int &input_dimensions, const double &maximum_thrust, const unsigned int &num_hidden)
+    : Controller(input_dimensions, maximum_thrust), neural_network_(stacked_autoencoder_.OutputSize(), true, num_hidden, true, NeuralNetwork::ActivationFunctionType::Sigmoid, 3, NeuralNetwork::ActivationFunctionType::Linear) {
     number_of_parameters_ = neural_network_.Size();
     state_action_history_ = boost::circular_buffer<double>(stacked_autoencoder_.InputSize());
 }
 
-ControllerDeepNeuralNetwork::ControllerDeepNeuralNetwork(const double &maximum_thrust, const unsigned int &num_hidden, const std::vector<double> &weights)
-    : Controller(kDimensions, maximum_thrust), neural_network_(stacked_autoencoder_.OutputSize(), true, num_hidden, true, NeuralNetwork::ActivationFunctionType::Sigmoid, 3, NeuralNetwork::ActivationFunctionType::Linear) {
+ControllerDeepNeuralNetwork::ControllerDeepNeuralNetwork(const unsigned int &input_dimensions, const double &maximum_thrust, const unsigned int &num_hidden, const std::vector<double> &weights)
+    : Controller(input_dimensions, maximum_thrust), neural_network_(stacked_autoencoder_.OutputSize(), true, num_hidden, true, NeuralNetwork::ActivationFunctionType::Sigmoid, 3, NeuralNetwork::ActivationFunctionType::Linear) {
     number_of_parameters_ = neural_network_.Size();
     state_action_history_ = boost::circular_buffer<double>(stacked_autoencoder_.InputSize());
     SetWeights(weights);

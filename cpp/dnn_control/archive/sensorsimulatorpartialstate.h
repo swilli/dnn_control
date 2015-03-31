@@ -19,9 +19,6 @@ public:
     // Generates (simulates) sensor data based on the current spacecraft state "state" and time "time"
     virtual std::vector<double> Simulate(const SystemState &state, const Vector3D &height, const Vector3D &perturbations_acceleration, const double &time);
 
-    // SensorSimulatorNeuralNetwork can throw the following exceptions
-    class RangeMalConfigurationException : public Exception {};
-
 private:
 
     static double Standardize(const double &sensor_value, const std::pair<double, double> &mean_std_values);

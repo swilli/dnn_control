@@ -1,4 +1,5 @@
 #include "stackedautoencoder.h"
+#include "configuration.h"
 
 #include <boost/iostreams/device/mapped_file.hpp>
 #include <boost/filesystem.hpp>
@@ -8,6 +9,13 @@
 
 StackedAutoencoder::StackedAutoencoder(const std::string &path_to_layer_configurations) {
     using namespace boost::filesystem;
+
+    input_size_ = 0;
+    output_size_ = 0;
+
+#if CNN_ENABLE_STACKED_AUTOENCODER == false
+    return;
+#endif
 
     const unsigned int num_files_per_layer = 4;
     const unsigned int num_supervised_layer_files = 2;
@@ -29,8 +37,6 @@ StackedAutoencoder::StackedAutoencoder(const std::string &path_to_layer_configur
     }
 
     if (file_paths.size() == 0) {
-        input_size_ = 0;
-        output_size_ = 0;
         return;
     }
 

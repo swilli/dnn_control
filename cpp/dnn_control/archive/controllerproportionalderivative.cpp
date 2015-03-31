@@ -1,16 +1,12 @@
 #include "controllerproportionalderivative.h"
-#include "configuration.h"
 
-const unsigned int ControllerProportionalDerivative::kDimensions = PGMOS_ENABLE_RELATIVE_POSITION * 3 + PGMOS_ENABLE_VELOCITY * 3 + PGMOS_ENABLE_OPTICAL_FLOW * 6 + PGMOS_ENABLE_ACCELEROMETER * 3;
-
-
-ControllerProportionalDerivative::ControllerProportionalDerivative(const double &maximum_thrust)
-    : Controller(kDimensions, maximum_thrust), neural_network_(kDimensions, false, 3, NeuralNetwork::ActivationFunctionType::Linear, {}) {
+ControllerProportionalDerivative::ControllerProportionalDerivative(const unsigned int &dim_input, const double &maximum_thrust)
+    : Controller(dim_input, maximum_thrust), neural_network_(dim_input, false, 3, NeuralNetwork::ActivationFunctionType::Linear, {}) {
     number_of_parameters_ = neural_network_.Size();
 }
 
-ControllerProportionalDerivative::ControllerProportionalDerivative(const double &maximum_thrust, const std::vector<double> &pd_coefficients)
-    : Controller(kDimensions, maximum_thrust), neural_network_(kDimensions, false, 3, NeuralNetwork::ActivationFunctionType::Linear, {}) {
+ControllerProportionalDerivative::ControllerProportionalDerivative(const unsigned int &dim_input, const double &maximum_thrust, const std::vector<double> &pd_coefficients)
+    : Controller(dim_input, maximum_thrust), neural_network_(dim_input, false, 3, NeuralNetwork::ActivationFunctionType::Linear, {}) {
     number_of_parameters_ = neural_network_.Size();
     SetCoefficients(pd_coefficients);
 }

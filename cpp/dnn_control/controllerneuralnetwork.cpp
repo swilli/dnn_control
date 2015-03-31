@@ -4,19 +4,13 @@
 
 #include "samplefactory.h"
 
-#if PGMOS_ENABLE_ODOMETRY
-const unsigned int ControllerNeuralNetwork::kDimensions = 6;
-#else
-const unsigned int ControllerNeuralNetwork::kDimensions = PGMOS_ENABLE_OPTICAL_FLOW * 6 + PGMOS_ENABLE_VELOCITY * 3 + PGMOS_ENABLE_VELOCITY_OVER_HEIGHT * 3 + PGMOS_ENABLE_DIRECTION_SENSOR * 3 + PGMOS_ENABLE_ACCELEROMETER * 3;
-#endif
-
-ControllerNeuralNetwork::ControllerNeuralNetwork(const double &maximum_thrust, const unsigned int &num_hidden)
-    : Controller(kDimensions, maximum_thrust), neural_network_(kDimensions, true, 3, NeuralNetwork::ActivationFunctionType::Linear, {boost::make_tuple(num_hidden, true, NeuralNetwork::ActivationFunctionType::Sigmoid)}) {
+ControllerNeuralNetwork::ControllerNeuralNetwork(const unsigned int &input_dimensions, const double &maximum_thrust, const unsigned int &num_hidden)
+    : Controller(input_dimensions, maximum_thrust), neural_network_(input_dimensions, true, 3, NeuralNetwork::ActivationFunctionType::Linear, {boost::make_tuple(num_hidden, true, NeuralNetwork::ActivationFunctionType::Sigmoid)}) {
     number_of_parameters_ = neural_network_.Size();
 }
 
-ControllerNeuralNetwork::ControllerNeuralNetwork(const double &maximum_thrust, const unsigned int &num_hidden, const std::vector<double> &weights)
-    : Controller(kDimensions, maximum_thrust), neural_network_(kDimensions, true, 3, NeuralNetwork::ActivationFunctionType::Linear, {boost::make_tuple(num_hidden, true, NeuralNetwork::ActivationFunctionType::Sigmoid)}) {
+ControllerNeuralNetwork::ControllerNeuralNetwork(const unsigned int &input_dimensions, const double &maximum_thrust, const unsigned int &num_hidden, const std::vector<double> &weights)
+    : Controller(input_dimensions, maximum_thrust), neural_network_(input_dimensions, true, 3, NeuralNetwork::ActivationFunctionType::Linear, {boost::make_tuple(num_hidden, true, NeuralNetwork::ActivationFunctionType::Sigmoid)}) {
     number_of_parameters_ = neural_network_.Size();
     SetWeights(weights);
 }
@@ -41,10 +35,6 @@ Vector3D ControllerNeuralNetwork::GetThrustForSensorData(const std::vector<doubl
             t = -maximum_thrust_;
         }
         thrust[i] = t;
-    }
-
-    for (unsigned int i = 0; i < 3; ++i) {
-        thrust[i] = sf.SampleUniform(-maximum_thrust_, maximum_thrust_);
     }
     return thrust;
 }

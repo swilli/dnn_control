@@ -1,59 +1,40 @@
-#include "pagmosimulationneuralnetwork.h"
+#include "pagmosimulationproportionalderivative.h"
 #include "odeint.h"
 #include "modifiedcontrolledrungekutta.h"
 #include "odesystem.h"
 #include "samplefactory.h"
 #include "sensorsimulator.h"
-#include "controllerneuralnetwork.h"
-#include "controllerdeepneuralnetwork.h"
+#include "controllerproportionalderivative.h"
 #include "configuration.h"
 
-PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &random_seed)
+PaGMOSimulationProportionalDerivative::PaGMOSimulationProportionalDerivative(const unsigned int &random_seed)
     : PaGMOSimulation(random_seed) {
-    neural_network_hidden_nodes_ = kHiddenNodes;
 }
 
-PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &random_seed, const unsigned int &hidden_nodes)
+PaGMOSimulationProportionalDerivative::PaGMOSimulationProportionalDerivative(const unsigned int &random_seed, const std::vector<double> &pd_coefficients)
     : PaGMOSimulation(random_seed) {
-    neural_network_hidden_nodes_ = hidden_nodes;
+    simulation_parameters_ = pd_coefficients;
 }
 
-PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &random_seed, const std::vector<double> &neural_network_weights)
-    : PaGMOSimulation(random_seed) {
-    neural_network_hidden_nodes_ = kHiddenNodes;
-    simulation_parameters_ = neural_network_weights;
-}
-
-PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &random_seed, const unsigned int &hidden_nodes, const std::vector<double> &neural_network_weights)
-    : PaGMOSimulation(random_seed) {
-    neural_network_hidden_nodes_ = hidden_nodes;
-    simulation_parameters_ = neural_network_weights;
-}
-
-boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<std::vector<double> > > PaGMOSimulationNeuralNetwork::EvaluateAdaptive() {
+boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<std::vector<double> > > PaGMOSimulationProportionalDerivative::EvaluateAdaptive() {
     typedef odeint::runge_kutta_cash_karp54<SystemState> ErrorStepper;
     typedef odeint::modified_controlled_runge_kutta<ErrorStepper> ControlledStepper;
-
     ControlledStepper controlled_stepper;
 
     SampleFactory sample_factory(random_seed_);
     SampleFactory sf_sensor_simulator(sample_factory.SampleRandomInteger());
 
-    SensorSimulator sensor_simulator(sf_sensor_simulator, asteroid_, sensor_types_, enable_sensor_noise_, target_position_, sensor_value_transformations_);
+    SensorSimulator sensor_simulator(sf_sensor_simulator, asteroid_, sensor_types_, sensor_noise_enabled_, target_position_, sensor_values_mean_stdevs_);
 
 #if PGMOS_ENABLE_SENSOR_DATA_RECORDING
     SampleFactory sf_sensor_recording(sf_sensor_simulator.Seed());
-    SensorSimulator sensor_recorder(sf_sensor_recording, asteroid_, {SensorSimulator::SensorType::RelativePosition, SensorSimulator::SensorType::Velocity}, false);
+    SensorSimulator sensor_recorder(sf_sensor_recording, asteroid_, {SensorSimulator::SensorType::Position, SensorSimulator::SensorType::Velocity}, false);
 #endif
 
-#if CNN_ENABLE_STACKED_AUTOENCODER
-    ControllerDeepNeuralNetwork controller(spacecraft_maximum_thrust_, neural_network_hidden_nodes_);
-#else
-    ControllerNeuralNetwork controller(sensor_simulator.Dimensions(), spacecraft_maximum_thrust_, neural_network_hidden_nodes_);
-#endif
+    ControllerProportionalDerivative controller(sensor_simulator.Dimensions(), spacecraft_maximum_thrust_);
 
     if (simulation_parameters_.size()) {
-        controller.SetWeights(simulation_parameters_);
+        controller.SetCoefficients(simulation_parameters_);
     }
 
     const unsigned int num_iterations = simulation_time_ * control_frequency_;
@@ -63,7 +44,7 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     std::vector<Vector3D> evaluated_positions(num_iterations + 1);
     std::vector<Vector3D> evaluated_velocities(num_iterations + 1);
     std::vector<Vector3D> evaluated_heights(num_iterations + 1);
-    std::vector<Vector3D> evaluated_thrusts(num_iterations +1);
+    std::vector<Vector3D> evaluated_thrusts(num_iterations + 1);
     std::vector<std::vector<double> > evaluated_sensor_data(num_iterations + 1);
 
     SystemState system_state(initial_system_state_);
@@ -160,23 +141,22 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     return boost::make_tuple(evaluated_times, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities, evaluated_thrusts, evaluated_sensor_data);
 }
 
-boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<std::vector<double> > > PaGMOSimulationNeuralNetwork::EvaluateFixed() {
+boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<std::vector<double> > > PaGMOSimulationProportionalDerivative::EvaluateFixed() {
     odeint::runge_kutta4<SystemState> stepper;
-
     SampleFactory sample_factory(random_seed_);
     SampleFactory sf_sensor_simulator(sample_factory.SampleRandomInteger());
 
-    SensorSimulator sensor_simulator(sf_sensor_simulator, asteroid_, sensor_types_, enable_sensor_noise_, target_position_, sensor_value_transformations_);
+    SensorSimulator sensor_simulator(sf_sensor_simulator, asteroid_, sensor_types_, sensor_noise_enabled_, target_position_, sensor_values_mean_stdevs_);
 
 #if PGMOS_ENABLE_SENSOR_DATA_RECORDING
     SampleFactory sf_sensor_recording(sf_sensor_simulator.Seed());
-    SensorSimulator sensor_recorder(sf_sensor_recording, asteroid_, {SensorSimulator::SensorType::RelativePosition, SensorSimulator::SensorType::Velocity}, false);
+    SensorSimulator sensor_recorder(sf_sensor_recording, asteroid_, {SensorSimulator::SensorType::Position, SensorSimulator::SensorType::Velocity}, false);
 #endif
 
-    ControllerNeuralNetwork controller(sensor_simulator.Dimensions(), spacecraft_maximum_thrust_, neural_network_hidden_nodes_);
+    ControllerProportionalDerivative controller(sensor_simulator.Dimensions(), spacecraft_maximum_thrust_);
 
     if (simulation_parameters_.size()) {
-        controller.SetWeights(simulation_parameters_);
+        controller.SetCoefficients(simulation_parameters_);
     }
 
     std::vector<double> evaluated_times;
@@ -194,7 +174,6 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     std::vector<double> sensor_data;
 
     double current_time = 0.0;
-    double engine_noise = 0.0;
     const unsigned int num_steps = 1.0 / (fixed_step_size_ * control_frequency_);
     try {
         while (current_time < simulation_time_) {
@@ -227,7 +206,7 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
             thrust = controller.GetThrustForSensorData(sensor_data);
             evaluated_thrusts.push_back(thrust);
 
-            engine_noise = sample_factory.SampleNormal(0.0, spacecraft_engine_noise_);
+            const double engine_noise = sample_factory.SampleNormal(0.0, spacecraft_engine_noise_);
 
             ODESystem ode_system(asteroid_, perturbations_acceleration, thrust, spacecraft_specific_impulse_, spacecraft_minimum_mass_, engine_noise);
 
@@ -242,15 +221,10 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
         //std::cout << "The spacecraft is out of fuel." << std::endl;
     }
 
-    return boost::make_tuple(evaluated_times, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities,evaluated_thrusts, evaluated_sensor_data);
+    return boost::make_tuple(evaluated_times, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities, evaluated_thrusts, evaluated_sensor_data);
 }
 
-unsigned int PaGMOSimulationNeuralNetwork::ChromosomeSize() const {
-#if CNN_ENABLE_STACKED_AUTOENCODER
-    return ControllerDeepNeuralNetwork(spacecraft_maximum_thrust_, neural_network_hidden_nodes_).NumberOfParameters();
-#else
-    SampleFactory sf;
-    return ControllerNeuralNetwork(SensorSimulator(sf, asteroid_, sensor_types_, enable_sensor_noise_, target_position_, sensor_value_transformations_).Dimensions(), spacecraft_maximum_thrust_, neural_network_hidden_nodes_).NumberOfParameters();
-#endif
+unsigned int PaGMOSimulationProportionalDerivative::ChromosomeSize() const {
+    SampleFactory s;
+    return ControllerProportionalDerivative(SensorSimulator(s, asteroid_, sensor_types_, false).Dimensions(), spacecraft_maximum_thrust_).NumberOfParameters();
 }
-

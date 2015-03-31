@@ -105,7 +105,7 @@ void PaGMOSimulation::Init() {
     target_position_ = boost::get<0>(sampled_point);
 #endif
 
-#if PGMOS_IC_POSITION_OFFSET_ENABLED
+#if PGMOS_IC_ENABLE_POSITION_OFFSET
     // spacecraft has uniformly distributed offset to target position
     Vector3D spacecraft_position;
     for (unsigned int i = 0 ; i < 3; ++i) {
@@ -138,7 +138,7 @@ void PaGMOSimulation::Init() {
     }
     const unsigned int choice = choices.at(sample_factory.SampleRandomInteger() % choices.size());
     switch (choice) {
-        case 0:
+    case 0:
         orth_pos[2] = -(orth_pos[0]*spacecraft_position[0] + orth_pos[1]*spacecraft_position[1]) / spacecraft_position[2];
         break;
     case 1:
@@ -193,4 +193,19 @@ void PaGMOSimulation::Init() {
     }
 
     initial_system_state_[6] = spacecraft_maximum_mass_;
+
+    enable_sensor_noise_ = PGMOS_ENABLE_NOISE;
+
+#if PGMOS_ENABLE_RELATIVE_POSITION
+    sensor_types_.insert(SensorSimulator::SensorType::RelativePosition);
+#endif
+#if PGMOS_ENABLE_VELOCITY
+    sensor_types_.insert(SensorSimulator::SensorType::Velocity);
+#endif
+#if PGMOS_ENABLE_OPTICAL_FLOW
+    sensor_types_.insert(SensorSimulator::SensorType::OpticalFlow);
+#endif
+#if PGMOS_ENABLE_ACCELEROMETER
+    sensor_type_.insert(SensorSimulator::SensorType::Acceleration);
+#endif
 }

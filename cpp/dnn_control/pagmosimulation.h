@@ -4,10 +4,11 @@
 #include "vector.h"
 #include "asteroid.h"
 #include "systemstate.h"
+#include "sensorsimulator.h"
 
 #include <boost/tuple/tuple.hpp>
 
-class PaGMOSimulation { 
+class PaGMOSimulation {
     /*
     * This abstract class represents a full simulation of a spacecraft placed next to an asteroid.
     */
@@ -23,7 +24,7 @@ public:
     // Simulates the configured simulation, used a fixed integrator
     virtual boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<std::vector<double> > > EvaluateFixed() = 0;
 
-    // Returns the number of parameters the controller has. 
+    // Returns the number of parameters the controller has.
     virtual unsigned int ChromosomeSize() const = 0;
 
     // Returns the target position, the spacecraft should stay at
@@ -67,7 +68,6 @@ public:
 
     // PaGMOSimulation can throw the following exceptions
     class Exception {};
-    class SizeMismatchException : public Exception {};
 
 protected:
     // This class is used to observe the actual simulated time in case of an exception in the adaptive integration (out of fuel, crash)
@@ -91,7 +91,7 @@ protected:
     double simulation_time_;
 
     // The simulation's control frequency with which the controller gets triggered
-    double control_frequency_;  
+    double control_frequency_;
 
     // Used by the adaptive ingetrator
     double minimum_step_size_;
@@ -131,6 +131,15 @@ protected:
 
     // The parameters for the controller
     std::vector<double> simulation_parameters_;
+
+    // Is noise enabled during the simulation
+    bool enable_sensor_noise_;
+
+    // The sensor types used in the simulation
+    std::set<SensorSimulator::SensorType> sensor_types_;
+
+    // Sensor values can be transformed using these two parameters
+    std::vector<std::pair<double, double> > sensor_value_transformations_;
 };
 
 #endif // PAGMOSIMULATION_H

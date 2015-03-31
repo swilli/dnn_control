@@ -3,8 +3,6 @@
 #include "modifiedcontrolledrungekutta.h"
 #include "odesystem.h"
 #include "samplefactory.h"
-#include "sensorsimulatorfullstate.h"
-#include "sensorsimulatorpartialstate.h"
 #include "controllerproportionalderivative.h"
 #include "configuration.h"
 
@@ -21,28 +19,22 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     typedef odeint::runge_kutta_cash_karp54<SystemState> ErrorStepper;
     typedef odeint::modified_controlled_runge_kutta<ErrorStepper> ControlledStepper;
 
+    ControlledStepper controlled_stepper;
+
     SampleFactory sample_factory(random_seed_);
     SampleFactory sf_sensor_simulator(sample_factory.SampleRandomInteger());
 
-#if PGMOS_ENABLE_ODOMETRY
-    SensorSimulatorFullState sensor_simulator(sf_sensor_simulator, asteroid_, target_position_);
-#else
-    SensorSimulatorPartialState sensor_simulator(sf_sensor_simulator, asteroid_);
-#endif
+    SensorSimulator sensor_simulator(sf_sensor_simulator, asteroid_, sensor_types_, enable_sensor_noise_, target_position_, sensor_value_transformations_);
 
 #if PGMOS_ENABLE_SENSOR_DATA_RECORDING
     SampleFactory sf_sensor_recording(sf_sensor_simulator.Seed());
-    SensorSimulatorPartialState sensor_recorder(sf_sensor_recording, asteroid_);
+    SensorSimulator sensor_recorder(sf_sensor_recording, asteroid_, {SensorSimulator::SensorType::RelativePosition, SensorSimulator::SensorType::Velocity}, false);
 #endif
 
     ControllerProportionalDerivative controller(spacecraft_maximum_thrust_);
 
     if (simulation_parameters_.size()) {
         controller.SetCoefficients(simulation_parameters_);
-    }
-
-    if (sensor_simulator.Dimensions() != controller.Dimensions()) {
-        throw SizeMismatchException();
     }
 
     const unsigned int num_iterations = simulation_time_ * control_frequency_;
@@ -105,7 +97,6 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
 
             ODESystem ode_system(asteroid_, perturbations_acceleration, thrust, spacecraft_specific_impulse_, spacecraft_minimum_mass_, engine_noise);
 
-            ControlledStepper controlled_stepper;
             integrate_adaptive(controlled_stepper, ode_system, system_state, current_time, current_time + dt, minimum_step_size_, observer);
 
             current_time += dt;
@@ -151,18 +142,16 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
 }
 
 boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<std::vector<double> > > PaGMOSimulationProportionalDerivative::EvaluateFixed() {
+    odeint::runge_kutta4<SystemState> stepper;
+
     SampleFactory sample_factory(random_seed_);
     SampleFactory sf_sensor_simulator(sample_factory.SampleRandomInteger());
 
-#if PGMOS_ENABLE_ODOMETRY
-    SensorSimulatorFullState sensor_simulator(sf_sensor_simulator, asteroid_, target_position_);
-#else
-    SensorSimulatorPartialState sensor_simulator(sf_sensor_simulator, asteroid_);
-#endif
+    SensorSimulator sensor_simulator(sf_sensor_simulator, asteroid_, sensor_types_, enable_sensor_noise_, target_position_, sensor_value_transformations_);
 
 #if PGMOS_ENABLE_SENSOR_DATA_RECORDING
     SampleFactory sf_sensor_recording(sf_sensor_simulator.Seed());
-    SensorSimulatorPartialState sensor_recorder(sf_sensor_recording, asteroid_);
+    SensorSimulator sensor_recorder(sf_sensor_recording, asteroid_, {SensorSimulator::SensorType::RelativePosition, SensorSimulator::SensorType::Velocity}, false);
 #endif
 
     ControllerProportionalDerivative controller(spacecraft_maximum_thrust_);
@@ -171,9 +160,6 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
         controller.SetCoefficients(simulation_parameters_);
     }
 
-    if (sensor_simulator.Dimensions() != controller.Dimensions()) {
-        throw SizeMismatchException();
-    }
 
     std::vector<double> evaluated_times;
     std::vector<double> evaluated_masses;
@@ -191,7 +177,6 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
 
     double current_time = 0.0;
     const unsigned int num_steps = 1.0 / (fixed_step_size_ * control_frequency_);
-    odeint::runge_kutta4<SystemState> stepper;
     try {
         while (current_time < simulation_time_) {
             const Vector3D &position = {system_state[0], system_state[1], system_state[2]};
