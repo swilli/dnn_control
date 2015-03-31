@@ -10,32 +10,36 @@ def shared_dataset(data, borrow=True, name=None):
     return shared_data
 
 
-def sliding_window(data, width=3):
+def sliding_window(data, label_length, sequence_length):
     design_matrix = []
     labels = []
-    window_index = range(width)
-    data_index = range(len(data) - width)
+    window_index = range(sequence_length)
+    data_index = range(len(data) - sequence_length)
     for i in data_index:
         sample = []
         for j in window_index:
             sample += data[i+j][:]
-        label = data[i+width][:-3]
+        label = data[i+sequence_length][:label_length]
         design_matrix += [sample]
         labels += [label]
 
     return design_matrix, labels
 
 
-def historify_and_label(state_sets, action_sets, length):
+def historify_and_label(state_sets, action_sets, sequence_length, with_actions):
     from numpy import array, concatenate
 
     result = []
     labels = []
     for states, actions in zip(state_sets, action_sets):
         states = array(states)
+        label_length = states.shape[1]
         actions = array(actions)
-        state_action_pairs = concatenate((states, actions), axis=1).tolist()
-        historyfied_set, label_set = sliding_window(state_action_pairs, length)
+        if with_actions:
+            samples = concatenate((states, actions), axis=1).tolist()
+        else:
+            samples = states.tolist()
+        historyfied_set, label_set = sliding_window(samples, label_length, sequence_length)
         result += [historyfied_set]
         labels += [label_set]
 
@@ -68,7 +72,7 @@ def load_sensor_file(file_path, num_lines=None):
     return states, actions
 
 
-def load_data_set(file_paths, num_samples_per_file, history_length):
+def load_data_set(file_paths, num_samples_per_file, history_length, with_actions):
     total_states = []
     total_actions = []
     for file_path in file_paths:
@@ -78,11 +82,11 @@ def load_data_set(file_paths, num_samples_per_file, history_length):
         total_actions = total_actions + [actions]
 
     print '... historifying and labelling data'
-    state_action_pairs_with_history_set, labels_set = historify_and_label(total_states, total_actions, history_length)
+    history_set, labels_set = historify_and_label(total_states, total_actions, history_length, with_actions)
 
     total_data_set = []
     total_label_set = []
-    for data_set, label_set in zip(state_action_pairs_with_history_set, labels_set):
+    for data_set, label_set in zip(history_set, labels_set):
         total_data_set.extend(data_set)
         total_label_set.extend(label_set)
 
@@ -95,7 +99,8 @@ def load_sensor_files(training_data_path, testing_data_path,
                       num_test_samples=10000,
                       num_test_samples_per_file=10,
                       shared=True,
-                      history_length=3):
+                      history_length=3,
+                      with_actions=True):
 
     from os import listdir
     from os.path import isdir
@@ -119,9 +124,9 @@ def load_sensor_files(training_data_path, testing_data_path,
 
 
     print("Loading training data")
-    training_data, training_labels = load_data_set(training_file_paths, num_training_samples_per_file, history_length)
+    training_data, training_labels = load_data_set(training_file_paths, num_training_samples_per_file, history_length, with_actions)
     print("Loading test data")
-    test_data, test_labels = load_data_set(test_file_paths, num_test_samples_per_file, history_length)
+    test_data, test_labels = load_data_set(test_file_paths, num_test_samples_per_file, history_length, with_actions)
 
     print("{0} training samples loaded.".format(len(training_data)))
     print("{0} test samples loaded.".format(len(test_data)))

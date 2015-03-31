@@ -10,39 +10,71 @@ from random import sample
 import time
 import sys
 
-path_suffix = "task13"
+path_suffix = "master_noise"
 
-training_path = "/home/willist/Documents/dnn/data/training/"
-testing_path = "/home/willist/Documents/dnn/data/testing/"
+training_path = "/home/willist/Documents/dnn/data/no_policy_rv/training/"
+testing_path = "/home/willist/Documents/dnn/data/no_policy_rv/testing/"
 
 result_path = "/home/willist/Documents/dnn/autoencoder/"
 autoencoder_weights_path = "/home/willist/Documents/dnn/autoencoder/"
 
 num_training_samples = 1000000
-num_training_samples_per_file = 150
+num_training_samples_per_file = 1000000
 num_test_samples = 10000
-num_test_samples_per_file = 50
+num_test_samples_per_file = 10000
 history_length = 10
+include_actions_in_history = False
+
 batch_size = 1
 
-pretraining_epochs = 2
+pretraining_epochs = 50
 
 ENABLE_FINE_TUNING = True
-fine_tune_learning_rate = 0.00001
+fine_tune_supervised = True
+fine_tune_learning_rate = 0.0001
 fine_tune_epochs = 450
+supervised_sigmoid_activation = True
 
-hidden_layer_sizes = [100, 50, 7]
-corruption_levels = [0.1 / (i+1) for i in range(len(hidden_layer_sizes))]
+hidden_layer_sizes = [7]
+#corruption_levels = [0.1 / (i+1) for i in range(len(hidden_layer_sizes))]
+corruption_levels = [0.05]
 
-pretraining_learning_rates = [0.0001, 0.01, 0.01]
-tied_weights =              [False, False, False]
-sigmoid_compressions =      [True, True, True]
-sigmoid_reconstructions =   [False, True, True]
+pretraining_learning_rates = [0.01]
+tied_weights =              [False]
+sigmoid_compressions =      [True]
+sigmoid_reconstructions =   [True]
+
+
+
+description = "Training Path: " + training_path + "\n" + \
+              "Testing Path: " + testing_path + "\n" + \
+              "Number of Training Samples: " + str(num_training_samples) + "\n" + \
+              "Number of Training Samples per File: " + str(num_training_samples_per_file) + "\n" + \
+              "Number of Testing Samples: " + str(num_test_samples) + "\n" + \
+              "Number of Testing Samples per File: " + str(num_test_samples_per_file) + "\n" + \
+              "History Length: " + str(history_length) + "\n" + \
+              "Include Actions in History: " + str(include_actions_in_history) + "\n" + \
+              "Batch Size: " + str(batch_size) + "\n" + \
+              "Pretraining Epochs: " + str(pretraining_epochs) + "\n" + \
+              "Fine Tuning Enabled: " + str(ENABLE_FINE_TUNING) + "\n" + \
+              "Fine Tune Learning Rate: " + str(fine_tune_learning_rate) + "\n" + \
+              "Fine Tune Epochs: " + str(fine_tune_epochs) + "\n" + \
+              "Fine Tune Supervised: " + str(fine_tune_supervised) + "\n" + \
+              "Hidden Layer Sizes: " + str(hidden_layer_sizes) + "\n" + \
+              "Corruption Levels: " + str(corruption_levels) + "\n" + \
+              "Pretraining Learning Rates: " + str(pretraining_learning_rates) + "\n" + \
+              "Tied Weights: " + str(tied_weights) + "\n" + \
+              "Sigmoid Compressions: " + str(sigmoid_compressions) + "\n" + \
+              "Sigmoid Reconstructions: " + str(sigmoid_reconstructions) + "\n" + \
+              "Supervised Sigmoid Activation: " + str(supervised_sigmoid_activation) + "\n"
+
+print(description)
 
 
 
 training_set, training_labels, test_set, test_labels = load_sensor_files(training_path, testing_path,
                                                                          history_length=history_length,
+                                                                         with_actions=include_actions_in_history,
                                                                          num_training_samples=num_training_samples,
                                                                          num_training_samples_per_file=num_training_samples_per_file,
                                                                          num_test_samples=num_test_samples,
@@ -64,10 +96,12 @@ label_dimension = training_labels.get_value(borrow=True).shape[1]
 print '... sample dimension %d' % sample_dimension
 print '... label dimension %d' % label_dimension
 
+
 stacked_autoencoder = StackedAutoencoder(numpy_rng=numpy_rng, n_ins=sample_dimension, n_outs=label_dimension,
                                          hidden_layers_sizes=hidden_layer_sizes, tied_weights=tied_weights,
                                          sigmoid_compressions=sigmoid_compressions,
-                                         sigmoid_reconstructions=sigmoid_reconstructions)
+                                         sigmoid_reconstructions=sigmoid_reconstructions,
+                                         supervised_sigmoid_activation=supervised_sigmoid_activation)
 
 
 print '... getting the pre-training functions'
@@ -83,7 +117,14 @@ if ENABLE_FINE_TUNING:
                                                                          batch_size=batch_size,
                                                                          learning_rate=fine_tune_learning_rate)
                                                                          '''
-    finetune_fn, validate_model = stacked_autoencoder.finetune_functions_unsupervised(training_set=training_set,
+    if fine_tune_supervised:
+        finetune_fn, validate_model = stacked_autoencoder.finetune_functions(training_set=training_set,
+                                                                             training_labels=training_labels,
+                                                                             test_set=test_set, test_labels=test_labels,
+                                                                             batch_size=batch_size,
+                                                                             learning_rate=fine_tune_learning_rate)
+    else:
+        finetune_fn, validate_model = stacked_autoencoder.finetune_functions_unsupervised(training_set=training_set,
                                                                                       test_set=test_set,
                                                                                       batch_size=batch_size,
                                                                                       learning_rate=fine_tune_learning_rate)

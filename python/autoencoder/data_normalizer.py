@@ -65,7 +65,7 @@ def write_state_action_sets_files(data_path, state_sets, action_sets):
             output_file.write(data_str)
 
 
-def normalize_folder_data(input_data_path, output_data_path, num_samples=None):
+def normalize_folder_data(input_data_path, output_data_path, gaussian_state_scaling=True, num_samples=None):
     from numpy import array, concatenate, mean, std
     from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
@@ -73,13 +73,18 @@ def normalize_folder_data(input_data_path, output_data_path, num_samples=None):
     total_states = array(total_states)
     total_actions = array(total_actions)
 
-    states_scaler = StandardScaler()
+    if gaussian_state_scaling:
+        states_scaler = StandardScaler()
+    else:
+        states_scaler = MinMaxScaler()
+
     actions_scaler = MinMaxScaler()
 
     states_scaler.fit(total_states)
     total_states = states_scaler.transform(total_states)
-    total_states *= 0.25
-    total_states += 0.5
+    if gaussian_state_scaling:
+        total_states *= 0.25
+        total_states += 0.5
 
     actions_scaler.fit(total_actions)
     total_actions = actions_scaler.transform(total_actions)
@@ -123,14 +128,18 @@ def normalize_folder_data(input_data_path, output_data_path, num_samples=None):
     write_state_action_sets_files(training_path, training_states_set, training_actions_set)
     write_state_action_sets_files(testing_path, testing_states_set, testing_actions_set)
 
-    print("States standardization: Means: {0}, Stdevs: {1}".format(states_scaler.mean_, states_scaler.std_))
-    print("States distribution: Means: {0}, Stdevs: {1}".format(mean(total_states, axis=0), std(total_states, axis=0)))
+    if gaussian_state_scaling:
+        print("States standardization: Means: {0}, Stdevs: {1}".format(states_scaler.mean_, states_scaler.std_))
+        print("States distribution: Means: {0}, Stdevs: {1}".format(mean(total_states, axis=0), std(total_states, axis=0)))
+    else:
+        print("States standardization: Minima: {0}, Ranges: {1}".format(states_scaler.data_min, states_scaler.data_range))
+        print("States distribution: Means: {0}, Stdevs: {1}".format(mean(total_states, axis=0), std(total_states, axis=0)))
 
     print("Actions standardization: Minima: {0}, Ranges: {1}".format(actions_scaler.data_min, actions_scaler.data_range))
     print("Actions distribution: Means: {0}, Stdevs: {1}".format(mean(total_actions, axis=0), std(total_actions, axis=0)))
 
 
-def analyze_folder_data(input_data_path, output_data_path, num_samples=None):
+def analyze_folder_data(input_data_path, output_data_path, gaussian_state_scaling=True, num_samples=None):
     from numpy import array, concatenate, std, mean
     from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
@@ -139,21 +148,30 @@ def analyze_folder_data(input_data_path, output_data_path, num_samples=None):
     total_states = array(total_states)
     total_actions = array(total_actions)
 
-    states_scaler = StandardScaler()
+    if gaussian_state_scaling:
+        states_scaler = StandardScaler()
+    else:
+        states_scaler = MinMaxScaler()
+
     actions_scaler = MinMaxScaler()
 
     states_scaler.fit(total_states)
     total_states = states_scaler.transform(total_states)
-    total_states *= 0.25
-    total_states += 0.5
+    if gaussian_state_scaling:
+        total_states *= 0.25
+        total_states += 0.5
 
     actions_scaler.fit(total_actions)
     total_actions = actions_scaler.transform(total_actions)
 
     create_histograms(concatenate((total_states, total_actions), axis=1), output_data_path)
 
-    print("States standardization: Means: {0}, Stdevs: {1}".format(states_scaler.mean_, states_scaler.std_))
-    print("States distribution: Means: {0}, Stdevs: {1}".format(mean(total_states, axis=0), std(total_states, axis=0)))
+    if gaussian_state_scaling:
+        print("States standardization: Means: {0}, Stdevs: {1}".format(states_scaler.mean_, states_scaler.std_))
+        print("States distribution: Means: {0}, Stdevs: {1}".format(mean(total_states, axis=0), std(total_states, axis=0)))
+    else:
+        print("States standardization: Minima: {0}, Ranges: {1}".format(states_scaler.data_min, states_scaler.data_range))
+        print("States distribution: Means: {0}, Stdevs: {1}".format(mean(total_states, axis=0), std(total_states, axis=0)))
 
     print("Actions standardization: Minima: {0}, Ranges: {1}".format(actions_scaler.data_min, actions_scaler.data_range))
     print("Actions distribution: Means: {0}, Stdevs: {1}".format(mean(total_actions, axis=0), std(total_actions, axis=0)))
@@ -166,8 +184,9 @@ if __name__ == '__main__':
     input_data_path = "/home/willist/Documents/dnn/data/raw/"
     output_data_path = "/home/willist/Documents/dnn/data/raw/"
 
-    num_samples = 150
-    analyze_folder_data(input_data_path, output_data_path, num_samples)
-    # normalize_folder_data(input_data_path, output_data_path, num_samples)
+    num_samples = None
+    gaussian_standardization = False
+    #analyze_folder_data(input_data_path, output_data_path, gaussian_standardization, num_samples)
+    normalize_folder_data(input_data_path, output_data_path, gaussian_standardization, num_samples)
 
 

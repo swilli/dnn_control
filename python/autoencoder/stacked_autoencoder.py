@@ -11,6 +11,7 @@ class StackedAutoencoder(object):
 
     def __init__(self, numpy_rng, theano_rng=None, n_ins=10, n_outs=5, hidden_layers_sizes=[40, 20], tied_weights=[True, True],
                  sigmoid_compressions=[True, True], sigmoid_reconstructions=[True, True],
+                 supervised_sigmoid_activation=False,
                  autoencoder_weights=None):
 
         self.hidden_layers = []
@@ -58,10 +59,14 @@ class StackedAutoencoder(object):
 
                 self.autoencoder_layers.append(autoencoder_layer)
 
+            activation = None
+            if supervised_sigmoid_activation:
+                activation = T.nnet.sigmoid
+
             # Add a supervised layer on top of it
             self.supervised_layer = HiddenLayer(rng=numpy_rng, input=self.hidden_layers[-1].output,
                                             n_in=hidden_layers_sizes[-1],
-                                            n_out=n_outs, activation=None)
+                                            n_out=n_outs, activation=activation)
 
             self.params.extend(self.supervised_layer.params)
 
