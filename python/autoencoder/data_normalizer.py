@@ -208,8 +208,8 @@ if __name__ == '__main__':
     from numpy.random import shuffle
     import os
 
-    input_data_path = "/home/willist/Documents/dnn/data/no_policy_rv/raw/"
-    output_data_path = "/home/willist/Documents/dnn/data/no_policy_rv/"
+    input_data_path = "/home/willist/Documents/dnn/data/no_policy_rv_10Hz/raw/"
+    output_data_path = "/home/willist/Documents/dnn/data/no_policy_rv_10Hz/"
 
     num_samples = None
     gaussian_standardization = False

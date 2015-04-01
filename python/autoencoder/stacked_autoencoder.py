@@ -268,7 +268,12 @@ class StackedAutoencoder(object):
     def predict(self, data):
         from numpy import array
 
-        data = theano.shared(value=array(data), borrow=True)
+        tmp = array(data)
+        if tmp.ndim == 1:
+            tmp = array([data])
+
+        data = tmp
+        data = theano.shared(value=data, borrow=True)
         train_fn = theano.function(
             inputs=[],
             outputs=self.supervised_layer.output,

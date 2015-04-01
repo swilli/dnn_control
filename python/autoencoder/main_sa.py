@@ -10,10 +10,10 @@ from random import sample
 import time
 import sys
 
-path_suffix = "master_noise"
+path_suffix = "master_10Hz"
 
-training_path = "/home/willist/Documents/dnn/data/no_policy_rv/training/"
-testing_path = "/home/willist/Documents/dnn/data/no_policy_rv/testing/"
+training_path = "/home/willist/Documents/dnn/data/no_policy_rv_10Hz/training/"
+testing_path = "/home/willist/Documents/dnn/data/no_policy_rv_10Hz/testing/"
 
 result_path = "/home/willist/Documents/dnn/autoencoder/"
 autoencoder_weights_path = "/home/willist/Documents/dnn/autoencoder/"
@@ -37,7 +37,7 @@ supervised_sigmoid_activation = True
 
 hidden_layer_sizes = [100]
 #corruption_levels = [0.1 / (i+1) for i in range(len(hidden_layer_sizes))]
-corruption_levels = [0.05]
+corruption_levels = [0.01]
 
 pretraining_learning_rates = [0.01]
 tied_weights =              [False]
