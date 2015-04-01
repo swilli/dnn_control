@@ -73,7 +73,7 @@
 
 
 // Class ControllerNeuralNetwork configs
-#define CNN_ENABLE_STACKED_AUTOENCODER  false
+#define CNN_ENABLE_STACKED_AUTOENCODER  true
 #define CNN_STACKED_AUTOENCODER_CONFIGURATION   "100_50_7"
 
 // Class SensorSimulatorPartialState configs

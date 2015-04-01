@@ -47,7 +47,7 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
 #endif
 
 #if CNN_ENABLE_STACKED_AUTOENCODER
-    ControllerDeepNeuralNetwork controller(spacecraft_maximum_thrust_, neural_network_hidden_nodes_);
+    ControllerDeepNeuralNetwork controller(sensor_simulator.Dimensions(), spacecraft_maximum_thrust_, neural_network_hidden_nodes_);
 #else
     ControllerNeuralNetwork controller(sensor_simulator.Dimensions(), spacecraft_maximum_thrust_, neural_network_hidden_nodes_);
 #endif
@@ -246,11 +246,12 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
 }
 
 unsigned int PaGMOSimulationNeuralNetwork::ChromosomeSize() const {
-#if CNN_ENABLE_STACKED_AUTOENCODER
-    return ControllerDeepNeuralNetwork(spacecraft_maximum_thrust_, neural_network_hidden_nodes_).NumberOfParameters();
-#else
     SampleFactory sf;
-    return ControllerNeuralNetwork(SensorSimulator(sf, asteroid_, sensor_types_, enable_sensor_noise_, target_position_, sensor_value_transformations_).Dimensions(), spacecraft_maximum_thrust_, neural_network_hidden_nodes_).NumberOfParameters();
+    const unsigned int dimensions = SensorSimulator(sf, asteroid_, sensor_types_, enable_sensor_noise_, target_position_, sensor_value_transformations_).Dimensions();
+#if CNN_ENABLE_STACKED_AUTOENCODER
+    return ControllerDeepNeuralNetwork(dimensions, spacecraft_maximum_thrust_, neural_network_hidden_nodes_).NumberOfParameters();
+#else
+    return ControllerNeuralNetwork(dimensions, spacecraft_maximum_thrust_, neural_network_hidden_nodes_).NumberOfParameters();
 #endif
 }
 
