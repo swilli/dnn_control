@@ -5,12 +5,12 @@
 #include "samplefactory.h"
 
 ControllerNeuralNetwork::ControllerNeuralNetwork(const unsigned int &input_dimensions, const double &maximum_thrust, const unsigned int &num_hidden)
-    : Controller(input_dimensions, maximum_thrust), neural_network_(input_dimensions, true, 3, NeuralNetwork::ActivationFunctionType::Linear, {boost::make_tuple(num_hidden, true, NeuralNetwork::ActivationFunctionType::Sigmoid)}) {
+    : Controller(input_dimensions, maximum_thrust), neural_network_(input_dimensions, true, 3, NeuralNetwork::ActivationFunctionType::Linear, {{num_hidden, true, NeuralNetwork::ActivationFunctionType::Sigmoid}}) {
     number_of_parameters_ = neural_network_.Size();
 }
 
 ControllerNeuralNetwork::ControllerNeuralNetwork(const unsigned int &input_dimensions, const double &maximum_thrust, const unsigned int &num_hidden, const std::vector<double> &weights)
-    : Controller(input_dimensions, maximum_thrust), neural_network_(input_dimensions, true, 3, NeuralNetwork::ActivationFunctionType::Linear, {boost::make_tuple(num_hidden, true, NeuralNetwork::ActivationFunctionType::Sigmoid)}) {
+    : Controller(input_dimensions, maximum_thrust), neural_network_(input_dimensions, true, 3, NeuralNetwork::ActivationFunctionType::Linear, {{num_hidden, true, NeuralNetwork::ActivationFunctionType::Sigmoid}}) {
     number_of_parameters_ = neural_network_.Size();
     SetWeights(weights);
 }

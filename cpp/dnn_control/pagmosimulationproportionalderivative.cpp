@@ -31,7 +31,7 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     SensorSimulator sensor_recorder(sf_sensor_recording, asteroid_, {SensorSimulator::SensorType::RelativePosition, SensorSimulator::SensorType::Velocity}, false);
 #endif
 
-    ControllerProportionalDerivative controller(spacecraft_maximum_thrust_);
+    ControllerProportionalDerivative controller(sensor_simulator.Dimensions(), spacecraft_maximum_thrust_);
 
     if (simulation_parameters_.size()) {
         controller.SetCoefficients(simulation_parameters_);
@@ -154,12 +154,11 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     SensorSimulator sensor_recorder(sf_sensor_recording, asteroid_, {SensorSimulator::SensorType::RelativePosition, SensorSimulator::SensorType::Velocity}, false);
 #endif
 
-    ControllerProportionalDerivative controller(spacecraft_maximum_thrust_);
+    ControllerProportionalDerivative controller(sensor_simulator.Dimensions(), spacecraft_maximum_thrust_);
 
     if (simulation_parameters_.size()) {
         controller.SetCoefficients(simulation_parameters_);
     }
-
 
     std::vector<double> evaluated_times;
     std::vector<double> evaluated_masses;
@@ -227,5 +226,7 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
 }
 
 unsigned int PaGMOSimulationProportionalDerivative::ChromosomeSize() const {
-    return ControllerProportionalDerivative(spacecraft_maximum_thrust_).NumberOfParameters();
+    SampleFactory sf;
+    const unsigned int dimensions = SensorSimulator(sf, asteroid_, sensor_types_, enable_sensor_noise_, target_position_, sensor_value_transformations_).Dimensions();
+    return ControllerProportionalDerivative(dimensions, spacecraft_maximum_thrust_).NumberOfParameters();
 }
