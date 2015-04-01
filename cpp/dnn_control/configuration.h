@@ -51,7 +51,7 @@
 
 
 // Class ODESystem configs
-#define ENABLE_ODES_FUEL   true
+#define ODES_ENABLE_FUEL   true
 
 
 // Class PaGMOSimulation configs
@@ -162,7 +162,7 @@ inline void ConfigurationPaGMO() {
     std::cout << "PGMOS_ENABLE_NOISE   " << ToString(PGMOS_ENABLE_NOISE) << std::endl;
     std::cout << "PGMOS_STANDARDIZE_SENSOR_VALUES   " << ToString(PGMOS_STANDARDIZE_SENSOR_VALUES) << std::endl;
     std::cout << "PGMOS_ENABLE_SENSOR_DATA_RECORDING   " << ToString(PGMOS_ENABLE_SENSOR_DATA_RECORDING) << std::endl;
-    std::cout << "ENABLE_ODES_FUEL   " << ToString(ENABLE_ODES_FUEL) << std::endl;
+    std::cout << "ODES_ENABLE_FUEL   " << ToString(ODES_ENABLE_FUEL) << std::endl;
     std::cout << "CNN_ENABLE_STACKED_AUTOENCODER   " << ToString(CNN_ENABLE_STACKED_AUTOENCODER) << std::endl;
     std::cout << "CNN_STACKED_AUTOENCODER_CONFIGURATION   " << CNN_STACKED_AUTOENCODER_CONFIGURATION << std::endl;
     std::cout << std::endl;

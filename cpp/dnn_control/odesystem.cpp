@@ -71,7 +71,7 @@ void ODESystem::operator ()(const SystemState &state, SystemState &d_state_dt, c
                 - coriolis_acceleration[i] - euler_acceleration[i] - centrifugal_acceleration[i];
     }
 
-#if ODES_FUEL_ENABLED
+#if ODES_ENABLE_FUEL
     d_state_dt[6] = -sqrt(thrust_[0] * thrust_[0] + thrust_[1] * thrust_[1] + thrust_[2] * thrust_[2]) / ((spacecraft_specific_impulse_ + spacecraft_specific_impulse_ * engine_noise_) * kEarthAcceleration);
 #else
     d_state_dt[6] = 0.0;
