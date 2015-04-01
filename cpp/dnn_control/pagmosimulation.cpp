@@ -206,6 +206,6 @@ void PaGMOSimulation::Init() {
     sensor_types_.insert(SensorSimulator::SensorType::OpticalFlow);
 #endif
 #if PGMOS_ENABLE_ACCELEROMETER
-    sensor_type_.insert(SensorSimulator::SensorType::Acceleration);
+    sensor_types_.insert(SensorSimulator::SensorType::Acceleration);
 #endif
 }
