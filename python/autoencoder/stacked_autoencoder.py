@@ -12,7 +12,7 @@ class StackedAutoencoder(object):
     def __init__(self, numpy_rng, theano_rng=None, n_ins=10, n_outs=5, hidden_layers_sizes=[40, 20], tied_weights=[True, True],
                  sigmoid_compressions=[True, True], sigmoid_reconstructions=[True, True],
                  supervised_sigmoid_activation=False,
-                 autoencoder_weights=None):
+                 autoencoder_weights=None, supervised_layer_weights=None):
 
         self.hidden_layers = []
         self.autoencoder_layers = []
@@ -27,7 +27,7 @@ class StackedAutoencoder(object):
 
         self.theano_rng = theano_rng
 
-        if autoencoder_weights is None:
+        if autoencoder_weights is None or supervised_layer_weights is None:
             for i in xrange(self.n_layers):
 
                 if i == 0:
@@ -40,22 +40,24 @@ class StackedAutoencoder(object):
                 else:
                     layer_input = self.hidden_layers[-1].output
 
+                activation_compression = None
+                activation_reconstruction = None
                 if sigmoid_compressions[i]:
-                    hidden_layer = HiddenLayer(rng=numpy_rng, input=layer_input, n_in=input_size,
-                                            n_out=hidden_layers_sizes[i], activation=T.nnet.sigmoid)
-                else:
-                    hidden_layer = HiddenLayer(rng=numpy_rng, input=layer_input, n_in=input_size,
-                                            n_out=hidden_layers_sizes[i], activation=None)
+                    activation_compression = T.nnet.sigmoid
+                if sigmoid_reconstructions[i]:
+                    activation_reconstruction = T.nnet.sigmoid
+
+                hidden_layer = HiddenLayer(rng=numpy_rng, input=layer_input, n_in=input_size,
+                                           n_out=hidden_layers_sizes[i], activation=activation_compression)
 
                 self.hidden_layers.append(hidden_layer)
                 self.params.extend(hidden_layer.params)
 
                 autoencoder_layer = Autoencoder(numpy_rng=numpy_rng, theano_rng=theano_rng, input=layer_input,
-                                       n_visible=input_size, n_hidden=hidden_layers_sizes[i],
-                                       W=hidden_layer.W, bhid=hidden_layer.b, tied_weights=tied_weights[i],
-                                       sigmoid_compression=sigmoid_compressions[i],
-                                       sigmoid_reconstruction=sigmoid_reconstructions[i])
-
+                                                n_visible=input_size, n_hidden=hidden_layers_sizes[i],
+                                                W=hidden_layer.W, bhid=hidden_layer.b, tied_weights=tied_weights[i],
+                                                activation_compression=activation_compression,
+                                                activation_reconstruction=activation_reconstruction)
 
                 self.autoencoder_layers.append(autoencoder_layer)
 
@@ -65,12 +67,8 @@ class StackedAutoencoder(object):
 
             # Add a supervised layer on top of it
             self.supervised_layer = HiddenLayer(rng=numpy_rng, input=self.hidden_layers[-1].output,
-                                            n_in=hidden_layers_sizes[-1],
-                                            n_out=n_outs, activation=activation)
-
-            self.params.extend(self.supervised_layer.params)
-
-            self.finetune_cost = T.mean(T.sum((self.supervised_layer.output - self.y)**2, axis=1))
+                                                n_in=hidden_layers_sizes[-1],
+                                                n_out=n_outs, activation=activation)
 
         else:
             for i in xrange(len(autoencoder_weights)):
@@ -84,37 +82,41 @@ class StackedAutoencoder(object):
                 else:
                     layer_input = self.hidden_layers[-1].output
 
+                activation_compression = None
+                activation_reconstruction = None
                 if sigmoid_compressions[i]:
-                    hidden_layer = HiddenLayer(rng=numpy_rng, input=layer_input, n_in=input_size,
-                                            n_out=hidden_layers_sizes[i], activation=T.nnet.sigmoid,
-                                            W=autoencoder_weights[i][0], b=autoencoder_weights[i][1])
-                else:
-                    hidden_layer = HiddenLayer(rng=numpy_rng, input=layer_input, n_in=input_size,
-                                            n_out=hidden_layers_sizes[i], activation=None,
-                                            W=autoencoder_weights[i][0], b=autoencoder_weights[i][1])
+                    activation_compression = T.nnet.sigmoid
+                if sigmoid_reconstructions[i]:
+                    activation_reconstruction = T.nnet.sigmoid
+
+                hidden_layer = HiddenLayer(rng=numpy_rng, input=layer_input, n_in=input_size,
+                                           n_out=hidden_layers_sizes[i], activation=activation_compression,
+                                           W=autoencoder_weights[i][0], b=autoencoder_weights[i][1])
 
                 self.hidden_layers.append(hidden_layer)
+                self.params.extend(hidden_layer.params)
 
                 autoencoder_layer = Autoencoder(numpy_rng=numpy_rng, theano_rng=theano_rng, input=layer_input,
-                                       n_visible=input_size, n_hidden=hidden_layers_sizes[i],
-                                       W=hidden_layer.W, bhid=hidden_layer.b, Whid=autoencoder_weights[i][2],
-                                       bvis=autoencoder_weights[i][3], tied_weights=tied_weights[i],
-                                       sigmoid_compression=sigmoid_compressions[i],
-                                       sigmoid_reconstruction=sigmoid_reconstructions[i])
-
-                self.params.extend(autoencoder_layer.params)
+                                                n_visible=input_size, n_hidden=hidden_layers_sizes[i],
+                                                W=hidden_layer.W, bhid=hidden_layer.b, Whid=autoencoder_weights[i][2],
+                                                bvis=autoencoder_weights[i][3], tied_weights=tied_weights[i],
+                                                activation_compression=activation_compression,
+                                                activation_reconstruction=activation_reconstruction)
 
                 self.autoencoder_layers.append(autoencoder_layer)
 
+            activation = None
+            if supervised_sigmoid_activation:
+                activation = T.nnet.sigmoid
+
             # Add a supervised layer on top of it
-            #self.supervised_layer = HiddenLayer(rng=numpy_rng, input=self.hidden_layers[-1].output,
-                                            #n_in=hidden_layers_sizes[-1],
-                                            #n_out=n_outs, W=autoencoder_weights[-1][0], b=autoencoder_weights[-1][1],
-                                            #activation=None)
+            self.supervised_layer = HiddenLayer(rng=numpy_rng, input=self.hidden_layers[-1].output,
+                                                n_in=hidden_layers_sizes[-1], n_out=n_outs,
+                                                W=supervised_layer_weights[0], b=supervised_layer_weights[1],
+                                                activation=activation)
 
-            #self.params.extend(self.supervised_layer.params)
-
-            #self.finetune_cost = T.mean(T.sum((self.supervised_layer.output - self.y)**2, axis=1))
+        self.params.extend(self.supervised_layer.params)
+        self.finetune_cost = T.mean(T.sum((self.supervised_layer.output - self.y)**2, axis=1))
 
     def pretraining_functions(self, training_set, batch_size):
         index = T.lscalar('index')
@@ -250,15 +252,30 @@ class StackedAutoencoder(object):
 
         output = array(data)
         for da in self.autoencoder_layers:
-            output = da.compress(output)
+            output = da.get_hidden_values(output)
 
-        return output
+        return theano.function([], output)()
 
     def decompress(self, compressed_data):
         from numpy import array
 
         output = array(compressed_data)
         for da in self.autoencoder_layers[::-1]:
-            output = da.decompress(output)
+            output = da.get_reconstructed_input(output)
 
-        return output
+        return theano.function([], output)()
+
+    def predict(self, data):
+        from numpy import array
+
+        data = theano.shared(value=array(data), borrow=True)
+        train_fn = theano.function(
+            inputs=[],
+            outputs=self.supervised_layer.output,
+            givens={
+                self.x: data
+            },
+            name='predict'
+        )
+
+        return train_fn()

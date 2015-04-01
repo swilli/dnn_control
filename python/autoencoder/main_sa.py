@@ -32,10 +32,10 @@ pretraining_epochs = 50
 ENABLE_FINE_TUNING = True
 fine_tune_supervised = True
 fine_tune_learning_rate = 0.0001
-fine_tune_epochs = 450
+fine_tune_epochs = 1000
 supervised_sigmoid_activation = True
 
-hidden_layer_sizes = [7]
+hidden_layer_sizes = [100]
 #corruption_levels = [0.1 / (i+1) for i in range(len(hidden_layer_sizes))]
 corruption_levels = [0.05]
 
@@ -45,8 +45,8 @@ sigmoid_compressions =      [True]
 sigmoid_reconstructions =   [True]
 
 
-
-description = "Training Path: " + training_path + "\n" + \
+description = "Path Suffix: " + path_suffix + "\n" + \
+              "Training Path: " + training_path + "\n" + \
               "Testing Path: " + testing_path + "\n" + \
               "Number of Training Samples: " + str(num_training_samples) + "\n" + \
               "Number of Training Samples per File: " + str(num_training_samples_per_file) + "\n" + \
@@ -213,21 +213,21 @@ if not os.path.exists(result_path):
 result_path += "/"
 
 for i in xrange(stacked_autoencoder.n_layers):
-    output_path = result_path + "l{0}W.txt".format(i)
+    output_path = result_path + "al{0}W.txt".format(i)
     output_file = open(output_path, 'w+')
     W = stacked_autoencoder.autoencoder_layers[i].W.get_value(borrow=True).T.tolist()
     W_str = "\n".join(", ".join(map(str, value)) for value in W)
     output_file.write(W_str)
     output_file.close()
 
-    output_path = result_path + "l{0}b.txt".format(i)
+    output_path = result_path + "al{0}b.txt".format(i)
     output_file = open(output_path, 'w+')
     b = stacked_autoencoder.autoencoder_layers[i].b.get_value(borrow=True).T.tolist()
     b_str = ", ".join(str(value) for value in b)
     output_file.write(b_str)
     output_file.close()
 
-    output_path = result_path + "l{0}W_prime.txt".format(i)
+    output_path = result_path + "al{0}W_prime.txt".format(i)
     output_file = open(output_path, 'w+')
     if stacked_autoencoder.autoencoder_layers[i].tied_weights:
         W_prime = stacked_autoencoder.autoencoder_layers[i].W.get_value(borrow=True).T.T.tolist()
@@ -237,41 +237,27 @@ for i in xrange(stacked_autoencoder.n_layers):
     output_file.write(W_prime_str)
     output_file.close()
 
-    output_path = result_path + "l{0}b_prime.txt".format(i)
+    output_path = result_path + "al{0}b_prime.txt".format(i)
     output_file = open(output_path, 'w+')
     b_prime = stacked_autoencoder.autoencoder_layers[i].b_prime.get_value(borrow=True).T.tolist()
     b_prime_str = ", ".join(str(value) for value in b_prime)
     output_file.write(b_prime_str)
     output_file.close()
 
-output_path = result_path + "lsupW.txt".format(i)
+output_path = result_path + "slW.txt".format(i)
 output_file = open(output_path, 'w+')
 W = stacked_autoencoder.supervised_layer.W.get_value(borrow=True).T.tolist()
 W_str = "\n".join(", ".join(map(str, value)) for value in W)
 output_file.write(W_str)
 output_file.close()
 
-output_path = result_path + "lsupb.txt".format(i)
+output_path = result_path + "slb.txt".format(i)
 output_file = open(output_path, 'w+')
 b = stacked_autoencoder.supervised_layer.b.get_value(borrow=True).T.tolist()
 b_str = ", ".join(str(value) for value in b)
 output_file.write(b_str)
 output_file.close()
 
-autoencoder_weights_path += "conf_" + "_".join([str(value) for value in hidden_layer_sizes]) + "_" + path_suffix + "/"
-autoencoder_weights = load_autoencoder_weights(autoencoder_weights_path)
 
-exit()
-
-reloaded_sa = StackedAutoencoder(numpy_rng=numpy_rng, n_ins=sample_dimension, n_outs=label_dimension,
-                                 hidden_layers_sizes=hidden_layer_sizes, tied_weights=tied_weights,
-                                 sigmoid_compressions=sigmoid_compressions,
-                                 sigmoid_reconstructions=sigmoid_reconstructions,
-                                 autoencoder_weights=autoencoder_weights)
-from numpy.random import rand
-test_set = rand(100, 90) * 1000.0
-errors = []
-for sample in test_set:
-    print(", ".join(str(val) for val in sample) + '\n' + ", ".join(str(val) for val in stacked_autoencoder.compress(sample)))
 
 

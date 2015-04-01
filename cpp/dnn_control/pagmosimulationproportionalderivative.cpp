@@ -84,7 +84,7 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
             sensor_data = sensor_simulator.Simulate(system_state, height, perturbations_acceleration, current_time);
 
 #if PGMOS_ENABLE_SENSOR_DATA_RECORDING
-            sensor_recording = sensor_recorder.Simulate(system_state, height,perturbations_acceleration, current_time);
+            sensor_recording = sensor_recorder.Simulate(system_state, height, perturbations_acceleration, current_time);
             evaluated_sensor_data.at(iteration) = sensor_recording;
 #else
             evaluated_sensor_data.at(iteration) = sensor_data;

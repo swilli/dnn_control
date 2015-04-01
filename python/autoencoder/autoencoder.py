@@ -8,13 +8,13 @@ from theano.tensor.shared_randomstreams import RandomStreams
 class Autoencoder(object):
 
     def __init__(self, numpy_rng, theano_rng=None, input=None, n_visible=10, n_hidden=5, tied_weights=True,
-                 sigmoid_compression=True, sigmoid_reconstruction=True, W=None, Whid=None, bhid=None, bvis=None):
+                 activation_compression=None, activation_reconstruction=None, W=None, Whid=None, bhid=None, bvis=None):
 
         self.n_visible = n_visible
         self.n_hidden = n_hidden
         self.tied_weights = tied_weights
-        self.sigmoid_compression = sigmoid_compression
-        self.sigmoid_reconstruction = sigmoid_reconstruction
+        self.activation_compression = activation_compression
+        self.activation_reconstruction = activation_reconstruction
 
         if not theano_rng:
             theano_rng = RandomStreams(numpy_rng.randint(2 ** 30))
@@ -25,7 +25,7 @@ class Autoencoder(object):
             initial_W = numpy.asarray(numpy_rng.uniform(low=-numpy.sqrt(6. / (n_hidden + n_visible)),
                                                         high=numpy.sqrt(6. / (n_hidden + n_visible)),
                                                         size=(n_visible, n_hidden)), dtype=theano.config.floatX)
-            if self.sigmoid_compression:
+            if self.activation_compression == T.nnet.sigmoid:
                 initial_W *= 4
 
             W = theano.shared(value=initial_W, name='W', borrow=True)
@@ -34,13 +34,13 @@ class Autoencoder(object):
             initial_Whid = numpy.asarray(numpy_rng.uniform(low=-numpy.sqrt(6. / (n_hidden + n_visible)),
                                                            high=numpy.sqrt(6. / (n_hidden + n_visible)),
                                                            size=(n_hidden, n_visible)), dtype=theano.config.floatX)
-            if self.sigmoid_reconstruction:
+            if self.activation_reconstruction == T.nnet.sigmoid:
                 initial_Whid *= 4
 
-            Whid = theano.shared(value=initial_Whid, borrow=True)
+            Whid = theano.shared(value=initial_Whid, name='Whid', borrow=True)
 
         if not bvis:
-            bvis = theano.shared(value=numpy.zeros(n_visible, dtype=theano.config.floatX), borrow=True)
+            bvis = theano.shared(value=numpy.zeros(n_visible, dtype=theano.config.floatX), name='bvis', borrow=True)
 
         if not bhid:
             bhid = theano.shared(value=numpy.zeros(n_hidden, dtype=theano.config.floatX), name='b', borrow=True)
@@ -64,20 +64,20 @@ class Autoencoder(object):
             self.params = [self.W, self.b, self.W_prime, self.b_prime]
 
     def get_hidden_values(self, input):
-        if self.sigmoid_compression:
-            return T.nnet.sigmoid(T.dot(input, self.W) + self.b)
+        linear_result = T.dot(input, self.W) + self.b
+        if self.activation_compression is None:
+            return linear_result
         else:
-            return T.dot(input, self.W) + self.b
+            return self.activation_compression(linear_result)
 
     def get_reconstructed_input(self, hidden):
-        if self.sigmoid_reconstruction:
-            return T.nnet.sigmoid(T.dot(hidden, self.W_prime) + self.b_prime)
+        linear_result = T.dot(hidden, self.W_prime) + self.b_prime
+        if self.activation_reconstruction is None:
+            return linear_result
         else:
-            return T.dot(hidden, self.W_prime) + self.b_prime
+            return self.activation_reconstruction(linear_result)
 
     def get_corrupted_input(self, input, corruption_level):
-        import theano
-
         # return self.theano_rng.binomial(size=input.shape, n=1, p=1.0 - corruption_level, dtype=theano.config.floatX) * input
         return input + input * self.theano_rng.normal(size=input.shape, avg=0.0, std=corruption_level, dtype=theano.config.floatX)
 
@@ -94,19 +94,15 @@ class Autoencoder(object):
         return cost, updates
 
     def compress(self, data):
-        from theano.tensor import nnet, dot
-        from theano import function
-
-        if self.sigmoid_compression:
-            return function([], nnet.sigmoid(dot(data, self.W) + self.b))()
+        linear_result = T.dot(data, self.W) + self.b
+        if self.activation_compression is None:
+            return theano.function([], linear_result)()
         else:
-            return function([], dot(data, self.W) + self.b)()
+            return theano.function([], self.activation_compression(linear_result))()
 
     def decompress(self, compressed_data):
-        from theano.tensor import nnet, dot
-        from theano import function
-
-        if self.sigmoid_reconstruction:
-            return function([], nnet.sigmoid(dot(compressed_data, self.W_prime) + self.b_prime))()
+        linear_result = T.dot(compressed_data, self.W_prime) + self.b_prime
+        if self.activation_reconstruction is None:
+            return theano.function([], linear_result)()
         else:
-            return function([], dot(compressed_data, self.W_prime) + self.b_prime)()
+            return theano.function([], self.activation_reconstruction(linear_result))()

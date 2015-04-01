@@ -6,6 +6,7 @@ import os
 
 testing_path = "/home/willist/Documents/dnn/data/no_policy_rv/testing/"
 autoencoder_weights_path = "/home/willist/Documents/dnn/autoencoder/conf_100_master_noise/"
+prediction_path = "/home/willist/Documents/dnn/results/predicted_states.txt"
 
 num_test_samples = 10000
 num_test_samples_per_file = 10000
@@ -43,11 +44,18 @@ stacked_autoencoder = StackedAutoencoder(numpy_rng=numpy_rng, n_ins=sample_dimen
                                          autoencoder_weights=autoencoder_weights,
                                          supervised_sigmoid_activation=supervised_sigmoid_activation,
                                          supervised_layer_weights=supervised_layer_weights)
-error = 0.0
-predicted_labels = stacked_autoencoder.predict(test_set)
-for y, y_tilde in zip(test_labels, predicted_labels):
-    error += norm(y-y_tilde)
 
-print(error/test_labels.shape[0])
+simulation_time = 3600
+sequence = test_set[0, :]
+for i in range(simulation_time):
+    current_sample = sequence[:-sample_dimension]
+    next_state = stacked_autoencoder.predict(current_sample)
+    sequence += next_state
+
+state_dimension = 6
+states = array(sequence).reshape(sequence / state_dimension, state_dimension).tolist()
+
+with open(prediction_path, 'w+') as prediction_file:
+    prediction_file.write("\n".join(", ".join(str(val) for val in line) for line in states))
 
 

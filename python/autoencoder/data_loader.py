@@ -140,23 +140,23 @@ def load_sensor_files(training_data_path, testing_data_path,
     return training_data, training_labels, test_data, test_labels
 
 
-def load_autoencoder_weights(path_to_autoencoder_weights):
+def load_autoencoder_weights(path_to_deep_network_weights):
     from os import listdir
     from numpy import array
 
-    num_supervised_layer_files = 2
     num_files_per_layer = 4
 
-    file_names = listdir(path_to_autoencoder_weights)
+    file_names = listdir(path_to_deep_network_weights)
     file_names = sorted(file_names)
-    file_paths = [path_to_autoencoder_weights + name for name in file_names]
+    autoencoder_file_paths = [path_to_deep_network_weights + name for name in file_names if name.startswith("al")]
+    supervised_file_paths = [path_to_deep_network_weights + name for name in file_names if name.startswith("sl")]
 
-    all_weights = []
-    for i in xrange((len(file_paths) - num_supervised_layer_files)/num_files_per_layer):
-        weights_file = open(file_paths[num_files_per_layer*i], 'r')
-        weights_prime_file = open(file_paths[num_files_per_layer*i + 1], 'r')
-        bias_file = open(file_paths[num_files_per_layer*i + 2], 'r')
-        bias_prime_file = open(file_paths[num_files_per_layer*i + 3], 'r')
+    autoencoder_weights = []
+    for i in xrange(len(autoencoder_file_paths)/num_files_per_layer):
+        weights_file = open(autoencoder_file_paths[num_files_per_layer*i], 'r')
+        weights_prime_file = open(autoencoder_file_paths[num_files_per_layer*i + 1], 'r')
+        bias_file = open(autoencoder_file_paths[num_files_per_layer*i + 2], 'r')
+        bias_prime_file = open(autoencoder_file_paths[num_files_per_layer*i + 3], 'r')
 
         bias_data = bias_file.readline()
         bias_file.close()
@@ -174,11 +174,20 @@ def load_autoencoder_weights(path_to_autoencoder_weights):
         weights_prime_file.close()
         weights_prime = array([[float(value) for value in line.split(",")] for line in weights_prime_data.split('\n')]).T
 
-        weights = shared_dataset(weights, name="W")
-        bias = shared_dataset(bias, name="b")
-        weights_prime = shared_dataset(weights_prime)
-        bias_prime = shared_dataset(bias_prime)
+        weights = shared_dataset(weights, name='W')
+        bias = shared_dataset(bias, name='b')
+        weights_prime = shared_dataset(weights_prime, name='Whid')
+        bias_prime = shared_dataset(bias_prime, name='bvis')
 
-        all_weights.append((weights, bias, weights_prime, bias_prime))
+        autoencoder_weights.append((weights, bias, weights_prime, bias_prime))
 
-    return all_weights
+    supervised_weights_file = open(supervised_file_paths[0], 'r')
+    supervised_weights_data = supervised_weights_file.read()
+    supervised_weights_file.close()
+    supervised_weights = shared_dataset(array([[float(value) for value in line.split(",")] for line in supervised_weights_data.split('\n')]).T, name='W')
+
+    supervised_bias_file = open(supervised_file_paths[1], 'r')
+    supervised_bias_data = supervised_bias_file.readline()
+    supervised_bias = shared_dataset(array([float(value) for value in supervised_bias_data.split(",")]), name='b')
+
+    return autoencoder_weights, (supervised_weights, supervised_bias)
