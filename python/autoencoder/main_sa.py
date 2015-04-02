@@ -2,7 +2,7 @@ from numpy import random, mean
 import os
 from sys import exit
 from time import clock
-from data_loader import load_sensor_files, load_autoencoder_weights
+from data_loader import load_sensor_files
 from stacked_autoencoder import StackedAutoencoder
 from numpy.linalg import norm
 from numpy import inf
@@ -10,10 +10,10 @@ from random import sample
 import time
 import sys
 
-path_suffix = "master_10Hz"
+path_suffix = "linear"
 
-training_path = "/home/willist/Documents/dnn/data/no_policy_rv_10Hz/training/"
-testing_path = "/home/willist/Documents/dnn/data/no_policy_rv_10Hz/testing/"
+training_path = "/home/willist/Documents/dnn/data/no_policy_rv_1Hz/training/"
+testing_path = "/home/willist/Documents/dnn/data/no_policy_rv_1Hz/testing/"
 
 result_path = "/home/willist/Documents/dnn/autoencoder/"
 autoencoder_weights_path = "/home/willist/Documents/dnn/autoencoder/"
@@ -33,16 +33,16 @@ ENABLE_FINE_TUNING = True
 fine_tune_supervised = True
 fine_tune_learning_rate = 0.0001
 fine_tune_epochs = 1000
-supervised_sigmoid_activation = True
+supervised_sigmoid_activation = False
 
-hidden_layer_sizes = [100]
+hidden_layer_sizes = [7]
 #corruption_levels = [0.1 / (i+1) for i in range(len(hidden_layer_sizes))]
 corruption_levels = [0.01]
 
 pretraining_learning_rates = [0.01]
-tied_weights =              [False]
-sigmoid_compressions =      [True]
-sigmoid_reconstructions =   [True]
+tied_weights =              [True]
+sigmoid_compressions =      [False]
+sigmoid_reconstructions =   [False]
 
 
 description = "Path Suffix: " + path_suffix + "\n" + \
@@ -98,7 +98,7 @@ print '... label dimension %d' % label_dimension
 
 
 stacked_autoencoder = StackedAutoencoder(numpy_rng=numpy_rng, n_ins=sample_dimension, n_outs=label_dimension,
-                                         hidden_layers_sizes=hidden_layer_sizes, tied_weights=tied_weights,
+                                         hidden_layer_sizes=hidden_layer_sizes, tied_weights=tied_weights,
                                          sigmoid_compressions=sigmoid_compressions,
                                          sigmoid_reconstructions=sigmoid_reconstructions,
                                          supervised_sigmoid_activation=supervised_sigmoid_activation)
@@ -171,6 +171,7 @@ if ENABLE_FINE_TUNING:
 
     done_looping = False
     epoch = 0
+    best_iter = 0
 
     while epoch < fine_tune_epochs and not done_looping:
         epoch += 1
@@ -206,57 +207,23 @@ if ENABLE_FINE_TUNING:
                                                                        ((end_time - start_time) / 60.)
 
 
-result_path += "conf_" + "_".join([str(value) for value in hidden_layer_sizes]) + "_" + path_suffix
+result_path += "conf_" + "_".join([str(value) for value in hidden_layer_sizes]) + "_" + path_suffix + "/"
 if not os.path.exists(result_path):
     os.makedirs(result_path)
 
-result_path += "/"
+stacked_autoencoder.save(result_path)
+reloaded_sa = StackedAutoencoder.from_config_path(numpy_rng, result_path)
 
-for i in xrange(stacked_autoencoder.n_layers):
-    output_path = result_path + "al{0}W.txt".format(i)
-    output_file = open(output_path, 'w+')
-    W = stacked_autoencoder.autoencoder_layers[i].W.get_value(borrow=True).T.tolist()
-    W_str = "\n".join(", ".join(map(str, value)) for value in W)
-    output_file.write(W_str)
-    output_file.close()
+num_tests = 10
+samples = random.rand(num_tests, sample_dimension)
+errors = []
+for sample in samples:
+    result_a = stacked_autoencoder.predict(sample)
+    result_reloaded = reloaded_sa.predict(sample)
+    errors.extend([norm(result_a - result_reloaded)])
+    print(mean(errors))
 
-    output_path = result_path + "al{0}b.txt".format(i)
-    output_file = open(output_path, 'w+')
-    b = stacked_autoencoder.autoencoder_layers[i].b.get_value(borrow=True).T.tolist()
-    b_str = ", ".join(str(value) for value in b)
-    output_file.write(b_str)
-    output_file.close()
 
-    output_path = result_path + "al{0}W_prime.txt".format(i)
-    output_file = open(output_path, 'w+')
-    if stacked_autoencoder.autoencoder_layers[i].tied_weights:
-        W_prime = stacked_autoencoder.autoencoder_layers[i].W.get_value(borrow=True).T.T.tolist()
-    else:
-        W_prime = stacked_autoencoder.autoencoder_layers[i].W_prime.get_value(borrow=True).T.tolist()
-    W_prime_str = "\n".join(", ".join(map(str, value)) for value in W_prime)
-    output_file.write(W_prime_str)
-    output_file.close()
-
-    output_path = result_path + "al{0}b_prime.txt".format(i)
-    output_file = open(output_path, 'w+')
-    b_prime = stacked_autoencoder.autoencoder_layers[i].b_prime.get_value(borrow=True).T.tolist()
-    b_prime_str = ", ".join(str(value) for value in b_prime)
-    output_file.write(b_prime_str)
-    output_file.close()
-
-output_path = result_path + "slW.txt".format(i)
-output_file = open(output_path, 'w+')
-W = stacked_autoencoder.supervised_layer.W.get_value(borrow=True).T.tolist()
-W_str = "\n".join(", ".join(map(str, value)) for value in W)
-output_file.write(W_str)
-output_file.close()
-
-output_path = result_path + "slb.txt".format(i)
-output_file = open(output_path, 'w+')
-b = stacked_autoencoder.supervised_layer.b.get_value(borrow=True).T.tolist()
-b_str = ", ".join(str(value) for value in b)
-output_file.write(b_str)
-output_file.close()
 
 
 

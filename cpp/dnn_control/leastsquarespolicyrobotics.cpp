@@ -85,10 +85,10 @@ static unsigned int Pi(SampleFactory &sample_factory, const LSPIState &state, co
     std::vector<unsigned int> best_a;
     double best_q = -std::numeric_limits<double>::max();
     for (unsigned int a = 0; a < kSpacecraftNumActions; ++a) {
-        eigen::VectorXd  val_phi = Phi(state, a);
-        eigen::VectorXd  val_phi_t = val_phi.transpose();
+        eigen::VectorXd val_phi = Phi(state, a);
+        eigen::VectorXd val_phi_t = val_phi.transpose();
 
-        double q = val_phi_t.dot(weights);
+        const double q = val_phi_t.dot(weights);
         if (q > best_q) {
             best_q = q;
             best_a.clear();
@@ -107,11 +107,11 @@ static eigen::VectorXd LSTDQ(SampleFactory &sample_factory, const std::vector<Sa
     vector_b.setZero();
 
     for (unsigned int i = 0; i < samples.size(); ++i) {
-        const Sample sample = samples.at(i);
-        const LSPIState s = boost::get<0>(sample);
-        const LSPIState s_prime = boost::get<3>(sample);
-        const unsigned int a = boost::get<1>(sample);
-        const double r = boost::get<2>(sample);
+        const Sample &sample = samples.at(i);
+        const LSPIState &s = boost::get<0>(sample);
+        const LSPIState &s_prime = boost::get<3>(sample);
+        const unsigned int &a = boost::get<1>(sample);
+        const double &r = boost::get<2>(sample);
 
         const eigen::VectorXd phi_sa = Phi(s, a);
         const unsigned int a_prime = Pi(sample_factory, s_prime, weights);
@@ -164,7 +164,7 @@ SystemState InitializeState(SampleFactory &sample_factory, const Vector3D &targe
     Vector3D position = target_position;
     if (position_offset_enabled) {
         for (unsigned int i = 0; i < 3; ++i) {
-            position[i] += sample_factory.SampleUniform(- 3.0, 3.0);
+            position[i] += sample_factory.SampleUniform(-3.0, 3.0);
         }
     }
     for (unsigned int i = 0; i < 3; ++i) {
@@ -194,7 +194,7 @@ static std::vector<Sample> PrepareSamples(SampleFactory &sample_factory, const u
 #endif
         const double dt = 1.0 / simulator.ControlFrequency();
 
-        SystemState state = InitializeState(sample_factory, target_position, true);
+        SystemState state = InitializeState(sample_factory, target_position, sample_factory.SampleBoolean());
         double time = sample_factory.SampleUniform(0.0, 12.0 * 60.0 * 60.0);
 
         for (unsigned int j = 0; j < num_steps; ++j) {

@@ -22,7 +22,7 @@ tied_weights =              [False]
 sigmoid_compressions =      [True]
 sigmoid_reconstructions =   [True]
 
-autoencoder_weights, supervised_layer_weights = load_autoencoder_weights(autoencoder_weights_path)
+autoencoder_weights, supervised_layer_weights = load_autoencoder_weights()
 
 numpy_rng = random.RandomState(89677)
 
@@ -35,14 +35,8 @@ test_labels = array(test_labels)
 sample_dimension = test_set.shape[1]
 label_dimension = test_labels.shape[1]
 
-stacked_autoencoder = StackedAutoencoder(numpy_rng=numpy_rng, n_ins=sample_dimension, n_outs=label_dimension,
-                                         hidden_layers_sizes=hidden_layer_sizes,
-                                         tied_weights=tied_weights,
-                                         sigmoid_compressions=sigmoid_compressions,
-                                         sigmoid_reconstructions=sigmoid_reconstructions,
-                                         autoencoder_weights=autoencoder_weights,
-                                         supervised_sigmoid_activation=supervised_sigmoid_activation,
-                                         supervised_layer_weights=supervised_layer_weights)
+stacked_autoencoder = StackedAutoencoder(numpy_rng=numpy_rng, autoencoder_weights_path)
+
 error = 0.0
 predicted_labels = stacked_autoencoder.predict(test_set)
 for y, y_tilde in zip(test_labels, predicted_labels):

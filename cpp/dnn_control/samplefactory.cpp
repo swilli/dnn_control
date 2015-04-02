@@ -36,6 +36,14 @@ double SampleFactory::SampleSign() {
     }
 }
 
+bool SampleFactory::SampleBoolean() {
+    if (generator_() % 2) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 boost::tuple<Vector3D, double, double, double> SampleFactory::SamplePointOutSideEllipsoid(const Vector3D &semi_axis, const double &min_scale, const double &max_scale) {
     Vector3D point;
 

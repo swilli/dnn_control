@@ -27,6 +27,9 @@ public:
     // X ~ U({-1,1})
     double SampleSign();
 
+    // X ~ U({true, false})
+    bool SampleBoolean();
+
     // Returns a point point, whereas
     // semi_axis_[0] * cos(u) * sin(v) * min_scale <= point[0] <= semi_axis[0] * cos(u) * sin(v) * max_scale
     // semi_axis_[1] * sin(u) * sin(v) * min_scale <= point[1] <= semi_axis[1] * sin(u) * sin(v) * max_scale

@@ -140,39 +140,35 @@ def load_sensor_files(training_data_path, testing_data_path,
     return training_data, training_labels, test_data, test_labels
 
 
-def load_autoencoder_weights(path_to_deep_network_weights):
+def load_config_data(config_path):
     from os import listdir
+    from data_loader import shared_dataset
     from numpy import array
 
     num_files_per_layer = 4
 
-    file_names = listdir(path_to_deep_network_weights)
+    file_names = listdir(config_path)
     file_names = sorted(file_names)
-    autoencoder_file_paths = [path_to_deep_network_weights + name for name in file_names if name.startswith("al")]
-    supervised_file_paths = [path_to_deep_network_weights + name for name in file_names if name.startswith("sl")]
+    autoencoder_file_paths = [config_path + name for name in file_names if name.startswith("al")]
+    supervised_file_paths = [config_path + name for name in file_names if name.startswith("sl")]
 
     autoencoder_weights = []
-    for i in xrange(len(autoencoder_file_paths)/num_files_per_layer):
-        weights_file = open(autoencoder_file_paths[num_files_per_layer*i], 'r')
-        weights_prime_file = open(autoencoder_file_paths[num_files_per_layer*i + 1], 'r')
-        bias_file = open(autoencoder_file_paths[num_files_per_layer*i + 2], 'r')
-        bias_prime_file = open(autoencoder_file_paths[num_files_per_layer*i + 3], 'r')
-
-        bias_data = bias_file.readline()
-        bias_file.close()
-        bias = array([float(value) for value in bias_data.split(",")])
-
-        bias_prime_data = bias_prime_file.readline()
-        bias_prime_file.close()
-        bias_prime = array([float(value) for value in bias_prime_data.split(",")])
-
-        weights_data = weights_file.read()
-        weights_file.close()
+    for i in range(len(autoencoder_file_paths)/num_files_per_layer):
+        with open(autoencoder_file_paths[num_files_per_layer*i], 'r') as weights_file:
+            weights_data = weights_file.read()
         weights = array([[float(value) for value in line.split(",")] for line in weights_data.split('\n')]).T
 
-        weights_prime_data = weights_prime_file.read()
-        weights_prime_file.close()
+        with open(autoencoder_file_paths[num_files_per_layer*i + 1], 'r') as weights_prime_file:
+            weights_prime_data = weights_prime_file.read()
         weights_prime = array([[float(value) for value in line.split(",")] for line in weights_prime_data.split('\n')]).T
+
+        with open(autoencoder_file_paths[num_files_per_layer*i + 2], 'r') as bias_file:
+            bias_data = bias_file.readline()
+        bias = array([float(value) for value in bias_data.split(",")])
+
+        with open(autoencoder_file_paths[num_files_per_layer*i + 3], 'r') as bias_prime_file:
+            bias_prime_data = bias_prime_file.readline()
+        bias_prime = array([float(value) for value in bias_prime_data.split(",")])
 
         weights = shared_dataset(weights, name='W')
         bias = shared_dataset(bias, name='b')
@@ -181,13 +177,16 @@ def load_autoencoder_weights(path_to_deep_network_weights):
 
         autoencoder_weights.append((weights, bias, weights_prime, bias_prime))
 
-    supervised_weights_file = open(supervised_file_paths[0], 'r')
-    supervised_weights_data = supervised_weights_file.read()
-    supervised_weights_file.close()
+    with open(supervised_file_paths[0], 'r') as supervised_weights_file:
+        supervised_weights_data = supervised_weights_file.read()
     supervised_weights = shared_dataset(array([[float(value) for value in line.split(",")] for line in supervised_weights_data.split('\n')]).T, name='W')
 
-    supervised_bias_file = open(supervised_file_paths[1], 'r')
-    supervised_bias_data = supervised_bias_file.readline()
+    with open(supervised_file_paths[1], 'r') as supervised_bias_file:
+        supervised_bias_data = supervised_bias_file.readline()
     supervised_bias = shared_dataset(array([float(value) for value in supervised_bias_data.split(",")]), name='b')
 
-    return autoencoder_weights, (supervised_weights, supervised_bias)
+    config_file_path = config_path + "conf.txt"
+    with open(config_file_path, 'r') as config_file:
+        config_data = config_file.readlines()
+
+    return autoencoder_weights, (supervised_weights, supervised_bias), config_data

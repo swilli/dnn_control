@@ -1,7 +1,7 @@
 from numpy import random, array
 from numpy.linalg import norm
 from stacked_autoencoder import StackedAutoencoder
-from data_loader import load_autoencoder_weights, load_data_set
+from data_loader import load_data_set
 import os
 
 testing_path = "/home/willist/Documents/dnn/data/no_policy_rv_1Hz/testing/"
@@ -15,16 +15,6 @@ include_actions_in_history = False
 
 batch_size = 1
 
-supervised_sigmoid_activation = False
-
-hidden_layer_sizes = [100]
-
-tied_weights =              [False]
-sigmoid_compressions =      [False]
-sigmoid_reconstructions =   [False]
-
-autoencoder_weights, supervised_layer_weights = load_autoencoder_weights(autoencoder_weights_path)
-
 numpy_rng = random.RandomState(89677)
 
 testing_files = os.listdir(testing_path)
@@ -36,28 +26,25 @@ test_labels = array(test_labels)
 sample_dimension = test_set.shape[1]
 label_dimension = test_labels.shape[1]
 
-stacked_autoencoder = StackedAutoencoder(numpy_rng=numpy_rng, n_ins=sample_dimension, n_outs=label_dimension,
-                                         hidden_layers_sizes=hidden_layer_sizes,
-                                         tied_weights=tied_weights,
-                                         sigmoid_compressions=sigmoid_compressions,
-                                         sigmoid_reconstructions=sigmoid_reconstructions,
-                                         autoencoder_weights=autoencoder_weights,
-                                         supervised_sigmoid_activation=supervised_sigmoid_activation,
-                                         supervised_layer_weights=supervised_layer_weights)
+stacked_autoencoder = StackedAutoencoder.from_config_path(numpy_rng, autoencoder_weights_path)
 
-simulation_time = 300
-predicted_sequence = test_set[0, :].tolist()
-correct_sequence = test_set[0, :].tolist()
-for i in range(simulation_time):
-    print("{0} seconds predicted".format(i+1))
-    current_sample = predicted_sequence[-sample_dimension:]
-    next_state = stacked_autoencoder.predict(current_sample)[0]
-    predicted_sequence.extend(next_state)
-    correct_sequence.extend(test_labels[i, :].tolist())
+#simulation_time = 10000
+#predicted_sequence = test_set[0, :].tolist()
+#correct_sequence = test_set[0, :].tolist()
+#for i in range(simulation_time):
+#    print("{0} seconds predicted".format(i+1))
+#    current_sample = test_set[i, :]
+#    next_state = stacked_autoencoder.predict(current_sample)[0]
+#    predicted_sequence.extend(next_state)
+#    correct_next_state = test_labels[i, :].tolist()
+#    correct_sequence.extend(correct_next_state)
 
-state_dimension = 6
-predicted_states = array(predicted_sequence).reshape(len(predicted_sequence) / state_dimension, state_dimension).tolist()
-correct_states = array(correct_sequence).reshape(len(correct_sequence) / state_dimension, state_dimension).tolist()
+predicted_states = stacked_autoencoder.predict(test_set).tolist()
+correct_states = test_labels.tolist()
+
+#state_dimension = 6
+#predicted_states = array(predicted_sequence).reshape(len(predicted_sequence) / state_dimension, state_dimension).tolist()
+#correct_states = array(correct_sequence).reshape(len(correct_sequence) / state_dimension, state_dimension).tolist()
 
 with open(prediction_file, 'w+') as prediction_file:
     data = ""
