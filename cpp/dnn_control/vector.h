@@ -60,7 +60,7 @@ inline double VectorNorm(const Vector2D &vector) {
 }
 
 // nv = vector/||vector||
-inline Vector3D VectorNormalize(const Vector3D &vector) {
+inline Vector3D VectorNormalized(const Vector3D &vector) {
     Vector3D result;
     const double norm = VectorNorm(vector);
     if (norm == 0) {
@@ -74,7 +74,7 @@ inline Vector3D VectorNormalize(const Vector3D &vector) {
 }
 
 // nv = vector/||vector||
-inline Vector2D VectorNormalize(const Vector2D &vector) {
+inline Vector2D VectorNormalized(const Vector2D &vector) {
     Vector2D result;
     const double norm = VectorNorm(vector);
     if (norm == 0) {

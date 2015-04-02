@@ -75,8 +75,8 @@ def load_sensor_file(file_path, num_lines=None):
 def load_data_set(file_paths, num_samples_per_file, history_length, with_actions):
     total_states = []
     total_actions = []
+    print '... loading ' + str(num_samples_per_file) + ' samples from each file'
     for file_path in file_paths:
-        print '... loading ' + str(num_samples_per_file) + ' samples from data file ' + file_path
         states, actions = load_sensor_file(file_path, num_samples_per_file)
         total_states = total_states + [states]
         total_actions = total_actions + [actions]
@@ -122,14 +122,13 @@ def load_sensor_files(training_data_path, testing_data_path,
     test_file_paths = sample(test_file_paths, num_test_files)
     shuffle(test_file_paths)
 
-
-    print("Loading training data")
+    print '... loading training data'
     training_data, training_labels = load_data_set(training_file_paths, num_training_samples_per_file, history_length, with_actions)
-    print("Loading test data")
+    print '... loading testing data'
     test_data, test_labels = load_data_set(test_file_paths, num_test_samples_per_file, history_length, with_actions)
 
-    print("{0} training samples loaded.".format(len(training_data)))
-    print("{0} test samples loaded.".format(len(test_data)))
+    print '... ' + str(len(training_data)) + ' training samples loaded'
+    print '... ' + str(len(test_data)) + ' test samples loaded'
 
     if shared:
         training_data = shared_dataset(training_data)

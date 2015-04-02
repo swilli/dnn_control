@@ -12,9 +12,9 @@
 int main(int argc, char *argv[]) {
     srand(time(0));
 
-    TrainLeastSquaresPolicyController();
+    //TrainLeastSquaresPolicyController();
 
-    //SensorDataGenerator generator(PATH_TO_SENSOR_DATA_FOLDER, 86400.0);
-    //generator.Generate(1, 0);
+    SensorDataGenerator generator(PATH_TO_SENSOR_DATA_FOLDER, 300.0);
+    generator.Generate(15000, 0);
 }
 

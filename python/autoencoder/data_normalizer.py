@@ -36,10 +36,9 @@ def load_data(data_folder, num_lines=None):
     total_actions = []
     num_loaded = 0
     for file_path in file_paths:
-        #print '... loading samples from data file ' + file_path
         states, actions = load_sensor_file(file_path, num_lines)
-        num_loaded += 1
-        if (num_loaded % 1000) == 0:
+        num_loaded += len(states)
+        if (num_loaded % 100) == 0:
             print(num_loaded)
 
         set_sizes.append(len(states))
@@ -208,8 +207,10 @@ if __name__ == '__main__':
     from numpy.random import shuffle
     import os
 
-    input_data_path = "/home/willist/Documents/dnn/data/no_policy_rv_10Hz/raw/"
-    output_data_path = "/home/willist/Documents/dnn/data/no_policy_rv_10Hz/"
+    user_path = os.path.expanduser("~")
+
+    input_data_path = user_path + "/Documents/dnn/data/fixed_ast/raw/"
+    output_data_path = user_path + "/Documents/dnn/data/fixed_ast/"
 
     num_samples = None
     gaussian_standardization = False

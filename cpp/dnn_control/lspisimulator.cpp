@@ -11,14 +11,16 @@ LSPISimulator::LSPISimulator(const unsigned int &random_seed)
     minimum_step_size_ = 0.1;
     control_frequency_ = 1.0;
 
-    const double c_semi_axis = sample_factory_.SampleUniform(100.0, 8000.0);
-    const double b_semi_axis_n = sample_factory_.SampleUniform(1.1, 2.0);
-    const double a_semi_axis_n = sample_factory_.SampleUniform(1.1 * b_semi_axis_n, 4.0);
+    SampleFactory asteroid_sf(random_seed);
+
+    const double c_semi_axis = asteroid_sf.SampleUniform(100.0, 8000.0);
+    const double b_semi_axis_n = asteroid_sf.SampleUniform(1.1, 2.0);
+    const double a_semi_axis_n = asteroid_sf.SampleUniform(1.1 * b_semi_axis_n, 4.0);
     const Vector3D semi_axis = {a_semi_axis_n * c_semi_axis, b_semi_axis_n * c_semi_axis, c_semi_axis};
-    const double density = sample_factory_.SampleUniform(1500.0, 3000.0);
+    const double density = asteroid_sf.SampleUniform(1500.0, 3000.0);
     const double magn_angular_velocity = 0.85 * sqrt((kGravitationalConstant * 4.0/3.0 * kPi * semi_axis[0] * semi_axis[1] * semi_axis[2] * density) / (semi_axis[0] * semi_axis[0] * semi_axis[0]));
-    const Vector2D angular_velocity_xz = {sample_factory_.SampleSign() * sample_factory_.SampleUniform(magn_angular_velocity * 0.5, magn_angular_velocity), sample_factory_.SampleSign() * sample_factory_.SampleUniform(magn_angular_velocity * 0.5, magn_angular_velocity)};
-    const double time_bias = sample_factory_.SampleUniform(0.0, 12.0 * 60 * 60);
+    const Vector2D angular_velocity_xz = {asteroid_sf.SampleSign() * asteroid_sf.SampleUniform(magn_angular_velocity * 0.5, magn_angular_velocity), asteroid_sf.SampleSign() * asteroid_sf.SampleUniform(magn_angular_velocity * 0.5, magn_angular_velocity)};
+    const double time_bias = asteroid_sf.SampleUniform(0.0, 12.0 * 60 * 60);
     asteroid_ = Asteroid(semi_axis, density, angular_velocity_xz, time_bias);
 
     spacecraft_maximum_mass_ = sample_factory_.SampleUniform(450.0, 500.0);

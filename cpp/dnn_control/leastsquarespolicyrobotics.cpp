@@ -159,13 +159,11 @@ static LSPIState SystemStateToLSPIState(const SystemState &state, const Vector3D
     return lspi_state;
 }
 
-SystemState InitializeState(SampleFactory &sample_factory, const Vector3D &target_position, const bool &position_offset_enabled) {
+SystemState InitializeState(SampleFactory &sample_factory, const Vector3D &target_position, const double &maximum_position_offset) {
     SystemState system_state;
     Vector3D position = target_position;
-    if (position_offset_enabled) {
-        for (unsigned int i = 0; i < 3; ++i) {
-            position[i] += sample_factory.SampleUniform(-3.0, 3.0);
-        }
+    for (unsigned int i = 0; i < 3; ++i) {
+        position[i] += sample_factory.SampleUniform(-maximum_position_offset, maximum_position_offset);
     }
     for (unsigned int i = 0; i < 3; ++i) {
         system_state[i] = position[i];
@@ -194,7 +192,7 @@ static std::vector<Sample> PrepareSamples(SampleFactory &sample_factory, const u
 #endif
         const double dt = 1.0 / simulator.ControlFrequency();
 
-        SystemState state = InitializeState(sample_factory, target_position, sample_factory.SampleBoolean());
+        SystemState state = InitializeState(sample_factory, target_position, sample_factory.SampleBoolean() * 6.0);
         double time = sample_factory.SampleUniform(0.0, 12.0 * 60.0 * 60.0);
 
         for (unsigned int j = 0; j < num_steps; ++j) {
@@ -248,7 +246,7 @@ static boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector
     Asteroid &asteroid = simulator.AsteroidOfSystem();
     const double dt = 1.0 / simulator.ControlFrequency();
 
-    SystemState state = InitializeState(sample_factory, target_position, LSPR_IC_POSITION_OFFSET_ENABLED);
+    SystemState state = InitializeState(sample_factory, target_position, LSPR_IC_POSITION_OFFSET_ENABLED * 3.0);
     state[6] = simulator.SpacecraftMaximumMass();
     double time = 0.0;
 

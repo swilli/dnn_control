@@ -30,26 +30,19 @@ void ODESystem::operator ()(const SystemState &state, SystemState &d_state_dt, c
     // 1/m
     const double coef_mass = 1.0 / mass;
 
-    Vector3D position;
-    Vector3D velocity;
-    for (unsigned int i = 0; i < 3; ++i) {
-        position[i] = state[i];
-        velocity[i] = state[3+i];
-    }
+    const Vector3D &position = {state[0], state[1], state[2]};
+    const Vector3D &velocity = {state[3], state[4], state[5]};
 
     // Fg
     const Vector3D gravity_acceleration = asteroid_.GravityAccelerationAtPosition(position);
 
     // w, w'
     const boost::tuple<Vector3D, Vector3D> result = asteroid_.AngularVelocityAndAccelerationAtTime(time);
-    const Vector3D angular_velocity = boost::get<0>(result);
-    const Vector3D angular_acceleration = boost::get<1>(result);
+    const Vector3D &angular_velocity = boost::get<0>(result);
+    const Vector3D &angular_acceleration = boost::get<1>(result);
 
     // Fc
-    Vector3D thrust_acceleration;
-    for (unsigned int i = 0; i < 3; ++i) {
-        thrust_acceleration[i] = thrust_[i] * coef_mass;
-    }
+    const Vector3D thrust_acceleration = VectorMul(coef_mass, thrust_);
 
     // w' x r
     const Vector3D euler_acceleration = VectorCrossProduct(angular_acceleration, position);
@@ -57,18 +50,17 @@ void ODESystem::operator ()(const SystemState &state, SystemState &d_state_dt, c
     // w x (w x r)
     const Vector3D centrifugal_acceleration = VectorCrossProduct(angular_velocity, VectorCrossProduct(angular_velocity, position));
 
-    Vector3D tmp;
-    for(unsigned int i = 0; i < 3; ++i) {
-        tmp[i] = angular_velocity[i] * 2.0;
-    }
-
     // 2w x r'
-    const Vector3D coriolis_acceleration = VectorCrossProduct(tmp, velocity);
+    const Vector3D coriolis_acceleration = VectorCrossProduct(VectorMul(2.0, angular_velocity), velocity);
 
     for (unsigned int i = 0; i < 3 ;++i) {
         d_state_dt[i] = state[3+i];
-        d_state_dt[3+i] = perturbations_acceleration_[i] + gravity_acceleration[i] + thrust_acceleration[i]
-                - coriolis_acceleration[i] - euler_acceleration[i] - centrifugal_acceleration[i];
+        d_state_dt[3+i] = perturbations_acceleration_[i]
+                + gravity_acceleration[i]
+                + thrust_acceleration[i]
+                - coriolis_acceleration[i]
+                - euler_acceleration[i]
+                - centrifugal_acceleration[i];
     }
 
 #if ODES_ENABLE_FUEL
