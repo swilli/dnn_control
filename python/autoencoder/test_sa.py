@@ -1,4 +1,5 @@
 from numpy import random, array
+from random import sample
 from numpy.linalg import norm
 from stacked_autoencoder import StackedAutoencoder
 from data_loader import load_data_set
@@ -6,12 +7,12 @@ import os
 
 user_path = os.path.expanduser("~")
 
-testing_path = user_path + "/Documents/dnn/data/fixed_ast_fixed_sc/testing/"
-autoencoder_weights_path = user_path + "/Documents/dnn/autoencoder/conf_7_7_sigmoid/"
+testing_path = user_path + "/Documents/dnn/data/fixed_ast/testing/"
+autoencoder_weights_path = user_path + "/Documents/dnn/autoencoder/conf_7_fixed_ast_linear/"
 prediction_file = user_path + "/Documents/dnn/results/prediction.txt"
 
-num_test_samples = 10000
-num_test_samples_per_file = 10000
+num_test_samples = 300
+num_test_samples_per_file = 300
 history_length = 10
 include_actions_in_history = False
 
@@ -21,6 +22,7 @@ numpy_rng = random.RandomState(89677)
 
 testing_files = os.listdir(testing_path)
 testing_files = [testing_path + name for name in testing_files if "set" in name]
+testing_files = sample(testing_files, num_test_samples / num_test_samples_per_file)
 test_set, test_labels = load_data_set(testing_files, num_test_samples_per_file, history_length, include_actions_in_history)
 test_set = array(test_set)
 test_labels = array(test_labels)
