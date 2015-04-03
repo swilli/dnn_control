@@ -7,23 +7,33 @@ import os
 
 user_path = os.path.expanduser("~")
 
-testing_path = user_path + "/Documents/dnn/data/fixed_ast/testing/"
-autoencoder_weights_path = user_path + "/Documents/dnn/autoencoder/conf_7_fixed_ast_linear/"
+testing_path = user_path + "/Documents/dnn/data/random_policy/testing/"
+autoencoder_weights_path = user_path + "/Documents/dnn/autoencoder/conf_7_random_policy/"
 prediction_file = user_path + "/Documents/dnn/results/prediction.txt"
 
-num_test_samples = 300
-num_test_samples_per_file = 300
+SINGLE_PREDICTION = True
+num_test_samples = 250
+num_test_samples_per_file = 250
 history_length = 10
-include_actions_in_history = False
+include_actions_in_history = True
+
 
 batch_size = 1
 
 numpy_rng = random.RandomState(89677)
 
+if not SINGLE_PREDICTION:
+    num_test_samples = num_test_samples_per_file
+
 testing_files = os.listdir(testing_path)
 testing_files = [testing_path + name for name in testing_files if "set" in name]
 testing_files = sample(testing_files, num_test_samples / num_test_samples_per_file)
 test_set, test_labels = load_data_set(testing_files, num_test_samples_per_file, history_length, include_actions_in_history)
+
+if not SINGLE_PREDICTION:
+    test_set_no_history, _ = load_data_set(testing_files, num_test_samples_per_file, 1, include_actions_in_history)
+    test_set_no_history = array(test_set_no_history)
+
 test_set = array(test_set)
 test_labels = array(test_labels)
 
@@ -32,24 +42,28 @@ label_dimension = test_labels.shape[1]
 
 stacked_autoencoder = StackedAutoencoder.from_config_path(numpy_rng, autoencoder_weights_path)
 
-predicted_states = stacked_autoencoder.predict(test_set).tolist()
-correct_states = test_labels.tolist()
+if SINGLE_PREDICTION:
+    predicted_states = stacked_autoencoder.predict(test_set).tolist()
+    correct_states = test_labels.tolist()
+else:
+    dim_state = 6
+    dim_action = 3
+    simulation_time = test_set_no_history.shape[0] - history_length
+    state_action_history = test_set_no_history[:history_length, :].ravel().tolist()
 
-#simulation_time = test_set.shape[0]
-#predicted_sequence = test_set[0, :].tolist()
-#correct_sequence = test_set[0, :].tolist()
-#for i in range(simulation_time):
-#    print("{0} seconds predicted".format(i+1))
-#    current_sample = test_set[i, :]
-#    next_state = stacked_autoencoder.predict(current_sample)[0]
-#    predicted_sequence.extend(next_state)
-#    correct_next_state = test_labels[i, :].tolist()
-#    correct_sequence.extend(correct_next_state)
+    predicted_states = test_set_no_history[:history_length, :dim_state].tolist()
+    correct_states = test_set_no_history[:history_length, :dim_state].tolist()
 
+    for i in range(simulation_time):
+        print("{0} seconds predicted".format(i+1))
+        current_sample = state_action_history[-sample_dimension:]
+        next_state = stacked_autoencoder.predict(current_sample)[0].tolist()
+        predicted_states.append(next_state)
+        state_action_history.extend(next_state)
+        state_action_history.extend(test_set_no_history[history_length + i, -dim_action:].tolist())
+        correct_next_state = test_labels[i, :].tolist()
+        correct_states.append(correct_next_state)
 
-#state_dimension = 6
-#predicted_states = array(predicted_sequence).reshape(len(predicted_sequence) / state_dimension, state_dimension).tolist()
-#correct_states = array(correct_sequence).reshape(len(correct_sequence) / state_dimension, state_dimension).tolist()
 
 with open(prediction_file, 'w+') as prediction_file:
     data = ""

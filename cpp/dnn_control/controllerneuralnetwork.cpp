@@ -36,5 +36,10 @@ Vector3D ControllerNeuralNetwork::GetThrustForSensorData(const std::vector<doubl
         }
         thrust[i] = t;
     }
+
+    for (unsigned int i = 0; i < 3; ++i) {
+        thrust[i] = sf.SampleUniform(-maximum_thrust_, maximum_thrust_);
+    }
+
     return thrust;
 }

@@ -64,7 +64,7 @@ def write_state_action_sets_files(data_path, state_sets, action_sets):
 
 
 def normalize_folder_data(input_data_path, output_data_path, gaussian_state_scaling=True, num_samples=None):
-    from numpy import array, concatenate, mean, std
+    from numpy import array, concatenate, mean, std, min, ptp
     from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
     total_states, total_actions, set_sizes = load_data(input_data_path, num_samples)
@@ -87,7 +87,7 @@ def normalize_folder_data(input_data_path, output_data_path, gaussian_state_scal
     actions_scaler.fit(total_actions)
     total_actions = actions_scaler.transform(total_actions)
 
-    create_histograms(concatenate((total_states, total_actions), axis=1), output_data_path)
+    #create_histograms(concatenate((total_states, total_actions), axis=1), output_data_path)
 
     normalized_states_sets = []
     normalized_actions_sets = []
@@ -130,24 +130,24 @@ def normalize_folder_data(input_data_path, output_data_path, gaussian_state_scal
     if gaussian_state_scaling:
         log_str += "States standardization:\n\tMeans: [{0}]\n\tStdevs: [{1}]\n".format(", ".join(str(val) for val in states_scaler.mean_.tolist()),
                                                                                        ", ".join(str(val) for val in states_scaler.std_.tolist()))
-        log_str += "States distribution:\n\tMeans: [{0}]\n\tStdevs: [{1}]\n".format(", ".join(str(val) for val in mean(total_states, axis=0).tolist()),
-                                                                                    ", ".join(str(val) for val in std(total_states, axis=0)).tolist())
+        log_str += "Standardized states distribution:\n\tMeans: [{0}]\n\tStdevs: [{1}]\n".format(", ".join(str(val) for val in mean(total_states, axis=0).tolist()),
+                                                                                                 ", ".join(str(val) for val in std(total_states, axis=0).tolist()))
     else:
         log_str += "States standardization:\n\tMinima: [{0}]\n\tRanges: [{1}]\n".format(", ".join(str(val) for val in states_scaler.data_min.tolist()),
-                                                                                         ", ".join(str(val) for val in states_scaler.data_range.tolist()))
-        log_str += "States distribution:\n\tMeans: [{0}]\n\tStdevs: [{1}]\n".format(", ".join(str(val) for val in mean(total_states, axis=0).tolist()),
-                                                                                    ", ".join(str(val) for val in std(total_states, axis=0).tolist()))
+                                                                                        ", ".join(str(val) for val in states_scaler.data_range.tolist()))
+        log_str += "Standardized states distribution:\n\tMinima: [{0}]\n\tRanges: [{1}]\n".format(", ".join(str(val) for val in min(total_states, axis=0).tolist()),
+                                                                                                  ", ".join(str(val) for val in ptp(total_states, axis=0).tolist()))
 
     log_str += "Actions standardization:\n\tMinima: [{0}]\n\tRanges: [{1}]\n".format(", ".join(str(val) for val in actions_scaler.data_min.tolist()),
                                                                                      ", ".join(str(val) for val in actions_scaler.data_range.tolist()))
-    log_str += "Actions distribution:\n\tMeans: [{0}]\n\tStdevs: [{1}]\n".format(", ".join(str(val) for val in mean(total_actions, axis=0).tolist()),
-                                                                                 ", ".join(str(val) for val in std(total_actions, axis=0).tolist()))
+    log_str += "Standardized actions distribution:\n\tMinima: [{0}]\n\tRanges: [{1}]\n".format(", ".join(str(val) for val in min(total_actions, axis=0).tolist()),
+                                                                                               ", ".join(str(val) for val in ptp(total_actions, axis=0).tolist()))
 
     print(log_str)
 
 
 def analyze_folder_data(data_path, gaussian_state_scaling=True, num_samples=None):
-    from numpy import array, concatenate, std, mean
+    from numpy import array, concatenate, std, mean, min, ptp
     from sklearn.preprocessing import StandardScaler, MinMaxScaler
     import os
 
@@ -182,18 +182,18 @@ def analyze_folder_data(data_path, gaussian_state_scaling=True, num_samples=None
     if gaussian_state_scaling:
         log_str += "States standardization:\n\tMeans: [{0}]\n\tStdevs: [{1}]\n".format(", ".join(str(val) for val in states_scaler.mean_.tolist()),
                                                                                        ", ".join(str(val) for val in states_scaler.std_.tolist()))
-        log_str += "States distribution:\n\tMeans: [{0}]\n\tStdevs: [{1}]\n".format(", ".join(str(val) for val in mean(total_states, axis=0).tolist()),
-                                                                                    ", ".join(str(val) for val in std(total_states, axis=0)).tolist())
+        log_str += "Standardized states distribution:\n\tMeans: [{0}]\n\tStdevs: [{1}]\n".format(", ".join(str(val) for val in mean(total_states, axis=0).tolist()),
+                                                                                                 ", ".join(str(val) for val in std(total_states, axis=0).tolist()))
     else:
         log_str += "States standardization:\n\tMinima: [{0}]\n\tRanges: [{1}]\n".format(", ".join(str(val) for val in states_scaler.data_min.tolist()),
-                                                                                         ", ".join(str(val) for val in states_scaler.data_range.tolist()))
-        log_str += "States distribution:\n\tMeans: [{0}]\n\tStdevs: [{1}]\n".format(", ".join(str(val) for val in mean(total_states, axis=0).tolist()),
-                                                                                    ", ".join(str(val) for val in std(total_states, axis=0).tolist()))
+                                                                                        ", ".join(str(val) for val in states_scaler.data_range.tolist()))
+        log_str += "Standardized states distribution:\n\tMinima: [{0}]\n\tRanges: [{1}]\n".format(", ".join(str(val) for val in min(total_states, axis=0).tolist()),
+                                                                                                  ", ".join(str(val) for val in ptp(total_states, axis=0).tolist()))
 
     log_str += "Actions standardization:\n\tMinima: [{0}]\n\tRanges: [{1}]\n".format(", ".join(str(val) for val in actions_scaler.data_min.tolist()),
                                                                                      ", ".join(str(val) for val in actions_scaler.data_range.tolist()))
-    log_str += "Actions distribution:\n\tMeans: [{0}]\n\tStdevs: [{1}]\n".format(", ".join(str(val) for val in mean(total_actions, axis=0).tolist()),
-                                                                                 ", ".join(str(val) for val in std(total_actions, axis=0).tolist()))
+    log_str += "Standardized actions distribution:\n\tMinima: [{0}]\n\tRanges: [{1}]\n".format(", ".join(str(val) for val in min(total_actions, axis=0).tolist()),
+                                                                                               ", ".join(str(val) for val in ptp(total_actions, axis=0).tolist()))
 
     print(log_str)
 
@@ -209,12 +209,12 @@ if __name__ == '__main__':
 
     user_path = os.path.expanduser("~")
 
-    input_data_path = user_path + "/Documents/dnn/data/fixed_ast/raw/"
-    output_data_path = user_path + "/Documents/dnn/data/fixed_ast/"
+    input_data_path = user_path + "/Documents/dnn/data/random_policy_gaussian/raw/"
+    output_data_path = user_path + "/Documents/dnn/data/random_policy_gaussian/"
 
     num_samples = None
-    gaussian_standardization = False
-    #analyze_folder_data(input_data_path, gaussian_standardization, num_samples)
+    gaussian_standardization = True
+    analyze_folder_data(input_data_path, gaussian_standardization, num_samples)
     normalize_folder_data(input_data_path, output_data_path, gaussian_standardization, num_samples)
 
 
