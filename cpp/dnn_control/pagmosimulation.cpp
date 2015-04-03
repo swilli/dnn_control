@@ -74,7 +74,7 @@ void PaGMOSimulation::Init() {
     fixed_step_size_ = 0.1;
     control_frequency_ = 1.0;
 
-    SampleFactory asteroid_sf(2357136044);
+    SampleFactory asteroid_sf(random_seed_);
     SampleFactory spacecraft_sf(random_seed_);
 
     const double c_semi_axis = asteroid_sf.SampleUniform(100.0, 8000.0);

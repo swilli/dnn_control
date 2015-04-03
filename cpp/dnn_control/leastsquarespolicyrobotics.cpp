@@ -13,8 +13,6 @@
 #include <fstream>
 #include <limits>
 
-namespace eigen = Eigen;
-
 static const double kSpacecraftMaximumThrust = 21.0;
 static const unsigned int kSpacecraftStateDimension = 6;
 
@@ -64,8 +62,8 @@ static void Init() {
     kSpacecraftPhiSize = kSpacecraftNumActions * kSpacecraftPolynomialDimensions;
 }
 
-static eigen::VectorXd Phi(const LSPIState &state, const unsigned int &action) {
-    eigen::VectorXd result = eigen::VectorXd(kSpacecraftPhiSize);
+static Eigen::VectorXd Phi(const LSPIState &state, const unsigned int &action) {
+    Eigen::VectorXd result = Eigen::VectorXd(kSpacecraftPhiSize);
     result.setZero();
     unsigned int base = action * kSpacecraftPolynomialDimensions;
 
@@ -81,12 +79,12 @@ static eigen::VectorXd Phi(const LSPIState &state, const unsigned int &action) {
     return result;
 }
 
-static unsigned int Pi(SampleFactory &sample_factory, const LSPIState &state, const eigen::VectorXd &weights) {
+static unsigned int Pi(SampleFactory &sample_factory, const LSPIState &state, const Eigen::VectorXd &weights) {
     std::vector<unsigned int> best_a;
     double best_q = -std::numeric_limits<double>::max();
     for (unsigned int a = 0; a < kSpacecraftNumActions; ++a) {
-        eigen::VectorXd val_phi = Phi(state, a);
-        eigen::VectorXd val_phi_t = val_phi.transpose();
+        Eigen::VectorXd val_phi = Phi(state, a);
+        Eigen::VectorXd val_phi_t = val_phi.transpose();
 
         const double q = val_phi_t.dot(weights);
         if (q > best_q) {
@@ -100,10 +98,10 @@ static unsigned int Pi(SampleFactory &sample_factory, const LSPIState &state, co
     return best_a.at(sample_factory.SampleRandomInteger() % best_a.size());
 }
 
-static eigen::VectorXd LSTDQ(SampleFactory &sample_factory, const std::vector<Sample> &samples, const double &gamma, const eigen::VectorXd &weights) {
-    eigen::MatrixXd matrix_A(kSpacecraftPhiSize, kSpacecraftPhiSize);
+static Eigen::VectorXd LSTDQ(SampleFactory &sample_factory, const std::vector<Sample> &samples, const double &gamma, const Eigen::VectorXd &weights) {
+    Eigen::MatrixXd matrix_A(kSpacecraftPhiSize, kSpacecraftPhiSize);
     matrix_A.setZero();
-    eigen::VectorXd vector_b(kSpacecraftPhiSize);
+    Eigen::VectorXd vector_b(kSpacecraftPhiSize);
     vector_b.setZero();
 
     for (unsigned int i = 0; i < samples.size(); ++i) {
@@ -113,9 +111,9 @@ static eigen::VectorXd LSTDQ(SampleFactory &sample_factory, const std::vector<Sa
         const unsigned int &a = boost::get<1>(sample);
         const double &r = boost::get<2>(sample);
 
-        const eigen::VectorXd phi_sa = Phi(s, a);
+        const Eigen::VectorXd phi_sa = Phi(s, a);
         const unsigned int a_prime = Pi(sample_factory, s_prime, weights);
-        const eigen::VectorXd phi_sa_prime = Phi(s_prime, a_prime);
+        const Eigen::VectorXd phi_sa_prime = Phi(s_prime, a_prime);
 
         matrix_A = matrix_A + phi_sa * (phi_sa - gamma * phi_sa_prime).transpose();
         vector_b = vector_b + r * phi_sa;
@@ -124,9 +122,9 @@ static eigen::VectorXd LSTDQ(SampleFactory &sample_factory, const std::vector<Sa
     return matrix_A.inverse() * vector_b;
 }
 
-static eigen::VectorXd LSPI(SampleFactory &sample_factory, const std::vector<Sample> &samples, const double &gamma, const double &epsilon, const eigen::VectorXd &initial_weights) {
-    eigen::VectorXd w_prime(initial_weights);
-    eigen::VectorXd w;
+static Eigen::VectorXd LSPI(SampleFactory &sample_factory, const std::vector<Sample> &samples, const double &gamma, const double &epsilon, const Eigen::VectorXd &initial_weights) {
+    Eigen::VectorXd w_prime(initial_weights);
+    Eigen::VectorXd w;
 
     double val_norm = 0.0;
     unsigned int iteration = 0;
@@ -197,6 +195,7 @@ static std::vector<Sample> PrepareSamples(SampleFactory &sample_factory, const u
 
         for (unsigned int j = 0; j < num_steps; ++j) {
             const Vector3D &position = {state[0], state[1], state[2]};
+            const double &mass = state[6];
 
             const LSPIState lspi_state = SystemStateToLSPIState(state, target_position);
 
@@ -210,19 +209,20 @@ static std::vector<Sample> PrepareSamples(SampleFactory &sample_factory, const u
             SystemState next_state = boost::get<0>(result);
 
             const Vector3D &next_position = {next_state[0], next_state[1], next_state[2]};
+            const double &next_mass = next_state[6];
 
             const LSPIState next_lspi_state = SystemStateToLSPIState(next_state, target_position);
 
-            const double delta_state = VectorNorm(VectorSub(target_position, position)) - VectorNorm(VectorSub(target_position, next_position));
-
+            const double delta_position = VectorNorm(VectorSub(target_position, position)) - VectorNorm(VectorSub(target_position, next_position));
+            const double delta_mass = next_mass - mass;
 #if LSPR_REWARD_WITH_VELOCITY
             const Vector3D &next_velocity = {next_state[3], next_state[4], next_state[5]};
             const Vector3D &velocity = {state[3], next_state[4], next_state[5]};
 
             const double delta_velocity = VectorNorm(velocity) - VectorNorm(next_velocity);
-            const double r = delta_state + delta_velocity;
+            const double r = delta_position + delta_velocity + delta_mass;
 #else
-            const double r = delta_state - error_next_state;
+            const double r = delta_position + delta_mass;
 #endif
 
             samples.push_back(boost::make_tuple(lspi_state, a, r, next_lspi_state));
@@ -235,7 +235,7 @@ static std::vector<Sample> PrepareSamples(SampleFactory &sample_factory, const u
 }
 
 
-static boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > EvaluatePolicy(SampleFactory &sample_factory, const eigen::VectorXd &weights, LSPISimulator &simulator, const Vector3D &target_position, const unsigned int &num_steps) {
+static boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > EvaluatePolicy(SampleFactory &sample_factory, const Eigen::VectorXd &weights, LSPISimulator &simulator, const Vector3D &target_position, const unsigned int &num_steps) {
     std::vector<double> evaluated_times(num_steps + 1);
     std::vector<double> evaluated_masses(num_steps + 1);
     std::vector<Vector3D> evaluated_positions(num_steps + 1);
@@ -313,7 +313,7 @@ static boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector
     return boost::make_tuple(evaluated_times, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities, evaluated_thrusts);
 }
 
-static boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<std::pair<double, double> > > PostEvaluateLSPIController(const eigen::VectorXd &controller_weights, const unsigned int &start_seed, const std::vector<unsigned int> &random_seeds=std::vector<unsigned int>()) {
+static boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<std::pair<double, double> > > PostEvaluateLSPIController(const Eigen::VectorXd &controller_weights, const unsigned int &start_seed, const std::vector<unsigned int> &random_seeds=std::vector<unsigned int>()) {
     unsigned int num_tests = random_seeds.size();
     std::vector<unsigned int> used_random_seeds;
     if (num_tests == 0) {
@@ -380,13 +380,13 @@ void TestLeastSquaresPolicyController(const unsigned int &random_seed) {
     const boost::tuple<Vector3D, double, double, double> sampled_point = sample_factory.SamplePointOutSideEllipsoid(simulator.AsteroidOfSystem().SemiAxis(), 1.1, 4.0);
     const Vector3D &target_position = boost::get<0>(sampled_point);
 
-    eigen::VectorXd weights(kSpacecraftPhiSize);
+    Eigen::VectorXd weights(kSpacecraftPhiSize);
 
     std::ifstream weight_file(PATH_TO_LSPI_WEIGHT_VECTOR_FILE);
     double weight = 0;
     unsigned int i = 0;
     while (weight_file >> weight) {
-        weights(i++) = weight;
+        weights[i++] = weight;
     }
     weight_file.close();
 
@@ -408,6 +408,8 @@ void TestLeastSquaresPolicyController(const unsigned int &random_seed) {
     FileWriter writer_evaluation(PATH_TO_LSPI_EVALUATION_FILE);
     writer_evaluation.CreateEvaluationFile(random_seed, target_position, simulator.AsteroidOfSystem(), times, positions, velocities, thrusts);
     std::cout << "done." << std::endl;
+
+    return;
 
     std::cout << "Performing post evaluation ... ";
     const boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<std::pair<double, double > > > post_evaluation = PostEvaluateLSPIController(weights, random_seed);
@@ -447,13 +449,18 @@ void TrainLeastSquaresPolicyController() {
 
     std::cout << "collected " << samples.size() << " samples." << std::endl;
 
-    eigen::VectorXd weights(kSpacecraftPhiSize);
+    Eigen::VectorXd weights(kSpacecraftPhiSize);
     weights.setZero();
     weights = LSPI(sample_factory, samples, gamma, epsilon, weights);
 
-    std::cout << "solution:" << std::endl << "<< ";
-    for (unsigned int i = 0; i < weights.rows() - 1; ++i) {
-        std::cout << weights[i] << ", ";
+    std::cout << "solution:" << std::endl;
+    std::cout << weights[0];
+    for (unsigned int i = 1; i < weights.rows(); ++i) {
+        std::cout << ", " << weights[i];
     }
-    std::cout << weights[weights.rows()-1] << ";" << std::endl;
+    std::cout << std::endl;
+    std::cout << "creating lspi weights file ... ";
+    FileWriter weights_writer(PATH_TO_LSPI_WEIGHT_VECTOR_FILE);
+    weights_writer.CreateLSPIWeightsFile(weights);
+    std::cout << "done." << std::endl;
 }

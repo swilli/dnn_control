@@ -61,8 +61,8 @@
 #define PGMOS_IC_BODY_RANDOM_VELOCITY        3
 #define PGMOS_IC_BODY_PROPORTIONAL_VELOCITY 4
 
-#define PGMOS_IC_VELOCITY_TYPE  PGMOS_IC_INERTIAL_ORBITAL_VELOCITY
-#define PGMOS_IC_ENABLE_POSITION_OFFSET    false
+#define PGMOS_IC_VELOCITY_TYPE  PGMOS_IC_BODY_RANDOM_VELOCITY
+#define PGMOS_IC_ENABLE_POSITION_OFFSET    true
 #define PGMOS_ENABLE_RELATIVE_POSITION  false
 #define PGMOS_ENABLE_VELOCITY   false
 #define PGMOS_ENABLE_OPTICAL_FLOW   false
@@ -97,7 +97,7 @@
 
 // Other stuff configs, not relevant for simulation
 #if ENABLE_EULER_HOME
-#define OUTPUT_ROOT_PATH   "/cluster/home/willist/"
+#define OUTPUT_ROOT_PATH   "/cluster/home/Documents/dnn/"
 #else
 #define OUTPUT_ROOT_PATH   "/home/willist/Documents/dnn/"
 #endif

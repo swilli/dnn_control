@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 #include <fstream>
+#include <eigen3/Eigen/Dense>
 
 class FileWriter {
 public:
@@ -30,8 +31,11 @@ public:
     // Create a file which can be visualized using vactionset.py
     void CreateActionSetFile(const std::vector<Vector3D> actions);
 
+    // Create a file which can be loaded as an LSPI Policy
+    void CreateLSPIWeightsFile(const Eigen::VectorXd &weights);
+
 private:
-	// The file to write into
+    // The file to write into
     std::ofstream file_;
 };
 

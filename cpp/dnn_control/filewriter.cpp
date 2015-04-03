@@ -93,3 +93,11 @@ void FileWriter::CreateActionSetFile(const std::vector<Vector3D> actions) {
         file_ << v[0] << ",\t" << v[1] << ",\t" << v[2] << std::endl;
     }
 }
+
+void FileWriter::CreateLSPIWeightsFile(const Eigen::VectorXd &weights) {
+    file_ << weights[0];
+    for (unsigned int i = 1; i < weights.rows(); ++i) {
+        file_ << " " << weights[i];
+    }
+    file_ << std::endl;
+}
