@@ -80,15 +80,15 @@ IF(ENABLE_MPI)
 ENDIF()
 
 # 6 - Define the target and linked libraries
-OPTION(BUILD_WITH_LSPI "BUILD WITH LSPI" OFF)
-MESSAGE(STATUS "BUILD with LSPI: ${BUILD_WITH_LSPI}")
+#OPTION(BUILD_WITH_LSPI "BUILD WITH LSPI" OFF)
+#MESSAGE(STATUS "BUILD with LSPI: ${BUILD_WITH_LSPI}")
 
 
-IF(BUILD_WITH_LSPI)
+#IF(BUILD_WITH_LSPI)
 add_executable(main main.cpp asteroid.cpp pagmosimulation.cpp pagmosimulationproportionalderivative.cpp pagmosimulationneuralnetwork.cpp odesystem.cpp filewriter.cpp samplefactory.cpp sensordatagenerator.cpp neuralnetwork.cpp feedforwardneuralnetwork.cpp simplerecurrentneuralnetwork.cpp stackedautoencoder.cpp sensorsimulator.cpp controller.cpp controllerproportionalderivative.cpp controllerneuralnetwork.cpp controllerdeepneuralnetwork.cpp hoveringproblemneuralnetwork.cpp hoveringproblemproportionalderivative.cpp evolutionaryrobotics.cpp lspisimulator.cpp leastsquarespolicyrobotics.cpp) 
-ELSE()
-add_executable(main main.cpp asteroid.cpp pagmosimulation.cpp pagmosimulationproportionalderivative.cpp pagmosimulationneuralnetwork.cpp odesystem.cpp filewriter.cpp samplefactory.cpp sensordatagenerator.cpp neuralnetwork.cpp feedforwardneuralnetwork.cpp simplerecurrentneuralnetwork.cpp stackedautoencoder.cpp sensorsimulator.cpp controller.cpp controllerproportionalderivative.cpp controllerneuralnetwork.cpp controllerdeepneuralnetwork.cpp hoveringproblemneuralnetwork.cpp hoveringproblemproportionalderivative.cpp evolutionaryrobotics.cpp lspisimulator.cpp) 
-ENDIF()
+#ELSE()
+#add_executable(main main.cpp asteroid.cpp pagmosimulation.cpp pagmosimulationproportionalderivative.cpp pagmosimulationneuralnetwork.cpp odesystem.cpp filewriter.cpp #samplefactory.cpp sensordatagenerator.cpp neuralnetwork.cpp feedforwardneuralnetwork.cpp simplerecurrentneuralnetwork.cpp stackedautoencoder.cpp sensorsimulator.cpp controller.#cpp controllerproportionalderivative.cpp controllerneuralnetwork.cpp controllerdeepneuralnetwork.cpp hoveringproblemneuralnetwork.cpp hoveringproblemproportionalderivative.cpp #evolutionaryrobotics.cpp lspisimulator.cpp) 
+#ENDIF()
 
 IF(MPI_COMPILE_FLAGS)
   SET_TARGET_PROPERTIES(main PROPERTIES COMPILE_FLAGS "${MPI_COMPILE_FLAGS}")
