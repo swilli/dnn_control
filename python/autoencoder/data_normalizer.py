@@ -63,13 +63,18 @@ def write_state_action_sets_files(data_path, state_sets, action_sets):
             output_file.write(data_str)
 
 
-def normalize_folder_data(input_data_path, output_data_path, gaussian_state_scaling=True, num_samples=None):
-    from numpy import array, concatenate, mean, std, min, ptp
+def normalize_folder_data(input_data_path, output_data_path, gaussian_state_scaling=False, logarithmic_state_transformation=True,
+                          num_samples=None):
+    from numpy import array, mean, std, min, ptp, log
     from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
     total_states, total_actions, set_sizes = load_data(input_data_path, num_samples)
     total_states = array(total_states)
     total_actions = array(total_actions)
+
+    if logarithmic_state_transformation:
+        total_states = total_states - min(total_states, axis=0) + 1.0
+        total_states = log(total_states)
 
     if gaussian_state_scaling:
         states_scaler = StandardScaler()
@@ -86,8 +91,6 @@ def normalize_folder_data(input_data_path, output_data_path, gaussian_state_scal
 
     actions_scaler.fit(total_actions)
     total_actions = actions_scaler.transform(total_actions)
-
-    #create_histograms(concatenate((total_states, total_actions), axis=1), output_data_path)
 
     normalized_states_sets = []
     normalized_actions_sets = []
@@ -146,8 +149,8 @@ def normalize_folder_data(input_data_path, output_data_path, gaussian_state_scal
     print(log_str)
 
 
-def analyze_folder_data(data_path, gaussian_state_scaling=True, num_samples=None):
-    from numpy import array, concatenate, std, mean, min, ptp
+def analyze_folder_data(data_path, gaussian_state_scaling=False, logarithmic_state_transformation=True, num_samples=None):
+    from numpy import array, concatenate, std, mean, min, ptp, log
     from sklearn.preprocessing import StandardScaler, MinMaxScaler
     import os
 
@@ -159,6 +162,10 @@ def analyze_folder_data(data_path, gaussian_state_scaling=True, num_samples=None
 
     total_states = array(total_states)
     total_actions = array(total_actions)
+
+    if logarithmic_state_transformation:
+        total_states = total_states - min(total_states, axis=0) + 1.0
+        total_states = log(total_states)
 
     if gaussian_state_scaling:
         states_scaler = StandardScaler()
@@ -214,13 +221,16 @@ if __name__ == '__main__':
 
     num_samples = None
     gaussian_standardization = False
+    logarithmic_state_transformation = True
     analyze_folder_data(data_path=input_data_path,
                         gaussian_state_scaling=gaussian_standardization,
+                        logarithmic_state_transformation=logarithmic_state_transformation,
                         num_samples=num_samples)
 
     normalize_folder_data(input_data_path=input_data_path,
                           output_data_path=output_data_path,
                           gaussian_state_scaling=gaussian_standardization,
+                          logarithmic_state_transformation=logarithmic_state_transformation,
                           num_samples=num_samples)
 
 
