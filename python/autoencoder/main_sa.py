@@ -9,12 +9,12 @@ from numpy import random, mean, inf, asarray
 from numpy.linalg import norm
 from random import sample
 
-path_suffix = "optical_flow"
+data_set = "test"
 
 user_path = os.path.expanduser("~")
 
-training_path = user_path + "/Documents/dnn/data/test/training/"
-testing_path = user_path + "/Documents/dnn/data/test/testing/"
+training_path = user_path + "/Documents/dnn/data/" + data_set + "/training/"
+testing_path = user_path + "/Documents/dnn/data/" + data_set + "/testing/"
 
 result_path = user_path + "/Documents/dnn/autoencoder/"
 autoencoder_weights_path = user_path + "/Documents/dnn/autoencoder/"
@@ -35,17 +35,17 @@ ENABLE_FINE_TUNING = True
 fine_tune_supervised = True
 fine_tune_learning_rate = 0.00001
 fine_tune_epochs = 1000
-supervised_sigmoid_activation = True
+supervised_sigmoid_activation = False
 
 hidden_layer_sizes = [120]
 corruption_levels = [0.01]
-pretraining_learning_rates = [0.01]
+pretraining_learning_rates = [0.001]
 tied_weights =              [True]
-sigmoid_compressions =      [True]
-sigmoid_reconstructions =   [True]
+sigmoid_compressions =      [False]
+sigmoid_reconstructions =   [False]
 
 
-description = "Path Suffix: " + path_suffix + "\n" + \
+description = "Data Set: " + data_set + "\n" + \
               "Training Path: " + training_path + "\n" + \
               "Testing Path: " + testing_path + "\n" + \
               "Feature Indexes: " + str(feature_indexes) + "\n" + \
@@ -197,7 +197,7 @@ if ENABLE_FINE_TUNING:
                                                                        ((end_time - start_time) / 60.)
 
 
-result_path += "conf_" + "_".join([str(value) for value in hidden_layer_sizes]) + "_" + path_suffix + "/"
+result_path += "conf_" + "_".join([str(value) for value in hidden_layer_sizes]) + "_" + data_set + "/"
 if not os.path.exists(result_path):
     os.makedirs(result_path)
 
