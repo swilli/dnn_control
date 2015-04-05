@@ -53,7 +53,8 @@ sigmoid_compressions =      [False]
 sigmoid_reconstructions =   [False]
 
 
-description = "Data Set: " + data_set + "\n" + \
+description = "Task Suffix: " + task_suffix + "\n" + \
+              "Data Set: " + data_set + "\n" + \
               "Training Path: " + training_path + "\n" + \
               "Testing Path: " + testing_path + "\n" + \
               "Feature Indexes: " + str(feature_indexes) + "\n" + \
