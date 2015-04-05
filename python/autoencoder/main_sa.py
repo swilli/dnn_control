@@ -9,6 +9,13 @@ from numpy import random, mean, inf, asarray
 from numpy.linalg import norm
 from random import sample
 
+
+def print_flush(text):
+    import sys
+    print(text)
+    sys.stdout.flush()
+
+
 data_set = "optical_flow"
 
 user_path = os.path.expanduser("~")
@@ -69,7 +76,7 @@ description = "Data Set: " + data_set + "\n" + \
               "Sigmoid Reconstructions: " + str(sigmoid_reconstructions) + "\n" + \
               "Supervised Sigmoid Activation: " + str(supervised_sigmoid_activation) + "\n"
 
-print(description)
+print_flush(description)
 
 training_set, training_labels, test_set, test_labels = load_sensor_files(training_path, testing_path,
                                                                          history_length=history_length,
@@ -88,13 +95,13 @@ n_train_batches /= batch_size
 #  start-snippet-3
 
 numpy_rng = random.RandomState(89677)
-print '... building the model'
+print_flush("... building the model")
 # construct the stacked denoising autoencoder class
 
 sample_dimension = training_set.get_value(borrow=True).shape[1]
 label_dimension = training_labels.get_value(borrow=True).shape[1]
-print '... sample dimension %d' % sample_dimension
-print '... label dimension %d' % label_dimension
+print_flush("... sample dimension %d" % sample_dimension)
+print_flush("... label dimension %d" % label_dimension)
 
 
 stacked_autoencoder = StackedAutoencoder(numpy_rng=numpy_rng, n_ins=sample_dimension, n_outs=label_dimension,
@@ -104,12 +111,12 @@ stacked_autoencoder = StackedAutoencoder(numpy_rng=numpy_rng, n_ins=sample_dimen
                                          supervised_sigmoid_activation=supervised_sigmoid_activation)
 
 
-print '... getting the pre-training functions'
+print_flush("... getting the pre-training functions")
 pretraining_fns = stacked_autoencoder.pretraining_functions(training_set=training_set, batch_size=batch_size)
 
 
 if ENABLE_FINE_TUNING:
-    print '... getting the fine-tune function'
+    print_flush("... getting the fine-tune function")
     if fine_tune_supervised:
         finetune_fn, validate_model = stacked_autoencoder.finetune_functions(training_set=training_set,
                                                                              training_labels=training_labels,
@@ -123,7 +130,7 @@ if ENABLE_FINE_TUNING:
                                                                                       learning_rate=fine_tune_learning_rate)
 
 
-print '... pre-training the model'
+print_flush("... pre-training the model")
 start_time = clock()
 # Pre-train layer-wise
 for i in range(stacked_autoencoder.n_layers):
@@ -137,15 +144,15 @@ for i in range(stacked_autoencoder.n_layers):
             cur_cost = pretraining_fns[i](index=batch_index, corruption=corruption_level, lr=learning_rate)
             c.append(cur_cost)
 
-        print '... ' + time.strftime("%c") + ': pre-training layer %i, epoch %d, cost %.20f' % (i+1, epoch, mean(c))
+        print_flush("... " + time.strftime("%c") + ": pre-training layer %i, epoch %d, cost %.20f" % (i+1, epoch, mean(c)))
 
 end_time = clock()
 
-print '... the pre-training code for file ' + os.path.split(__file__)[1] + ' ran for %.2fm' % ((end_time - start_time) / 60.)
+print_flush("... the pre-training code for file " + os.path.split(__file__)[1] + " ran for %.2fm" % ((end_time - start_time) / 60.))
 
 
 if ENABLE_FINE_TUNING:
-    print '... fine-tuning the model'
+    print_flush("... fine-tuning the model")
     patience = 10 * n_train_batches  # look as this many examples regardless
     patience_increase = 2.  # wait this much longer when a new best is
                             # found
@@ -173,8 +180,8 @@ if ENABLE_FINE_TUNING:
             if (iter + 1) % validation_frequency == 0:
                 validation_losses = validate_model()
                 this_validation_loss = mean(validation_losses)
-                print '... ' + time.strftime("%c") + ': epoch %i, minibatch %i/%i, validation error %.20f' % (epoch, minibatch_index + 1,
-                                                                                                          n_train_batches,this_validation_loss)
+                print_flush("... " + time.strftime("%c") + ": epoch %i, minibatch %i/%i, validation error %.20f" % (epoch, minibatch_index + 1,
+                                                                                                          n_train_batches,this_validation_loss))
 
                 # if we got the best validation score until now
                 if this_validation_loss < best_validation_loss:
@@ -191,17 +198,17 @@ if ENABLE_FINE_TUNING:
                 break
 
     end_time = time.clock()
-    print '... optimization complete with best validation score of %.20f on iteration %i' % (best_validation_loss,
-                                                                                      best_iter + 1)
-    print '... the training code for file ' + os.path.split(__file__)[1] + ' ran for %.2fm' %\
-                                                                       ((end_time - start_time) / 60.)
+    print_flush("... optimization complete with best validation score of %.20f on iteration %i" % (best_validation_loss,
+                                                                                      best_iter + 1))
+    print_flush("... the training code for file " + os.path.split(__file__)[1] + " ran for %.2fm" % \
+                                                                       ((end_time - start_time) / 60.))
 
 
 result_path += "conf_" + "_".join([str(value) for value in hidden_layer_sizes]) + "_" + data_set + "/"
 if not os.path.exists(result_path):
     os.makedirs(result_path)
 
-print '... saving stacked autencoder config to path ' + result_path
+print_flush("... saving stacked autencoder config to path " + result_path)
 stacked_autoencoder.save(result_path)
 reloaded_sa = StackedAutoencoder.from_config_path(numpy_rng, result_path)
 
