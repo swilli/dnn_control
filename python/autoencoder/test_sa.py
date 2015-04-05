@@ -28,7 +28,8 @@ if not SINGLE_PREDICTION:
 testing_files = os.listdir(testing_path)
 testing_files = [testing_path + name for name in testing_files if "set" in name]
 testing_files = sample(testing_files, num_test_samples / num_test_samples_per_file)
-test_set, test_labels = load_data_set(testing_files, num_test_samples_per_file, history_length, include_actions_in_history)
+test_set, test_labels = load_data_set(testing_files, num_test_samples_per_file, history_length,
+                                      feature_indexes=feature_indexes, label_indexes=label_indexes)
 
 if not SINGLE_PREDICTION:
     test_set_no_history, _ = load_data_set(testing_files, num_test_samples_per_file, 1, include_actions_in_history)

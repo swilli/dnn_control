@@ -209,12 +209,18 @@ if __name__ == '__main__':
 
     user_path = os.path.expanduser("~")
 
-    input_data_path = user_path + "/Documents/dnn/data/random_policy_gaussian/raw/"
-    output_data_path = user_path + "/Documents/dnn/data/random_policy_gaussian/"
+    input_data_path = user_path + "/Documents/dnn/data/optical_flow/raw/"
+    output_data_path = user_path + "/Documents/dnn/data/optical_flow/"
 
     num_samples = None
-    gaussian_standardization = True
-    analyze_folder_data(input_data_path, gaussian_standardization, num_samples)
-    normalize_folder_data(input_data_path, output_data_path, gaussian_standardization, num_samples)
+    gaussian_standardization = False
+    analyze_folder_data(data_path=input_data_path,
+                        gaussian_state_scaling=gaussian_standardization,
+                        num_samples=num_samples)
+
+    normalize_folder_data(input_data_path=input_data_path,
+                          output_data_path=output_data_path,
+                          gaussian_state_scaling=gaussian_standardization,
+                          num_samples=num_samples)
 
 

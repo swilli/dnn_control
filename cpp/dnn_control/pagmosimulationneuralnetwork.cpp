@@ -43,7 +43,7 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
 
 #if PGMOS_ENABLE_SENSOR_DATA_RECORDING
     SampleFactory sf_sensor_recording(sf_sensor_simulator.Seed());
-    SensorSimulator sensor_recorder(sf_sensor_recording, asteroid_, {SensorSimulator::SensorType::RelativePosition, SensorSimulator::SensorType::Velocity}, false);
+    SensorSimulator sensor_recorder(sf_sensor_recording, asteroid_, {SensorSimulator::SensorType::OpticalFlow, SensorSimulator::SensorType::Velocity}, false);
 #endif
 
 #if CNN_ENABLE_STACKED_AUTOENCODER

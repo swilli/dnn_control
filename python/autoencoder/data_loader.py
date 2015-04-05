@@ -10,36 +10,42 @@ def shared_dataset(data, borrow=True, name=None):
     return shared_data
 
 
-def sliding_window(data, label_length, sequence_length):
+def sliding_window(data, sequence_length, feature_indexes=None, label_indexes=None):
     design_matrix = []
     labels = []
+    if feature_indexes is None:
+        feature_indexes = range(0, len(data[0]))
+    if label_indexes is None:
+        label_indexes = range(0, len(data[0]))
+
     window_index = range(sequence_length)
     data_index = range(len(data) - sequence_length)
     for i in data_index:
         sample = []
         for j in window_index:
-            sample += data[i+j][:]
-        label = data[i+sequence_length][:label_length]
+            for k in feature_indexes:
+                sample.append(data[i+j][k])
+
+        label = []
+        for k in label_indexes:
+            label.append(data[i+sequence_length][k])
+
         design_matrix += [sample]
         labels += [label]
 
     return design_matrix, labels
 
 
-def historify_and_label(state_sets, action_sets, sequence_length, with_actions):
+def historify_and_label(state_sets, action_sets, sequence_length, feature_indexes=None, label_indexes=None):
     from numpy import array, concatenate
 
     result = []
     labels = []
     for states, actions in zip(state_sets, action_sets):
         states = array(states)
-        label_length = states.shape[1]
         actions = array(actions)
-        if with_actions:
-            samples = concatenate((states, actions), axis=1).tolist()
-        else:
-            samples = states.tolist()
-        historyfied_set, label_set = sliding_window(samples, label_length, sequence_length)
+        samples = concatenate((states, actions), axis=1).tolist()
+        historyfied_set, label_set = sliding_window(samples, sequence_length, feature_indexes, label_indexes)
         result += [historyfied_set]
         labels += [label_set]
 
@@ -72,7 +78,7 @@ def load_sensor_file(file_path, num_lines=None):
     return states, actions
 
 
-def load_data_set(file_paths, num_samples_per_file, history_length, with_actions):
+def load_data_set(file_paths, num_samples_per_file, history_length, feature_indexes=None, label_indexes=None):
     total_states = []
     total_actions = []
     print '... loading ' + str(num_samples_per_file) + ' samples from each file'
@@ -82,7 +88,7 @@ def load_data_set(file_paths, num_samples_per_file, history_length, with_actions
         total_actions = total_actions + [actions]
 
     print '... historifying and labelling data'
-    history_set, labels_set = historify_and_label(total_states, total_actions, history_length, with_actions)
+    history_set, labels_set = historify_and_label(total_states, total_actions, history_length, feature_indexes, label_indexes)
 
     total_data_set = []
     total_label_set = []
@@ -98,9 +104,10 @@ def load_sensor_files(training_data_path, testing_data_path,
                       num_training_samples_per_file=100,
                       num_test_samples=10000,
                       num_test_samples_per_file=10,
-                      shared=True,
                       history_length=3,
-                      with_actions=True):
+                      feature_indexes=None,
+                      label_indexes=None,
+                      shared=True):
 
     from os import listdir
     from os.path import isdir
@@ -123,9 +130,9 @@ def load_sensor_files(training_data_path, testing_data_path,
     shuffle(test_file_paths)
 
     print '... loading training data'
-    training_data, training_labels = load_data_set(training_file_paths, num_training_samples_per_file, history_length, with_actions)
+    training_data, training_labels = load_data_set(training_file_paths, num_training_samples_per_file, history_length, feature_indexes, label_indexes)
     print '... loading testing data'
-    test_data, test_labels = load_data_set(test_file_paths, num_test_samples_per_file, history_length, with_actions)
+    test_data, test_labels = load_data_set(test_file_paths, num_test_samples_per_file, history_length, feature_indexes, label_indexes)
 
     print '... ' + str(len(training_data)) + ' training samples loaded'
     print '... ' + str(len(test_data)) + ' test samples loaded'

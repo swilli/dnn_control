@@ -1,59 +1,60 @@
-from numpy import random, mean
+import time
 import os
+import theano
 from sys import exit
 from time import clock
 from data_loader import load_sensor_files
 from stacked_autoencoder import StackedAutoencoder
+from numpy import random, mean, inf, asarray
 from numpy.linalg import norm
-from numpy import inf
 from random import sample
-import time
-import sys
 
-path_suffix = "random_policy_gaussian"
+path_suffix = "optical_flow"
 
 user_path = os.path.expanduser("~")
 
-training_path = user_path + "/Documents/dnn/data/random_policy/training/"
-testing_path = user_path + "/Documents/dnn/data/random_policy/testing/"
+training_path = user_path + "/Documents/dnn/data/test/training/"
+testing_path = user_path + "/Documents/dnn/data/test/testing/"
 
 result_path = user_path + "/Documents/dnn/autoencoder/"
 autoencoder_weights_path = user_path + "/Documents/dnn/autoencoder/"
 
+feature_indexes = [val for val in range(3, 12)]
+label_indexes = [val for val in range(3)]
 num_training_samples = 1000000
 num_training_samples_per_file = 250
 num_test_samples = 10000
 num_test_samples_per_file = 50
 history_length = 10
-include_actions_in_history = True
 
 batch_size = 1
 
-pretraining_epochs = 20
+pretraining_epochs = 50
 
 ENABLE_FINE_TUNING = True
 fine_tune_supervised = True
-fine_tune_learning_rate = 0.0001
+fine_tune_learning_rate = 0.00001
 fine_tune_epochs = 1000
-supervised_sigmoid_activation = False
+supervised_sigmoid_activation = True
 
-hidden_layer_sizes = [7 + 3 * history_length]
+hidden_layer_sizes = [120]
 corruption_levels = [0.01]
-pretraining_learning_rates = [0.0001]
+pretraining_learning_rates = [0.01]
 tied_weights =              [True]
-sigmoid_compressions =      [False]
-sigmoid_reconstructions =   [False]
+sigmoid_compressions =      [True]
+sigmoid_reconstructions =   [True]
 
 
 description = "Path Suffix: " + path_suffix + "\n" + \
               "Training Path: " + training_path + "\n" + \
               "Testing Path: " + testing_path + "\n" + \
+              "Feature Indexes: " + str(feature_indexes) + "\n" + \
+              "Label Indexes: " + str(label_indexes) + "\n" + \
               "Number of Training Samples: " + str(num_training_samples) + "\n" + \
               "Number of Training Samples per File: " + str(num_training_samples_per_file) + "\n" + \
               "Number of Testing Samples: " + str(num_test_samples) + "\n" + \
               "Number of Testing Samples per File: " + str(num_test_samples_per_file) + "\n" + \
               "History Length: " + str(history_length) + "\n" + \
-              "Include Actions in History: " + str(include_actions_in_history) + "\n" + \
               "Batch Size: " + str(batch_size) + "\n" + \
               "Pretraining Epochs: " + str(pretraining_epochs) + "\n" + \
               "Fine Tuning Enabled: " + str(ENABLE_FINE_TUNING) + "\n" + \
@@ -70,15 +71,14 @@ description = "Path Suffix: " + path_suffix + "\n" + \
 
 print(description)
 
-
-
 training_set, training_labels, test_set, test_labels = load_sensor_files(training_path, testing_path,
                                                                          history_length=history_length,
-                                                                         with_actions=include_actions_in_history,
                                                                          num_training_samples=num_training_samples,
                                                                          num_training_samples_per_file=num_training_samples_per_file,
                                                                          num_test_samples=num_test_samples,
-                                                                         num_test_samples_per_file=num_test_samples_per_file)
+                                                                         num_test_samples_per_file=num_test_samples_per_file,
+                                                                         feature_indexes=feature_indexes,
+                                                                         label_indexes=label_indexes)
 
 # compute number of minibatches for training, validation and testing
 n_train_batches = training_set.get_value(borrow=True).shape[0]
@@ -206,7 +206,8 @@ stacked_autoencoder.save(result_path)
 reloaded_sa = StackedAutoencoder.from_config_path(numpy_rng, result_path)
 
 num_tests = 10
-samples = random.rand(num_tests, sample_dimension)
+samples = asarray(random.rand(num_tests, sample_dimension), dtype=theano.config.floatX)
+
 errors = []
 for sample in samples:
     result_a = stacked_autoencoder.predict(sample)
