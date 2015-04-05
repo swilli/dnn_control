@@ -9,7 +9,7 @@ from numpy import random, mean, inf, asarray
 from numpy.linalg import norm
 from random import sample
 
-data_set = "test"
+data_set = "optical_flow"
 
 user_path = os.path.expanduser("~")
 
