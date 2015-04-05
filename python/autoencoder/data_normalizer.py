@@ -73,7 +73,22 @@ def normalize_folder_data(input_data_path, output_data_path, gaussian_state_scal
     total_actions = array(total_actions)
 
     if logarithmic_state_transformation:
-        pass
+        def transform(features):
+            from math import log
+
+            for i in range(len(features)):
+                feature = features[i]
+                sign = 1.0
+                if feature >= 0.0:
+                    feature += 1.0
+                else:
+                    sign = -1.0
+                    feature -= 1.0
+
+                feature = sign * log(sign * feature)
+                features[i] = feature
+
+        map(transform, total_states)
 
     if gaussian_state_scaling:
         states_scaler = StandardScaler()
