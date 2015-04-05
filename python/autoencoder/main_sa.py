@@ -46,7 +46,7 @@ supervised_sigmoid_activation = False
 
 hidden_layer_sizes = [120]
 corruption_levels = [0.01]
-pretraining_learning_rates = [0.0001]
+pretraining_learning_rates = [0.000001]
 tied_weights =              [True]
 sigmoid_compressions =      [False]
 sigmoid_reconstructions =   [False]
