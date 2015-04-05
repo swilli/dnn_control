@@ -16,7 +16,8 @@ def print_flush(text):
     sys.stdout.flush()
 
 
-data_set = "optical_flow"
+data_set = "test"
+task_suffix = "task"
 
 user_path = os.path.expanduser("~")
 
@@ -28,7 +29,7 @@ autoencoder_weights_path = user_path + "/Documents/dnn/autoencoder/"
 
 feature_indexes = [val for val in range(3, 12)]
 label_indexes = [val for val in range(3)]
-num_training_samples = 1000000
+num_training_samples = 250
 num_training_samples_per_file = 250
 num_test_samples = 10000
 num_test_samples_per_file = 50
@@ -204,7 +205,7 @@ if ENABLE_FINE_TUNING:
                                                                        ((end_time - start_time) / 60.))
 
 
-result_path += "conf_" + "_".join([str(value) for value in hidden_layer_sizes]) + "_" + data_set + "/"
+result_path += "conf_" + "_".join([str(value) for value in hidden_layer_sizes]) + "_" + data_set + "_" + task_suffix + "/"
 if not os.path.exists(result_path):
     os.makedirs(result_path)
 
