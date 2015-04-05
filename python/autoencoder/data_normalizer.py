@@ -163,7 +163,22 @@ def analyze_folder_data(data_path, gaussian_state_scaling=False, logarithmic_sta
     total_actions = array(total_actions)
 
     if logarithmic_state_transformation:
-        pass
+        def transform(features):
+            from math import log
+
+            for i in range(len(features)):
+                feature = features[i]
+                sign = 1.0
+                if feature >= 0.0:
+                    feature += 1.0
+                else:
+                    sign = -1.0
+                    feature -= 1.0
+
+                feature = sign * log(sign * feature)
+                features[i] = feature
+
+        map(transform, total_states)
 
     if gaussian_state_scaling:
         states_scaler = StandardScaler()
@@ -216,8 +231,8 @@ if __name__ == '__main__':
 
     data_set_name = "optical_flow"
     num_samples = None
-    gaussian_standardization = True
-    logarithmic_state_transformation = False
+    gaussian_standardization = False
+    logarithmic_state_transformation = True
 
     input_data_path = user_path + "/Documents/dnn/data/" + data_set_name + "/raw/"
     output_data_path = user_path + "/Documents/dnn/data/" + data_set_name + "/"
