@@ -73,8 +73,7 @@ def normalize_folder_data(input_data_path, output_data_path, gaussian_state_scal
     total_actions = array(total_actions)
 
     if logarithmic_state_transformation:
-        total_states = total_states - min(total_states, axis=0) + 1.0
-        total_states = log(total_states)
+        pass
 
     if gaussian_state_scaling:
         states_scaler = StandardScaler()
@@ -150,7 +149,7 @@ def normalize_folder_data(input_data_path, output_data_path, gaussian_state_scal
 
 
 def analyze_folder_data(data_path, gaussian_state_scaling=False, logarithmic_state_transformation=True, num_samples=None):
-    from numpy import array, concatenate, std, mean, min, ptp, log
+    from numpy import array, concatenate, std, mean, min, ptp
     from sklearn.preprocessing import StandardScaler, MinMaxScaler
     import os
 
@@ -164,8 +163,7 @@ def analyze_folder_data(data_path, gaussian_state_scaling=False, logarithmic_sta
     total_actions = array(total_actions)
 
     if logarithmic_state_transformation:
-        total_states = total_states - min(total_states, axis=0) + 1.0
-        total_states = log(total_states)
+        pass
 
     if gaussian_state_scaling:
         states_scaler = StandardScaler()
@@ -216,12 +214,14 @@ if __name__ == '__main__':
 
     user_path = os.path.expanduser("~")
 
-    input_data_path = user_path + "/Documents/dnn/data/optical_flow/raw/"
-    output_data_path = user_path + "/Documents/dnn/data/optical_flow/"
-
+    data_set_name = "optical_flow"
     num_samples = None
-    gaussian_standardization = False
-    logarithmic_state_transformation = True
+    gaussian_standardization = True
+    logarithmic_state_transformation = False
+
+    input_data_path = user_path + "/Documents/dnn/data/" + data_set_name + "/raw/"
+    output_data_path = user_path + "/Documents/dnn/data/" + data_set_name + "/"
+
     analyze_folder_data(data_path=input_data_path,
                         gaussian_state_scaling=gaussian_standardization,
                         logarithmic_state_transformation=logarithmic_state_transformation,
