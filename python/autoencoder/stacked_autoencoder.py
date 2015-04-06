@@ -144,6 +144,12 @@ class StackedAutoencoder(object):
                    supervised_sigmoid_activation=supervised_sigmoid_activation,
                    autoencoder_weights=autoencoder_weights, supervised_weights=supervised_weights)
 
+    def input_dimension(self):
+        return self.n_ins
+
+    def output_dimension(self):
+        return self.n_outs
+
     def pretraining_functions(self, training_set, batch_size):
         index = T.lscalar('index')
         learning_rate = T.scalar('lr')
