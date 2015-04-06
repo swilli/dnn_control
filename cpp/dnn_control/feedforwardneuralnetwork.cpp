@@ -2,7 +2,7 @@
 #include <cmath>
 
 FeedForwardNeuralNetwork::FeedForwardNeuralNetwork()
-    : NeuralNetwork(), dimension_input_layer_(0), input_layer_enable_bias_(false) {
+    : NeuralNetwork(), dimension_input_layer_(0), input_layer_enable_bias_(false), dimension_output_layer_(0) {
 
 }
 
