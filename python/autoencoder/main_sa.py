@@ -16,8 +16,8 @@ def print_flush(text):
     sys.stdout.flush()
 
 
-data_set = "test"
-task_suffix = "task"
+data_set = "optical_flow"
+task_suffix = "linear"
 
 user_path = os.path.expanduser("~")
 
@@ -29,7 +29,7 @@ autoencoder_weights_path = user_path + "/Documents/dnn/autoencoder/"
 
 feature_indexes = [val for val in range(3, 12)]
 label_indexes = [val for val in range(3)]
-num_training_samples = 250
+num_training_samples = 1000000
 num_training_samples_per_file = 250
 num_test_samples = 10000
 num_test_samples_per_file = 50
@@ -41,7 +41,7 @@ pretraining_epochs = 50
 
 ENABLE_FINE_TUNING = True
 fine_tune_supervised = True
-fine_tune_learning_rate = 0.00001
+fine_tune_learning_rate = 0.000001
 fine_tune_epochs = 1000
 supervised_sigmoid_activation = False
 
