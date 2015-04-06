@@ -173,6 +173,12 @@ if ENABLE_FINE_TUNING:
     epoch = 0
     best_iter = 0
 
+    result_path += "conf_" + "_".join([str(value) for value in hidden_layer_sizes]) + "_" + data_set + "_" + task_suffix + "/"
+    if not os.path.exists(result_path):
+        os.makedirs(result_path)
+
+    print_flush("... saving stacked autencoder config to path " + result_path)
+
     while epoch < fine_tune_epochs and not done_looping:
         epoch += 1
         for minibatch_index in xrange(n_train_batches):
@@ -194,6 +200,7 @@ if ENABLE_FINE_TUNING:
                     # save best validation score and iteration number
                     best_validation_loss = this_validation_loss
                     best_iter = iter
+                    stacked_autoencoder.save(result_path)
 
             if patience <= iter:
                 done_looping = True
@@ -206,23 +213,6 @@ if ENABLE_FINE_TUNING:
                                                                        ((end_time - start_time) / 60.))
 
 
-result_path += "conf_" + "_".join([str(value) for value in hidden_layer_sizes]) + "_" + data_set + "_" + task_suffix + "/"
-if not os.path.exists(result_path):
-    os.makedirs(result_path)
-
-print_flush("... saving stacked autencoder config to path " + result_path)
-stacked_autoencoder.save(result_path)
-reloaded_sa = StackedAutoencoder.from_config_path(numpy_rng, result_path)
-
-num_tests = 10
-samples = asarray(random.rand(num_tests, sample_dimension), dtype=theano.config.floatX)
-
-errors = []
-for sample in samples:
-    result_a = stacked_autoencoder.predict(sample)
-    result_reloaded = reloaded_sa.predict(sample)
-    errors.extend([norm(result_a - result_reloaded)])
-    print(mean(errors))
 
 
 
