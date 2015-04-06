@@ -185,15 +185,15 @@ std::vector<double> StackedAutoencoder::ParseBiasVector(const std::string &path_
 boost::tuple<unsigned int, unsigned int, bool, std::vector<boost::tuple<unsigned int, bool> > > StackedAutoencoder::ParseConfigFile(const std::string &path_to_config) {
     std::ifstream reader;
     reader.open(path_to_config);
-    std::vector<std::string> file_data_string;
+    std::vector<std::string> file_data_lines;
     std::string buffer;
     while (std::getline(reader, buffer)) {
-        file_data_string.push_back(buffer);
+        file_data_lines.push_back(buffer);
     }
     reader.close();
 
     std::vector<std::string> tmp_strings;
-    std::stringstream ss(file_data_string.at(0));
+    std::stringstream ss(file_data_lines.at(0));
     while (ss.good()) {
         std::string substr;
         std::getline(ss, substr, ',');
@@ -207,8 +207,8 @@ boost::tuple<unsigned int, unsigned int, bool, std::vector<boost::tuple<unsigned
 
     std::vector<boost::tuple<unsigned int, bool> > layer_configs;
 
-    std::stringstream ss_hidden_layer_sizes(file_data_string.at(1));
-    std::stringstream ss_sigmoid_compression(file_data_string.at(3));
+    std::stringstream ss_hidden_layer_sizes(file_data_lines.at(1));
+    std::stringstream ss_sigmoid_compression(file_data_lines.at(3));
 
     while (ss_hidden_layer_sizes.good() && ss_sigmoid_compression.good()) {
         std::string str_size;

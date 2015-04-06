@@ -73,8 +73,8 @@
 
 
 // Class ControllerNeuralNetwork configs
-#define CNN_ENABLE_STACKED_AUTOENCODER  true
-#define CNN_STACKED_AUTOENCODER_CONFIGURATION   "conf_120_test_task"
+#define CNN_ENABLE_STACKED_AUTOENCODER  false
+#define CNN_STACKED_AUTOENCODER_CONFIGURATION   ""
 
 
 // Least Squares Policy Robotics configs
