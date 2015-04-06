@@ -97,7 +97,7 @@
 
 // Other stuff configs, not relevant for simulation
 #if ENABLE_EULER_HOME
-#define OUTPUT_ROOT_PATH   "/cluster/home/Documents/dnn/"
+#define OUTPUT_ROOT_PATH   "/cluster/home/willist/Documents/dnn/"
 #else
 #define OUTPUT_ROOT_PATH   "/home/willist/Documents/dnn/"
 #endif
