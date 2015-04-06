@@ -29,10 +29,12 @@ private:
     // The compression, linearization layer
     static StackedAutoencoder stacked_autoencoder_;
 
-    // The behaviour, implemented using a SRNN
-    SimpleRecurrentNeuralNetwork neural_network_;
+    // The behaviour, implemented using a FFNN
+    FeedForwardNeuralNetwork neural_network_;
 
     boost::circular_buffer<double> state_action_history_;
+
+    std::vector<std::pair<double, double> > back_transformations_;
 };
 
 #endif // CONTROLLERDEEPNEURALNETWORK_H

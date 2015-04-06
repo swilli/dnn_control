@@ -117,15 +117,15 @@ StackedAutoencoder::StackedAutoencoder(const std::string &path_to_layer_configur
     neural_network_.SetWeights(network_weights);
 }
 
-std::vector<double> StackedAutoencoder::Compress(const std::vector<double> &input) {
+std::vector<double> StackedAutoencoder::Evaluate(const std::vector<double> &input) {
     return neural_network_.Evaluate(input);
 }
 
-unsigned int StackedAutoencoder::InputSize() const {
+unsigned int StackedAutoencoder::InputDimension() const {
     return neural_network_.InputDimension();
 }
 
-unsigned int StackedAutoencoder::OutputSize() const {
+unsigned int StackedAutoencoder::OutputDimension() const {
     return neural_network_.OutputDimension();
 }
 

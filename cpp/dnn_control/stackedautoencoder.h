@@ -10,12 +10,12 @@ class StackedAutoencoder  {
 public:
     StackedAutoencoder(const std::string &path_to_layer_configurations);
 
-    // Returns the compressed version of the input by forward passing the input to the output layer
-    std::vector<double> Compress(const std::vector<double> &input);
+    // Returns the feed forward solution to the input
+    std::vector<double> Evaluate(const std::vector<double> &input);
 
-    unsigned int InputSize() const;
+    unsigned int InputDimension() const;
 
-    unsigned int OutputSize() const;
+    unsigned int OutputDimension() const;
 
     // StackedAutoencoder can throw the following exceptions
     class Exception {};

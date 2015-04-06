@@ -139,7 +139,7 @@ protected:
     std::set<SensorSimulator::SensorType> sensor_types_;
 
     // Sensor values can be transformed using these two parameters
-    std::vector<std::pair<double, double> > sensor_value_transformations_;
+    std::map<SensorSimulator::SensorType, std::vector<std::pair<double, double> > > sensor_value_transformations_;
 };
 
 #endif // PAGMOSIMULATION_H
