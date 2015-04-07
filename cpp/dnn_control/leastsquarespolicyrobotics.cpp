@@ -32,13 +32,14 @@ static std::vector<Vector3D> kSpacecraftActions;
 static void Init() {
     const double res_u = 1.0 / LSPR_DIRECTION_RESOLUTION;
     const double res_v = 1.0 / (LSPR_DIRECTION_RESOLUTION - 1);
-    const double d_thrust = kSpacecraftMaximumThrust / pow(4.0, LSPR_THRUST_RESOLUTION - 2);
+    const double thrust_base = 20.0;
+    const double d_thrust = kSpacecraftMaximumThrust / pow(thrust_base, LSPR_THRUST_RESOLUTION - 2);
     for (unsigned int k = 0; k < LSPR_THRUST_RESOLUTION; ++k) {
         if (k == 0) {
             kSpacecraftActions.push_back({0.0, 0.0, 0.0});
             continue;
         }
-        const double t = d_thrust * pow(4.0, k - 1);
+        const double t = d_thrust * pow(thrust_base, k - 1);
         for (unsigned int j = 0; j < LSPR_DIRECTION_RESOLUTION; ++j) {
             if (j == 0) {
                 kSpacecraftActions.push_back({0.0, 0.0, -t});
@@ -58,7 +59,7 @@ static void Init() {
         }
     }
     kSpacecraftNumActions = kSpacecraftActions.size();
-    kSpacecraftPolynomialDimensions = (int) (0.5 * kSpacecraftStateDimension * (kSpacecraftStateDimension + 3) + 1);
+    kSpacecraftPolynomialDimensions = 1 + 2 * kSpacecraftStateDimension;
     kSpacecraftPhiSize = kSpacecraftNumActions * kSpacecraftPolynomialDimensions;
 }
 
@@ -71,9 +72,6 @@ static Eigen::VectorXd Phi(const LSPIState &state, const unsigned int &action) {
     for (unsigned int i = 0; i < kSpacecraftStateDimension; ++i) {
         result[base++] = state[i];
         result[base++] = state[i] * state[i];
-        for (unsigned int j = i+1; j < kSpacecraftStateDimension; ++j) {
-            result[base++] = state[i] * state[j];
-        }
     }
 
     return result;
@@ -318,7 +316,7 @@ static boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<
     std::vector<unsigned int> used_random_seeds;
     if (num_tests == 0) {
         SampleFactory sample_factory(start_seed);
-        num_tests = 25000;
+        num_tests = 10000;
         for (unsigned int i = 0; i < num_tests; ++i) {
             used_random_seeds.push_back(sample_factory.SampleRandomInteger());
         }
@@ -409,7 +407,6 @@ void TestLeastSquaresPolicyController(const unsigned int &random_seed) {
     writer_evaluation.CreateEvaluationFile(random_seed, target_position, simulator.AsteroidOfSystem(), times, positions, velocities, thrusts);
     std::cout << "done." << std::endl;
 
-    return;
 
     std::cout << "Performing post evaluation ... ";
     const boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<std::pair<double, double > > > post_evaluation = PostEvaluateLSPIController(weights, random_seed);

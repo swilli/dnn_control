@@ -9,7 +9,7 @@
  */
 
 // Task Name
-#define TASK_NAME   "master"
+#define TASK_NAME   "lspi"
 
 // Euler home or not
 #define ENABLE_EULER_HOME   false
@@ -73,8 +73,8 @@
 
 
 // Class ControllerNeuralNetwork configs
-#define CNN_ENABLE_STACKED_AUTOENCODER  true
-#define CNN_STACKED_AUTOENCODER_CONFIGURATION   "conf_120_optical_flow_linear"
+#define CNN_ENABLE_STACKED_AUTOENCODER  false
+#define CNN_STACKED_AUTOENCODER_CONFIGURATION   ""
 
 
 // Least Squares Policy Robotics configs
@@ -85,9 +85,9 @@
 #define LSPR_IC_POSITION_OFFSET_ENABLED true
 //#define LSPR_FIXED_SEED     1990
 
-#define LSPR_DIRECTION_RESOLUTION   5
+#define LSPR_DIRECTION_RESOLUTION   4
 #define LSPR_THRUST_RESOLUTION  7
-#define LSPR_TRANSIENT_RESPONSE_TIME  100.0
+#define LSPR_TRANSIENT_RESPONSE_TIME  150.0
 #define LSPR_REWARD_WITH_VELOCITY   true
 #define LSPR_NUM_EPISODES    1000
 #define LSPR_NUM_STEPS  50
