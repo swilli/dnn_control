@@ -16,8 +16,8 @@ def print_flush(text):
     sys.stdout.flush()
 
 
-data_set = "optical_flow"
-task_suffix = "linear"
+data_set = "optical_flow_log"
+task_suffix = "sigmoid_lr"
 
 user_path = os.path.expanduser("~")
 
@@ -41,16 +41,16 @@ pretraining_epochs = 50
 
 ENABLE_FINE_TUNING = True
 fine_tune_supervised = True
-fine_tune_learning_rate = 0.000001
+fine_tune_learning_rate = 0.0001
 fine_tune_epochs = 1000
-supervised_sigmoid_activation = False
+supervised_sigmoid_activation = True
 
 hidden_layer_sizes = [120]
 corruption_levels = [0.01]
-pretraining_learning_rates = [0.000001]
+pretraining_learning_rates = [0.001]
 tied_weights =              [True]
-sigmoid_compressions =      [False]
-sigmoid_reconstructions =   [False]
+sigmoid_compressions =      [True]
+sigmoid_reconstructions =   [True]
 
 
 description = "Task Suffix: " + task_suffix + "\n" + \

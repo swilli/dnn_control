@@ -246,8 +246,8 @@ if __name__ == '__main__':
 
     data_set_name = "optical_flow"
     num_samples = None
-    gaussian_standardization = False
-    logarithmic_state_transformation = True
+    gaussian_standardization = True
+    logarithmic_state_transformation = False
 
     input_data_path = user_path + "/Documents/dnn/data/" + data_set_name + "/raw/"
     output_data_path = user_path + "/Documents/dnn/data/" + data_set_name + "/"
