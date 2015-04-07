@@ -11,7 +11,11 @@ testing_path = user_path + "/Documents/dnn/data/random_policy/testing/"
 autoencoder_weights_path = user_path + "/Documents/dnn/autoencoder/conf_7_random_policy/"
 prediction_file = user_path + "/Documents/dnn/results/prediction.txt"
 
+
 SINGLE_PREDICTION = True
+
+feature_indexes = [val for val in range(0, 6)]
+label_indexes = [val for val in range(0, 6)]
 num_test_samples = 250
 num_test_samples_per_file = 250
 history_length = 10
@@ -32,7 +36,8 @@ test_set, test_labels = load_data_set(testing_files, num_test_samples_per_file, 
                                       feature_indexes=feature_indexes, label_indexes=label_indexes)
 
 if not SINGLE_PREDICTION:
-    test_set_no_history, _ = load_data_set(testing_files, num_test_samples_per_file, 1, include_actions_in_history)
+    test_set_no_history, _ = load_data_set(testing_files, num_test_samples_per_file, 1, include_actions_in_history,
+                                           feature_indexes=feature_indexes)
     test_set_no_history = array(test_set_no_history)
 
 test_set = array(test_set)

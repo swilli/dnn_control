@@ -209,14 +209,10 @@ static std::vector<Sample> PrepareSamples(SampleFactory &sample_factory, const u
 
             const LSPIState next_lspi_state = SystemStateToLSPIState(next_state, target_position);
 
-            const double delta_position = VectorNorm(VectorSub(target_position, position)) - VectorNorm(VectorSub(target_position, next_position));
+            const double delta_p1 = VectorNorm(VectorSub(target_position, position));
+            const double delta_p2 = VectorNorm(VectorSub(target_position, next_position));
 
-            double r = 0.0;
-            if (delta_position >= 0.0) {
-                r = 1.0;
-            } else {
-                r = -1.0;
-            }
+            const double r = -delta_p2;
 
             samples.push_back(boost::make_tuple(lspi_state, a, r, next_lspi_state));
 

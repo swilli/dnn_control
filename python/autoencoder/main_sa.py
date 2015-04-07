@@ -16,7 +16,7 @@ def print_flush(text):
     sys.stdout.flush()
 
 
-data_set = "optical_flow"
+data_set = "random_policy"
 task_suffix = "linear"
 
 user_path = os.path.expanduser("~")
@@ -27,8 +27,8 @@ testing_path = user_path + "/Documents/dnn/data/" + data_set + "/testing/"
 result_path = user_path + "/Documents/dnn/autoencoder/"
 autoencoder_weights_path = user_path + "/Documents/dnn/autoencoder/"
 
-feature_indexes = [val for val in range(3, 12)]
-label_indexes = [val for val in range(3)]
+feature_indexes = [val for val in range(0, 6)]
+label_indexes = [val for val in range(0, 6)]
 num_training_samples = 1000000
 num_training_samples_per_file = 250
 num_test_samples = 10000
