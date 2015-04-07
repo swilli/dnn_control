@@ -13,7 +13,6 @@
 #include <fstream>
 #include <limits>
 
-static const double kSpacecraftMaximumThrust = 21.0;
 static const unsigned int kSpacecraftStateDimension = 6;
 
 static unsigned int kSpacecraftNumActions = 0;
@@ -32,14 +31,14 @@ static std::vector<Vector3D> kSpacecraftActions;
 static void Init() {
     const double res_u = 1.0 / LSPR_DIRECTION_RESOLUTION;
     const double res_v = 1.0 / (LSPR_DIRECTION_RESOLUTION - 1);
-    const double thrust_base = 20.0;
-    const double d_thrust = kSpacecraftMaximumThrust / pow(thrust_base, LSPR_THRUST_RESOLUTION - 2);
-    for (unsigned int k = 0; k < LSPR_THRUST_RESOLUTION; ++k) {
-        if (k == 0) {
+
+    const std::vector<double> thrust_levels = {0.0, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1.0, 5.0, 10.0, 15.0, 21.0};
+    for (unsigned int k = 0; k < thrust_levels.size(); ++k) {
+        const double &t = thrust_levels.at(k);
+        if (t == 0.0) {
             kSpacecraftActions.push_back({0.0, 0.0, 0.0});
             continue;
         }
-        const double t = d_thrust * pow(thrust_base, k - 1);
         for (unsigned int j = 0; j < LSPR_DIRECTION_RESOLUTION; ++j) {
             if (j == 0) {
                 kSpacecraftActions.push_back({0.0, 0.0, -t});
