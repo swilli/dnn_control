@@ -193,7 +193,6 @@ static std::vector<Sample> PrepareSamples(SampleFactory &sample_factory, const u
 
         for (unsigned int j = 0; j < num_steps; ++j) {
             const Vector3D &position = {state[0], state[1], state[2]};
-            const double &mass = state[6];
 
             const LSPIState lspi_state = SystemStateToLSPIState(state, target_position);
 
@@ -207,21 +206,17 @@ static std::vector<Sample> PrepareSamples(SampleFactory &sample_factory, const u
             SystemState next_state = boost::get<0>(result);
 
             const Vector3D &next_position = {next_state[0], next_state[1], next_state[2]};
-            const double &next_mass = next_state[6];
 
             const LSPIState next_lspi_state = SystemStateToLSPIState(next_state, target_position);
 
             const double delta_position = VectorNorm(VectorSub(target_position, position)) - VectorNorm(VectorSub(target_position, next_position));
-            const double delta_mass = next_mass - mass;
-#if LSPR_REWARD_WITH_VELOCITY
-            const Vector3D &next_velocity = {next_state[3], next_state[4], next_state[5]};
-            const Vector3D &velocity = {state[3], next_state[4], next_state[5]};
 
-            const double delta_velocity = VectorNorm(velocity) - VectorNorm(next_velocity);
-            const double r = delta_position + delta_velocity + delta_mass;
-#else
-            const double r = delta_position + delta_mass;
-#endif
+            double r = 0.0;
+            if (delta_position >= 0.0) {
+                r = 1.0;
+            } else {
+                r = -1.0;
+            }
 
             samples.push_back(boost::make_tuple(lspi_state, a, r, next_lspi_state));
 

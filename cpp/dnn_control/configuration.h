@@ -88,7 +88,6 @@
 #define LSPR_DIRECTION_RESOLUTION   4
 #define LSPR_THRUST_RESOLUTION  7
 #define LSPR_TRANSIENT_RESPONSE_TIME  150.0
-#define LSPR_REWARD_WITH_VELOCITY   true
 #define LSPR_NUM_EPISODES    1000
 #define LSPR_NUM_STEPS  50
 #define LSPR_GAMMA  0.9
@@ -171,7 +170,6 @@ inline void ConfigurationLSPI() {
     std::cout << "LSPR_DIRECTION_RESOLUTION   " << LSPR_DIRECTION_RESOLUTION << std::endl;
     std::cout << "LSPR_THRUST_RESOLUTION   " << LSPR_THRUST_RESOLUTION << std::endl;
     std::cout << "LSPR_TRANSIENT_RESPONSE_TIME   " << LSPR_TRANSIENT_RESPONSE_TIME << std::endl;
-    std::cout << "LSPR_REWARD_WITH_VELOCITY   " << ToString(LSPR_REWARD_WITH_VELOCITY) << std::endl;
     std::cout << "LSPR_GAMMA   " << LSPR_GAMMA << std::endl;
     std::cout << "LSPR_EPSILON   " << LSPR_EPSILON << std::endl;
 #ifdef LSPR_FIXED_SEED
