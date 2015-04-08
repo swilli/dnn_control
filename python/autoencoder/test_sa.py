@@ -16,10 +16,10 @@ prediction_file = user_path + "/Documents/dnn/results/prediction.txt"
 
 SINGLE_PREDICTION = True
 
-feature_indexes = [val for val in range(0, 9)]
-label_indexes = [val for val in range(0, 6)]
-num_test_samples = 300
-num_test_samples_per_file = 300
+feature_indexes = [val for val in range(0, 12)]
+label_indexes = [val for val in range(0, 3)]
+num_test_samples = 1000
+num_test_samples_per_file = 250
 history_length = 10
 include_actions_in_history = True
 
