@@ -16,8 +16,8 @@ def print_flush(text):
     sys.stdout.flush()
 
 
-data_set = "optical_flow_log"
-task_suffix = "sigmoid_lr"
+data_set = "random_policy"
+task_suffix = "linear"
 
 user_path = os.path.expanduser("~")
 
@@ -27,8 +27,8 @@ testing_path = user_path + "/Documents/dnn/data/" + data_set + "/testing/"
 result_path = user_path + "/Documents/dnn/autoencoder/"
 autoencoder_weights_path = user_path + "/Documents/dnn/autoencoder/"
 
-feature_indexes = [val for val in range(3, 12)]
-label_indexes = [val for val in range(3)]
+feature_indexes = [val for val in range(0, 9)]
+label_indexes = [val for val in range(0, 6)]
 num_training_samples = 1000000
 num_training_samples_per_file = 250
 num_test_samples = 10000
@@ -37,20 +37,20 @@ history_length = 10
 
 batch_size = 1
 
-pretraining_epochs = 50
+pretraining_epochs = 1
 
 ENABLE_FINE_TUNING = True
 fine_tune_supervised = True
-fine_tune_learning_rate = 0.0001
+fine_tune_learning_rate = 0.000001
 fine_tune_epochs = 1000
-supervised_sigmoid_activation = True
+supervised_sigmoid_activation = False
 
 hidden_layer_sizes = [120]
 corruption_levels = [0.01]
-pretraining_learning_rates = [0.001]
+pretraining_learning_rates = [0.0000001]
 tied_weights =              [True]
-sigmoid_compressions =      [True]
-sigmoid_reconstructions =   [True]
+sigmoid_compressions =      [False]
+sigmoid_reconstructions =   [False]
 
 
 description = "Task Suffix: " + task_suffix + "\n" + \

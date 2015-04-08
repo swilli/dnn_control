@@ -9,7 +9,7 @@
  */
 
 // Task Name
-#define TASK_NAME   "master"
+#define TASK_NAME   "lspi"
 
 // Euler home or not
 #define ENABLE_EULER_HOME   false
@@ -73,8 +73,8 @@
 
 
 // Class ControllerNeuralNetwork configs
-#define CNN_ENABLE_STACKED_AUTOENCODER  true
-#define CNN_STACKED_AUTOENCODER_CONFIGURATION   "conf_120_optical_flow_linear"
+#define CNN_ENABLE_STACKED_AUTOENCODER  false
+#define CNN_STACKED_AUTOENCODER_CONFIGURATION   ""
 
 
 // Least Squares Policy Robotics configs
@@ -86,11 +86,9 @@
 //#define LSPR_FIXED_SEED     1990
 
 #define LSPR_DIRECTION_RESOLUTION   5
-#define LSPR_THRUST_RESOLUTION  7
-#define LSPR_TRANSIENT_RESPONSE_TIME  100.0
-#define LSPR_REWARD_WITH_VELOCITY   true
-#define LSPR_NUM_EPISODES    1000
-#define LSPR_NUM_STEPS  50
+#define LSPR_TRANSIENT_RESPONSE_TIME  150.0
+#define LSPR_NUM_EPISODES    10000
+#define LSPR_NUM_STEPS  5
 #define LSPR_GAMMA  0.9
 #define LSPR_EPSILON 1e-10
 #define LSPR_WRITE_ACTION_SET_TO_FILE   true
@@ -169,9 +167,7 @@ inline void ConfigurationLSPI() {
     std::cout << "LSPR_NUM_EPISODES   " << LSPR_NUM_EPISODES << std::endl;
     std::cout << "LSPR_NUM_STEPS   " << LSPR_NUM_STEPS << std::endl;
     std::cout << "LSPR_DIRECTION_RESOLUTION   " << LSPR_DIRECTION_RESOLUTION << std::endl;
-    std::cout << "LSPR_THRUST_RESOLUTION   " << LSPR_THRUST_RESOLUTION << std::endl;
     std::cout << "LSPR_TRANSIENT_RESPONSE_TIME   " << LSPR_TRANSIENT_RESPONSE_TIME << std::endl;
-    std::cout << "LSPR_REWARD_WITH_VELOCITY   " << ToString(LSPR_REWARD_WITH_VELOCITY) << std::endl;
     std::cout << "LSPR_GAMMA   " << LSPR_GAMMA << std::endl;
     std::cout << "LSPR_EPSILON   " << LSPR_EPSILON << std::endl;
 #ifdef LSPR_FIXED_SEED
