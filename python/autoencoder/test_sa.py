@@ -7,8 +7,10 @@ import os
 
 user_path = os.path.expanduser("~")
 
-testing_path = user_path + "/Documents/dnn/data/random_policy/testing/"
-autoencoder_weights_path = user_path + "/Documents/dnn/autoencoder/conf_7_random_policy/"
+data_set = "random_policy"
+
+testing_path = user_path + "/Documents/dnn/data/" + data_set + "/testing/"
+autoencoder_weights_path = user_path + "/Documents/dnn/autoencoder/conf_120_random_policy_linear/"
 prediction_file = user_path + "/Documents/dnn/results/prediction.txt"
 
 

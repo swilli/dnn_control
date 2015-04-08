@@ -63,7 +63,7 @@ static void Init() {
     kSpacecraftPhiSize = kSpacecraftNumActions * kSpacecraftPolynomialDimensions;
     */
 
-    const std::vector<double> thrust_levels = {0.0, 1e-5, 1e-2, 1.0, 10.0, 21.0};
+    const std::vector<double> thrust_levels = {0.0, 1e-3, 1e-1, 1.0, 10.0, 21.0};
     for (unsigned int i = 0; i < thrust_levels.size(); ++i) {
         const double &t = thrust_levels.at(i);
         if (t == 0.0) {
@@ -84,7 +84,7 @@ static void Init() {
     }
     kSpacecraftNumActions = kSpacecraftActions.size();
     //kSpacecraftPolynomialDimensions = 1 + (int) (0.5 * kSpacecraftStateDimension * (kSpacecraftStateDimension + 3));
-    kSpacecraftPolynomialDimensions = 1 + 2 * kSpacecraftStateDimension;
+    kSpacecraftPolynomialDimensions = 1 + 3 * kSpacecraftStateDimension;
     kSpacecraftPhiSize = kSpacecraftNumActions * kSpacecraftPolynomialDimensions;
 }
 
@@ -97,6 +97,7 @@ static Eigen::VectorXd Phi(const LSPIState &state, const unsigned int &action) {
     for (unsigned int i = 0; i < kSpacecraftStateDimension; ++i) {
         result[base++] = state[i];
         result[base++] = state[i] * state[i];
+        result[base++] = state[i] * state[i] * state[i];
         //for (unsigned int j = i; j < kSpacecraftStateDimension; ++j) {
         //    result[base++] = state[i] * state[j];
         //}
