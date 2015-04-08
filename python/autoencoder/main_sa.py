@@ -27,7 +27,7 @@ testing_path = user_path + "/Documents/dnn/data/" + data_set + "/testing/"
 result_path = user_path + "/Documents/dnn/autoencoder/"
 autoencoder_weights_path = user_path + "/Documents/dnn/autoencoder/"
 
-feature_indexes = [val for val in range(0, 6)]
+feature_indexes = [val for val in range(0, 9)]
 label_indexes = [val for val in range(0, 6)]
 num_training_samples = 1000000
 num_training_samples_per_file = 250
@@ -37,7 +37,7 @@ history_length = 10
 
 batch_size = 1
 
-pretraining_epochs = 50
+pretraining_epochs = 1
 
 ENABLE_FINE_TUNING = True
 fine_tune_supervised = True
@@ -47,7 +47,7 @@ supervised_sigmoid_activation = False
 
 hidden_layer_sizes = [120]
 corruption_levels = [0.01]
-pretraining_learning_rates = [0.000001]
+pretraining_learning_rates = [0.0000001]
 tied_weights =              [True]
 sigmoid_compressions =      [False]
 sigmoid_reconstructions =   [False]
