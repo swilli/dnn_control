@@ -37,7 +37,7 @@ history_length = 10
 
 batch_size = 1
 
-pretraining_epochs = 1
+pretraining_epochs = 20
 
 ENABLE_FINE_TUNING = True
 fine_tune_supervised = True
