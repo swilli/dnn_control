@@ -9,7 +9,7 @@
  */
 
 // Task Name
-#define TASK_NAME   "task0"
+#define TASK_NAME   "master"
 
 // Euler home or not
 #define ENABLE_EULER_HOME   false
