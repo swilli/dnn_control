@@ -83,8 +83,8 @@ static void Init() {
         }
     }
     kSpacecraftNumActions = kSpacecraftActions.size();
-    //kSpacecraftPolynomialDimensions = 1 + (int) (0.5 * kSpacecraftStateDimension * (kSpacecraftStateDimension + 3));
-    kSpacecraftPolynomialDimensions = 1 + 2 * kSpacecraftStateDimension;
+    kSpacecraftPolynomialDimensions = 1 + (int) (0.5 * kSpacecraftStateDimension * (kSpacecraftStateDimension + 3));
+    //kSpacecraftPolynomialDimensions = 1 + 2 * kSpacecraftStateDimension;
     kSpacecraftPhiSize = kSpacecraftNumActions * kSpacecraftPolynomialDimensions;
 }
 
@@ -96,12 +96,9 @@ static Eigen::VectorXd Phi(const LSPIState &state, const unsigned int &action) {
     result[base++] = 1.0;
     for (unsigned int i = 0; i < kSpacecraftStateDimension; ++i) {
         result[base++] = state[i];
-        result[base++] = state[i] * state[i];
-        /*
-         * for (unsigned int j = i; j < kSpacecraftStateDimension; ++j) {
+        for (unsigned int j = i; j < kSpacecraftStateDimension; ++j) {
             result[base++] = state[i] * state[j];
         }
-        */
 
         //result[base++] = state[i] * state[i] * state[i];
     }
