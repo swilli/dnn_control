@@ -20,6 +20,8 @@ public:
 
     bp::list SemiAxis() const;
 
+    double RotationPeriod() const;
+
 private:
     // cpp Asteroid
     Asteroid *asteroid_cpp_;
