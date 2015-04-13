@@ -83,8 +83,8 @@ static void Init() {
         }
     }
     kSpacecraftNumActions = kSpacecraftActions.size();
-    kSpacecraftPolynomialDimensions = 1 + (int) (0.5 * kSpacecraftStateDimension * (kSpacecraftStateDimension + 3));
-    //kSpacecraftPolynomialDimensions = 1 + 2 * kSpacecraftStateDimension;
+    //kSpacecraftPolynomialDimensions = 1 + (int) (0.5 * kSpacecraftStateDimension * (kSpacecraftStateDimension + 3));
+    kSpacecraftPolynomialDimensions = 1 + 2 * kSpacecraftStateDimension;
     kSpacecraftPhiSize = kSpacecraftNumActions * kSpacecraftPolynomialDimensions;
 }
 
@@ -96,11 +96,12 @@ static Eigen::VectorXd Phi(const LSPIState &state, const unsigned int &action) {
     result[base++] = 1.0;
     for (unsigned int i = 0; i < kSpacecraftStateDimension; ++i) {
         result[base++] = state[i];
-        for (unsigned int j = i; j < kSpacecraftStateDimension; ++j) {
+        result[base++] = state[i] * state[i];
+
+        /*for (unsigned int j = i; j < kSpacecraftStateDimension; ++j) {
             result[base++] = state[i] * state[j];
         }
-
-        //result[base++] = state[i] * state[i] * state[i];
+        */
     }
 
     return result;
@@ -243,7 +244,7 @@ static std::vector<Sample> PrepareSamples(SampleFactory &sample_factory, const u
             const double delta_p2 = VectorNorm(VectorSub(target_position, next_position));
             const double magn_velocity = VectorNorm(next_velocity);
 
-            const double r = delta_p1 - delta_p2 + 1.0 / delta_p2;
+            const double r = -delta_p2;
 
             samples.push_back(boost::make_tuple(lspi_state, a, r, next_lspi_state));
 

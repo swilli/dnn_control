@@ -9,7 +9,7 @@
  */
 
 // Task Name
-#define TASK_NAME   "lspi"
+#define TASK_NAME   "task3"
 
 // Euler home or not
 #define ENABLE_EULER_HOME   true
@@ -107,10 +107,9 @@
 #define PATH_TO_PROPORTIONAL_DERIVATIVE_POST_EVALUATION_FILE     OUTPUT_ROOT_PATH "results/post_evaluation_pd_" TASK_NAME ".txt"
 #define PATH_TO_LSPI_TRAJECTORY_FILE   OUTPUT_ROOT_PATH "results/trajectory_lspi.txt"
 #define PATH_TO_LSPI_EVALUATION_FILE  OUTPUT_ROOT_PATH "results/evaluation_lspi.txt"
-#define PATH_TO_LSPI_POST_EVALUATION_FILE   OUTPUT_ROOT_PATH "results/post_evaluation_lspi.txt"
-#define PATH_TO_LSPI_ACTION_SET_FILE    OUTPUT_ROOT_PATH "results/lspi_action_set.txt"
-#define PATH_TO_LSPI_WEIGHT_VECTOR_FILE OUTPUT_ROOT_PATH "results/lspi_weights.txt"
-#define PATH_TO_COMPARISON_POST_EVALUATION_FILE     OUTPUT_ROOT_PATH "results/post_evaluation_comparison.txt"
+#define PATH_TO_LSPI_POST_EVALUATION_FILE   OUTPUT_ROOT_PATH "results/post_evaluation_lspi_" TASK_NAME ".txt"
+#define PATH_TO_LSPI_ACTION_SET_FILE    OUTPUT_ROOT_PATH "results/lspi_action_set_" TASK_NAME ".txt"
+#define PATH_TO_LSPI_WEIGHT_VECTOR_FILE OUTPUT_ROOT_PATH "results/lspi_weights_" TASK_NAME ".txt"
 #define PATH_TO_SENSOR_DATA_FOLDER  OUTPUT_ROOT_PATH    "data/raw/"
 #define PATH_TO_AUTOENCODER_LAYER_CONFIGURATION OUTPUT_ROOT_PATH "autoencoder/" CNN_STACKED_AUTOENCODER_CONFIGURATION "/"
 
