@@ -85,10 +85,9 @@
 #define LSPR_IC_POSITION_OFFSET_ENABLED true
 //#define LSPR_FIXED_SEED     1990
 
-#define LSPR_DIRECTION_RESOLUTION   5
 #define LSPR_TRANSIENT_RESPONSE_TIME  150.0
-#define LSPR_NUM_EPISODES    10000
-#define LSPR_NUM_STEPS  5
+#define LSPR_NUM_EPISODES    4000
+#define LSPR_NUM_STEPS  30
 #define LSPR_GAMMA  0.9
 #define LSPR_EPSILON 1e-10
 #define LSPR_WRITE_ACTION_SET_TO_FILE   true
@@ -166,7 +165,6 @@ inline void ConfigurationLSPI() {
     std::cout << "LSPI global configuration" << std::endl;
     std::cout << "LSPR_NUM_EPISODES   " << LSPR_NUM_EPISODES << std::endl;
     std::cout << "LSPR_NUM_STEPS   " << LSPR_NUM_STEPS << std::endl;
-    std::cout << "LSPR_DIRECTION_RESOLUTION   " << LSPR_DIRECTION_RESOLUTION << std::endl;
     std::cout << "LSPR_TRANSIENT_RESPONSE_TIME   " << LSPR_TRANSIENT_RESPONSE_TIME << std::endl;
     std::cout << "LSPR_GAMMA   " << LSPR_GAMMA << std::endl;
     std::cout << "LSPR_EPSILON   " << LSPR_EPSILON << std::endl;
