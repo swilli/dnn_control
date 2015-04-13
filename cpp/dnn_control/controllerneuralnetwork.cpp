@@ -27,7 +27,7 @@ Vector3D ControllerNeuralNetwork::GetThrustForSensorData(const std::vector<doubl
     const std::vector<double> unscaled_thrust = neural_network_.Evaluate(sensor_data);
     Vector3D thrust;
     for (unsigned int i = 0; i < 3; ++i) {
-        thrust[i] = (unscaled_thrust[i] - 0.5) * maximum_thrust_;
+        thrust[i] = (unscaled_thrust[i] - 0.5) * 2.0 * maximum_thrust_;
     }
 
     return thrust;
