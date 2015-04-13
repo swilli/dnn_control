@@ -66,12 +66,12 @@ Asteroid::Asteroid(const Vector3D &semi_axis, const double &density, const Vecto
     elliptic_tau_ = sqrt((inertia[2] - inertia[1]) * (momentum_pow2_ - energy_mul2_ * inertia[0]) / (inertia[0] * inertia[1] * inertia[2]));
 
     // Lifshitz eq (37.9)
-    elliptic_modulus_ = (inertia[1] - inertia[0]) * (energy_mul2_ * inertia[2] - momentum_pow2_) / ((inertia[2] - inertia[1]) * (momentum_pow2_ - energy_mul2_ * inertia[0]));
+    elliptic_modulus_pow_2_ = (inertia[1] - inertia[0]) * (energy_mul2_ * inertia[2] - momentum_pow2_) / ((inertia[2] - inertia[1]) * (momentum_pow2_ - energy_mul2_ * inertia[0]));
 
     mass_gravitational_constant_ = mass_ * kGravitationalConstant;
 
     // Lifshitz eq (37.12)
-    const double val_K = gsl_sf_ellint_Kcomp(sqrt(elliptic_modulus_), GSL_PREC_DOUBLE);
+    const double val_K = gsl_sf_ellint_Kcomp(sqrt(elliptic_modulus_pow_2_), GSL_PREC_DOUBLE);
     angular_velocity_period_ = 4.0 * val_K * sqrt(inertia[0] * inertia[1] * inertia[2]/((inertia[2] - inertia[1]) * (momentum_pow2_ - energy_mul2_ * inertia[0])));
 }
 
@@ -207,7 +207,7 @@ boost::tuple<Vector3D, Vector3D> Asteroid::AngularVelocityAndAccelerationAtTime(
 
     // Get analytical solution
     double sn_tau = 0.0, cn_tau = 0.0, dn_tau = 0.0;
-    gsl_sf_elljac_e(t, elliptic_modulus_, &sn_tau, &cn_tau, &dn_tau);
+    gsl_sf_elljac_e(t, elliptic_modulus_pow_2_, &sn_tau, &cn_tau, &dn_tau);
 
     // Lifshitz eq (37.10)
     if (inversion_) {

@@ -121,7 +121,7 @@ private:
     double elliptic_tau_;
 
     // Lifshitz eq (37.9)
-    double elliptic_modulus_;
+    double elliptic_modulus_pow_2_;
 
     // True if momentum_pow2_ < energy_mul2_ * inertia_[1]
     bool inversion_;
