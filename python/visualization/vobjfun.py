@@ -10,9 +10,10 @@ examples:
 import sys
 import matplotlib.pyplot as plt
 from numpy import array
+import matplotlib
 
+matplotlib.rcParams.update({'font.size': 22})
 
-num_bins = 50
 
 file_name = sys.argv[1]
 
@@ -31,7 +32,8 @@ lines = [float(val) for val in lines]
 data = array(lines)
 
 plt.plot(lines)
-plt.xlabel("Evolution")
-plt.ylabel("Fitness")
+plt.title("Mean Error vs Generation")
+plt.xlabel("generation")
+plt.ylabel("mean error [m]")
 plt.show()
 
