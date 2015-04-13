@@ -63,7 +63,7 @@ static void Init() {
     kSpacecraftPhiSize = kSpacecraftNumActions * kSpacecraftPolynomialDimensions;
     */
 
-    const std::vector<double> thrust_levels = {0.0, 5.0e-2, 1.0e-1, 5.0e-1, 1.0, 2.0, 5.0, 10.0, 15.0, 21.0};
+    const std::vector<double> thrust_levels = {0.0, 0.1, 0.5, 1.0, 2.0, 5.0, 10.0, 15.0, 21.0};
     for (unsigned int i = 0; i < thrust_levels.size(); ++i) {
         const double &t = thrust_levels.at(i);
         if (t == 0.0) {
@@ -96,14 +96,12 @@ static Eigen::VectorXd Phi(const LSPIState &state, const unsigned int &action) {
     result[base++] = 1.0;
     for (unsigned int i = 0; i < kSpacecraftStateDimension; ++i) {
         result[base++] = state[i];
-        /*
-         * for (unsigned int j = i; j < kSpacecraftStateDimension; ++j) {
+        result[base++] = state[i] * state[i];
+
+        /*for (unsigned int j = i; j < kSpacecraftStateDimension; ++j) {
             result[base++] = state[i] * state[j];
         }
         */
-
-        result[base++] = state[i] * state[i];
-        //result[base++] = state[i] * state[i] * state[i];
     }
 
     return result;
@@ -220,7 +218,7 @@ static std::vector<Sample> PrepareSamples(SampleFactory &sample_factory, const u
 #endif
         const double dt = 1.0 / simulator.ControlFrequency();
 
-        SystemState state = InitializeState(sample_factory, target_position, 6.0);
+        SystemState state = InitializeState(sample_factory, target_position, 4.0);
         double time = sample_factory.SampleUniform(0.0, 12.0 * 60.0 * 60.0);
 
         for (unsigned int j = 0; j < num_steps; ++j) {
@@ -238,11 +236,13 @@ static std::vector<Sample> PrepareSamples(SampleFactory &sample_factory, const u
             SystemState next_state = boost::get<0>(result);
 
             const Vector3D &next_position = {next_state[0], next_state[1], next_state[2]};
+            const Vector3D &next_velocity = {next_state[3], next_state[4], next_state[5]};
 
             const LSPIState next_lspi_state = SystemStateToLSPIState(next_state, target_position);
 
             const double delta_p1 = VectorNorm(VectorSub(target_position, position));
             const double delta_p2 = VectorNorm(VectorSub(target_position, next_position));
+            const double magn_velocity = VectorNorm(next_velocity);
 
             const double r = -delta_p2;
 

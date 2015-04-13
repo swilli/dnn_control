@@ -9,10 +9,10 @@
  */
 
 // Task Name
-#define TASK_NAME   "master"
+#define TASK_NAME   "task3"
 
 // Euler home or not
-#define ENABLE_EULER_HOME   false
+#define ENABLE_EULER_HOME   true
 
 // Evolutionary Robotics configs
 #define ER_NUM_GENERATIONS  1000
@@ -85,10 +85,9 @@
 #define LSPR_IC_POSITION_OFFSET_ENABLED true
 //#define LSPR_FIXED_SEED     1990
 
-#define LSPR_DIRECTION_RESOLUTION   5
 #define LSPR_TRANSIENT_RESPONSE_TIME  150.0
-#define LSPR_NUM_EPISODES    10000
-#define LSPR_NUM_STEPS  5
+#define LSPR_NUM_EPISODES    4000
+#define LSPR_NUM_STEPS  30
 #define LSPR_GAMMA  0.9
 #define LSPR_EPSILON 1e-10
 #define LSPR_WRITE_ACTION_SET_TO_FILE   true
@@ -108,10 +107,9 @@
 #define PATH_TO_PROPORTIONAL_DERIVATIVE_POST_EVALUATION_FILE     OUTPUT_ROOT_PATH "results/post_evaluation_pd_" TASK_NAME ".txt"
 #define PATH_TO_LSPI_TRAJECTORY_FILE   OUTPUT_ROOT_PATH "results/trajectory_lspi.txt"
 #define PATH_TO_LSPI_EVALUATION_FILE  OUTPUT_ROOT_PATH "results/evaluation_lspi.txt"
-#define PATH_TO_LSPI_POST_EVALUATION_FILE   OUTPUT_ROOT_PATH "results/post_evaluation_lspi.txt"
-#define PATH_TO_LSPI_ACTION_SET_FILE    OUTPUT_ROOT_PATH "results/lspi_action_set.txt"
-#define PATH_TO_LSPI_WEIGHT_VECTOR_FILE OUTPUT_ROOT_PATH "results/lspi_weights.txt"
-#define PATH_TO_COMPARISON_POST_EVALUATION_FILE     OUTPUT_ROOT_PATH "results/post_evaluation_comparison.txt"
+#define PATH_TO_LSPI_POST_EVALUATION_FILE   OUTPUT_ROOT_PATH "results/post_evaluation_lspi_" TASK_NAME ".txt"
+#define PATH_TO_LSPI_ACTION_SET_FILE    OUTPUT_ROOT_PATH "results/lspi_action_set_" TASK_NAME ".txt"
+#define PATH_TO_LSPI_WEIGHT_VECTOR_FILE OUTPUT_ROOT_PATH "results/lspi_weights_" TASK_NAME ".txt"
 #define PATH_TO_SENSOR_DATA_FOLDER  OUTPUT_ROOT_PATH    "data/raw/"
 #define PATH_TO_AUTOENCODER_LAYER_CONFIGURATION OUTPUT_ROOT_PATH "autoencoder/" CNN_STACKED_AUTOENCODER_CONFIGURATION "/"
 
@@ -166,7 +164,6 @@ inline void ConfigurationLSPI() {
     std::cout << "LSPI global configuration" << std::endl;
     std::cout << "LSPR_NUM_EPISODES   " << LSPR_NUM_EPISODES << std::endl;
     std::cout << "LSPR_NUM_STEPS   " << LSPR_NUM_STEPS << std::endl;
-    std::cout << "LSPR_DIRECTION_RESOLUTION   " << LSPR_DIRECTION_RESOLUTION << std::endl;
     std::cout << "LSPR_TRANSIENT_RESPONSE_TIME   " << LSPR_TRANSIENT_RESPONSE_TIME << std::endl;
     std::cout << "LSPR_GAMMA   " << LSPR_GAMMA << std::endl;
     std::cout << "LSPR_EPSILON   " << LSPR_EPSILON << std::endl;
