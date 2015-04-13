@@ -70,10 +70,9 @@ Asteroid::Asteroid(const Vector3D &semi_axis, const double &density, const Vecto
 
     mass_gravitational_constant_ = mass_ * kGravitationalConstant;
 
-    const double val_K = gsl_sf_ellint_Ecomp(elliptic_modulus_, GSL_PREC_DOUBLE);
-
     // Lifshitz eq (37.12)
-    rotation_period_ = 4.0 * val_K * sqrt(inertia[0] * inertia[1] * inertia[2]/((inertia[2] - inertia[1]) * (momentum_pow2_ - energy_mul2_ * inertia[0])));
+    const double val_K = gsl_sf_ellint_Kcomp(sqrt(elliptic_modulus_), GSL_PREC_DOUBLE);
+    angular_velocity_period_ = 4.0 * val_K * sqrt(inertia[0] * inertia[1] * inertia[2]/((inertia[2] - inertia[1]) * (momentum_pow2_ - energy_mul2_ * inertia[0])));
 }
 
 Vector3D Asteroid::SemiAxis() const {
@@ -104,8 +103,8 @@ double Asteroid::EvaluatePointWithStandardEquation(const Vector3D &position) con
     return result;
 }
 
-double Asteroid::RotationPeriod() const {
-    return rotation_period_;
+double Asteroid::AngularVelocityPeriod() const {
+    return angular_velocity_period_;
 }
 
 double Asteroid::NewtonRaphsonNearestPointOnSurfaceToPositionEllipse(const Vector2D &semi_axis_mul_pos, const Vector2D &semi_axis_pow2) {

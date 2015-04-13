@@ -91,8 +91,8 @@ bp::list BoostAsteroid::IntersectLineToCenterFromPosition(const bp::list &positi
     return surface_point_py;
 }
 
-double BoostAsteroid::RotationPeriod() const {
-    return asteroid_cpp_->RotationPeriod();
+double BoostAsteroid::AngularVelocityPeriod() const {
+    return asteroid_cpp_->AngularVelocityPeriod();
 }
 
 BOOST_PYTHON_MODULE(boost_asteroid)
@@ -103,7 +103,7 @@ BOOST_PYTHON_MODULE(boost_asteroid)
             .def("nearest_point_on_surface_to_position", &BoostAsteroid::NearestPointOnSurfaceToPosition)
             .def("semi_axis", &BoostAsteroid::SemiAxis)
             .def("intersect_line_to_center_from_position", &BoostAsteroid::IntersectLineToCenterFromPosition)
-            .def("rotation_period", &BoostAsteroid::RotationPeriod)
+            .def("angular_velocity_period", &BoostAsteroid::AngularVelocityPeriod)
             ;
 }
 

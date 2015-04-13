@@ -9,7 +9,7 @@
 PaGMOSimulation::PaGMOSimulation(const unsigned int &random_seed)
     : random_seed_(random_seed), simulation_time_(0.0) {
     Init();
-    simulation_time_ = (int) (asteroid_.RotationPeriod() * 0.5);
+    simulation_time_ = (int) (asteroid_.AngularVelocityPeriod() * 0.1);
 }
 
 PaGMOSimulation::PaGMOSimulation(const unsigned int &random_seed, const double &simulation_time)

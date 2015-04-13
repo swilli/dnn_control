@@ -62,7 +62,7 @@ public:
     double EvaluatePointWithStandardEquation(const Vector3D &position) const;
 
     // The rotation period with respect to its own axis
-    double RotationPeriod() const;
+    double AngularVelocityPeriod() const;
 
     class Exception {};
     class PositionInsideException : public Exception {};
@@ -127,7 +127,7 @@ private:
     bool inversion_;
 
     // Rotation period
-    double rotation_period_;
+    double angular_velocity_period_;
 };
 
 #endif // ASTEROID_H
