@@ -11,7 +11,8 @@ import sys
 import matplotlib.pyplot as plt
 from numpy import array
 import matplotlib
-
+import seaborn as sns
+sns.set_context("notebook", font_scale=1.5, rc={"lines.linewidth": 2.5})
 matplotlib.rcParams.update({'font.size': 22})
 
 
@@ -28,12 +29,22 @@ lines = [line for line in lines if "generation" in line]
 lines = [line.split(" ") for line in lines]
 lines = [[val for val in line if val != ""] for line in lines]
 lines = [line[2] for line in lines]
-lines = [float(val) for val in lines]
-data = array(lines)
+values = [float(val) for val in lines]
+minimas = []
+for val in values:
+	if len(minimas) == 0:
+		minimas.append(val)
+	else:
+		if val < minimas[-1]:
+			minimas.append(val)
+		else:
+			minimas.append(minimas[-1])
 
-plt.plot(lines)
-plt.title("Mean Error vs Generation")
+data = array(minimas)
+
+plt.loglog(data)
+plt.title("Fitness vs Generation")
 plt.xlabel("generation")
-plt.ylabel("mean error [m]")
+plt.ylabel("fitness")
 plt.show()
 
