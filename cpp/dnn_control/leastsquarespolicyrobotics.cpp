@@ -63,7 +63,7 @@ static void Init() {
     kSpacecraftPhiSize = kSpacecraftNumActions * kSpacecraftPolynomialDimensions;
     */
 
-    const std::vector<double> thrust_levels = {0.0, 0.1, 2.0, 10.0, 21.0};
+    const std::vector<double> thrust_levels = {0.0, 2.0, 10.0, 21.0};
     for (unsigned int i = 0; i < thrust_levels.size(); ++i) {
         const double &t = thrust_levels.at(i);
         if (t == 0.0) {
@@ -152,18 +152,18 @@ static Eigen::VectorXd LSPI(SampleFactory &sample_factory, const std::vector<Sam
     Eigen::VectorXd w_prime(initial_weights);
     Eigen::VectorXd w;
 
-    double val_norm = 0.0;
+    double val_norm = -1.0;
     unsigned int iteration = 0;
     do {
-        w = w_prime;
-        w_prime = LSTDQ(sample_factory, samples, gamma, w);
-        val_norm = (w - w_prime).norm();
-
         time_t rawtime;
         struct tm *timeinfo;
         time(&rawtime);
         timeinfo = localtime(&rawtime);
-        std::cout << std::endl << asctime(timeinfo) << "iteration " << ++iteration << ". Norm : " << val_norm << std::endl;
+        std::cout << std::endl << asctime(timeinfo) << "iteration " << iteration++ << ". Norm : " << val_norm << std::endl;
+
+        w = w_prime;
+        w_prime = LSTDQ(sample_factory, samples, gamma, w);
+        val_norm = (w - w_prime).norm();
     } while (val_norm > epsilon);
 
     return w;
@@ -240,7 +240,6 @@ static std::vector<Sample> PrepareSamples(SampleFactory &sample_factory, const u
 
             const double delta_p1 = VectorNorm(VectorSub(target_position, position));
             const double delta_p2 = VectorNorm(VectorSub(target_position, next_position));
-            const double magn_velocity = VectorNorm(next_velocity);
 
             const double r = delta_p1 - delta_p2;
 
