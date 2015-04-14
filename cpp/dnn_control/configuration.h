@@ -12,7 +12,7 @@
 #define TASK_NAME   "task3"
 
 // Euler home or not
-#define ENABLE_EULER_HOME   false
+#define ENABLE_EULER_HOME   true
 
 // Evolutionary Robotics configs
 #define ER_NUM_GENERATIONS  1000
