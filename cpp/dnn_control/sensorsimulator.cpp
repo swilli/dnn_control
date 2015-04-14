@@ -67,9 +67,9 @@ std::vector<double> SensorSimulator::Simulate(const SystemState &state, const Ve
             const Vector3D &velocity = {state[3], state[4], state[5]};
 
             const double coef_norm_height = 1.0 / VectorNorm(height);
-            const Vector3D &normalized_height = {height[0] * coef_norm_height, height[1] * coef_norm_height, height[2] * coef_norm_height};
+            const Vector3D normalized_height = VectorMul(coef_norm_height, height);
             const double magn_velocity_parallel = VectorDotProduct(velocity, normalized_height);
-            const Vector3D &velocity_parallel = {magn_velocity_parallel * normalized_height[0], magn_velocity_parallel * normalized_height[1], magn_velocity_parallel * normalized_height[2]};
+            const Vector3D velocity_parallel = VectorMul(magn_velocity_parallel, normalized_height);
             const Vector3D velocity_perpendicular = VectorSub(velocity, velocity_parallel);
 
             for (unsigned int i = 0; i < 3; ++i) {

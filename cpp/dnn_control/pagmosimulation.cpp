@@ -49,10 +49,6 @@ double PaGMOSimulation::SpacecraftMaximumThrust() const {
     return spacecraft_maximum_thrust_;
 }
 
-void PaGMOSimulation::SetSimulationTime(const double &simulation_time) {
-    simulation_time_ = simulation_time;
-}
-
 unsigned int PaGMOSimulation::RandomSeed() const {
     return random_seed_;
 }
@@ -69,6 +65,10 @@ Vector3D PaGMOSimulation::TargetPosition() const {
     return target_position_;
 }
 
+void PaGMOSimulation::SetSimulationTime(const double &simulation_time) {
+    simulation_time_ = simulation_time;
+}
+
 void PaGMOSimulation::Init() {
     minimum_step_size_ = 0.1;
     fixed_step_size_ = 0.1;
@@ -80,10 +80,10 @@ void PaGMOSimulation::Init() {
     const double c_semi_axis = asteroid_sf.SampleUniform(100.0, 8000.0);
     const double b_semi_axis_n = asteroid_sf.SampleUniform(1.1, 2.0);
     const double a_semi_axis_n = asteroid_sf.SampleUniform(1.1 * b_semi_axis_n, 4.0);
-    const Vector3D semi_axis = {a_semi_axis_n * c_semi_axis, b_semi_axis_n * c_semi_axis, c_semi_axis};
+    const Vector3D &semi_axis = {a_semi_axis_n * c_semi_axis, b_semi_axis_n * c_semi_axis, c_semi_axis};
     const double density = asteroid_sf.SampleUniform(1500.0, 3000.0);
     const double magn_angular_velocity = 0.85 * sqrt((kGravitationalConstant * 4.0/3.0 * kPi * semi_axis[0] * semi_axis[1] * semi_axis[2] * density) / (semi_axis[0] * semi_axis[0] * semi_axis[0]));
-    const Vector2D angular_velocity_xz = {asteroid_sf.SampleSign() * asteroid_sf.SampleUniform(magn_angular_velocity * 0.5, magn_angular_velocity), asteroid_sf.SampleSign() * asteroid_sf.SampleUniform(magn_angular_velocity * 0.5, magn_angular_velocity)};
+    const Vector2D &angular_velocity_xz = {asteroid_sf.SampleSign() * asteroid_sf.SampleUniform(magn_angular_velocity * 0.5, magn_angular_velocity), asteroid_sf.SampleSign() * asteroid_sf.SampleUniform(magn_angular_velocity * 0.5, magn_angular_velocity)};
     const double time_bias = asteroid_sf.SampleUniform(0.0, 12.0 * 60 * 60);
     asteroid_ = Asteroid(semi_axis, density, angular_velocity_xz, time_bias);
 
@@ -114,7 +114,7 @@ void PaGMOSimulation::Init() {
     }
 #else
     // spacecraft starts at target position
-    const Vector3D spacecraft_position = target_position_;
+    const Vector3D &spacecraft_position = target_position_;
 #endif
 
 

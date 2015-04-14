@@ -29,12 +29,15 @@ base_ptr hovering_problem_neural_network::clone() const {
 }
 
 fitness_vector hovering_problem_neural_network::objfun_seeded(const unsigned int &seed, const decision_vector &x) const {
+    fitness_vector f(1);
+
     PaGMOSimulationNeuralNetwork simulation(seed, m_n_hidden_neurons, x);
     if (m_simulation_time > 0) {
         simulation.SetSimulationTime(m_simulation_time);
     }
-    fitness_vector f(1);
+
     f[0] = single_fitness(simulation);
+
     return f;
 }
 
@@ -182,20 +185,20 @@ double hovering_problem_neural_network::single_fitness(PaGMOSimulationNeuralNetw
             const Vector3D &velocity = evaluated_velocities.at(i);
 
             const double coef_norm_height = 1.0 / VectorNorm(height);
-            const Vector3D &normalized_height = {height[0] * coef_norm_height, height[1] * coef_norm_height, height[2] * coef_norm_height};
+            const Vector3D normalized_height = VectorMul(coef_norm_height, height);
 
             const double magn_velocity_parallel = VectorDotProduct(velocity, normalized_height);
             const double divergence = magn_velocity_parallel * coef_norm_height;
 
-            const Vector3D &velocity_vertical = {magn_velocity_parallel * normalized_height[0], magn_velocity_parallel * normalized_height[1], magn_velocity_parallel * normalized_height[2]};
-            const Vector3D velocity_horizontal = VectorSub(velocity, velocity_vertical);
+            const Vector3D velocity_parallel = VectorMul(magn_velocity_parallel, normalized_height);
+            const Vector3D velocity_perpendicular = VectorSub(velocity, velocity_parallel);
 
-            const Vector3D &optical_flow = {velocity_horizontal[0] * coef_norm_height, velocity_horizontal[1] * coef_norm_height, velocity_horizontal[2] * coef_norm_height};
+            const Vector3D &optic_flow = VectorMul(coef_norm_height, velocity_perpendicular);
 
             double error_divergence = divergence + HP_OBJ_FUN_COEF_DIVERGENCE;
-            error_divergence = HP_OBJ_FUN_ERROR_DIVERGENCE_WEIGHT * (error_divergence < 0.0 ? -error_divergence : error_divergence);
+            error_divergence = (error_divergence < 0.0 ? -error_divergence : error_divergence);
 
-            const double error_optical_flow = VectorNorm(optical_flow);
+            const double error_optical_flow = VectorNorm(optic_flow);
 
             fitness += error_optical_flow + error_divergence;
 
