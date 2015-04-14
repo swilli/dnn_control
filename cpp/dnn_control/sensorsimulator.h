@@ -19,12 +19,13 @@ public:
         RelativePosition,
         Velocity,
         OpticalFlow,
-        Acceleration
+        Acceleration,
+        Height
     };
 
     const static std::map<SensorType, std::pair<unsigned int, double> > SensorTypeConfigurations;
 
-    SensorSimulator(SampleFactory &sample_factory, const Asteroid &asteroid, const std::set<SensorType> &sensor_types, const bool &enable_noise, const Vector3D &target_position={0.0, 0.0, 0.0}, const std::map<SensorType, std::vector<std::pair<double, double> > > &sensor_value_transformations={});
+    SensorSimulator(SampleFactory &sample_factory, const Asteroid &asteroid, const std::set<SensorType> &sensor_types_, const bool &enable_noise, const Vector3D &target_position={0.0, 0.0, 0.0}, const std::map<SensorType, std::vector<std::pair<double, double> > > &sensor_value_transformations={});
 
     // Generates (simulates) sensor data based on the current spacecraft state "state" and time "time"
     virtual std::vector<double> Simulate(const SystemState &state, const Vector3D &height, const Vector3D &perturbations_acceleration, const double &time);
@@ -35,8 +36,6 @@ public:
     // SensorSimulator can throw the following exceptions
     class Exception {};
 
-    // Returns sensor data in a string representation
-    static std::string SensorDataToString(const std::vector<double> &data);
 
 protected:
     static double TransformValue(const double &sensor_value, const std::pair<double, double> &transformation_params);
@@ -53,7 +52,7 @@ protected:
     const Asteroid &asteroid_;
 
     // The active sensor types
-    std::set<SensorType> sensor_types;
+    std::set<SensorType> sensor_types_;
 
     // Is noise enabled
     bool noise_enabled_;

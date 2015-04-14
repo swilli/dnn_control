@@ -7,30 +7,20 @@ const std::map<SensorSimulator::SensorType, std::pair<unsigned int, double> > Se
     {SensorSimulator::SensorType::RelativePosition, {3, 0.05}},
     {SensorSimulator::SensorType::Velocity, {3, 0.05}},
     {SensorSimulator::SensorType::OpticalFlow, {6, 0.05}},
-    {SensorSimulator::SensorType::Acceleration, {3, 0.05}}
+    {SensorSimulator::SensorType::Acceleration, {3, 0.05}},
+    {SensorSimulator::SensorType::Height, {1, 0.05}}
 };
 
-SensorSimulator::SensorSimulator(SampleFactory &sample_factory, const Asteroid &asteroid, const std::set<SensorType> &sensor_types, const bool &enable_noise, const Vector3D &target_position, const std::map<SensorType, std::vector<std::pair<double, double> > > &sensor_value_transformations)
-    : sample_factory_(sample_factory), asteroid_(asteroid), sensor_types(sensor_types), noise_enabled_(enable_noise), target_position_(target_position), sensor_value_transformations_(sensor_value_transformations) {
+SensorSimulator::SensorSimulator(SampleFactory &sample_factory, const Asteroid &asteroid, const std::set<SensorType> &sensor_types_, const bool &enable_noise, const Vector3D &target_position, const std::map<SensorType, std::vector<std::pair<double, double> > > &sensor_value_transformations)
+    : sample_factory_(sample_factory), asteroid_(asteroid), sensor_types_(sensor_types_), noise_enabled_(enable_noise), target_position_(target_position), sensor_value_transformations_(sensor_value_transformations) {
     dimensions_ = 0;
-    for (auto t : sensor_types) {
+    for (auto t : sensor_types_) {
         dimensions_ += SensorTypeConfigurations.at(t).first;
     }
 }
 
 unsigned int SensorSimulator::Dimensions() const {
     return dimensions_;
-}
-
-std::string SensorSimulator::SensorDataToString(const std::vector<double> &data) {
-    std::stringstream result;
-    if (data.size()) {
-        result << data[0];
-    }
-    for (unsigned int i = 1; i < data.size(); ++i) {
-        result << ",\t" << data[i];
-    }
-    return result.str();
 }
 
 double SensorSimulator::AddNoise(const double &sensor_value, const double &standard_deviation) {
@@ -45,7 +35,7 @@ std::vector<double> SensorSimulator::Simulate(const SystemState &state, const Ve
     std::vector<double> sensor_data(dimensions_, 0.0);
     unsigned int offset = 0;
 
-    for (auto t : sensor_types) {
+    for (auto t : sensor_types_) {
         if (t == RelativePosition) {
             const Vector3D &position = {state[0], state[1], state[2]};
             for (unsigned int i = 0; i < 3; ++i) {
@@ -58,7 +48,7 @@ std::vector<double> SensorSimulator::Simulate(const SystemState &state, const Ve
                 }
             }
 
-            offset += 3;
+            offset += SensorTypeConfigurations.at(t).first;
         } else if (t == Velocity) {
             const Vector3D &velocity = {state[3], state[4], state[5]};
             for (unsigned int i = 0; i < 3; ++i) {
@@ -71,7 +61,7 @@ std::vector<double> SensorSimulator::Simulate(const SystemState &state, const Ve
                 }
             }
 
-            offset += 3;
+            offset += SensorTypeConfigurations.at(t).first;
         } else if (t == OpticalFlow) {
             const double up_scale = 1000000.0;
             const Vector3D &velocity = {state[3], state[4], state[5]};
@@ -96,7 +86,7 @@ std::vector<double> SensorSimulator::Simulate(const SystemState &state, const Ve
                 }
             }
 
-            offset += 6;
+            offset += SensorTypeConfigurations.at(t).first;
         } else if (t == Acceleration) {
             const double up_scale = 1000000.0;
             const Vector3D &position = {state[0], state[1], state[2]};
@@ -130,7 +120,11 @@ std::vector<double> SensorSimulator::Simulate(const SystemState &state, const Ve
                 }
             }
 
-            offset += 3;
+            offset += SensorTypeConfigurations.at(t).first;
+        } else if (t == Height) {
+            sensor_data[offset] = AddNoise(VectorNorm(height), SensorTypeConfigurations.at(t).second);
+
+            offset += SensorTypeConfigurations.at(t).first;
         }
     }
 
