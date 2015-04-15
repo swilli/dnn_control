@@ -180,7 +180,7 @@ static std::vector<Sample> PrepareSamples(SampleFactory &sample_factory, const u
 #endif
         const double dt = 1.0 / simulator.ControlFrequency();
 
-        SystemState state = InitializeState(sample_factory, target_position, 4.0);
+        SystemState state = InitializeState(sample_factory, target_position, 3.0);
         double time = sample_factory.SampleUniform(0.0, 12.0 * 60.0 * 60.0);
 
         for (unsigned int j = 0; j < num_steps; ++j) {
@@ -198,7 +198,6 @@ static std::vector<Sample> PrepareSamples(SampleFactory &sample_factory, const u
             SystemState next_state = boost::get<0>(result);
 
             const Vector3D &next_position = {next_state[0], next_state[1], next_state[2]};
-            const Vector3D &next_velocity = {next_state[3], next_state[4], next_state[5]};
 
             const LSPIState next_lspi_state = SystemStateToLSPIState(next_state, target_position);
 
