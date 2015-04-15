@@ -29,7 +29,7 @@ typedef boost::tuple<LSPIState, unsigned int, double, LSPIState> Sample;
 static std::vector<Vector3D> kSpacecraftActions;
 
 static void Init() {
-    const std::vector<double> thrust_levels = {0.0, 21.0};
+    const std::vector<double> thrust_levels = {0.0, 1.0, 21.0};
     for (unsigned int i = 0; i < thrust_levels.size(); ++i) {
         const double &t = thrust_levels.at(i);
         if (t == 0.0) {
@@ -49,7 +49,8 @@ static void Init() {
         }
     }
     kSpacecraftNumActions = kSpacecraftActions.size();
-    kSpacecraftPolynomialDimensions = 1 + (int) (0.5 * kSpacecraftStateDimension * (kSpacecraftStateDimension + 3));
+    //kSpacecraftPolynomialDimensions = 1 + (int) (0.5 * kSpacecraftStateDimension * (3 * kSpacecraftStateDimension + 5));
+    kSpacecraftPolynomialDimensions = 58;
     kSpacecraftPhiSize = kSpacecraftNumActions * kSpacecraftPolynomialDimensions;
 }
 
@@ -61,8 +62,14 @@ static Eigen::VectorXd Phi(const LSPIState &state, const unsigned int &action) {
     result[base++] = 1.0;
     for (unsigned int i = 0; i < kSpacecraftStateDimension; ++i) {
         result[base++] = state[i];
-       for (unsigned int j = i; j < kSpacecraftStateDimension; ++j) {
+        for (unsigned int j = i; j < kSpacecraftStateDimension; ++j) {
             result[base++] = state[i] * state[j];
+        }
+        for (unsigned int j = i+1; j < kSpacecraftStateDimension; ++j) {
+            result[base++] = state[i] * state[i] * state[j];
+        }
+        for (unsigned int j = i+1; j < kSpacecraftStateDimension; ++j) {
+            result[base++] = state[i] * state[j] * state[j];
         }
     }
 
