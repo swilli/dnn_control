@@ -29,9 +29,8 @@ reference_frame = "body"
 file_name = sys.argv[1]
 if len(sys.argv) > 2:
     speedup = float(sys.argv[2])
-
-if len(sys.argv) > 3:
-    reference_frame = str(sys.argv[3])
+    if len(sys.argv) > 3:
+        reference_frame = str(sys.argv[3])
 
 print("preparing data... ")
 

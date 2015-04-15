@@ -67,14 +67,14 @@ std::vector<double> FeedForwardNeuralNetwork::Evaluate(const std::vector<double>
         const boost::tuple<unsigned int, bool, ActivationFunctionType> &next_layer_conf = layer_configurations_.at(layer_index);
         const std::vector<double> &layer_weights = layer_weights_.at(layer_index);
 
-        const unsigned int dim_output = boost::get<0>(next_layer_conf);
-        const ActivationFunctionType function_type = boost::get<2>(next_layer_conf);
+        const unsigned int &dim_output = boost::get<0>(next_layer_conf);
+        const ActivationFunctionType &function_type = boost::get<2>(next_layer_conf);
         std::vector<double> layer_output(dim_output, 0.0);
 
         for (unsigned int i = 0; i < dim_output; ++i) {
 
             // Add bias
-            if (bias == 1) {
+            if (bias) {
                 layer_output[i] = layer_weights[i * (dim_input + bias)];
             }
 
@@ -104,7 +104,7 @@ std::vector<double> FeedForwardNeuralNetwork::Evaluate(const std::vector<double>
     std::vector<double> layer_output(dimension_output_layer_, 0.0);
     for (unsigned int i = 0; i < dimension_output_layer_; ++i) {
         // Add bias
-        if (bias == 1) {
+        if (bias) {
             layer_output[i] = layer_weights[i * (dim_input + bias)];
         }
 

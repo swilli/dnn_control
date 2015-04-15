@@ -61,8 +61,12 @@ public:
     // Returns x^2/a^2 + y^2/b^2 + z^2/c^2
     double EvaluatePointWithStandardEquation(const Vector3D &position) const;
 
-    // The estimated time for the asteroid to make one rotation
-    double RoughRotationalPeriodEstimate() const;
+    // The angular velocity period with respect to its own axis
+    double AngularVelocityPeriod() const;
+
+    // An estimate for the asteroid's main motion
+    double EstimatedMainMotionPeriod() const;
+
 
     class Exception {};
     class PositionInsideException : public Exception {};
@@ -121,13 +125,16 @@ private:
     double elliptic_tau_;
 
     // Lifshitz eq (37.9)
-    double elliptic_modulus_;
+    double elliptic_modulus_pow_2_;
 
     // True if momentum_pow2_ < energy_mul2_ * inertia_[1]
     bool inversion_;
 
-    // Estimated rotational period
-    double rough_rotational_period_estimate_;
+    // Periodicity of angular velocity
+    double angular_velocity_period_;
+
+    // Estimated main motion period
+    double estimated_main_motion_period_;
 };
 
 #endif // ASTEROID_H

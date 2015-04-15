@@ -10,10 +10,13 @@ examples:
 '''
 
 import sys
+import matplotlib
 import matplotlib.pyplot as plt
 from numpy import array, mean, minimum, maximum,std, sqrt
 from numpy.matlib import repmat
 from numpy.linalg import norm
+
+matplotlib.rcParams.update({'font.size': 22})
 
 file_name = sys.argv[1]
 skip_outliers = False
@@ -22,7 +25,7 @@ threshold = 1.0
 if len(sys.argv) > 2:
     threshold = float(sys.argv[2])
     if len(sys.argv) > 3:
-        skip_outliers = bool(sys.argv[3])
+        skip_outliers = sys.argv[3] == 'True'
 
 print("preparing data... ")
 
@@ -76,7 +79,5 @@ print(subtitle2)
 print("Worst case seed: {0}".format(worst_case_seed))
 
 plt.boxplot(data[:, 1])
-#plt.title("Post Evaluation for {0} different Initial Conditions".format(num_samples)) # + '\n' + subtitle1 + '\n' + subtitle2)
-#plt.xlabel('Controller')
-plt.ylabel('Fitness')
+plt.ylabel('mean offset [m]')
 plt.show()

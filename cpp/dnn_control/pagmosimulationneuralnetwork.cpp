@@ -88,7 +88,7 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
             const double &mass = system_state[6];
 
             const Vector3D surf_pos = boost::get<0>(asteroid_.NearestPointOnSurfaceToPosition(position));
-            const Vector3D &height = {position[0] - surf_pos[0], position[1] - surf_pos[1], position[2] - surf_pos[2]};
+            const Vector3D height = VectorSub(position, surf_pos);
 
             evaluated_times.at(iteration) = current_time;
             evaluated_masses.at(iteration) = mass;
@@ -143,7 +143,7 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     const double &mass = system_state[6];
 
     const Vector3D surf_pos = boost::get<0>(asteroid_.NearestPointOnSurfaceToPosition(position));
-    const Vector3D &height = {position[0] - surf_pos[0], position[1] - surf_pos[1], position[2] - surf_pos[2]};
+    const Vector3D height = VectorSub(position, surf_pos);
 
     evaluated_times.back() = current_time_observer;
     evaluated_masses.back() = mass;
@@ -203,7 +203,7 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
             const double &mass = system_state[6];
 
             const Vector3D surf_pos = boost::get<0>(asteroid_.NearestPointOnSurfaceToPosition(position));
-            const Vector3D &height = {position[0] - surf_pos[0], position[1] - surf_pos[1], position[2] - surf_pos[2]};
+            const Vector3D height = VectorSub(position, surf_pos);
 
             evaluated_times.push_back(current_time);
             evaluated_masses.push_back(mass);

@@ -19,7 +19,7 @@ Asteroid::Asteroid(const Vector3D &semi_axis, const double &density, const Vecto
 
     constructor_angular_velocities_xz_ = angular_velocity_xz;
 
-    const Vector3D angular_velocity_3d = {angular_velocity_xz[0], 0.0, angular_velocity_xz[1]};
+    const Vector3D &angular_velocity_3d = {angular_velocity_xz[0], 0.0, angular_velocity_xz[1]};
 
     mass_ = 4.0 / 3.0 * kPi * density_;
     for (unsigned int i = 0; i < 3; ++i) {
@@ -66,11 +66,15 @@ Asteroid::Asteroid(const Vector3D &semi_axis, const double &density, const Vecto
     elliptic_tau_ = sqrt((inertia[2] - inertia[1]) * (momentum_pow2_ - energy_mul2_ * inertia[0]) / (inertia[0] * inertia[1] * inertia[2]));
 
     // Lifshitz eq (37.9)
-    elliptic_modulus_ = (inertia[1] - inertia[0]) * (energy_mul2_ * inertia[2] - momentum_pow2_) / ((inertia[2] - inertia[1]) * (momentum_pow2_ - energy_mul2_ * inertia[0]));
+    elliptic_modulus_pow_2_ = (inertia[1] - inertia[0]) * (energy_mul2_ * inertia[2] - momentum_pow2_) / ((inertia[2] - inertia[1]) * (momentum_pow2_ - energy_mul2_ * inertia[0]));
+
+    // Lifshitz eq (37.12)
+    const double val_K = gsl_sf_ellint_Kcomp(sqrt(elliptic_modulus_pow_2_), GSL_PREC_DOUBLE);
+    angular_velocity_period_ = 4.0 * val_K * sqrt(inertia[0] * inertia[1] * inertia[2] / ((inertia[2] - inertia[1]) * (momentum_pow2_ - energy_mul2_ * inertia[0])));
 
     mass_gravitational_constant_ = mass_ * kGravitationalConstant;
 
-    rough_rotational_period_estimate_ = 2.0 * kPi / VectorNorm(boost::get<0>(AngularVelocityAndAccelerationAtTime(0)));
+    estimated_main_motion_period_ = 2.0 * kPi / VectorNorm(boost::get<0>(AngularVelocityAndAccelerationAtTime(0)));
 }
 
 Vector3D Asteroid::SemiAxis() const {
@@ -101,15 +105,21 @@ double Asteroid::EvaluatePointWithStandardEquation(const Vector3D &position) con
     return result;
 }
 
-double Asteroid::RoughRotationalPeriodEstimate() const {
-    return rough_rotational_period_estimate_;
+double Asteroid::AngularVelocityPeriod() const {
+    return angular_velocity_period_;
+}
+
+double Asteroid::EstimatedMainMotionPeriod() const {
+    return estimated_main_motion_period_;
 }
 
 double Asteroid::NewtonRaphsonNearestPointOnSurfaceToPositionEllipse(const Vector2D &semi_axis_mul_pos, const Vector2D &semi_axis_pow2) {
-    const double tolerance = 1e-3;
     double root = 0.0;
+
+    const double tolerance = 1e-3;
     double old_root = root;
     double error = 0.0;
+
     do {
         old_root = root;
         double f_root = 0.0;
@@ -128,14 +138,17 @@ double Asteroid::NewtonRaphsonNearestPointOnSurfaceToPositionEllipse(const Vecto
             throw PositionInsideException();
         }
     } while (error > tolerance);
+
     return root;
 }
 
 double Asteroid::NewtonRaphsonNearestPointOnSurfaceToPositionEllipsoid(const Vector3D &semi_axis_mul_pos, const Vector3D &semi_axis_pow2) {
-    const double tolerance = 1e-3;
     double root = 0.0;
+
+    const double tolerance = 1e-3;
     double old_root = root;
     double error = 0.0;
+
     do {
         old_root = root;
         double f_root = 0.0;
@@ -154,11 +167,12 @@ double Asteroid::NewtonRaphsonNearestPointOnSurfaceToPositionEllipsoid(const Vec
             throw PositionInsideException();
         }
     } while (error > tolerance);
+
     return root;
 }
 
 Vector3D Asteroid::GravityAccelerationAtPosition(const Vector3D &position) const {
-    Vector3D acceleration = {0.0, 0.0, 0.0};
+    Vector3D acceleration;
 
     const double eval = EvaluatePointWithStandardEquation(position);
     if (eval < 1.0) {
@@ -200,12 +214,13 @@ Vector3D Asteroid::GravityAccelerationAtPosition(const Vector3D &position) const
 boost::tuple<Vector3D, Vector3D> Asteroid::AngularVelocityAndAccelerationAtTime(const double &time) const {
     Vector3D velocity;
     Vector3D acceleration;
+
     // Lifshitz eq (37.8)
     const double t = (time + time_bias_) * elliptic_tau_;
 
     // Get analytical solution
     double sn_tau = 0.0, cn_tau = 0.0, dn_tau = 0.0;
-    gsl_sf_elljac_e(t, elliptic_modulus_, &sn_tau, &cn_tau, &dn_tau);
+    gsl_sf_elljac_e(t, elliptic_modulus_pow_2_, &sn_tau, &cn_tau, &dn_tau);
 
     // Lifshitz eq (37.10)
     if (inversion_) {
@@ -223,7 +238,7 @@ boost::tuple<Vector3D, Vector3D> Asteroid::AngularVelocityAndAccelerationAtTime(
     acceleration[1] = (inertia_[2] - inertia_[0]) * velocity[2] * velocity[0] / inertia_[1];
     acceleration[2] = (inertia_[0] - inertia_[1]) * velocity[0] * velocity[1] / inertia_[2];
 
-    return make_tuple(velocity, acceleration);
+    return boost::make_tuple(velocity, acceleration);
 }
 
 boost::tuple<Vector3D, double> Asteroid::NearestPointOnSurfaceToPosition(const Vector3D &position) const {
@@ -244,14 +259,9 @@ boost::tuple<Vector3D, double> Asteroid::NearestPointOnSurfaceToPosition(const V
     point[1] *= signs[1];
     point[2] *= signs[2];
 
-    double result = 0.0;
-    for(unsigned int i = 0; i < 3; ++i) {
-        result += (point[i] - position[i]) * (point[i] - position[i]);
-    }
+    const double distance = VectorNorm(VectorSub(point, position));
 
-    const double distance = sqrt(result);
-
-    return make_tuple(point, distance);
+    return boost::make_tuple(point, distance);
 }
 
 Vector3D Asteroid::IntersectLineToCenterFromPosition(const Vector3D &position) const {
@@ -263,7 +273,7 @@ Vector3D Asteroid::IntersectLineToCenterFromPosition(const Vector3D &position) c
     root = 1.0 / sqrt(root);
 
     // Compute the intersection
-    const Vector3D point = {root * position[0], root * position[1], root * position[2]};
+    const Vector3D point = VectorMul(root, position);
 
     return point;
 }
@@ -280,7 +290,7 @@ Vector3D Asteroid::NearestPointOnEllipsoidFirstQuadrant(const Vector3D &position
         if (position[1] > 0.0) {
             if (position[0] > 0.0) {
                 // Perform bisection to find the root (David Eberly eq (26))
-                Vector3D semi_axis_mul_pos = {semi_axis_[0] * position[0], semi_axis_[1] * position[1], semi_axis_[2] * position[2]};
+                const Vector3D &semi_axis_mul_pos = {semi_axis_[0] * position[0], semi_axis_[1] * position[1], semi_axis_[2] * position[2]};
                 const double time = NewtonRaphsonNearestPointOnSurfaceToPositionEllipsoid(semi_axis_mul_pos, semi_axis_pow2_);
                 point[0] = semi_axis_pow2_[0] * position[0] / (time + semi_axis_pow2_[0]);
                 point[1] = semi_axis_pow2_[1] * position[1] / (time + semi_axis_pow2_[1]);
@@ -288,8 +298,8 @@ Vector3D Asteroid::NearestPointOnEllipsoidFirstQuadrant(const Vector3D &position
             } else {
                 // One Dimension is zero: 2D case
                 point[0] = 0.0;
-                const Vector2D semi_axis_2d = {semi_axis_[1], semi_axis_[2]};
-                const Vector2D position_2d = {position[1], position[2]};
+                const Vector2D &semi_axis_2d = {semi_axis_[1], semi_axis_[2]};
+                const Vector2D &position_2d = {position[1], position[2]};
                 const Vector2D point_2d = NearestPointOnEllipseFirstQuadrant(semi_axis_2d, position_2d);
                 point[1] = point_2d[0];
                 point[2] = point_2d[1];
@@ -298,8 +308,8 @@ Vector3D Asteroid::NearestPointOnEllipsoidFirstQuadrant(const Vector3D &position
             point[1] = 0.0;
             if (position[0] > 0.0) {
                 // One Dimension is zero: 2D case
-                const Vector2D semi_axis_2d = {semi_axis_[0], semi_axis_[2]};
-                const Vector2D position_2d = {position[0], position[2]};
+                const Vector2D &semi_axis_2d = {semi_axis_[0], semi_axis_[2]};
+                const Vector2D &position_2d = {position[0], position[2]};
                 const Vector2D point_2d = NearestPointOnEllipseFirstQuadrant(semi_axis_2d, position_2d);
                 point[0] = point_2d[0];
                 point[2] = point_2d[1];
@@ -310,13 +320,13 @@ Vector3D Asteroid::NearestPointOnEllipsoidFirstQuadrant(const Vector3D &position
             }
         }
     } else {
-        const Vector2D denominator = {semi_axis_pow2_[0] - semi_axis_pow2_[2], semi_axis_pow2_[1] - semi_axis_pow2_[2]};
-        const Vector2D semi_axis_mul_pos = {semi_axis_[0] * position[0], semi_axis_[1] * position[1]};
+        const Vector2D &denominator = {semi_axis_pow2_[0] - semi_axis_pow2_[2], semi_axis_pow2_[1] - semi_axis_pow2_[2]};
+        const Vector2D &semi_axis_mul_pos = {semi_axis_[0] * position[0], semi_axis_[1] * position[1]};
 
         if (semi_axis_mul_pos[0] < denominator[0] && semi_axis_mul_pos[1] < denominator[1]) {
-            const Vector2D semi_axis_div_denom = {semi_axis_mul_pos[0] / denominator[0] ,
+            const Vector2D &semi_axis_div_denom = {semi_axis_mul_pos[0] / denominator[0] ,
                                                   semi_axis_mul_pos[1] / denominator[1]};
-            const Vector2D semi_axis_div_denom_pow2 = {semi_axis_div_denom[0] * semi_axis_div_denom[0],
+            const Vector2D &semi_axis_div_denom_pow2 = {semi_axis_div_denom[0] * semi_axis_div_denom[0],
                                                        semi_axis_div_denom[1] * semi_axis_div_denom[1]};
             const double discr = 1.0 - semi_axis_div_denom_pow2[0] - semi_axis_div_denom_pow2[1];
             if (discr > 0.0) {
@@ -325,16 +335,16 @@ Vector3D Asteroid::NearestPointOnEllipsoidFirstQuadrant(const Vector3D &position
                 point[2] = semi_axis_[2] * sqrt(discr);
             } else {
                 point[2] = 0.0;
-                const Vector2D semi_axis_2d = {semi_axis_[0], semi_axis_[1]};
-                const Vector2D position_2d = {position[0], position[1]};
+                const Vector2D &semi_axis_2d = {semi_axis_[0], semi_axis_[1]};
+                const Vector2D &position_2d = {position[0], position[1]};
                 const Vector2D point_2d = NearestPointOnEllipseFirstQuadrant(semi_axis_2d, position_2d);
                 point[0] = point_2d[0];
                 point[1] = point_2d[1];
             }
         } else {
             point[2] = 0.0;
-            const Vector2D semi_axis_2d = {semi_axis_[0], semi_axis_[1]};
-            const Vector2D position_2d = {position[0], position[1]};
+            const Vector2D &semi_axis_2d = {semi_axis_[0], semi_axis_[1]};
+            const Vector2D &position_2d = {position[0], position[1]};
             const Vector2D point_2d = NearestPointOnEllipseFirstQuadrant(semi_axis_2d, position_2d);
             point[0] = point_2d[0];
             point[1] = point_2d[1];
@@ -353,7 +363,7 @@ Vector2D Asteroid::NearestPointOnEllipseFirstQuadrant(const Vector2D &semi_axis,
     if (position[1] > 0.0) {
         if (position[0] > 0.0) {
             // Perform bisection to find the root (David Eberly eq (11))
-            Vector2D semi_axis_mul_pos = {semi_axis_[0] * position[0], semi_axis_[1] * position[1]};
+            const Vector2D &semi_axis_mul_pos = {semi_axis_[0] * position[0], semi_axis_[1] * position[1]};
             const double time = NewtonRaphsonNearestPointOnSurfaceToPositionEllipse(semi_axis_mul_pos, semi_axis_pow2);
             point[0] = semi_axis_pow2[0] * position[0] / (time + semi_axis_pow2[0]);
             point[1] = semi_axis_pow2[1] * position[1] / (time + semi_axis_pow2[1]);

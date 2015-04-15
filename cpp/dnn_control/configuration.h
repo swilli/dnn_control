@@ -12,12 +12,12 @@
 #define TASK_NAME   "lspi"
 
 // Euler home or not
-#define ENABLE_EULER_HOME   true
+#define ENABLE_EULER_HOME   false
 
 // Evolutionary Robotics configs
 #define ER_NUM_GENERATIONS  1000
-#define ER_POPULATION_SIZE  20
-#define ER_NUM_ISLANDS  24
+#define ER_POPULATION_SIZE  22
+#define ER_NUM_ISLANDS  23
 //#define ER_SIMULATION_TIME  3.0 * 60.0 * 60.0
 #define ER_EVALUATIONS  10
 #define ER_NUM_HIDDEN_NODES 6

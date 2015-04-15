@@ -25,9 +25,8 @@ end_time = 3600
 file_name = sys.argv[1]
 if len(sys.argv) > 2:
     end_time = float(sys.argv[2])
-
-if len(sys.argv) > 3:
-    divergence = float(sys.argv[3])
+    if len(sys.argv) > 3:
+        divergence = float(sys.argv[3])
 
 print("preparing data... ")
 

@@ -29,40 +29,6 @@ typedef boost::tuple<LSPIState, unsigned int, double, LSPIState> Sample;
 static std::vector<Vector3D> kSpacecraftActions;
 
 static void Init() {
-    /*const double res_u = 1.0 / LSPR_DIRECTION_RESOLUTION;
-    const double res_v = 1.0 / (LSPR_DIRECTION_RESOLUTION - 1);
-
-    const std::vector<double> thrust_levels = {0.0, 1e-5, 1e-2, 1e-1, 1.0, 5.0, 10.0, 21.0};
-    for (unsigned int k = 0; k < thrust_levels.size(); ++k) {
-        const double &t = thrust_levels.at(k);
-        if (t == 0.0) {
-            kSpacecraftActions.push_back({0.0, 0.0, 0.0});
-            continue;
-        }
-        for (unsigned int j = 0; j < LSPR_DIRECTION_RESOLUTION; ++j) {
-            if (j == 0) {
-                kSpacecraftActions.push_back({0.0, 0.0, -t});
-                continue;
-            } else if (j == LSPR_DIRECTION_RESOLUTION - 1) {
-                kSpacecraftActions.push_back({0.0, 0.0, t});
-                continue;
-            }
-            const double v = j * res_v;
-            const double phi = acos(2.0 * v - 1.0);
-            for (unsigned int i = 0; i < LSPR_DIRECTION_RESOLUTION; ++i) {
-                const double u = i * res_u;
-                const double theta = 2.0 * kPi * u;
-                const Vector3D action = {t * sin(phi) * cos(theta), t * sin(phi) * sin(theta), t * cos(phi)};
-                kSpacecraftActions.push_back(action);
-            }
-        }
-    }
-    kSpacecraftNumActions = kSpacecraftActions.size();
-    kSpacecraftPolynomialDimensions = 1 + (int) (0.5 * kSpacecraftStateDimension * (kSpacecraftStateDimension + 3));
-    //kSpacecraftPolynomialDimensions = 1 + 3 * kSpacecraftStateDimension;
-    kSpacecraftPhiSize = kSpacecraftNumActions * kSpacecraftPolynomialDimensions;
-    */
-
     const std::vector<double> thrust_levels = {0.0, 21.0};
     for (unsigned int i = 0; i < thrust_levels.size(); ++i) {
         const double &t = thrust_levels.at(i);
@@ -84,7 +50,6 @@ static void Init() {
     }
     kSpacecraftNumActions = kSpacecraftActions.size();
     kSpacecraftPolynomialDimensions = 1 + (int) (0.5 * kSpacecraftStateDimension * (kSpacecraftStateDimension + 3));
-    //kSpacecraftPolynomialDimensions = 1 + 2 * kSpacecraftStateDimension;
     kSpacecraftPhiSize = kSpacecraftNumActions * kSpacecraftPolynomialDimensions;
 }
 
@@ -96,7 +61,6 @@ static Eigen::VectorXd Phi(const LSPIState &state, const unsigned int &action) {
     result[base++] = 1.0;
     for (unsigned int i = 0; i < kSpacecraftStateDimension; ++i) {
         result[base++] = state[i];
-        //result[base++] = state[i] * state[i];
        for (unsigned int j = i; j < kSpacecraftStateDimension; ++j) {
             result[base++] = state[i] * state[j];
         }
