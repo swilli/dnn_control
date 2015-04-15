@@ -42,7 +42,7 @@ static void Init() {
                     if (x == 0 && y == 0 && z == 0) {
                         continue;
                     }
-                    const Vector3D &thrust = {x * t, y * t, z * t};
+                    const Vector3D thrust = {x * t, y * t, z * t};
                     kSpacecraftActions.push_back(thrust);
                 }
             }
@@ -211,7 +211,7 @@ static std::vector<Sample> PrepareSamples(SampleFactory &sample_factory, const u
             const double delta_p1 = VectorNorm(VectorSub(target_position, position));
             const double delta_p2 = VectorNorm(VectorSub(target_position, next_position));
 
-            const double r = -delta_p2;
+            const double r = delta_p1 - delta_p2;
 
             samples.push_back(boost::make_tuple(lspi_state, a, r, next_lspi_state));
 
