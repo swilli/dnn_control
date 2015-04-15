@@ -29,7 +29,7 @@ typedef boost::tuple<LSPIState, unsigned int, double, LSPIState> Sample;
 static std::vector<Vector3D> kSpacecraftActions;
 
 static void Init() {
-    const std::vector<double> thrust_levels = {0.0, 1.0, 21.0};
+    const std::vector<double> thrust_levels = {0.0, 1.0, 10.0, 21.0};
     for (unsigned int i = 0; i < thrust_levels.size(); ++i) {
         const double &t = thrust_levels.at(i);
         if (t == 0.0) {
@@ -202,16 +202,18 @@ static std::vector<Sample> PrepareSamples(SampleFactory &sample_factory, const u
             if (exception) {
                 break;
             }
-            SystemState next_state = boost::get<0>(result);
+            const SystemState &next_state = boost::get<0>(result);
 
             const Vector3D &next_position = {next_state[0], next_state[1], next_state[2]};
+            const Vector3D &next_velocity = {next_state[3], next_state[4], next_state[5]};
 
             const LSPIState next_lspi_state = SystemStateToLSPIState(next_state, target_position);
 
             const double delta_p1 = VectorNorm(VectorSub(target_position, position));
             const double delta_p2 = VectorNorm(VectorSub(target_position, next_position));
+            const double magn_velocity = VectorNorm(next_velocity);
 
-            const double r = delta_p1 - delta_p2;
+            const double r = delta_p1 - delta_p2 - magn_velocity;
 
             samples.push_back(boost::make_tuple(lspi_state, a, r, next_lspi_state));
 
