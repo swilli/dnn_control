@@ -314,6 +314,7 @@ static boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<
     const double test_time = 1.0 * 60.0 * 60.0;
 
     for (unsigned int i = 0; i < num_tests; ++i) {
+        std::cout << "test " << (i+1) << ":" << std::endl;
         const unsigned int current_seed = used_random_seeds.at(i);
         LSPISimulator simulator(current_seed);
         SampleFactory &sample_factory = simulator.SampleFactoryOfSystem();
