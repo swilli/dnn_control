@@ -13,6 +13,8 @@
 #include <fstream>
 #include <limits>
 
+#include <thread>
+
 static const unsigned int kSpacecraftStateDimension = 6;
 
 static unsigned int kSpacecraftNumActions = 0;
@@ -119,6 +121,55 @@ static Eigen::VectorXd LSTDQ(SampleFactory &sample_factory, const std::vector<Sa
     return matrix_A.inverse() * vector_b;
 }
 
+static void PLSTDQThreadFun(const unsigned int &seed, const std::vector<Sample> &samples, const unsigned int &start_index, const unsigned int &end_index, const double &gamma, const Eigen::VectorXd &weights, Eigen::MatrixXd *matrix_A, Eigen::VectorXd *vector_b) {
+    SampleFactory sample_factory(seed);
+
+    matrix_A->setZero();
+    vector_b->setZero();
+
+    for (unsigned int i = start_index; i < end_index; ++i) {
+        const Sample &sample = samples.at(i);
+        const LSPIState &s = boost::get<0>(sample);
+        const LSPIState &s_prime = boost::get<3>(sample);
+        const unsigned int &a = boost::get<1>(sample);
+        const double &r = boost::get<2>(sample);
+
+        const Eigen::VectorXd phi_sa = Phi(s, a);
+        const unsigned int a_prime = Pi(sample_factory, s_prime, weights);
+        const Eigen::VectorXd phi_sa_prime = Phi(s_prime, a_prime);
+
+        *matrix_A = *matrix_A + phi_sa * (phi_sa - gamma * phi_sa_prime).transpose();
+        *vector_b = *vector_b + r * phi_sa;
+    }
+}
+
+static Eigen::VectorXd PLSTDQ(SampleFactory &sample_factory, const std::vector<Sample> &samples, const double &gamma, const Eigen::VectorXd &weights) {
+    const unsigned int seed1 = sample_factory.SampleRandomInteger();
+    const unsigned int seed2 = sample_factory.SampleRandomInteger();
+
+    Eigen::MatrixXd matrix1(kSpacecraftPhiSize, kSpacecraftPhiSize);
+    Eigen::MatrixXd matrix2(kSpacecraftPhiSize, kSpacecraftPhiSize);
+
+    Eigen::VectorXd vector1(kSpacecraftPhiSize);
+    Eigen::VectorXd vector2(kSpacecraftPhiSize);
+
+    Eigen::MatrixXd matrix_A(kSpacecraftPhiSize, kSpacecraftPhiSize);
+    Eigen::VectorXd vector_b(kSpacecraftPhiSize);
+
+    const unsigned half = samples.size()/2;
+
+    std::thread thread1(PLSTDQThreadFun, seed1, samples, 0, half, gamma, weights, &matrix1, &vector1);
+    std::thread thread2(PLSTDQThreadFun, seed2, samples, half, samples.size(), gamma, weights, &matrix2, &vector2);
+
+    thread1.join();
+    thread2.join();
+
+    matrix_A = matrix1 + matrix2;
+    vector_b = vector1 + vector2;
+
+    return matrix_A.colPivHouseholderQr().solve(vector_b);
+}
+
 static Eigen::VectorXd LSPI(SampleFactory &sample_factory, const std::vector<Sample> &samples, const double &gamma, const double &epsilon, const Eigen::VectorXd &initial_weights) {
     Eigen::VectorXd w_prime(initial_weights);
     Eigen::VectorXd w;
@@ -133,7 +184,7 @@ static Eigen::VectorXd LSPI(SampleFactory &sample_factory, const std::vector<Sam
         std::cout << std::endl << asctime(timeinfo) << "iteration " << iteration++ << ". Norm : " << val_norm << std::endl;
 
         w = w_prime;
-        w_prime = LSTDQ(sample_factory, samples, gamma, w);
+        w_prime = PLSTDQ(sample_factory, samples, gamma, w);
         val_norm = (w - w_prime).norm();
     } while (val_norm > epsilon);
 
