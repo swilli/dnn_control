@@ -61,8 +61,12 @@ public:
     // Returns x^2/a^2 + y^2/b^2 + z^2/c^2
     double EvaluatePointWithStandardEquation(const Vector3D &position) const;
 
-    // The rotation period with respect to its own axis
+    // The angular velocity period with respect to its own axis
     double AngularVelocityPeriod() const;
+
+    // An estimate for the asteroid's main motion
+    double EstimatedMainMotionPeriod() const;
+
 
     class Exception {};
     class PositionInsideException : public Exception {};
@@ -126,8 +130,11 @@ private:
     // True if momentum_pow2_ < energy_mul2_ * inertia_[1]
     bool inversion_;
 
-    // Rotation period
+    // Periodicity of angular velocity
     double angular_velocity_period_;
+
+    // Estimated main motion period
+    double estimated_main_motion_period_;
 };
 
 #endif // ASTEROID_H
