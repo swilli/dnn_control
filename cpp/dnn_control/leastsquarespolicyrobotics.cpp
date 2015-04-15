@@ -63,7 +63,7 @@ static void Init() {
     kSpacecraftPhiSize = kSpacecraftNumActions * kSpacecraftPolynomialDimensions;
     */
 
-    const std::vector<double> thrust_levels = {0.0, 2.0, 10.0, 21.0};
+    const std::vector<double> thrust_levels = {0.0, 21.0};
     for (unsigned int i = 0; i < thrust_levels.size(); ++i) {
         const double &t = thrust_levels.at(i);
         if (t == 0.0) {
