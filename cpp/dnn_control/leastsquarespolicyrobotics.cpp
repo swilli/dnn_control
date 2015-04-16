@@ -31,25 +31,16 @@ typedef boost::tuple<LSPIState, unsigned int, double, LSPIState> Sample;
 static std::vector<Vector3D> kSpacecraftActions;
 
 static void Init() {
-    const std::vector<double> thrust_levels = {0.0, 1.0, 5.0, 10.0, 21.0};
-    for (unsigned int i = 0; i < thrust_levels.size(); ++i) {
-        const double &t = thrust_levels.at(i);
-        if (t == 0.0) {
-            kSpacecraftActions.push_back({0.0, 0.0, 0.0});
-            continue;
-        }
-        for (int x = -1; x <= 1; ++x) {
-            for (int y = -1; y <= 1; ++y) {
-                for (int z = -1; z <= 1; ++z) {
-                    if (x == 0 && y == 0 && z == 0) {
-                        continue;
-                    }
-                    const Vector3D thrust = {x * t, y * t, z * t};
-                    kSpacecraftActions.push_back(thrust);
-                }
+    const std::vector<double> t = {-21, -10.0, -5.0, -1.0, 0.0, 1.0, 5.0, 10.0, 21.0};
+    for (unsigned int i = 0; i < t.size(); ++i) {
+        for (unsigned int j = 0; j < t.size(); ++j) {
+            for (unsigned int k = 0; k < t.size(); ++k) {
+                const Vector3D thrust = {t[i], t[j], t[k]};
+                kSpacecraftActions.push_back(thrust);
             }
         }
     }
+
     kSpacecraftNumActions = kSpacecraftActions.size();
     kSpacecraftPolynomialDimensions = 58;
     kSpacecraftPhiSize = kSpacecraftNumActions * kSpacecraftPolynomialDimensions;
@@ -266,7 +257,7 @@ static std::vector<Sample> PrepareSamples(SampleFactory &sample_factory, const u
             const double delta_v1 = VectorNorm(velocity);
             const double delta_v2 = VectorNorm(next_velocity);
 
-            const double r = (delta_p1 - delta_p2) + (delta_v1 - delta_v2);
+            const double r = (delta_p1 - delta_p2);
 
             samples.push_back(boost::make_tuple(lspi_state, a, r, next_lspi_state));
 
