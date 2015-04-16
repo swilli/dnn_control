@@ -31,7 +31,7 @@ typedef boost::tuple<LSPIState, unsigned int, double, LSPIState> Sample;
 static std::vector<Vector3D> kSpacecraftActions;
 
 static void Init() {
-    const std::vector<double> t = {-21, -5.0, -1.0, 0.0, 1.0, 5.0, 21.0};
+    const std::vector<double> t = {-21, -1.0, 0.0, 1.0, 21.0};
     for (unsigned int i = 0; i < t.size(); ++i) {
         for (unsigned int j = 0; j < t.size(); ++j) {
             for (unsigned int k = 0; k < t.size(); ++k) {
