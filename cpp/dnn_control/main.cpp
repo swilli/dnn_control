@@ -6,7 +6,7 @@
 int main(int argc, char *argv[]) {
     srand(time(0));
 
-    TrainLeastSquaresPolicyController();
+    TrainNeuralNetworkController();
     return 0;
 }
 

@@ -20,7 +20,8 @@ public:
         Velocity,
         OpticalFlow,
         Acceleration,
-        Height
+        Height,
+        Mass
     };
 
     const static std::map<SensorType, std::pair<unsigned int, double> > SensorTypeConfigurations;
@@ -40,7 +41,7 @@ public:
 protected:
     static double TransformValue(const double &sensor_value, const std::pair<double, double> &transformation_params);
 
-    double AddNoise(const double &sensor_value, const double &standard_deviation);
+    double AddNoise(const double &sensor_value, const SensorType &type);
 
     // How large is the sensor data space
     unsigned int dimensions_;

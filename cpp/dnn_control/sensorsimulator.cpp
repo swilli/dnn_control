@@ -8,7 +8,8 @@ const std::map<SensorSimulator::SensorType, std::pair<unsigned int, double> > Se
     {SensorSimulator::SensorType::Velocity, {3, 0.05}},
     {SensorSimulator::SensorType::OpticalFlow, {6, 0.05}},
     {SensorSimulator::SensorType::Acceleration, {3, 0.05}},
-    {SensorSimulator::SensorType::Height, {1, 0.05}}
+    {SensorSimulator::SensorType::Height, {1, 0.05}},
+    {SensorSimulator::SensorType::Mass, {1, 0.05}}
 };
 
 SensorSimulator::SensorSimulator(SampleFactory &sample_factory, const Asteroid &asteroid, const std::set<SensorType> &sensor_types_, const bool &enable_noise, const Vector3D &target_position, const std::map<SensorType, std::vector<std::pair<double, double> > > &sensor_value_transformations)
@@ -23,8 +24,9 @@ unsigned int SensorSimulator::Dimensions() const {
     return dimensions_;
 }
 
-double SensorSimulator::AddNoise(const double &sensor_value, const double &standard_deviation) {
+double SensorSimulator::AddNoise(const double &sensor_value, const SensorType &type) {
     if (noise_enabled_) {
+        const double &standard_deviation = SensorTypeConfigurations.at(type).second;
         return sensor_value + sensor_value * sample_factory_.SampleNormal(0.0, standard_deviation);
     } else {
         return sensor_value;
@@ -39,7 +41,7 @@ std::vector<double> SensorSimulator::Simulate(const SystemState &state, const Ve
         if (t == RelativePosition) {
             const Vector3D &position = {state[0], state[1], state[2]};
             for (unsigned int i = 0; i < 3; ++i) {
-                sensor_data[offset + i] = AddNoise(target_position_[i] - position[i], SensorTypeConfigurations.at(t).second);
+                sensor_data[offset + i] = AddNoise(target_position_[i] - position[i], t);
             }
             if (sensor_value_transformations_.find(t) != sensor_value_transformations_.end()) {
                 const std::vector<std::pair<double, double> > &transformations = sensor_value_transformations_.at(t);
@@ -48,11 +50,10 @@ std::vector<double> SensorSimulator::Simulate(const SystemState &state, const Ve
                 }
             }
 
-            offset += SensorTypeConfigurations.at(t).first;
         } else if (t == Velocity) {
             const Vector3D &velocity = {state[3], state[4], state[5]};
             for (unsigned int i = 0; i < 3; ++i) {
-                sensor_data[offset + i] = AddNoise(velocity[i], SensorTypeConfigurations.at(t).second);
+                sensor_data[offset + i] = AddNoise(velocity[i], t);
             }
             if (sensor_value_transformations_.find(t) != sensor_value_transformations_.end()) {
                 const std::vector<std::pair<double, double> > &transformations = sensor_value_transformations_.at(t);
@@ -61,7 +62,6 @@ std::vector<double> SensorSimulator::Simulate(const SystemState &state, const Ve
                 }
             }
 
-            offset += SensorTypeConfigurations.at(t).first;
         } else if (t == OpticalFlow) {
             const double up_scale = 1000000.0;
             const Vector3D &velocity = {state[3], state[4], state[5]};
@@ -73,10 +73,10 @@ std::vector<double> SensorSimulator::Simulate(const SystemState &state, const Ve
             const Vector3D velocity_perpendicular = VectorSub(velocity, velocity_parallel);
 
             for (unsigned int i = 0; i < 3; ++i) {
-                sensor_data[offset + i] = AddNoise(up_scale * velocity_parallel[i] * coef_norm_height, SensorTypeConfigurations.at(t).second);
+                sensor_data[offset + i] = AddNoise(up_scale * velocity_parallel[i] * coef_norm_height, t);
             }
             for (unsigned int i = 0; i < 3; ++i) {
-                sensor_data[offset + 3 + i] = AddNoise(up_scale * velocity_perpendicular[i] * coef_norm_height, SensorTypeConfigurations.at(t).second);
+                sensor_data[offset + 3 + i] = AddNoise(up_scale * velocity_perpendicular[i] * coef_norm_height, t);
             }
 
             if (sensor_value_transformations_.find(t) != sensor_value_transformations_.end()) {
@@ -86,7 +86,6 @@ std::vector<double> SensorSimulator::Simulate(const SystemState &state, const Ve
                 }
             }
 
-            offset += SensorTypeConfigurations.at(t).first;
         } else if (t == Acceleration) {
             const double up_scale = 1000000.0;
             const Vector3D &position = {state[0], state[1], state[2]};
@@ -111,7 +110,7 @@ std::vector<double> SensorSimulator::Simulate(const SystemState &state, const Ve
                         - centrifugal_acceleration[i];
                 sensor_value *= up_scale;
 
-                sensor_data[offset + i] = AddNoise(sensor_value, SensorTypeConfigurations.at(t).second);
+                sensor_data[offset + i] = AddNoise(sensor_value, t);
             }
             if (sensor_value_transformations_.find(t) != sensor_value_transformations_.end()) {
                 const std::vector<std::pair<double, double> > &transformations = sensor_value_transformations_.at(t);
@@ -120,12 +119,16 @@ std::vector<double> SensorSimulator::Simulate(const SystemState &state, const Ve
                 }
             }
 
-            offset += SensorTypeConfigurations.at(t).first;
         } else if (t == Height) {
-            sensor_data[offset] = AddNoise(VectorNorm(height), SensorTypeConfigurations.at(t).second);
+            sensor_data[offset] = AddNoise(VectorNorm(height), t);
 
-            offset += SensorTypeConfigurations.at(t).first;
+        } else if (t == Mass) {
+            const double &mass = state[6];
+
+            sensor_data[offset] = AddNoise(mass, t);
+
         }
+        offset += SensorTypeConfigurations.at(t).first;
     }
 
     return sensor_data;
