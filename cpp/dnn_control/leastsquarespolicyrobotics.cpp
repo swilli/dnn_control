@@ -31,7 +31,7 @@ typedef boost::tuple<LSPIState, unsigned int, double, LSPIState> Sample;
 static std::vector<Vector3D> kSpacecraftActions;
 
 static void Init() {
-    const std::vector<double> thrust_levels = {0.0, 1.0, 10.0, 21.0};
+    const std::vector<double> thrust_levels = {0.0, 1.0, 5.0, 10.0, 21.0};
     for (unsigned int i = 0; i < thrust_levels.size(); ++i) {
         const double &t = thrust_levels.at(i);
         if (t == 0.0) {
@@ -51,7 +51,6 @@ static void Init() {
         }
     }
     kSpacecraftNumActions = kSpacecraftActions.size();
-    //kSpacecraftPolynomialDimensions = 1 + (int) (0.5 * kSpacecraftStateDimension * (3 * kSpacecraftStateDimension + 5));
     kSpacecraftPolynomialDimensions = 58;
     kSpacecraftPhiSize = kSpacecraftNumActions * kSpacecraftPolynomialDimensions;
 }
@@ -59,6 +58,7 @@ static void Init() {
 static Eigen::VectorXd Phi(const LSPIState &state, const unsigned int &action) {
     Eigen::VectorXd result = Eigen::VectorXd(kSpacecraftPhiSize);
     result.setZero();
+
     unsigned int base = action * kSpacecraftPolynomialDimensions;
 
     result[base++] = 1.0;
@@ -243,6 +243,7 @@ static std::vector<Sample> PrepareSamples(SampleFactory &sample_factory, const u
 
         for (unsigned int j = 0; j < num_steps; ++j) {
             const Vector3D &position = {state[0], state[1], state[2]};
+            const Vector3D &velocity = {state[3], state[4], state[5]};
 
             const LSPIState lspi_state = SystemStateToLSPIState(state, target_position);
 
@@ -262,9 +263,10 @@ static std::vector<Sample> PrepareSamples(SampleFactory &sample_factory, const u
 
             const double delta_p1 = VectorNorm(VectorSub(target_position, position));
             const double delta_p2 = VectorNorm(VectorSub(target_position, next_position));
-            const double magn_velocity = VectorNorm(next_velocity);
+            const double delta_v1 = VectorNorm(velocity);
+            const double delta_v2 = VectorNorm(next_velocity);
 
-            const double r = delta_p1 - delta_p2 - magn_velocity;
+            const double r = (delta_p1 - delta_p2) + (delta_v1 - delta_v2);
 
             samples.push_back(boost::make_tuple(lspi_state, a, r, next_lspi_state));
 
@@ -370,7 +372,7 @@ static boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<
     std::vector<double> mean_errors(num_tests, 0.0);
     std::vector<std::pair<double, double> > min_max_errors(num_tests);
 
-    const double test_time = 1.0 * 60.0 * 60.0;
+    const double test_time = 3600.0;
 
     for (unsigned int i = 0; i < num_tests; ++i) {
         std::cout << "test " << (i+1) << ":" << std::endl;
