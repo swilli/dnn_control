@@ -7,7 +7,8 @@ const std::map<SensorSimulator::SensorType, std::pair<unsigned int, double> > Se
     {SensorSimulator::SensorType::RelativePosition, {3, 0.05}},
     {SensorSimulator::SensorType::Velocity, {3, 0.05}},
     {SensorSimulator::SensorType::OpticalFlow, {6, 0.05}},
-    {SensorSimulator::SensorType::Acceleration, {3, 0.05}},
+    {SensorSimulator::SensorType::ExternalAcceleration, {3, 0.05}},
+    {SensorSimulator::SensorType::TotalAcceleration, {3, 0.05}},
     {SensorSimulator::SensorType::Height, {1, 0.05}},
     {SensorSimulator::SensorType::Mass, {1, 0.05}}
 };
@@ -33,7 +34,7 @@ double SensorSimulator::AddNoise(const double &sensor_value, const SensorType &t
     }
 }
 
-std::vector<double> SensorSimulator::Simulate(const SystemState &state, const Vector3D &height, const Vector3D &perturbations_acceleration, const double &time) {
+std::vector<double> SensorSimulator::Simulate(const SystemState &state, const Vector3D &height, const Vector3D &perturbations_acceleration, const double &time, const Vector3D &thrust) {
     std::vector<double> sensor_data(dimensions_, 0.0);
     unsigned int offset = 0;
 
@@ -86,10 +87,11 @@ std::vector<double> SensorSimulator::Simulate(const SystemState &state, const Ve
                 }
             }
 
-        } else if (t == Acceleration) {
+        } else if (t == ExternalAcceleration || t == TotalAcceleration) {
             const double up_scale = 1000000.0;
             const Vector3D &position = {state[0], state[1], state[2]};
             const Vector3D &velocity = {state[3], state[4], state[5]};
+            const double &mass = state[6];
 
             const Vector3D gravity_acceleration = asteroid_.GravityAccelerationAtPosition(position);
 
@@ -108,6 +110,11 @@ std::vector<double> SensorSimulator::Simulate(const SystemState &state, const Ve
                         - coriolis_acceleration[i]
                         - euler_acceleration[i]
                         - centrifugal_acceleration[i];
+
+                if (t == TotalAcceleration) {
+                    sensor_value += thrust[i] / mass;
+                }
+
                 sensor_value *= up_scale;
 
                 sensor_data[offset + i] = AddNoise(sensor_value, t);

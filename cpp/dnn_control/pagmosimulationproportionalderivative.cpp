@@ -81,7 +81,7 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
                 perturbations_acceleration[i] = sample_factory.SampleNormal(perturbation_mean_, perturbation_noise_);
             }
 
-            sensor_data = sensor_simulator.Simulate(system_state, height, perturbations_acceleration, current_time);
+            sensor_data = sensor_simulator.Simulate(system_state, height, perturbations_acceleration, current_time, thrust);
 
 #if PGMOS_ENABLE_SENSOR_DATA_RECORDING
             sensor_recording = sensor_recorder.Simulate(system_state, height, perturbations_acceleration, current_time);
@@ -195,7 +195,7 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
                 perturbations_acceleration[i] = sample_factory.SampleNormal(perturbation_mean_, perturbation_noise_);
             }
 
-            sensor_data = sensor_simulator.Simulate(system_state, height, perturbations_acceleration, current_time);
+            sensor_data = sensor_simulator.Simulate(system_state, height, perturbations_acceleration, current_time, thrust);
 
 #if PGMOS_ENABLE_SENSOR_DATA_RECORDING
             const std::vector<double> sensor_recording = sensor_recorder.Simulate(system_state, height, perturbations_acceleration, current_time);
