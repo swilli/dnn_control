@@ -1,2 +1,2 @@
 #/bin/bash
-g++ -fPIC -I /usr/include/python2.7/ -shared -o boost_asteroid.so boostasteroid.cpp asteroid.cpp -O2 -lgsl -lgslcblas -lboost_python -lboost_system
+g++ -std=c++11 -fPIC -I /usr/include/python2.7/ -shared -o boost_asteroid.so boostasteroid.cpp asteroid.cpp -O2 -lgsl -lgslcblas -lboost_python -lboost_system
