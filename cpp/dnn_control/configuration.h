@@ -9,10 +9,10 @@
  */
 
 // Task Name
-#define TASK_NAME   "task_local"
+#define TASK_NAME   "task1"
 
 // Euler home or not
-#define ENABLE_EULER_HOME   false
+#define ENABLE_EULER_HOME   true
 
 // Evolutionary Robotics configs
 #define ER_NUM_GENERATIONS  1000
@@ -86,7 +86,7 @@
 //#define LSPR_FIXED_SEED     1990
 
 #define LSPR_TRANSIENT_RESPONSE_TIME  150.0
-#define LSPR_NUM_EPISODES    1000
+#define LSPR_NUM_EPISODES    4000
 #define LSPR_NUM_STEPS  50
 #define LSPR_GAMMA  0.9
 #define LSPR_EPSILON 1e-10
