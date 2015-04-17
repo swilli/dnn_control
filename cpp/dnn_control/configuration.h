@@ -9,10 +9,10 @@
  */
 
 // Task Name
-#define TASK_NAME   "task1"
+#define TASK_NAME   "task_local"
 
 // Euler home or not
-#define ENABLE_EULER_HOME   true
+#define ENABLE_EULER_HOME   false
 
 // Evolutionary Robotics configs
 #define ER_NUM_GENERATIONS  1000
