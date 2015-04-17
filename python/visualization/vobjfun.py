@@ -11,9 +11,9 @@ import sys
 import matplotlib.pyplot as plt
 from numpy import array
 import matplotlib
+
 import seaborn as sns
-sns.set_context("notebook", font_scale=1.5, rc={"lines.linewidth": 2.5})
-matplotlib.rcParams.update({'font.size': 22})
+sns.set_context("notebook", font_scale=2.5, rc={"lines.linewidth": 2.5})
 
 
 file_name = sys.argv[1]
@@ -40,11 +40,11 @@ for val in values:
 		else:
 			minimas.append(minimas[-1])
 
-data = array(minimas)
+data = array(values)
 
-plt.loglog(data)
-plt.title("Fitness vs Generation")
+plt.plot(data)
 plt.xlabel("generation")
 plt.ylabel("fitness")
+plt.xscale("log")
 plt.show()
 

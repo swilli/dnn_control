@@ -41,7 +41,14 @@ times = array(times)
 fig = plt.figure(1)
 fig.subplots_adjust(hspace=1.0)
 
-if predicted.shape[1] == 3:
+if predicted.shape[1] == 1:
+	plt.plot(times, predicted, 'r--', correct, 'b-')
+	plt.title('Height vs Time')
+	plt.xlabel('time [s]')
+	plt.ylabel('height (normalized)')
+	plt.legend(['predicted', 'correct'])
+
+elif predicted.shape[1] == 3:
 	plt.subplot(131)
 	plt.plot(times, predicted[:, 0], 'r--', correct[:, 0], 'b-')
 	plt.title('Velocity X vs Time')
