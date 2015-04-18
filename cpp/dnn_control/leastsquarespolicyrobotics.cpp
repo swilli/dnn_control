@@ -31,7 +31,7 @@ typedef boost::tuple<LSPIState, unsigned int, double, LSPIState> Sample;
 static std::vector<Vector3D> kSpacecraftActions;
 
 static void Init() {
-    const std::vector<double> t = {-21, -3.0, 0.0, 3.0, 21.0};
+    const std::vector<double> t = {-21, -8.0, -3.0, 0.0, 3.0, 8.0, 21.0};
     for (unsigned int i = 0; i < t.size(); ++i) {
         for (unsigned int j = 0; j < t.size(); ++j) {
             for (unsigned int k = 0; k < t.size(); ++k) {
@@ -42,7 +42,7 @@ static void Init() {
     }
 
     kSpacecraftNumActions = kSpacecraftActions.size();
-    kSpacecraftPolynomialDimensions = 25;
+    kSpacecraftPolynomialDimensions = 28;
     kSpacecraftPhiSize = kSpacecraftNumActions * kSpacecraftPolynomialDimensions;
 }
 
@@ -56,9 +56,9 @@ static Eigen::VectorXd Phi(const LSPIState &state, const unsigned int &action) {
     result[base++] = 1.0;
     for (unsigned int i = 0; i < kSpacecraftStateDimension; ++i) {
         result[base++] = state[i];
-        result[base++] = state[i] * state[i];
-        result[base++] = state[i] * state[i] * state[i];
-        result[base++] = state[i] * state[i] * state[i] * state[i];
+        for (unsigned int j = i; j < kSpacecraftStateDimension; ++j) {
+            result[base++] = state[i] * state[j];
+        }
     }
     start = base - start;
 
