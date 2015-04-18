@@ -6,7 +6,8 @@
 #include "configuration.h"
 
 #include <cfloat>
-#include <eigen3/Eigen/Dense>
+#include <eigen3/Eigen/Sparse>
+#include <eigen3/Eigen/UmfPackSupport>
 #include <map>
 #include <boost/tuple/tuple.hpp>
 #include <iomanip>
@@ -46,18 +47,17 @@ static void Init() {
     kSpacecraftPhiSize = kSpacecraftNumActions * kSpacecraftPolynomialDimensions;
 }
 
-static Eigen::VectorXd Phi(const LSPIState &state, const unsigned int &action) {
-    Eigen::VectorXd result = Eigen::VectorXd(kSpacecraftPhiSize);
-    result.setZero();
+static Eigen::SparseVector<double> Phi(const LSPIState &state, const unsigned int &action) {
+    Eigen::SparseVector<double> result(kSpacecraftPhiSize);
 
     unsigned int base = action * kSpacecraftPolynomialDimensions;
 
     int start = base;
-    result[base++] = 1.0;
+    result.coeffRef(base++) = 1.0;
     for (unsigned int i = 0; i < kSpacecraftStateDimension; ++i) {
-        result[base++] = state[i];
+        result.coeffRef(base++) = state[i];
         for (unsigned int j = i; j < kSpacecraftStateDimension; ++j) {
-            result[base++] = state[i] * state[j];
+            result.coeffRef(base++) = state[i] * state[j];
         }
     }
     start = base - start;
@@ -69,8 +69,8 @@ static unsigned int Pi(SampleFactory &sample_factory, const LSPIState &state, co
     std::vector<unsigned int> best_a;
     double best_q = -std::numeric_limits<double>::max();
     for (unsigned int a = 0; a < kSpacecraftNumActions; ++a) {
-        Eigen::VectorXd val_phi = Phi(state, a);
-        Eigen::VectorXd val_phi_t = val_phi.transpose();
+        Eigen::SparseVector<double> val_phi = Phi(state, a);
+        Eigen::SparseVector<double> val_phi_t = val_phi.transpose();
 
         const double q = val_phi_t.dot(weights);
         if (q > best_q) {
@@ -85,10 +85,8 @@ static unsigned int Pi(SampleFactory &sample_factory, const LSPIState &state, co
 }
 
 static Eigen::VectorXd LSTDQ(SampleFactory &sample_factory, const std::vector<Sample> &samples, const double &gamma, const Eigen::VectorXd &weights) {
-    Eigen::MatrixXd matrix_A(kSpacecraftPhiSize, kSpacecraftPhiSize);
-    matrix_A.setZero();
-    Eigen::VectorXd vector_b(kSpacecraftPhiSize);
-    vector_b.setZero();
+    Eigen::SparseMatrix<double> matrix_A(kSpacecraftPhiSize, kSpacecraftPhiSize);
+    Eigen::SparseVector<double> vector_b_sparse(kSpacecraftPhiSize);
 
     for (unsigned int i = 0; i < samples.size(); ++i) {
         const Sample &sample = samples.at(i);
@@ -97,18 +95,24 @@ static Eigen::VectorXd LSTDQ(SampleFactory &sample_factory, const std::vector<Sa
         const unsigned int &a = boost::get<1>(sample);
         const double &r = boost::get<2>(sample);
 
-        const Eigen::VectorXd phi_sa = Phi(s, a);
+        const Eigen::SparseVector<double> phi_sa = Phi(s, a);
         const unsigned int a_prime = Pi(sample_factory, s_prime, weights);
-        const Eigen::VectorXd phi_sa_prime = Phi(s_prime, a_prime);
+        const Eigen::SparseVector<double> phi_sa_prime = Phi(s_prime, a_prime);
 
         matrix_A = matrix_A + phi_sa * (phi_sa - gamma * phi_sa_prime).transpose();
-        vector_b = vector_b + r * phi_sa;
+        vector_b_sparse = vector_b_sparse + r * phi_sa;
     }
 
-    return matrix_A.inverse() * vector_b;
+    const Eigen::VectorXd vector_b = vector_b_sparse.toDense();
+
+    Eigen::SparseLU<Eigen::SparseMatrix<double> > solver;
+    solver.analyzePattern(matrix_A);
+    solver.factorize(matrix_A);
+
+    return solver.solve(vector_b);
 }
 
-static void PLSTDQThreadFun(const unsigned int &seed, const std::vector<Sample> &samples, const unsigned int &start_index, const unsigned int &end_index, const double &gamma, const Eigen::VectorXd &weights, Eigen::MatrixXd *matrix_A, Eigen::VectorXd *vector_b) {
+static void PLSTDQThreadFun(const unsigned int &seed, const std::vector<Sample> &samples, const unsigned int &start_index, const unsigned int &end_index, const double &gamma, const Eigen::VectorXd &weights, Eigen::SparseMatrix<double> *matrix_A, Eigen::SparseVector<double> *vector_b) {
     SampleFactory sample_factory(seed);
 
     matrix_A->setZero();
@@ -121,9 +125,9 @@ static void PLSTDQThreadFun(const unsigned int &seed, const std::vector<Sample> 
         const unsigned int &a = boost::get<1>(sample);
         const double &r = boost::get<2>(sample);
 
-        const Eigen::VectorXd phi_sa = Phi(s, a);
+        const Eigen::SparseVector<double> phi_sa = Phi(s, a);
         const unsigned int a_prime = Pi(sample_factory, s_prime, weights);
-        const Eigen::VectorXd phi_sa_prime = Phi(s_prime, a_prime);
+        const Eigen::SparseVector<double> phi_sa_prime = Phi(s_prime, a_prime);
 
         *matrix_A = *matrix_A + phi_sa * (phi_sa - gamma * phi_sa_prime).transpose();
         *vector_b = *vector_b + r * phi_sa;
@@ -134,13 +138,13 @@ static Eigen::VectorXd PLSTDQ(SampleFactory &sample_factory, const std::vector<S
     const unsigned int seed1 = sample_factory.SampleRandomInteger();
     const unsigned int seed2 = sample_factory.SampleRandomInteger();
 
-    Eigen::MatrixXd matrix1(kSpacecraftPhiSize, kSpacecraftPhiSize);
-    Eigen::MatrixXd matrix2(kSpacecraftPhiSize, kSpacecraftPhiSize);
+    Eigen::SparseMatrix<double> matrix1(kSpacecraftPhiSize, kSpacecraftPhiSize);
+    Eigen::SparseMatrix<double> matrix2(kSpacecraftPhiSize, kSpacecraftPhiSize);
 
-    Eigen::VectorXd vector1(kSpacecraftPhiSize);
-    Eigen::VectorXd vector2(kSpacecraftPhiSize);
+    Eigen::SparseVector<double> vector1(kSpacecraftPhiSize);
+    Eigen::SparseVector<double> vector2(kSpacecraftPhiSize);
 
-    Eigen::MatrixXd matrix_A(kSpacecraftPhiSize, kSpacecraftPhiSize);
+    Eigen::SparseMatrix<double> matrix_A(kSpacecraftPhiSize, kSpacecraftPhiSize);
     Eigen::VectorXd vector_b(kSpacecraftPhiSize);
 
     const unsigned half = samples.size()/2;
@@ -152,9 +156,13 @@ static Eigen::VectorXd PLSTDQ(SampleFactory &sample_factory, const std::vector<S
     thread2.join();
 
     matrix_A = matrix1 + matrix2;
-    vector_b = vector1 + vector2;
+    vector_b = (vector1 + vector2).toDense();
 
-    return matrix_A.colPivHouseholderQr().solve(vector_b);
+    Eigen::SparseLU<Eigen::SparseMatrix<double> > solver;
+    solver.analyzePattern(matrix_A);
+    solver.factorize(matrix_A);
+
+    return solver.solve(vector_b);
 }
 
 static Eigen::VectorXd LSPI(SampleFactory &sample_factory, const std::vector<Sample> &samples, const double &gamma, const double &epsilon, const Eigen::VectorXd &initial_weights) {
@@ -171,7 +179,7 @@ static Eigen::VectorXd LSPI(SampleFactory &sample_factory, const std::vector<Sam
         std::cout << std::endl << asctime(timeinfo) << "iteration " << iteration++ << ". Norm : " << val_norm << std::endl;
 
         w = w_prime;
-        w_prime = PLSTDQ(sample_factory, samples, gamma, w);
+        w_prime = LSTDQ(sample_factory, samples, gamma, w);
         val_norm = (w - w_prime).norm();
     } while (val_norm > epsilon);
 
