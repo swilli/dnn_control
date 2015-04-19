@@ -7,7 +7,6 @@
 
 #include <cfloat>
 #include <eigen3/Eigen/Sparse>
-#include <eigen3/Eigen/UmfPackSupport>
 #include <map>
 #include <boost/tuple/tuple.hpp>
 #include <iomanip>
