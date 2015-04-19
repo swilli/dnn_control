@@ -199,7 +199,7 @@ static LSPIState SystemStateToLSPIState(const SystemState &state, const Vector3D
     return lspi_state;
 }
 
-SystemState InitializeState(SampleFactory &sample_factory, const Vector3D &target_position, const double &maximum_position_offset) {
+SystemState InitializeState(SampleFactory &sample_factory, const Vector3D &target_position, const double &maximum_position_offset, const double &maximum_velocity) {
     SystemState system_state;
     Vector3D position = target_position;
     for (unsigned int i = 0; i < 3; ++i) {
@@ -210,10 +210,10 @@ SystemState InitializeState(SampleFactory &sample_factory, const Vector3D &targe
 #if LSPR_IC_VELOCITY_TYPE == LSPR_IC_BODY_ZERO_VELOCITY
         system_state[i+3] = 0.0;
 #else
-        system_state[i+3] = sample_factory.SampleUniform(-0.3, 0.3);
+        system_state[i+3] = sample_factory.SampleUniform(-maximum_velocity, maximum_velocity);
 #endif
     }
-    system_state[6] = sample_factory.SampleUniform(450.0, 550.0);
+    system_state[6] = sample_factory.SampleUniform(450.0, 500.0);
 
     return system_state;
 }
@@ -232,7 +232,7 @@ static std::vector<Sample> PrepareSamples(SampleFactory &sample_factory, const u
 #endif
         const double dt = 1.0 / simulator.ControlFrequency();
 
-        SystemState state = InitializeState(sample_factory, target_position, 3.0);
+        SystemState state = InitializeState(sample_factory, target_position, sample_factory.SampleBoolean() * 3.0, sample_factory.SampleBoolean() * 0.3);
         double time = sample_factory.SampleUniform(0.0, 12.0 * 60.0 * 60.0);
 
         for (unsigned int j = 0; j < num_steps; ++j) {
@@ -283,7 +283,11 @@ static boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector
     Asteroid &asteroid = simulator.AsteroidOfSystem();
     const double dt = 1.0 / simulator.ControlFrequency();
 
-    SystemState state = InitializeState(sample_factory, target_position, LSPR_IC_POSITION_OFFSET_ENABLED * 3.0);
+#if LSPR_IC_VELOCITY_TYPE == LSPR_IC_BODY_ZERO_VELOCITY
+    SystemState state = InitializeState(sample_factory, target_position, LSPR_IC_POSITION_OFFSET_ENABLED * 3.0, 0.0);
+#elif LSPR_IC_VELOCITY_TYPE == LSPR_IC_BODY_RANDOM_VELOCITY
+    SystemState state = InitializeState(sample_factory, target_position, LSPR_IC_POSITION_OFFSET_ENABLED * 3.0, 0.3);
+#endif
     state[6] = simulator.SpacecraftMaximumMass();
     double time = 0.0;
 
