@@ -80,7 +80,7 @@ static unsigned int Pi(SampleFactory &sample_factory, const LSPIState &state, co
             best_a.push_back(a);
         }
     }
-    return best_a.at(sample_factory.SampleUniformNatural(0, best_a.size() - 1));
+    return best_a.at(sample_factory.SampleRandomNatural() % best_a.size());
 }
 
 static Eigen::VectorXd LSTDQ(SampleFactory &sample_factory, const std::vector<Sample> &samples, const double &gamma, const Eigen::VectorXd &weights) {
