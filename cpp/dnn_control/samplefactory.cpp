@@ -21,7 +21,9 @@ unsigned int SampleFactory::SampleRandomNatural() {
 }
 
 unsigned int SampleFactory::SampleUniformNatural(const int &minimum, const int &maximum) {
-    uniform_int_distribution_ = boost::random::uniform_int_distribution<>(minimum, maximum);
+    if (minimum != uniform_int_distribution_.min() || maximum != uniform_int_distribution_.max()) {
+        uniform_int_distribution_ = boost::random::uniform_int_distribution<>(minimum, maximum);
+    }
     return uniform_int_distribution_(generator_);
 }
 
