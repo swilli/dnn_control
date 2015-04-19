@@ -16,7 +16,8 @@ from numpy import array, mean, minimum, maximum,std, sqrt
 from numpy.matlib import repmat
 from numpy.linalg import norm
 
-matplotlib.rcParams.update({'font.size': 22})
+import seaborn as sns
+sns.set_context("notebook", font_scale=2.5, rc={"lines.linewidth": 2.5})
 
 file_name = sys.argv[1]
 skip_outliers = False

@@ -77,17 +77,17 @@ void PaGMOSimulation::Init() {
     SampleFactory asteroid_sf(random_seed_);
     SampleFactory spacecraft_sf(random_seed_);
 
-    const double c_semi_axis = asteroid_sf.SampleUniform(100.0, 8000.0);
-    const double b_semi_axis_n = asteroid_sf.SampleUniform(1.1, 2.0);
-    const double a_semi_axis_n = asteroid_sf.SampleUniform(1.1 * b_semi_axis_n, 4.0);
+    const double c_semi_axis = asteroid_sf.SampleUniformReal(100.0, 8000.0);
+    const double b_semi_axis_n = asteroid_sf.SampleUniformReal(1.1, 2.0);
+    const double a_semi_axis_n = asteroid_sf.SampleUniformReal(1.1 * b_semi_axis_n, 4.0);
     const Vector3D &semi_axis = {a_semi_axis_n * c_semi_axis, b_semi_axis_n * c_semi_axis, c_semi_axis};
-    const double density = asteroid_sf.SampleUniform(1500.0, 3000.0);
+    const double density = asteroid_sf.SampleUniformReal(1500.0, 3000.0);
     const double magn_angular_velocity = 0.85 * sqrt((kGravitationalConstant * 4.0/3.0 * kPi * semi_axis[0] * semi_axis[1] * semi_axis[2] * density) / (semi_axis[0] * semi_axis[0] * semi_axis[0]));
-    const Vector2D &angular_velocity_xz = {asteroid_sf.SampleSign() * asteroid_sf.SampleUniform(magn_angular_velocity * 0.5, magn_angular_velocity), asteroid_sf.SampleSign() * asteroid_sf.SampleUniform(magn_angular_velocity * 0.5, magn_angular_velocity)};
-    const double time_bias = asteroid_sf.SampleUniform(0.0, 12.0 * 60 * 60);
+    const Vector2D &angular_velocity_xz = {asteroid_sf.SampleSign() * asteroid_sf.SampleUniformReal(magn_angular_velocity * 0.5, magn_angular_velocity), asteroid_sf.SampleSign() * asteroid_sf.SampleUniformReal(magn_angular_velocity * 0.5, magn_angular_velocity)};
+    const double time_bias = asteroid_sf.SampleUniformReal(0.0, 12.0 * 60 * 60);
     asteroid_ = Asteroid(semi_axis, density, angular_velocity_xz, time_bias);
 
-    spacecraft_maximum_mass_ = spacecraft_sf.SampleUniform(450.0, 500.0);
+    spacecraft_maximum_mass_ = spacecraft_sf.SampleUniformReal(450.0, 500.0);
     spacecraft_minimum_mass_ = spacecraft_maximum_mass_ * 0.5;
     spacecraft_maximum_thrust_ = 21.0;
     spacecraft_specific_impulse_ = 200.0;
@@ -110,7 +110,7 @@ void PaGMOSimulation::Init() {
     // spacecraft has uniformly distributed offset to target position
     Vector3D spacecraft_position;
     for (unsigned int i = 0 ; i < 3; ++i) {
-        spacecraft_position[i] = target_position_[i] + spacecraft_sf.SampleUniform(-3.0, 3.0);
+        spacecraft_position[i] = target_position_[i] + spacecraft_sf.SampleUniformReal(-3.0, 3.0);
     }
 #else
     // spacecraft starts at target position
@@ -168,7 +168,7 @@ void PaGMOSimulation::Init() {
     // uniformly distributed random velocity in body frame
     Vector3D spacecraft_velocity;
     for (unsigned int i = 0 ; i < 3; ++i) {
-        spacecraft_velocity[i] = spacecraft_sf.SampleUniform(-0.3, 0.3);
+        spacecraft_velocity[i] = spacecraft_sf.SampleUniformReal(-0.3, 0.3);
     }
 
 #elif PGMOS_IC_VELOCITY_TYPE == PGMOS_IC_BODY_PROPORTIONAL_VELOCITY

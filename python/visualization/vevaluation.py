@@ -22,7 +22,8 @@ import matplotlib
 from boost_asteroid import boost_asteroid
 Asteroid = boost_asteroid.BoostAsteroid
 
-matplotlib.rcParams.update({'font.size': 22})
+import seaborn as sns
+sns.set_context("notebook", font_scale=2.5, rc={"lines.linewidth": 2.5})
 
 start_time = 0.0
 end_time = 3600.0
