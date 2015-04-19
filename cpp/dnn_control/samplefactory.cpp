@@ -5,14 +5,14 @@ SampleFactory::SampleFactory() {
     srand(time(0));
     seed_ = rand();
     generator_ = boost::mt19937(seed_);
-    uniform_distribution_ = boost::random::uniform_real_distribution<>(0.0, 1.0);
+    uniform_real_distribution_ = boost::random::uniform_real_distribution<>(0.0, 1.0);
     normal_distribution_ = boost::random::normal_distribution<>(0.0, 1.0);
 }
 
 SampleFactory::SampleFactory(const unsigned int &random_seed) {
     seed_ = random_seed;
     generator_ = boost::mt19937(seed_);
-    uniform_distribution_ = boost::random::uniform_real_distribution<>(0.0, 1.0);
+    uniform_real_distribution_ = boost::random::uniform_real_distribution<>(0.0, 1.0);
     normal_distribution_ = boost::random::normal_distribution<>(0.0, 1.0);
 }
 
@@ -21,12 +21,12 @@ unsigned int SampleFactory::SampleRandomNatural() {
 }
 
 unsigned int SampleFactory::SampleUniformNatural(const int &minimum, const int &maximum) {
-    const double rand_val = SampleUniformReal(0.0, 1.0);
-    return minimum + rand_val * (maximum - minimum);
+    uniform_int_distribution_ = boost::random::uniform_int_distribution<>(minimum, maximum);
+    return uniform_int_distribution_(generator_);
 }
 
 double SampleFactory::SampleUniformReal(const double &minimum, const double &maximum) {
-    return minimum + (maximum - minimum) * uniform_distribution_(generator_);
+    return minimum + (maximum - minimum) * uniform_real_distribution_(generator_);
 }
 
 double SampleFactory::SampleNormal(const double &mean, const double &standard_deviation) {

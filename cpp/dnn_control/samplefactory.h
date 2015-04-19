@@ -59,7 +59,10 @@ private:
     boost::mt19937 generator_;
 
     // Uniform distribution between [0,1]
-    boost::random::uniform_real_distribution<> uniform_distribution_;
+    boost::random::uniform_real_distribution<> uniform_real_distribution_;
+
+    // Uniform natural number distribution
+    boost::random::uniform_int_distribution<> uniform_int_distribution_;
 
     // Normal distribution (0,1)
     boost::random::normal_distribution<> normal_distribution_;
