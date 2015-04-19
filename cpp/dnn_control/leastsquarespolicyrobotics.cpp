@@ -242,6 +242,7 @@ static std::vector<Sample> PrepareSamples(SampleFactory &sample_factory, const u
             const boost::tuple<SystemState, double, bool> result = simulator.NextState(state, time, thrust);
             const bool exception = boost::get<2>(result);
             if (exception) {
+                std::cout << "sample sequence stopped." << std::endl;
                 break;
             }
             const SystemState &next_state = boost::get<0>(result);
