@@ -37,7 +37,7 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     ControlledStepper controlled_stepper;
 
     SampleFactory sample_factory(random_seed_);
-    SampleFactory sf_sensor_simulator(sample_factory.SampleRandomInteger());
+    SampleFactory sf_sensor_simulator(sample_factory.SampleRandomNatural());
 
     SensorSimulator sensor_simulator(sf_sensor_simulator, asteroid_, sensor_types_, enable_sensor_noise_, target_position_, sensor_value_transformations_);
 
@@ -164,7 +164,7 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     odeint::runge_kutta4<SystemState> stepper;
 
     SampleFactory sample_factory(random_seed_);
-    SampleFactory sf_sensor_simulator(sample_factory.SampleRandomInteger());
+    SampleFactory sf_sensor_simulator(sample_factory.SampleRandomNatural());
 
     SensorSimulator sensor_simulator(sf_sensor_simulator, asteroid_, sensor_types_, enable_sensor_noise_, target_position_, sensor_value_transformations_);
 

@@ -125,7 +125,7 @@ static unsigned int Pi(SampleFactory &sample_factory, const LSPIState &state, co
             best_a.push_back(a);
         }
     }
-    return best_a.at(sample_factory.SampleRandomInteger() % best_a.size());
+    return best_a.at(sample_factory.SampleUniformNatural(0, best_a.size() - 1));
 }
 
 static Eigen::VectorXd LSTDQ(SampleFactory &sample_factory, const std::vector<Sample> &samples, const double &gamma, const Eigen::VectorXd &weights) {
@@ -175,8 +175,8 @@ static void PLSTDQThreadFun(const unsigned int &seed, const std::vector<Sample> 
 }
 
 static Eigen::VectorXd PLSTDQ(SampleFactory &sample_factory, const std::vector<Sample> &samples, const double &gamma, const Eigen::VectorXd &weights) {
-    const unsigned int seed1 = sample_factory.SampleRandomInteger();
-    const unsigned int seed2 = sample_factory.SampleRandomInteger();
+    const unsigned int seed1 = sample_factory.SampleRandomNatural();
+    const unsigned int seed2 = sample_factory.SampleRandomNatural();
 
     Eigen::MatrixXd matrix1(kSpacecraftPhiSize, kSpacecraftPhiSize);
     Eigen::MatrixXd matrix2(kSpacecraftPhiSize, kSpacecraftPhiSize);
@@ -240,17 +240,17 @@ SystemState InitializeState(SampleFactory &sample_factory, const Vector3D &targe
     SystemState system_state;
     Vector3D position = target_position;
     for (unsigned int i = 0; i < 3; ++i) {
-        position[i] += sample_factory.SampleUniform(-maximum_position_offset, maximum_position_offset);
+        position[i] += sample_factory.SampleUniformReal(-maximum_position_offset, maximum_position_offset);
     }
     for (unsigned int i = 0; i < 3; ++i) {
         system_state[i] = position[i];
 #if LSPR_IC_VELOCITY_TYPE == LSPR_IC_BODY_ZERO_VELOCITY
         system_state[i+3] = 0.0;
 #else
-        system_state[i+3] = sample_factory.SampleUniform(-0.3, 0.3);
+        system_state[i+3] = sample_factory.SampleUniformReal(-0.3, 0.3);
 #endif
     }
-    system_state[6] = sample_factory.SampleUniform(450.0, 550.0);
+    system_state[6] = sample_factory.SampleUniformReal(450.0, 550.0);
 
     return system_state;
 }
@@ -263,21 +263,21 @@ static std::vector<Sample> PrepareSamples(SampleFactory &sample_factory, const u
         LSPISimulator simulator(LSPR_FIXED_SEED);
         const Vector3D target_position = simulator.SampleFactoryOfSystem().SamplePointOutSideEllipsoid(simulator.AsteroidOfSystem().SemiAxis(), 1.1, 4.0);
 #else
-        LSPISimulator simulator(sample_factory.SampleRandomInteger());
+        LSPISimulator simulator(sample_factory.SampleRandomNatural());
         const boost::tuple<Vector3D, double, double, double> sampled_point = sample_factory.SamplePointOutSideEllipsoid(simulator.AsteroidOfSystem().SemiAxis(), 1.1, 4.0);
         const Vector3D &target_position = boost::get<0>(sampled_point);
 #endif
         const double dt = 1.0 / simulator.ControlFrequency();
 
         SystemState state = InitializeState(sample_factory, target_position, 4.0);
-        double time = sample_factory.SampleUniform(0.0, 12.0 * 60.0 * 60.0);
+        double time = sample_factory.SampleUniformReal(0.0, 12.0 * 60.0 * 60.0);
 
         for (unsigned int j = 0; j < num_steps; ++j) {
             const Vector3D &position = {state[0], state[1], state[2]};
 
             const LSPIState lspi_state = SystemStateToLSPIState(state, target_position);
 
-            const unsigned int a = sample_factory.SampleRandomInteger() % kSpacecraftNumActions;
+            const unsigned int a = sample_factory.SampleUniformNatural(0, kSpacecraftActions.size() - 1);
             const Vector3D &thrust = kSpacecraftActions[a];
             const boost::tuple<SystemState, double, bool> result = simulator.NextState(state, time, thrust);
             const bool exception = boost::get<2>(result);
@@ -392,7 +392,7 @@ static boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<
         SampleFactory sample_factory(start_seed);
         num_tests = 10000;
         for (unsigned int i = 0; i < num_tests; ++i) {
-            used_random_seeds.push_back(sample_factory.SampleRandomInteger());
+            used_random_seeds.push_back(sample_factory.SampleRandomNatural());
         }
     } else {
         used_random_seeds = random_seeds;

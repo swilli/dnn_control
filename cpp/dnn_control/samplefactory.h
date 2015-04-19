@@ -16,10 +16,13 @@ public:
 
 
     // X ~ U(N)
-    unsigned int SampleRandomInteger();
+    unsigned int SampleRandomNatural();
+
+    // X ~ U(min,max)
+    unsigned int SampleUniformNatural(const int &minimum, const int &maximum);
 
     // X ~ U(minimum, maximum)
-    double SampleUniform(const double &minimum, const double &maximum);
+    double SampleUniformReal(const double &minimum, const double &maximum);
 
     // X ~ N(minimum, maximum)
     double SampleNormal(const double &mean, const double &standard_deviation);
@@ -55,10 +58,10 @@ private:
     // The random number generator used for producing different samples
     boost::mt19937 generator_;
 
-    // Normal distribution (0,1)
+    // Uniform distribution between [0,1]
     boost::random::uniform_real_distribution<> uniform_distribution_;
 
-    // Uniform distribution between [0,1]
+    // Normal distribution (0,1)
     boost::random::normal_distribution<> normal_distribution_;
 };
 
