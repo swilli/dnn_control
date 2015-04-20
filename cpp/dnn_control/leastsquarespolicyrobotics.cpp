@@ -31,7 +31,7 @@ typedef boost::tuple<LSPIState, unsigned int, double, LSPIState> Sample;
 static std::vector<Vector3D> kSpacecraftActions;
 
 static void Init() {
-    const std::vector<double> t = {-21, -15.0, -8.0, -3.0, -1.0, 0.5, 0.0, 0.5, 1.0, 3.0, 8.0, 15.0, 21.0};
+    const std::vector<double> t = {-21.0, -15.0, -8.0, -3.0, -1.0, -0.5, -0.1, 0.0, 0.1, 0.5, 1.0, 3.0, 8.0, 15.0, 21.0};
     for (unsigned int i = 0; i < t.size(); ++i) {
         for (unsigned int j = 0; j < t.size(); ++j) {
             for (unsigned int k = 0; k < t.size(); ++k) {
@@ -43,7 +43,7 @@ static void Init() {
 
     kSpacecraftNumActions = kSpacecraftActions.size();
     kSpacecraftPolynomialDimensions = 15;
-    kSpacecraftPhiSize = 24;
+    kSpacecraftPhiSize = 64;
 }
 
 static Eigen::VectorXd Phi(const LSPIState &state, const unsigned int &action_index) {
@@ -53,17 +53,22 @@ static Eigen::VectorXd Phi(const LSPIState &state, const unsigned int &action_in
 
     const Vector3D &action = kSpacecraftActions[action_index];
 
-    for (unsigned int i = 0; i < 3; ++i) {
-        result(base++) = state[i] * action[i];
-        result(base++) = state[i] * action[i] * state[i] * action[i];
-        result(base++) = state[3+i] * action[i];
-        result(base++) = state[3+i] * action[i] * state[3+i] * action[i];
-        result(base++) = state[i] * state[i] * action[i];
-        result(base++) = state[3+i] * state[3+i] * action[i];
-        result(base++) = state[i] * action[i] * action[i];
-        result(base++) = state[3+i] * action[i] * action[i];
+    result(base++) = 1.0;
+    for (unsigned int i = 0; i < kSpacecraftStateDimension; ++i) {
+        for (unsigned int k = 0; k < 3; ++k) {
+            result(base++) = state[i] * action[k];
+        }
     }
-
+    for (unsigned int i = 0; i < kSpacecraftStateDimension; ++i) {
+        for (unsigned int j = 0; j < kSpacecraftStateDimension; ++j) {
+            result(base++) = state[i] * state[j];
+        }
+    }
+    for (unsigned int i = 0; i < 3; ++i) {
+        for (unsigned int j = 0; j < 3; ++j) {
+            result(base++) = action[i] * action[j];
+        }
+    }
     return result;
 }
 
@@ -178,15 +183,18 @@ static Eigen::VectorXd LSPI(SampleFactory &sample_factory, const std::vector<Sam
     return w;
 }
 
-static LSPIState SystemStateToLSPIState(const SystemState &state, const Vector3D &target_position) {
+static LSPIState SystemStateToLSPIState(SampleFactory &sample_factory, const SystemState &state, const Vector3D &target_position) {
     LSPIState lspi_state;
 
     const Vector3D position = {state[0], state[1], state[2]};
     const Vector3D velocity = {state[3], state[4], state[5]};
 
-    for (unsigned int k = 0; k < 3; ++k) {
-        lspi_state[k] = target_position[k] - position[k];
-        lspi_state[3+k] = -velocity[k];
+    for (unsigned int i = 0; i < 3; ++i) {
+        lspi_state[i] = target_position[i] - position[i];
+        lspi_state[3+i] = -velocity[i];
+
+        lspi_state[i] +=  lspi_state[i] * sample_factory.SampleNormal(0.0, 0.05);
+        lspi_state[3+i] += lspi_state[3+i] * sample_factory.SampleNormal(0.0, 0.05);
     }
 
     return lspi_state;
@@ -221,14 +229,14 @@ static std::vector<Sample> PrepareSamples(SampleFactory &sample_factory, const u
 #endif
         const double dt = 1.0 / simulator.ControlFrequency();
 
-        SystemState state = InitializeState(sample_factory, target_position, simulator.SpacecraftMaximumMass(), sample_factory.SampleBoolean() * 3.0, sample_factory.SampleBoolean() * 0.3);
+        SystemState state = InitializeState(sample_factory, target_position, simulator.SpacecraftMaximumMass(), sample_factory.SampleBoolean() * 10.0, sample_factory.SampleBoolean() * 1.0);
         double time = sample_factory.SampleUniformReal(0.0, 12.0 * 60.0 * 60.0);
 
         for (unsigned int j = 0; j < num_steps; ++j) {
             const Vector3D &position = {state[0], state[1], state[2]};
             const Vector3D &velocity = {state[3], state[4], state[5]};
 
-            const LSPIState lspi_state = SystemStateToLSPIState(state, target_position);
+            const LSPIState lspi_state = SystemStateToLSPIState(sample_factory, state, target_position);
 
             const unsigned int a = sample_factory.SampleUniformNatural(0, kSpacecraftActions.size() - 1);
             const Vector3D &thrust = kSpacecraftActions[a];
@@ -243,17 +251,14 @@ static std::vector<Sample> PrepareSamples(SampleFactory &sample_factory, const u
             const Vector3D &next_position = {next_state[0], next_state[1], next_state[2]};
             const Vector3D &next_velocity = {next_state[3], next_state[4], next_state[5]};
 
-            const LSPIState next_lspi_state = SystemStateToLSPIState(next_state, target_position);
+            const LSPIState next_lspi_state = SystemStateToLSPIState(sample_factory, next_state, target_position);
 
             const double delta_p1 = VectorNorm(VectorSub(target_position, position));
             const double delta_p2 = VectorNorm(VectorSub(target_position, next_position));
             const double delta_v1 = VectorNorm(velocity);
             const double delta_v2 = VectorNorm(next_velocity);
 
-            double r = 0;
-            if (delta_p1 < delta_p2 && delta_p1 > 1e-2) {
-                r = -1.0;
-            }
+            const double r = delta_p1 - delta_p2 + delta_v1 - delta_v2;
 
             samples.push_back(boost::make_tuple(lspi_state, a, r, next_lspi_state));
 
@@ -297,7 +302,7 @@ static boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector
         const Vector3D &height = {position[0] - surface_point[0], position[1] - surface_point[1], position[2] - surface_point[2]};
 
 
-        const LSPIState lspi_state = SystemStateToLSPIState(state, target_position);
+        const LSPIState lspi_state = SystemStateToLSPIState(sample_factory, state, target_position);
 
         thrust = kSpacecraftActions[Pi(sample_factory, lspi_state, weights)];
 
