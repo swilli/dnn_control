@@ -9,7 +9,7 @@
  */
 
 // Task Name
-#define TASK_NAME   "task1"
+#define TASK_NAME   "task2"
 
 // Euler home or not
 #define ENABLE_EULER_HOME   true
@@ -86,7 +86,7 @@
 //#define LSPR_FIXED_SEED     1990
 
 #define LSPR_TRANSIENT_RESPONSE_TIME  150.0
-#define LSPR_NUM_EPISODES    4000
+#define LSPR_NUM_EPISODES    3000
 #define LSPR_NUM_STEPS  25
 #define LSPR_GAMMA  0.9
 #define LSPR_EPSILON 1e-10
