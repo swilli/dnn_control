@@ -203,7 +203,7 @@ void PaGMOSimulation::Init() {
     sensor_types_.insert(SensorSimulator::SensorType::OpticalFlow);
 #endif
 #if PGMOS_ENABLE_ACCELEROMETER
-    sensor_types_.insert(SensorSimulator::SensorType::Acceleration);
+    sensor_types_.insert(SensorSimulator::SensorType::ExternalAcceleration);
 #endif
 
     // Means: [-2.34315594537, -2.27956514526, -21.2874117161, -2.3236143943, -3.2269601852, 13.7950111531]

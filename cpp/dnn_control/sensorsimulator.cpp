@@ -7,7 +7,7 @@ const std::map<SensorSimulator::SensorType, std::pair<unsigned int, double> > Se
     {SensorSimulator::SensorType::RelativePosition, {3, 0.05}},
     {SensorSimulator::SensorType::Velocity, {3, 0.05}},
     {SensorSimulator::SensorType::OpticalFlow, {6, 0.05}},
-    {SensorSimulator::SensorType::ExternalAcceleration, {3, 0.05}},
+    {SensorSimulator::SensorType::ExternalAcceleration, {1, 0.05}},
     {SensorSimulator::SensorType::TotalAcceleration, {3, 0.05}},
     {SensorSimulator::SensorType::Height, {1, 0.05}},
     {SensorSimulator::SensorType::Mass, {1, 0.05}}
@@ -88,7 +88,7 @@ std::vector<double> SensorSimulator::Simulate(const SystemState &state, const Ve
             }
 
         } else if (t == ExternalAcceleration || t == TotalAcceleration) {
-            const double up_scale = 1000000.0;
+            const double up_scale = 100000.0;
             const Vector3D &position = {state[0], state[1], state[2]};
             const Vector3D &velocity = {state[3], state[4], state[5]};
             const double &mass = state[6];
@@ -104,6 +104,7 @@ std::vector<double> SensorSimulator::Simulate(const SystemState &state, const Ve
 
             const Vector3D coriolis_acceleration = VectorCrossProduct(VectorMul(2.0, angular_velocity), velocity);
 
+            Vector3D acceleration;
             for (unsigned int i = 0; i < 3; ++i) {
                 double sensor_value = perturbations_acceleration[i]
                         + gravity_acceleration[i]
@@ -115,10 +116,15 @@ std::vector<double> SensorSimulator::Simulate(const SystemState &state, const Ve
                     sensor_value += thrust[i] / mass;
                 }
 
-                sensor_value *= up_scale;
-
-                sensor_data[offset + i] = AddNoise(sensor_value, t);
+                acceleration[i] = AddNoise(sensor_value, t);
             }
+
+            const double coef_norm_height = 1.0 / VectorNorm(height);
+            const Vector3D normalized_height = VectorMul(coef_norm_height, height);
+            const double magn_velocity_parallel = VectorDotProduct(acceleration, normalized_height);
+
+            sensor_data[offset] = up_scale * (magn_velocity_parallel < 0.0 ? -magn_velocity_parallel : magn_velocity_parallel);
+
             if (sensor_value_transformations_.find(t) != sensor_value_transformations_.end()) {
                 const std::vector<std::pair<double, double> > &transformations = sensor_value_transformations_.at(t);
                 for (unsigned int i = 0; i < 3; ++i) {

@@ -9,7 +9,7 @@
  */
 
 // Task Name
-#define TASK_NAME   "master"
+#define TASK_NAME   "task5"
 
 // Euler home or not
 #define ENABLE_EULER_HOME   true
@@ -20,7 +20,7 @@
 #define ER_NUM_ISLANDS  23
 //#define ER_SIMULATION_TIME  3.0 * 60.0 * 60.0
 #define ER_EVALUATIONS  10
-#define ER_NUM_HIDDEN_NODES 6
+#define ER_NUM_HIDDEN_NODES 10
 
 
 // Class hovering_problem configs
@@ -34,7 +34,7 @@
 #define HP_OBJ_FUN_METHOD_8     8   // Mean offset to optimal landing path.
 #define HP_OBJ_FUN_METHOD_9     9   // Mean distance to target point, target point set to position after the deep controller starts to work.
 
-#define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_3
+#define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_6
 
 #define HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME  150.0
 #define HP_OBJ_FUN_COEF_DIVERGENCE  0.0001
@@ -62,12 +62,12 @@
 #define PGMOS_IC_BODY_PROPORTIONAL_VELOCITY 4
 
 #define PGMOS_IC_VELOCITY_TYPE  PGMOS_IC_BODY_RANDOM_VELOCITY
-#define PGMOS_IC_ENABLE_POSITION_OFFSET    true
-#define PGMOS_ENABLE_RELATIVE_POSITION  true
-#define PGMOS_ENABLE_VELOCITY   true
-#define PGMOS_ENABLE_OPTICAL_FLOW   false
-#define PGMOS_ENABLE_ACCELEROMETER  false
-#define PGMOS_ENABLE_NOISE true
+#define PGMOS_IC_ENABLE_POSITION_OFFSET    false
+#define PGMOS_ENABLE_RELATIVE_POSITION  false
+#define PGMOS_ENABLE_VELOCITY   false
+#define PGMOS_ENABLE_OPTICAL_FLOW   true
+#define PGMOS_ENABLE_ACCELEROMETER  true
+#define PGMOS_ENABLE_NOISE false
 #define PGMOS_STANDARDIZE_SENSOR_VALUES    false
 #define PGMOS_ENABLE_SENSOR_DATA_RECORDING  false
 
