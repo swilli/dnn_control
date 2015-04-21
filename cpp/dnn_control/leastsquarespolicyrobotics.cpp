@@ -258,7 +258,7 @@ static std::vector<Sample> PrepareSamples(SampleFactory &sample_factory, const u
             const double delta_v1 = VectorNorm(velocity);
             const double delta_v2 = VectorNorm(next_velocity);
 
-            const double r = delta_p1 - delta_p2 + delta_v1 - delta_v2;
+            const double r = delta_p1 - 2.0 * delta_p2 + delta_v1 - 2.0 * delta_v2;
 
             samples.push_back(boost::make_tuple(lspi_state, a, r, next_lspi_state));
 
@@ -412,9 +412,11 @@ void TestLeastSquaresPolicyController(const unsigned int &random_seed) {
 
     Init();
 
+    const unsigned int worst_case_seed = 457110846;
+
     const double test_time = 2.0 * 24.0 * 60.0 * 60.0;
 
-    LSPISimulator simulator(random_seed);
+    LSPISimulator simulator(worst_case_seed);
     SampleFactory &sample_factory = simulator.SampleFactoryOfSystem();
     const boost::tuple<Vector3D, double, double, double> sampled_point = sample_factory.SamplePointOutSideEllipsoid(simulator.AsteroidOfSystem().SemiAxis(), 1.1, 4.0);
     const Vector3D &target_position = boost::get<0>(sampled_point);
