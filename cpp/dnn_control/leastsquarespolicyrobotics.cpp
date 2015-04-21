@@ -258,7 +258,7 @@ static std::vector<Sample> PrepareSamples(SampleFactory &sample_factory, const u
             const double delta_v1 = VectorNorm(velocity);
             const double delta_v2 = VectorNorm(next_velocity);
 
-            const double r = delta_p1 - 2.0 * delta_p2 + delta_v1 - 2.0 * delta_v2;
+            const double r = delta_p1 - delta_p2 + delta_v1 - delta_v2;
 
             samples.push_back(boost::make_tuple(lspi_state, a, r, next_lspi_state));
 
