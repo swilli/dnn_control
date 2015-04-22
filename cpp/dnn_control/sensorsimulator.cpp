@@ -7,7 +7,7 @@ const std::map<SensorSimulator::SensorType, std::pair<unsigned int, double> > Se
     {SensorSimulator::SensorType::RelativePosition, {3, 0.05}},
     {SensorSimulator::SensorType::Velocity, {3, 0.05}},
     {SensorSimulator::SensorType::OpticalFlow, {6, 0.05}},
-    {SensorSimulator::SensorType::ExternalAcceleration, {1, 0.05}},
+    {SensorSimulator::SensorType::ExternalAcceleration, {1, 0.0}},
     {SensorSimulator::SensorType::TotalAcceleration, {3, 0.05}},
     {SensorSimulator::SensorType::Height, {1, 0.05}},
     {SensorSimulator::SensorType::Mass, {1, 0.05}}
