@@ -3,7 +3,6 @@
 #include "modifiedcontrolledrungekutta.h"
 #include "odesystem.h"
 #include "samplefactory.h"
-#include "sensorsimulator.h"
 #include "controllerproportionalderivative.h"
 #include "configuration.h"
 
@@ -19,16 +18,17 @@ PaGMOSimulationProportionalDerivative::PaGMOSimulationProportionalDerivative(con
 boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<std::vector<double> > > PaGMOSimulationProportionalDerivative::EvaluateAdaptive() {
     typedef odeint::runge_kutta_cash_karp54<SystemState> ErrorStepper;
     typedef odeint::modified_controlled_runge_kutta<ErrorStepper> ControlledStepper;
+
     ControlledStepper controlled_stepper;
 
     SampleFactory sample_factory(random_seed_);
-    SampleFactory sf_sensor_simulator(sample_factory.SampleRandomInteger());
+    SampleFactory sf_sensor_simulator(sample_factory.SampleRandomNatural());
 
-    SensorSimulator sensor_simulator(sf_sensor_simulator, asteroid_, sensor_types_, sensor_noise_enabled_, target_position_, sensor_values_mean_stdevs_);
+    SensorSimulator sensor_simulator(sf_sensor_simulator, asteroid_, sensor_types_, enable_sensor_noise_, target_position_, sensor_value_transformations_);
 
 #if PGMOS_ENABLE_SENSOR_DATA_RECORDING
     SampleFactory sf_sensor_recording(sf_sensor_simulator.Seed());
-    SensorSimulator sensor_recorder(sf_sensor_recording, asteroid_, {SensorSimulator::SensorType::Position, SensorSimulator::SensorType::Velocity}, false);
+    SensorSimulator sensor_recorder(sf_sensor_recording, asteroid_, {SensorSimulator::SensorType::RelativePosition, SensorSimulator::SensorType::Velocity}, false);
 #endif
 
     ControllerProportionalDerivative controller(sensor_simulator.Dimensions(), spacecraft_maximum_thrust_);
@@ -81,10 +81,10 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
                 perturbations_acceleration[i] = sample_factory.SampleNormal(perturbation_mean_, perturbation_noise_);
             }
 
-            sensor_data = sensor_simulator.Simulate(system_state, height, perturbations_acceleration, current_time);
+            sensor_data = sensor_simulator.Simulate(system_state, height, perturbations_acceleration, current_time, thrust);
 
 #if PGMOS_ENABLE_SENSOR_DATA_RECORDING
-            sensor_recording = sensor_recorder.Simulate(system_state, height,perturbations_acceleration, current_time);
+            sensor_recording = sensor_recorder.Simulate(system_state, height, perturbations_acceleration, current_time);
             evaluated_sensor_data.at(iteration) = sensor_recording;
 #else
             evaluated_sensor_data.at(iteration) = sensor_data;
@@ -143,14 +143,15 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
 
 boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<std::vector<double> > > PaGMOSimulationProportionalDerivative::EvaluateFixed() {
     odeint::runge_kutta4<SystemState> stepper;
-    SampleFactory sample_factory(random_seed_);
-    SampleFactory sf_sensor_simulator(sample_factory.SampleRandomInteger());
 
-    SensorSimulator sensor_simulator(sf_sensor_simulator, asteroid_, sensor_types_, sensor_noise_enabled_, target_position_, sensor_values_mean_stdevs_);
+    SampleFactory sample_factory(random_seed_);
+    SampleFactory sf_sensor_simulator(sample_factory.SampleRandomNatural());
+
+    SensorSimulator sensor_simulator(sf_sensor_simulator, asteroid_, sensor_types_, enable_sensor_noise_, target_position_, sensor_value_transformations_);
 
 #if PGMOS_ENABLE_SENSOR_DATA_RECORDING
     SampleFactory sf_sensor_recording(sf_sensor_simulator.Seed());
-    SensorSimulator sensor_recorder(sf_sensor_recording, asteroid_, {SensorSimulator::SensorType::Position, SensorSimulator::SensorType::Velocity}, false);
+    SensorSimulator sensor_recorder(sf_sensor_recording, asteroid_, {SensorSimulator::SensorType::RelativePosition, SensorSimulator::SensorType::Velocity}, false);
 #endif
 
     ControllerProportionalDerivative controller(sensor_simulator.Dimensions(), spacecraft_maximum_thrust_);
@@ -194,7 +195,7 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
                 perturbations_acceleration[i] = sample_factory.SampleNormal(perturbation_mean_, perturbation_noise_);
             }
 
-            sensor_data = sensor_simulator.Simulate(system_state, height, perturbations_acceleration, current_time);
+            sensor_data = sensor_simulator.Simulate(system_state, height, perturbations_acceleration, current_time, thrust);
 
 #if PGMOS_ENABLE_SENSOR_DATA_RECORDING
             const std::vector<double> sensor_recording = sensor_recorder.Simulate(system_state, height, perturbations_acceleration, current_time);
@@ -225,6 +226,7 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
 }
 
 unsigned int PaGMOSimulationProportionalDerivative::ChromosomeSize() const {
-    SampleFactory s;
-    return ControllerProportionalDerivative(SensorSimulator(s, asteroid_, sensor_types_, false).Dimensions(), spacecraft_maximum_thrust_).NumberOfParameters();
+    SampleFactory sf;
+    const unsigned int dimensions = SensorSimulator(sf, asteroid_, sensor_types_, enable_sensor_noise_, target_position_, sensor_value_transformations_).Dimensions();
+    return ControllerProportionalDerivative(dimensions, spacecraft_maximum_thrust_).NumberOfParameters();
 }

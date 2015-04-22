@@ -16,10 +16,10 @@ LSPISimulator::LSPISimulator(const unsigned int &random_seed)
     const double c_semi_axis = asteroid_sf.SampleUniformReal(100.0, 8000.0);
     const double b_semi_axis_n = asteroid_sf.SampleUniformReal(1.1, 2.0);
     const double a_semi_axis_n = asteroid_sf.SampleUniformReal(1.1 * b_semi_axis_n, 4.0);
-    const Vector3D semi_axis = {a_semi_axis_n * c_semi_axis, b_semi_axis_n * c_semi_axis, c_semi_axis};
+    const Vector3D &semi_axis = {a_semi_axis_n * c_semi_axis, b_semi_axis_n * c_semi_axis, c_semi_axis};
     const double density = asteroid_sf.SampleUniformReal(1500.0, 3000.0);
     const double magn_angular_velocity = 0.85 * sqrt((kGravitationalConstant * 4.0/3.0 * kPi * semi_axis[0] * semi_axis[1] * semi_axis[2] * density) / (semi_axis[0] * semi_axis[0] * semi_axis[0]));
-    const Vector2D angular_velocity_xz = {asteroid_sf.SampleSign() * asteroid_sf.SampleUniformReal(magn_angular_velocity * 0.5, magn_angular_velocity), asteroid_sf.SampleSign() * asteroid_sf.SampleUniformReal(magn_angular_velocity * 0.5, magn_angular_velocity)};
+    const Vector2D &angular_velocity_xz = {asteroid_sf.SampleSign() * asteroid_sf.SampleUniformReal(magn_angular_velocity * 0.5, magn_angular_velocity), asteroid_sf.SampleSign() * asteroid_sf.SampleUniformReal(magn_angular_velocity * 0.5, magn_angular_velocity)};
     const double time_bias = asteroid_sf.SampleUniformReal(0.0, 12.0 * 60 * 60);
     asteroid_ = Asteroid(semi_axis, density, angular_velocity_xz, time_bias);
 
@@ -31,6 +31,8 @@ LSPISimulator::LSPISimulator(const unsigned int &random_seed)
 
     perturbation_mean_ = 1e-6;
     perturbation_noise_ = 1e-7;
+
+    perturbations_acceleration_ = {0.0, 0.0, 0.0};
 }
 
 boost::tuple<SystemState, double, bool> LSPISimulator::NextState(const SystemState &state, const double &time, const Vector3D &thrust) {
@@ -39,14 +41,9 @@ boost::tuple<SystemState, double, bool> LSPISimulator::NextState(const SystemSta
 
     SystemState state_copy(state);
 
-    Vector3D perturbations_acceleration;
-    for (unsigned int i = 0; i < 3; ++i) {
-        perturbations_acceleration[i] = sample_factory_.SampleNormal(perturbation_mean_, perturbation_noise_);
-    }
-
     const double engine_noise = sample_factory_.SampleNormal(0.0, spacecraft_engine_noise_);
 
-    ODESystem ode_system(asteroid_, perturbations_acceleration, thrust, spacecraft_specific_impulse_, spacecraft_minimum_mass_, engine_noise);
+    ODESystem ode_system(asteroid_, perturbations_acceleration_, thrust, spacecraft_specific_impulse_, spacecraft_minimum_mass_, engine_noise);
 
     ControlledStepper controlled_stepper;
     double current_time_observer = 0.0;
@@ -80,5 +77,13 @@ double LSPISimulator::ControlFrequency() const {
 
 double LSPISimulator::SpacecraftMaximumMass() const {
     return spacecraft_maximum_mass_;
+}
+
+Vector3D LSPISimulator::RefreshPerturbationsAcceleration() {
+    for (unsigned int i = 0; i < 3; ++i) {
+        perturbations_acceleration_[i] = sample_factory_.SampleNormal(perturbation_mean_, perturbation_noise_);
+    }
+
+    return perturbations_acceleration_;
 }
 

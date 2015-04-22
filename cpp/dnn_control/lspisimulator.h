@@ -27,6 +27,9 @@ public:
     // The spacecraft's maximum mass
     double SpacecraftMaximumMass() const;
 
+    // Updates the perturbations acceleration
+    Vector3D RefreshPerturbationsAcceleration();
+
 private:
     // This class is used to observe the actual simulated time in case of an exception (out of fuel, crash)
     class Observer {
@@ -74,6 +77,8 @@ private:
 
     // The SampleFactory the simulator works with
     SampleFactory sample_factory_;
+
+    Vector3D perturbations_acceleration_;
 };
 
 #endif // LSPISIMULATOR_H
