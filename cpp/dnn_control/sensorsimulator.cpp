@@ -121,9 +121,9 @@ std::vector<double> SensorSimulator::Simulate(const SystemState &state, const Ve
 
             const double coef_norm_height = 1.0 / VectorNorm(height);
             const Vector3D normalized_height = VectorMul(coef_norm_height, height);
-            const double magn_velocity_parallel = VectorDotProduct(acceleration, normalized_height);
+            const double magn_acceleration_parallel = VectorDotProduct(acceleration, normalized_height);
 
-            sensor_data[offset] = up_scale * (magn_velocity_parallel < 0.0 ? -magn_velocity_parallel : magn_velocity_parallel);
+            sensor_data[offset] = up_scale * (magn_acceleration_parallel < 0.0 ? -magn_acceleration_parallel : magn_acceleration_parallel);
 
             if (sensor_value_transformations_.find(t) != sensor_value_transformations_.end()) {
                 const std::vector<std::pair<double, double> > &transformations = sensor_value_transformations_.at(t);

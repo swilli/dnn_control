@@ -12,7 +12,7 @@
 #define TASK_NAME   "task5"
 
 // Euler home or not
-#define ENABLE_EULER_HOME   true
+#define ENABLE_EULER_HOME   false
 
 // Evolutionary Robotics configs
 #define ER_NUM_GENERATIONS  1000
@@ -67,7 +67,7 @@
 #define PGMOS_ENABLE_VELOCITY   false
 #define PGMOS_ENABLE_OPTICAL_FLOW   true
 #define PGMOS_ENABLE_ACCELEROMETER  true
-#define PGMOS_ENABLE_NOISE false
+#define PGMOS_ENABLE_NOISE true
 #define PGMOS_STANDARDIZE_SENSOR_VALUES    false
 #define PGMOS_ENABLE_SENSOR_DATA_RECORDING  false
 
