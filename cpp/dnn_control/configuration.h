@@ -9,7 +9,7 @@
  */
 
 // Task Name
-#define TASK_NAME   "task1"
+#define TASK_NAME   "master"
 
 // Euler home or not
 #define ENABLE_EULER_HOME   false
@@ -36,7 +36,7 @@
 
 #define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_3
 
-#define HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME  150.0
+#define HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME  0.0
 #define HP_OBJ_FUN_COEF_DIVERGENCE  0.0001
 #define HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED    true
 

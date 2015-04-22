@@ -11,8 +11,8 @@ class ControllerProportionalDerivative : public Controller {
     * The PD controller is implemented using a FFNN with no hidden layer and a linear activation function.
     */
 public:
-    ControllerProportionalDerivative(const unsigned int &dim_input, const double &maximum_thrust);
-    ControllerProportionalDerivative(const unsigned int &dim_input, const double &maximum_thrust, const std::vector<double> &pd_coefficients);
+    ControllerProportionalDerivative(const unsigned int &input_dimensions, const double &maximum_thrust);
+    ControllerProportionalDerivative(const unsigned int &input_dimensions, const double &maximum_thrust, const std::vector<double> &pd_coefficients);
 
 
     // thrust = F(sensor_data), whereas F is a PD controller

@@ -90,9 +90,9 @@ double hovering_problem_proportional_derivative::single_fitness(PaGMOSimulationP
     double time_diff = evaluated_times.back() - simulation.SimulationTime();
     time_diff = (time_diff < 0.0 ? -time_diff : time_diff);
     if (time_diff > 0.1) {
-        const double norm_height = evaluated_heights.back().NormEuclid();
+        const double norm_height = VectorNorm(evaluated_heights.back());
         if (norm_height < 2.0) {
-            const double norm_velocity = evaluated_velocities.back().NormEuclid();
+            const double norm_velocity = VectorNorm(evaluated_velocities.back());
             if (norm_velocity > 0.1) {
                 fitness += 1e30;
             } else {
@@ -130,7 +130,7 @@ double hovering_problem_proportional_derivative::single_fitness(PaGMOSimulationP
     unsigned int considered_samples = 0;
     for (unsigned int i = 0; i < num_samples; ++i) {
         if (evaluated_times.at(i) >= HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME) {
-            fitness += target_position.Sub(evaluated_positions.at(i)).NormEuclid() + evaluated_velocities.at(i).NormEuclid();
+            fitness += VectorNorm(VectorSub(target_position, evaluated_positions.at(i))) + VectorNorm(evaluated_velocities.at(i));
             considered_samples++;
         }
     }
@@ -229,9 +229,9 @@ boost::tuple<double, double, double> hovering_problem_proportional_derivative::s
     double time_diff = evaluated_times.back() - simulation.SimulationTime();
     time_diff = (time_diff < 0.0 ? -time_diff : time_diff);
     if (time_diff > 0.1) {
-        const double norm_height = evaluated_heights.back().NormEuclid();
+        const double norm_height = VectorNorm(evaluated_heights.back());
         if (norm_height < 2.0) {
-            const double norm_velocity = evaluated_velocities.back().NormEuclid();
+            const double norm_velocity = VectorNorm(evaluated_velocities.back());
             if (norm_velocity > 0.1) {
                 mean_error += 1e30;
             } else {
@@ -252,7 +252,7 @@ boost::tuple<double, double, double> hovering_problem_proportional_derivative::s
     unsigned int considered_samples = 0;
     for (unsigned int i = 0; i < num_samples; ++i) {
         if (evaluated_times.at(i) >= HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME) {
-            const double error = target_position.Sub(evaluated_positions.at(i)).NormEuclid();
+            const double error = VectorNorm(VectorSub(target_position, evaluated_positions.at(i)));
             if (error > max_error) {
                 max_error = error;
                 if (min_error == std::numeric_limits<double>::max()) {
@@ -338,6 +338,7 @@ boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<std::pa
         used_random_seeds = random_seeds;
     }
 
+    const double simulation_time = 3600;
     std::vector<double> mean_errors(num_tests, 0.0);
     std::vector<std::pair<double,double> > min_max_errors(num_tests, std::make_pair(0.0, 0.0));
 
@@ -345,9 +346,7 @@ boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<std::pa
         const unsigned int current_seed = used_random_seeds.at(i);
 
         PaGMOSimulationProportionalDerivative simulation(current_seed, x);
-        if (m_simulation_time > 0.0) {
-            simulation.SetSimulationTime(m_simulation_time);
-        }
+        simulation.SetSimulationTime(simulation_time);
 
         const boost::tuple<double, double, double> result = single_post_evaluation(simulation);
 

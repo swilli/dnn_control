@@ -4,10 +4,8 @@
 
 
 int main(int argc, char *argv[]) {
-    srand(time(0));
 
-    TrainLeastSquaresPolicyController();
-    TestLeastSquaresPolicyController(0);
+    TrainNeuralNetworkController();
     return 0;
 }
 
