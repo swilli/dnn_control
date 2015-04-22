@@ -84,11 +84,9 @@ static void ArchipelagoEvolve(pagmo::archipelago &archi, const pagmo::problem::h
                 random_seeds.push_back(rand());
             }
 
-            const boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<std::pair<double, double> > > post_evaluation = prob.post_evaluate(x, 0, random_seeds);
-            const std::vector<double> &mean_errors = boost::get<1>(post_evaluation);
             double cur_avg_error = 0.0;
             for (unsigned int j = 0; j < num_early_stopping_tests; ++j) {
-                cur_avg_error += mean_errors.at(j);
+                cur_avg_error += prob.objfun_seeded(random_seeds.at(j), x)[0];
             }
             cur_avg_error /= num_early_stopping_tests;
             std::cout << "average error: " << cur_avg_error << "/" << avg_error << " patience: ";
