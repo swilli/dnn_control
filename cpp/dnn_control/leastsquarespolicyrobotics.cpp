@@ -15,15 +15,21 @@
 
 #include <thread>
 
+enum MDPState {
+    RelativeLocalisation,
+    Velocity,
+    EMD,
+    EMDAndAccelerometer
+};
+
+
+static const MDPState kMDPState = MDPState::RelativeLocalisation;
 static const unsigned int kSpacecraftStateDimension = 6;
 
-static unsigned int kSpacecraftNumActions = 0;
-static unsigned int kSpacecraftPolynomialDimensions = 0;
-static unsigned int kSpacecraftPhiSize = 0;
-
-
-// delta r, delta dot r
 typedef boost::array<double, kSpacecraftStateDimension> LSPIState;
+
+
+static unsigned int kSpacecraftPhiSize = 0;
 
 // (x, a, r, x_prime)
 typedef boost::tuple<LSPIState, unsigned int, double, LSPIState> Sample;
@@ -40,9 +46,6 @@ static void Init() {
             }
         }
     }
-
-    kSpacecraftNumActions = kSpacecraftActions.size();
-    kSpacecraftPolynomialDimensions = 15;
     kSpacecraftPhiSize = 64;
 }
 
@@ -54,13 +57,13 @@ static Eigen::VectorXd Phi(const LSPIState &state, const unsigned int &action_in
     const Vector3D &action = kSpacecraftActions[action_index];
 
     result(base++) = 1.0;
-    for (unsigned int i = 0; i < kSpacecraftStateDimension; ++i) {
+    for (unsigned int i = 0; i < state.size(); ++i) {
         for (unsigned int k = 0; k < 3; ++k) {
             result(base++) = state[i] * action[k];
         }
     }
-    for (unsigned int i = 0; i < kSpacecraftStateDimension; ++i) {
-        for (unsigned int j = 0; j < kSpacecraftStateDimension; ++j) {
+    for (unsigned int i = 0; i < state.size(); ++i) {
+        for (unsigned int j = 0; j < state.size(); ++j) {
             result(base++) = state[i] * state[j];
         }
     }
@@ -75,7 +78,7 @@ static Eigen::VectorXd Phi(const LSPIState &state, const unsigned int &action_in
 static unsigned int Pi(SampleFactory &sample_factory, const LSPIState &state, const Eigen::VectorXd &weights) {
     std::vector<unsigned int> best_a;
     double best_q = -std::numeric_limits<double>::max();
-    for (unsigned int a = 0; a < kSpacecraftNumActions; ++a) {
+    for (unsigned int a = 0; a < kSpacecraftActions.size(); ++a) {
         Eigen::VectorXd val_phi = Phi(state, a);
         Eigen::VectorXd val_phi_t = val_phi.transpose();
 
@@ -183,18 +186,83 @@ static Eigen::VectorXd LSPI(SampleFactory &sample_factory, const std::vector<Sam
     return w;
 }
 
-static LSPIState SystemStateToLSPIState(SampleFactory &sample_factory, const SystemState &state, const Vector3D &target_position) {
+static LSPIState SystemStateToLSPIState(SampleFactory &sample_factory, const Asteroid &asteroid, const double &time, const Vector3D &perturbations_acceleration, const SystemState &state, const Vector3D &target_position) {
     LSPIState lspi_state;
 
-    const Vector3D position = {state[0], state[1], state[2]};
-    const Vector3D velocity = {state[3], state[4], state[5]};
+    const Vector3D &position = {state[0], state[1], state[2]};
+    const Vector3D &velocity = {state[3], state[4], state[5]};
 
-    for (unsigned int i = 0; i < 3; ++i) {
-        lspi_state[i] = target_position[i] - position[i];
-        lspi_state[3+i] = -velocity[i];
+    const boost::tuple<Vector3D, double> result = asteroid.NearestPointOnSurfaceToPosition(position);
+    const Vector3D &surf_pos = boost::get<0>(result);
+    const double norm_height = boost::get<1>(result);
+    const Vector3D height = VectorSub(position, surf_pos);
 
-        lspi_state[i] +=  lspi_state[i] * sample_factory.SampleNormal(0.0, 0.05);
-        lspi_state[3+i] += lspi_state[3+i] * sample_factory.SampleNormal(0.0, 0.05);
+    switch(kMDPState) {
+    case RelativeLocalisation:
+        for (unsigned int i = 0; i < 3; ++i) {
+            lspi_state[i] = target_position[i] - position[i];
+            lspi_state[3+i] = -velocity[i];
+
+            lspi_state[i] +=  lspi_state[i] * sample_factory.SampleNormal(0.0, 0.05);
+            lspi_state[3+i] += lspi_state[3+i] * sample_factory.SampleNormal(0.0, 0.05);
+        }
+
+        break;
+
+    case Velocity:
+        for (unsigned int i = 0; i < 3; ++i) {
+            lspi_state[i] = -velocity[i];
+            lspi_state[i] +=  lspi_state[i] * sample_factory.SampleNormal(0.0, 0.05);
+        }
+
+        break;
+
+    case EMD:
+    case EMDAndAccelerometer:
+        const double coef_norm_height = 1.0 / norm_height;
+        const Vector3D normalized_height = VectorMul(coef_norm_height, height);
+        const double magn_velocity_parallel = VectorDotProduct(velocity, normalized_height);
+        const Vector3D velocity_parallel = VectorMul(magn_velocity_parallel, normalized_height);
+        const Vector3D velocity_perpendicular = VectorSub(velocity, velocity_parallel);
+
+        for (unsigned int i = 0; i < 3; ++i) {
+            lspi_state[i] = velocity_parallel[i] * coef_norm_height;
+            lspi_state[i] +=  lspi_state[i] * sample_factory.SampleNormal(0.0, 0.05);
+        }
+        for (unsigned int i = 0; i < 3; ++i) {
+            lspi_state[3 + i] = velocity_perpendicular[i] * coef_norm_height;
+            lspi_state[3 + i] +=  lspi_state[3 + i] * sample_factory.SampleNormal(0.0, 0.05);
+        }
+
+        if (kMDPState == EMDAndAccelerometer) {
+            const Vector3D gravity_acceleration = asteroid.GravityAccelerationAtPosition(position);
+
+            const boost::tuple<Vector3D, Vector3D> result_angular = asteroid.AngularVelocityAndAccelerationAtTime(time);
+            const Vector3D &angular_velocity = boost::get<0>(result_angular);
+            const Vector3D &angular_acceleration = boost::get<1>(result_angular);
+            const Vector3D euler_acceleration = VectorCrossProduct(angular_acceleration, position);
+            const Vector3D centrifugal_acceleration = VectorCrossProduct(angular_velocity, VectorCrossProduct(angular_velocity, position));
+            const Vector3D coriolis_acceleration = VectorCrossProduct(VectorMul(2.0, angular_velocity), velocity);
+
+            Vector3D acceleration;
+            for (unsigned int i = 0; i < 3; ++i) {
+                double value = perturbations_acceleration[i]
+                        + gravity_acceleration[i]
+                        - coriolis_acceleration[i]
+                        - euler_acceleration[i]
+                        - centrifugal_acceleration[i];
+
+                acceleration[i] = value + value * sample_factory.SampleNormal(0.0, 0.05);
+            }
+
+            const double coef_norm_height = 1.0 / norm_height;
+            const Vector3D normalized_height = VectorMul(coef_norm_height, height);
+            const double magn_acceleration_parallel = VectorDotProduct(acceleration, normalized_height);
+
+            lspi_state[6] = (magn_acceleration_parallel < 0.0 ? -magn_acceleration_parallel : magn_acceleration_parallel);
+        }
+        break;
+
     }
 
     return lspi_state;
@@ -229,14 +297,15 @@ static std::vector<Sample> PrepareSamples(SampleFactory &sample_factory, const u
 #endif
         const double dt = 1.0 / simulator.ControlFrequency();
 
+        Asteroid &asteroid = simulator.AsteroidOfSystem();
         SystemState state = InitializeState(sample_factory, target_position, simulator.SpacecraftMaximumMass(), sample_factory.SampleBoolean() * 10.0, sample_factory.SampleBoolean() * 1.0);
         double time = sample_factory.SampleUniformReal(0.0, 12.0 * 60.0 * 60.0);
+        Vector3D perturbations_acceleration = simulator.RefreshPerturbationsAcceleration();
+        LSPIState lspi_state = SystemStateToLSPIState(sample_factory, asteroid, time, perturbations_acceleration, state, target_position);
 
         for (unsigned int j = 0; j < num_steps; ++j) {
             const Vector3D &position = {state[0], state[1], state[2]};
             const Vector3D &velocity = {state[3], state[4], state[5]};
-
-            const LSPIState lspi_state = SystemStateToLSPIState(sample_factory, state, target_position);
 
             const unsigned int a = sample_factory.SampleUniformNatural(0, kSpacecraftActions.size() - 1);
             const Vector3D &thrust = kSpacecraftActions[a];
@@ -247,11 +316,13 @@ static std::vector<Sample> PrepareSamples(SampleFactory &sample_factory, const u
                 break;
             }
             const SystemState &next_state = boost::get<0>(result);
+            time += dt;
 
             const Vector3D &next_position = {next_state[0], next_state[1], next_state[2]};
             const Vector3D &next_velocity = {next_state[3], next_state[4], next_state[5]};
 
-            const LSPIState next_lspi_state = SystemStateToLSPIState(sample_factory, next_state, target_position);
+            perturbations_acceleration = simulator.RefreshPerturbationsAcceleration();
+            const LSPIState next_lspi_state = SystemStateToLSPIState(sample_factory, asteroid, time, perturbations_acceleration, next_state, target_position);
 
             const double delta_p1 = VectorNorm(VectorSub(target_position, position));
             const double delta_p2 = VectorNorm(VectorSub(target_position, next_position));
@@ -262,8 +333,8 @@ static std::vector<Sample> PrepareSamples(SampleFactory &sample_factory, const u
 
             samples.push_back(boost::make_tuple(lspi_state, a, r, next_lspi_state));
 
-            time += dt;
             state = next_state;
+            lspi_state = next_lspi_state;
         }
     }
     return samples;
@@ -293,6 +364,7 @@ static boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector
     unsigned int iteration;
     bool exception_thrown = false;
     double time_observer = 0.0;
+    Vector3D perturbations_acceleration = simulator.RefreshPerturbationsAcceleration();
     for (iteration = 0; iteration < num_steps; ++iteration) {
         const Vector3D &position = {state[0], state[1], state[2]};
         const Vector3D &velocity = {state[3], state[4], state[5]};
@@ -301,8 +373,7 @@ static boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector
         const Vector3D surface_point = boost::get<0>(asteroid.NearestPointOnSurfaceToPosition(position));
         const Vector3D &height = {position[0] - surface_point[0], position[1] - surface_point[1], position[2] - surface_point[2]};
 
-
-        const LSPIState lspi_state = SystemStateToLSPIState(sample_factory, state, target_position);
+        const LSPIState lspi_state = SystemStateToLSPIState(sample_factory, asteroid, time, perturbations_acceleration, state, target_position);
 
         thrust = kSpacecraftActions[Pi(sample_factory, lspi_state, weights)];
 
@@ -319,6 +390,7 @@ static boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector
         exception_thrown = boost::get<2>(result);
         state = next_state;
         time += dt;
+        perturbations_acceleration = simulator.RefreshPerturbationsAcceleration();
         if (exception_thrown) {
             std::cout << "spacecraft crash or out of fuel." << std::endl;
             break;

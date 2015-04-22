@@ -31,6 +31,8 @@ LSPISimulator::LSPISimulator(const unsigned int &random_seed)
 
     perturbation_mean_ = 1e-6;
     perturbation_noise_ = 1e-7;
+
+    perturbations_acceleration_ = {0.0, 0.0, 0.0};
 }
 
 boost::tuple<SystemState, double, bool> LSPISimulator::NextState(const SystemState &state, const double &time, const Vector3D &thrust) {
@@ -39,14 +41,9 @@ boost::tuple<SystemState, double, bool> LSPISimulator::NextState(const SystemSta
 
     SystemState state_copy(state);
 
-    Vector3D perturbations_acceleration;
-    for (unsigned int i = 0; i < 3; ++i) {
-        perturbations_acceleration[i] = sample_factory_.SampleNormal(perturbation_mean_, perturbation_noise_);
-    }
-
     const double engine_noise = sample_factory_.SampleNormal(0.0, spacecraft_engine_noise_);
 
-    ODESystem ode_system(asteroid_, perturbations_acceleration, thrust, spacecraft_specific_impulse_, spacecraft_minimum_mass_, engine_noise);
+    ODESystem ode_system(asteroid_, perturbations_acceleration_, thrust, spacecraft_specific_impulse_, spacecraft_minimum_mass_, engine_noise);
 
     ControlledStepper controlled_stepper;
     double current_time_observer = 0.0;
@@ -80,5 +77,13 @@ double LSPISimulator::ControlFrequency() const {
 
 double LSPISimulator::SpacecraftMaximumMass() const {
     return spacecraft_maximum_mass_;
+}
+
+Vector3D LSPISimulator::RefreshPerturbationsAcceleration() {
+    for (unsigned int i = 0; i < 3; ++i) {
+        perturbations_acceleration_[i] = sample_factory_.SampleNormal(perturbation_mean_, perturbation_noise_);
+    }
+
+    return perturbations_acceleration_;
 }
 
