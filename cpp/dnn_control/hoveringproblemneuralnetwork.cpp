@@ -47,6 +47,7 @@ void hovering_problem_neural_network::objfun_impl(fitness_vector &f, const decis
     // Make sure the pseudorandom sequence will always be the same
     m_urng.seed(m_seed);
 
+    unsigned int n_evaluations = 0;
     for (unsigned int count = 0; count < m_n_evaluations; count++) {
 
         // Creates the initial conditions at random, based on the current seed
@@ -62,8 +63,12 @@ void hovering_problem_neural_network::objfun_impl(fitness_vector &f, const decis
             simulation.SetSimulationTime(m_simulation_time);
         }
         f[0] += single_fitness(simulation);
+        n_evaluations++;
+        if (f[0] > 1e15) {
+            break;
+        }
     }
-    f[0] /= m_n_evaluations;
+    f[0] /= n_evaluations;
 }
 
 std::string hovering_problem_neural_network::human_readable_extra() const {
