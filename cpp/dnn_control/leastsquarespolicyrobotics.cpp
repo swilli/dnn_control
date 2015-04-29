@@ -486,8 +486,14 @@ static boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<
                 const double error = VectorNorm(VectorSub(target_position, evaluated_positions.at(i)));
                 if (error > max_error) {
                     max_error = error;
+                    if (min_error == std::numeric_limits<double>::max()) {
+                        min_error = max_error;
+                    }
                 } else if(error < min_error) {
                     min_error = error;
+                    if (max_error == -std::numeric_limits<double>::max()){
+                        max_error = min_error;
+                    }
                 }
                 mean_error += error;
                 considered_samples++;
