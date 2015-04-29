@@ -72,10 +72,10 @@ void FileWriter::CreateEvaluationFile(const unsigned int &random_seed, const Vec
     }
 }
 
-void FileWriter::CreatePostEvaluationFile(const std::vector<unsigned int> &random_seeds, const std::vector<double> &mean_errors, const std::vector<std::pair<double, double> > &min_max_errors) {
+void FileWriter::CreatePostEvaluationFile(const std::vector<unsigned int> &random_seeds, const std::vector<double> &mean_errors, const std::vector<std::pair<double, double> > &min_max_errors, const std::vector<std::pair<double, double> > &fuel_consumptions) {
     for(unsigned int i = 0; i < random_seeds.size(); ++i) {
         const unsigned int seed = random_seeds.at(i);
-        file_ << seed << ",\t" << mean_errors.at(i) << ",\t" << min_max_errors.at(i).first << ",\t" << min_max_errors.at(i).second << std::endl;
+        file_ << seed << ",\t" << mean_errors.at(i) << ",\t" << min_max_errors.at(i).first << ",\t" << min_max_errors.at(i).second << ",\t" << fuel_consumptions.at(i).first << ",\t" << fuel_consumptions.at(i).second << std::endl;
     }
 }
 

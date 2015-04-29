@@ -9,18 +9,23 @@
  */
 
 // Task Name
-#define TASK_NAME   "task5"
+#define TASK_NAME   "master"
 
 // Euler home or not
 #define ENABLE_EULER_HOME   false
 
 // Evolutionary Robotics configs
 #define ER_NUM_GENERATIONS  1000
-#define ER_POPULATION_SIZE  22
-#define ER_NUM_ISLANDS  23
-#define ER_SIMULATION_TIME  60.0 * 60.0
-#define ER_EVALUATIONS  100
-#define ER_NUM_HIDDEN_NODES 20
+#define ER_POPULATION_SIZE  21
+#define ER_NUM_ISLANDS  24
+//#define ER_SIMULATION_TIME  60.0 * 60.0
+#define ER_EVALUATIONS  10
+#define ER_NUM_HIDDEN_NODES 6
+#define ER_ENABLE_RELATIVE_POSITION  true
+#define ER_ENABLE_VELOCITY   true
+#define ER_ENABLE_OPTICAL_FLOW   false
+#define ER_ENABLE_ACCELEROMETER  false
+#define ER_ENABLE_SENSOR_NOISE true
 
 
 // Class hovering_problem configs
@@ -39,7 +44,6 @@
 #define HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME  150.0
 #define HP_OBJ_FUN_COEF_DIVERGENCE  0.0001
 #define HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED    true
-
 
 #define HP_POST_EVAL_METHOD_1   1   // Compare mean distance to target point. Transient response aware.
 #define HP_POST_EVAL_METHOD_2   2   // Compare mean velocity. Transient response aware.
@@ -63,13 +67,7 @@
 
 #define PGMOS_IC_VELOCITY_TYPE  PGMOS_IC_BODY_RANDOM_VELOCITY
 #define PGMOS_IC_ENABLE_POSITION_OFFSET    false
-#define PGMOS_ENABLE_RELATIVE_POSITION  false
-#define PGMOS_ENABLE_VELOCITY   false
-#define PGMOS_ENABLE_OPTICAL_FLOW   true
-#define PGMOS_ENABLE_ACCELEROMETER  true
-#define PGMOS_ENABLE_NOISE true
 #define PGMOS_STANDARDIZE_SENSOR_VALUES    false
-#define PGMOS_ENABLE_SENSOR_DATA_RECORDING  false
 
 
 // Class ControllerNeuralNetwork configs
@@ -135,6 +133,11 @@ inline void ConfigurationPaGMO() {
     std::cout << "ER_SIMULATION_TIME   dynamic" << std::endl;
 #endif
     std::cout << "ER_NUM_HIDDEN_NODES   " << ER_NUM_HIDDEN_NODES << std::endl;
+    std::cout << "ER_ENABLE_RELATIVE_POSITION   " << ToString(ER_ENABLE_RELATIVE_POSITION) << std::endl;
+    std::cout << "ER_ENABLE_VELOCITY   " << ToString(ER_ENABLE_VELOCITY) << std::endl;
+    std::cout << "ER_ENABLE_OPTICAL_FLOW   " << ToString(ER_ENABLE_OPTICAL_FLOW) << std::endl;
+    std::cout << "ER_ENABLE_ACCELEROMETER   " << ToString(ER_ENABLE_ACCELEROMETER) << std::endl;
+    std::cout << "ER_ENABLE_SENSOR_NOISE   " << ToString(ER_ENABLE_SENSOR_NOISE) << std::endl;
 #ifdef HP_FIXED_SEED
     std::cout << "HP_FIXED_SEED   " << HP_FIXED_SEED << std::endl;
 #else
@@ -145,15 +148,10 @@ inline void ConfigurationPaGMO() {
     std::cout << "HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME   " << HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME << std::endl;
     std::cout << "HP_OBJ_FUN_COEF_DIVERGENCE   " << HP_OBJ_FUN_COEF_DIVERGENCE << std::endl;
     std::cout << "HP_POST_EVALUATION_METHOD   " << HP_POST_EVALUATION_METHOD << std::endl;
+
     std::cout << "PGMOS_IC_VELOCITY_TYPE   " << PGMOS_IC_VELOCITY_TYPE << std::endl;
     std::cout << "PGMOS_IC_ENABLE_POSITION_OFFSET   " << ToString(PGMOS_IC_ENABLE_POSITION_OFFSET) << std::endl;
-    std::cout << "PGMOS_ENABLE_RELATIVE_POSITION   " << ToString(PGMOS_ENABLE_RELATIVE_POSITION) << std::endl;
-    std::cout << "PGMOS_ENABLE_VELOCITY   " << ToString(PGMOS_ENABLE_VELOCITY) << std::endl;
-    std::cout << "PGMOS_ENABLE_OPTICAL_FLOW   " << ToString(PGMOS_ENABLE_OPTICAL_FLOW) << std::endl;
-    std::cout << "PGMOS_ENABLE_ACCELEROMETER   " << ToString(PGMOS_ENABLE_ACCELEROMETER) << std::endl;
-    std::cout << "PGMOS_ENABLE_NOISE   " << ToString(PGMOS_ENABLE_NOISE) << std::endl;
     std::cout << "PGMOS_STANDARDIZE_SENSOR_VALUES   " << ToString(PGMOS_STANDARDIZE_SENSOR_VALUES) << std::endl;
-    std::cout << "PGMOS_ENABLE_SENSOR_DATA_RECORDING   " << ToString(PGMOS_ENABLE_SENSOR_DATA_RECORDING) << std::endl;
     std::cout << "ODES_ENABLE_FUEL   " << ToString(ODES_ENABLE_FUEL) << std::endl;
     std::cout << "CNN_ENABLE_STACKED_AUTOENCODER   " << ToString(CNN_ENABLE_STACKED_AUTOENCODER) << std::endl;
     std::cout << "CNN_STACKED_AUTOENCODER_CONFIGURATION   " << CNN_STACKED_AUTOENCODER_CONFIGURATION << std::endl;

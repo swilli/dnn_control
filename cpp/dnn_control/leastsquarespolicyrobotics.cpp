@@ -309,8 +309,8 @@ static std::vector<Sample> PrepareSamples(SampleFactory &sample_factory, const u
 
             const unsigned int a = sample_factory.SampleUniformNatural(0, kSpacecraftActions.size() - 1);
             const Vector3D &thrust = kSpacecraftActions[a];
-            const boost::tuple<SystemState, double, bool> result = simulator.NextState(state, time, thrust);
-            const bool exception = boost::get<2>(result);
+            const boost::tuple<SystemState, Vector3D, double, bool> result = simulator.NextState(state, time, thrust);
+            const bool exception = boost::get<3>(result);
             if (exception) {
                 std::cout << "sample sequence stopped." << std::endl;
                 break;
@@ -341,13 +341,14 @@ static std::vector<Sample> PrepareSamples(SampleFactory &sample_factory, const u
 }
 
 
-static boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > EvaluatePolicy(SampleFactory &sample_factory, const Eigen::VectorXd &weights, LSPISimulator &simulator, const Vector3D &target_position, const unsigned int &num_steps) {
+static boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > EvaluatePolicy(SampleFactory &sample_factory, const Eigen::VectorXd &weights, LSPISimulator &simulator, const Vector3D &target_position, const unsigned int &num_steps) {
     std::vector<double> evaluated_times(num_steps + 1);
     std::vector<double> evaluated_masses(num_steps + 1);
     std::vector<Vector3D> evaluated_positions(num_steps + 1);
     std::vector<Vector3D> evaluated_heights(num_steps + 1);
     std::vector<Vector3D> evaluated_velocities(num_steps + 1);
     std::vector<Vector3D> evaluated_thrusts(num_steps + 1);
+    std::vector<Vector3D> evaluated_accelerations(num_steps + 1);
 
     Asteroid &asteroid = simulator.AsteroidOfSystem();
     const double dt = 1.0 / simulator.ControlFrequency();
@@ -377,17 +378,20 @@ static boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector
 
         thrust = kSpacecraftActions[Pi(sample_factory, lspi_state, weights)];
 
+        const boost::tuple<SystemState, Vector3D, double, bool> result  = simulator.NextState(state, time, thrust);
+        const SystemState next_state = boost::get<0>(result);
+        const Vector3D &acceleration = boost::get<1>(result);
+        time_observer = boost::get<2>(result);
+        exception_thrown = boost::get<3>(result);
+
         evaluated_times.at(iteration) = time;
         evaluated_masses.at(iteration) = mass;
         evaluated_positions.at(iteration) = position;
         evaluated_heights.at(iteration) = height;
         evaluated_velocities.at(iteration) = velocity;
         evaluated_thrusts.at(iteration) = thrust;
+        evaluated_accelerations.at(iteration) = acceleration;
 
-        const boost::tuple<SystemState, double, bool> result  = simulator.NextState(state, time, thrust);
-        const SystemState next_state = boost::get<0>(result);
-        time_observer = boost::get<1>(result);
-        exception_thrown = boost::get<2>(result);
         state = next_state;
         time += dt;
         perturbations_acceleration = simulator.RefreshPerturbationsAcceleration();
@@ -420,10 +424,10 @@ static boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector
     evaluated_heights.back() = height;
     evaluated_thrusts.back() = thrust;
 
-    return boost::make_tuple(evaluated_times, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities, evaluated_thrusts);
+    return boost::make_tuple(evaluated_times, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities, evaluated_thrusts, evaluated_accelerations);
 }
 
-static boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<std::pair<double, double> > > PostEvaluateLSPIController(const Eigen::VectorXd &controller_weights, const unsigned int &start_seed, const std::vector<unsigned int> &random_seeds=std::vector<unsigned int>()) {
+static boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<std::pair<double, double> >, std::vector<std::pair<double, double> > > PostEvaluateLSPIController(const Eigen::VectorXd &controller_weights, const unsigned int &start_seed, const std::vector<unsigned int> &random_seeds=std::vector<unsigned int>()) {
     unsigned int num_tests = random_seeds.size();
     std::vector<unsigned int> used_random_seeds;
     if (num_tests == 0) {
@@ -438,6 +442,7 @@ static boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<
 
     std::vector<double> mean_errors(num_tests, 0.0);
     std::vector<std::pair<double, double> > min_max_errors(num_tests);
+    std::vector<std::pair<double, double> > fuel_consumptions(num_tests);
 
     const double test_time = 3600.0;
 
@@ -449,14 +454,27 @@ static boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<
         const boost::tuple<Vector3D, double, double, double> sampled_point = sample_factory.SamplePointOutSideEllipsoid(simulator.AsteroidOfSystem().SemiAxis(), 1.1, 4.0);
         const Vector3D &target_position = boost::get<0>(sampled_point);
 
-        const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = EvaluatePolicy(sample_factory, controller_weights, simulator, target_position, test_time * simulator.ControlFrequency());
+        const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = EvaluatePolicy(sample_factory, controller_weights, simulator, target_position, test_time * simulator.ControlFrequency());
         const std::vector<double> &evaluated_times = boost::get<0>(result);
+        const std::vector<double> &evaluated_masses = boost::get<1>(result);
         const std::vector<Vector3D> &evaluated_positions = boost::get<2>(result);
+        const std::vector<Vector3D> &evaluated_accelerations = boost::get<3>(result);
 
         const unsigned int num_samples = evaluated_times.size();
+
+        double predicted_fuel = 0.0;
+        const double dt = 1.0 / simulator.ControlFrequency();
+        const double coef = 1.0 / (simulator.SpacecraftSpecificImpulse() * kEarthAcceleration);
+        for (unsigned int i = 0; i < num_samples; ++i) {
+            predicted_fuel += VectorNorm(evaluated_accelerations.at(i)) * coef;
+        }
+
+        double used_fuel = evaluated_masses.at(0) - evaluated_masses.at(num_samples - 1);
+
         double mean_error = 0.0;
         double min_error = std::numeric_limits<double>::max();
         double max_error = -std::numeric_limits<double>::max();
+
         unsigned int considered_samples = 0;
         for (unsigned int i = 0; i < num_samples; ++i) {
             if (evaluated_times.at(i) >= LSPR_TRANSIENT_RESPONSE_TIME) {
@@ -474,9 +492,11 @@ static boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<
         mean_errors.at(i) = mean_error;
         min_max_errors.at(i).first = min_error;
         min_max_errors.at(i).second = max_error;
+        fuel_consumptions.at(i).first = predicted_fuel;
+        fuel_consumptions.at(i).second = used_fuel;
     }
 
-    return boost::make_tuple(used_random_seeds, mean_errors, min_max_errors);
+    return boost::make_tuple(used_random_seeds, mean_errors, min_max_errors, fuel_consumptions);
 }
 
 void TestLeastSquaresPolicyController(const unsigned int &random_seed) {
@@ -504,7 +524,7 @@ void TestLeastSquaresPolicyController(const unsigned int &random_seed) {
     weight_file.close();
 
     std::cout << "Simulating LSPI controller ... ";
-    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = EvaluatePolicy(sample_factory, weights, simulator, target_position, test_time * simulator.ControlFrequency());
+    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = EvaluatePolicy(sample_factory, weights, simulator, target_position, test_time * simulator.ControlFrequency());
     const std::vector<double> &times = boost::get<0>(result);
     const std::vector<Vector3D> &positions = boost::get<2>(result);
     const std::vector<Vector3D> &heights = boost::get<3>(result);
@@ -524,15 +544,15 @@ void TestLeastSquaresPolicyController(const unsigned int &random_seed) {
 
 
     std::cout << "Performing post evaluation ... ";
-    const boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<std::pair<double, double > > > post_evaluation = PostEvaluateLSPIController(weights, random_seed);
+    const boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<std::pair<double, double> >, std::vector<std::pair<double, double> > > post_evaluation = PostEvaluateLSPIController(weights, random_seed);
     const std::vector<unsigned int> &random_seeds = boost::get<0>(post_evaluation);
     const std::vector<double> &mean_errors = boost::get<1>(post_evaluation);
-    const std::vector<std::pair<double, double > > min_max_errors = boost::get<2>(post_evaluation);
-
+    const std::vector<std::pair<double, double > > &min_max_errors = boost::get<2>(post_evaluation);
+    const std::vector<std::pair<double, double > > &fuel_consumptions = boost::get<3>(post_evaluation);
 
     std::cout << "done." << std::endl << "Writing post evaluation file ... ";
     FileWriter writer_post_evaluation(PATH_TO_LSPI_POST_EVALUATION_FILE);
-    writer_post_evaluation.CreatePostEvaluationFile(random_seeds, mean_errors, min_max_errors);
+    writer_post_evaluation.CreatePostEvaluationFile(random_seeds, mean_errors, min_max_errors, fuel_consumptions);
     std::cout << "done." << std::endl;
 }
 

@@ -8,24 +8,24 @@
 #include "controllerdeepneuralnetwork.h"
 #include "configuration.h"
 
-PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &random_seed)
-    : PaGMOSimulation(random_seed) {
+PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &random_seed, const std::set<SensorSimulator::SensorType> &control_sensor_types, const bool &control_with_noise, const std::set<SensorSimulator::SensorType> &recording_sensor_types, const bool &recording_with_noise)
+    : PaGMOSimulation(random_seed, control_sensor_types, control_with_noise, recording_sensor_types, recording_with_noise) {
     neural_network_hidden_nodes_ = kHiddenNodes;
 }
 
-PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &random_seed, const unsigned int &hidden_nodes)
-    : PaGMOSimulation(random_seed) {
+PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &random_seed, const unsigned int &hidden_nodes, const std::set<SensorSimulator::SensorType> &control_sensor_types, const bool &control_with_noise, const std::set<SensorSimulator::SensorType> &recording_sensor_types, const bool &recording_with_noise)
+    : PaGMOSimulation(random_seed, control_sensor_types, control_with_noise, recording_sensor_types, recording_with_noise) {
     neural_network_hidden_nodes_ = hidden_nodes;
 }
 
-PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &random_seed, const std::vector<double> &neural_network_weights)
-    : PaGMOSimulation(random_seed) {
+PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &random_seed, const std::vector<double> &neural_network_weights, const std::set<SensorSimulator::SensorType> &control_sensor_types, const bool &control_with_noise, const std::set<SensorSimulator::SensorType> &recording_sensor_types, const bool &recording_with_noise)
+    : PaGMOSimulation(random_seed, control_sensor_types, control_with_noise, recording_sensor_types, recording_with_noise) {
     neural_network_hidden_nodes_ = kHiddenNodes;
     simulation_parameters_ = neural_network_weights;
 }
 
-PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &random_seed, const unsigned int &hidden_nodes, const std::vector<double> &neural_network_weights)
-    : PaGMOSimulation(random_seed) {
+PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &random_seed, const unsigned int &hidden_nodes, const std::vector<double> &neural_network_weights, const std::set<SensorSimulator::SensorType> &control_sensor_types, const bool &control_with_noise, const std::set<SensorSimulator::SensorType> &recording_sensor_types, const bool &recording_with_noise)
+    : PaGMOSimulation(random_seed, control_sensor_types, control_with_noise, recording_sensor_types, recording_with_noise) {
     neural_network_hidden_nodes_ = hidden_nodes;
     simulation_parameters_ = neural_network_weights;
 }
@@ -38,13 +38,20 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
 
     SampleFactory sample_factory(random_seed_);
     SampleFactory sf_sensor_simulator(sample_factory.SampleRandomNatural());
-
-    SensorSimulator sensor_simulator(sf_sensor_simulator, asteroid_, sensor_types_, enable_sensor_noise_, target_position_, sensor_value_transformations_);
-
-#if PGMOS_ENABLE_SENSOR_DATA_RECORDING
     SampleFactory sf_sensor_recording(sf_sensor_simulator.Seed());
-    SensorSimulator sensor_recorder(sf_sensor_recording, asteroid_, {SensorSimulator::SensorType::OpticalFlow, SensorSimulator::SensorType::Velocity}, false);
-#endif
+
+    SensorSimulator sensor_simulator(sf_sensor_simulator, asteroid_);
+    sensor_simulator.SetNoiseEnabled(control_with_noise_);
+    sensor_simulator.SetSensorTypes(control_sensor_types_);
+    sensor_simulator.SetSensorValueTransformations(sensor_value_transformations_);
+    sensor_simulator.SetTargetPosition(target_position_);
+
+    SensorSimulator sensor_recorder(sf_sensor_recording, asteroid_);
+    sensor_recorder.SetNoiseEnabled(recording_with_noise_);
+    sensor_recorder.SetSensorTypes(recording_sensor_types_);
+    sensor_recorder.SetSensorValueTransformations(sensor_value_transformations_);
+    sensor_recorder.SetTargetPosition(target_position_);
+
 
 #if CNN_ENABLE_STACKED_AUTOENCODER
     ControllerDeepNeuralNetwork controller(sensor_simulator.Dimensions(), spacecraft_maximum_thrust_, neural_network_hidden_nodes_);
@@ -71,9 +78,7 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     Vector3D perturbations_acceleration;
     Vector3D thrust;
     std::vector<double> sensor_data;
-#if PGMOS_ENABLE_SENSOR_DATA_RECORDING
     std::vector<double> sensor_recording;
-#endif
 
     double current_time = 0.0;
     double current_time_observer = 0.0;
@@ -102,12 +107,9 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
 
             sensor_data = sensor_simulator.Simulate(system_state, height, perturbations_acceleration, current_time, thrust);
 
-#if PGMOS_ENABLE_SENSOR_DATA_RECORDING
-            sensor_recording = sensor_recorder.Simulate(system_state, height, perturbations_acceleration, current_time);
+            sensor_recording = sensor_recorder.Simulate(system_state, height, perturbations_acceleration, current_time, thrust);
             evaluated_sensor_data.at(iteration) = sensor_recording;
-#else
-            evaluated_sensor_data.at(iteration) = sensor_data;
-#endif
+
 
             thrust = controller.GetThrustForSensorData(sensor_data);
             evaluated_thrusts.at(iteration) = thrust;
@@ -165,13 +167,19 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
 
     SampleFactory sample_factory(random_seed_);
     SampleFactory sf_sensor_simulator(sample_factory.SampleRandomNatural());
-
-    SensorSimulator sensor_simulator(sf_sensor_simulator, asteroid_, sensor_types_, enable_sensor_noise_, target_position_, sensor_value_transformations_);
-
-#if PGMOS_ENABLE_SENSOR_DATA_RECORDING
     SampleFactory sf_sensor_recording(sf_sensor_simulator.Seed());
-    SensorSimulator sensor_recorder(sf_sensor_recording, asteroid_, {SensorSimulator::SensorType::RelativePosition, SensorSimulator::SensorType::Velocity}, false);
-#endif
+
+    SensorSimulator sensor_simulator(sf_sensor_simulator, asteroid_);
+    sensor_simulator.SetNoiseEnabled(control_with_noise_);
+    sensor_simulator.SetSensorTypes(control_sensor_types_);
+    sensor_simulator.SetSensorValueTransformations(sensor_value_transformations_);
+    sensor_simulator.SetTargetPosition(target_position_);
+
+    SensorSimulator sensor_recorder(sf_sensor_recording, asteroid_);
+    sensor_recorder.SetNoiseEnabled(recording_with_noise_);
+    sensor_recorder.SetSensorTypes(recording_sensor_types_);
+    sensor_recorder.SetSensorValueTransformations(sensor_value_transformations_);
+    sensor_recorder.SetTargetPosition(target_position_);
 
     ControllerNeuralNetwork controller(sensor_simulator.Dimensions(), spacecraft_maximum_thrust_, neural_network_hidden_nodes_);
 
@@ -217,12 +225,8 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
 
             sensor_data = sensor_simulator.Simulate(system_state, height, perturbations_acceleration, current_time, thrust);
 
-#if PGMOS_ENABLE_SENSOR_DATA_RECORDING
-            const std::vector<double> sensor_recording = sensor_recorder.Simulate(system_state, height, perturbations_acceleration, current_time);
+            const std::vector<double> sensor_recording = sensor_recorder.Simulate(system_state, height, perturbations_acceleration, current_time, thrust);
             evaluated_sensor_data.push_back(sensor_recording);
-#else
-            evaluated_sensor_data.push_back(sensor_data);
-#endif
 
             thrust = controller.GetThrustForSensorData(sensor_data);
             evaluated_thrusts.push_back(thrust);
@@ -247,7 +251,10 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
 
 unsigned int PaGMOSimulationNeuralNetwork::ChromosomeSize() const {
     SampleFactory sf;
-    const unsigned int dimensions = SensorSimulator(sf, asteroid_, sensor_types_, enable_sensor_noise_, target_position_, sensor_value_transformations_).Dimensions();
+    SensorSimulator sens_sim(sf, asteroid_);
+    sens_sim.SetSensorTypes(control_sensor_types_);
+    const unsigned int dimensions = sens_sim.Dimensions();
+
 #if CNN_ENABLE_STACKED_AUTOENCODER
     return ControllerDeepNeuralNetwork(dimensions, spacecraft_maximum_thrust_, neural_network_hidden_nodes_).NumberOfParameters();
 #else

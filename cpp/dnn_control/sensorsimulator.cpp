@@ -7,18 +7,15 @@ const std::map<SensorSimulator::SensorType, std::pair<unsigned int, double> > Se
     {SensorSimulator::SensorType::RelativePosition, {3, 0.05}},
     {SensorSimulator::SensorType::Velocity, {3, 0.05}},
     {SensorSimulator::SensorType::OpticalFlow, {6, 0.05}},
-    {SensorSimulator::SensorType::ExternalAcceleration, {1, 0.0}},
+    {SensorSimulator::SensorType::ExternalAcceleration, {3, 0.05}},
     {SensorSimulator::SensorType::TotalAcceleration, {3, 0.05}},
     {SensorSimulator::SensorType::Height, {1, 0.05}},
     {SensorSimulator::SensorType::Mass, {1, 0.05}}
 };
 
-SensorSimulator::SensorSimulator(SampleFactory &sample_factory, const Asteroid &asteroid, const std::set<SensorType> &sensor_types_, const bool &enable_noise, const Vector3D &target_position, const std::map<SensorType, std::vector<std::pair<double, double> > > &sensor_value_transformations)
-    : sample_factory_(sample_factory), asteroid_(asteroid), sensor_types_(sensor_types_), noise_enabled_(enable_noise), target_position_(target_position), sensor_value_transformations_(sensor_value_transformations) {
+SensorSimulator::SensorSimulator(SampleFactory &sample_factory, const Asteroid &asteroid)
+    : sample_factory_(sample_factory), asteroid_(asteroid) {
     dimensions_ = 0;
-    for (auto t : sensor_types_) {
-        dimensions_ += SensorTypeConfigurations.at(t).first;
-    }
 }
 
 unsigned int SensorSimulator::Dimensions() const {
@@ -32,6 +29,26 @@ double SensorSimulator::AddNoise(const double &sensor_value, const SensorType &t
     } else {
         return sensor_value;
     }
+}
+
+void SensorSimulator::SetSensorTypes(const std::set<SensorSimulator::SensorType> &sensor_types) {
+    sensor_types_ = sensor_types;
+    dimensions_ = 0;
+    for (auto t : sensor_types_) {
+        dimensions_ += SensorTypeConfigurations.at(t).first;
+    }
+}
+
+void SensorSimulator::SetNoiseEnabled(const bool &enable_noise) {
+    noise_enabled_ = enable_noise;
+}
+
+void SensorSimulator::SetTargetPosition(const Vector3D &target_position) {
+    target_position_ = target_position;
+}
+
+void SensorSimulator::SetSensorValueTransformations(const std::map<SensorSimulator::SensorType, std::vector<std::pair<double, double> > > &sensor_value_transformations) {
+    sensor_value_transformations_ = sensor_value_transformations;
 }
 
 std::vector<double> SensorSimulator::Simulate(const SystemState &state, const Vector3D &height, const Vector3D &perturbations_acceleration, const double &time, const Vector3D &thrust) {
@@ -88,7 +105,7 @@ std::vector<double> SensorSimulator::Simulate(const SystemState &state, const Ve
             }
 
         } else if (t == ExternalAcceleration || t == TotalAcceleration) {
-            const double up_scale = 100000.0;
+            const double up_scale = 1.0;
             const Vector3D &position = {state[0], state[1], state[2]};
             const Vector3D &velocity = {state[3], state[4], state[5]};
             const double &mass = state[6];
@@ -104,7 +121,6 @@ std::vector<double> SensorSimulator::Simulate(const SystemState &state, const Ve
 
             const Vector3D coriolis_acceleration = VectorCrossProduct(VectorMul(2.0, angular_velocity), velocity);
 
-            Vector3D acceleration;
             for (unsigned int i = 0; i < 3; ++i) {
                 double sensor_value = perturbations_acceleration[i]
                         + gravity_acceleration[i]
@@ -116,14 +132,8 @@ std::vector<double> SensorSimulator::Simulate(const SystemState &state, const Ve
                     sensor_value += thrust[i] / mass;
                 }
 
-                acceleration[i] = AddNoise(sensor_value, t);
+                sensor_data[offset + i] = up_scale * AddNoise(sensor_value, t);
             }
-
-            const double coef_norm_height = 1.0 / VectorNorm(height);
-            const Vector3D normalized_height = VectorMul(coef_norm_height, height);
-            const double magn_acceleration_parallel = VectorDotProduct(acceleration, normalized_height);
-
-            sensor_data[offset] = up_scale * (magn_acceleration_parallel < 0.0 ? -magn_acceleration_parallel : magn_acceleration_parallel);
 
             if (sensor_value_transformations_.find(t) != sensor_value_transformations_.end()) {
                 const std::vector<std::pair<double, double> > &transformations = sensor_value_transformations_.at(t);
@@ -141,6 +151,7 @@ std::vector<double> SensorSimulator::Simulate(const SystemState &state, const Ve
             sensor_data[offset] = AddNoise(mass, t);
 
         }
+
         offset += SensorTypeConfigurations.at(t).first;
     }
 

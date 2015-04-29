@@ -13,7 +13,7 @@ public:
 
 
     // (s', t', end_of_sim) = NextState(s, t, a)
-    boost::tuple<SystemState, double, bool> NextState(const SystemState &state, const double &time, const Vector3D &thrust);
+    boost::tuple<SystemState, Vector3D, double, bool> NextState(const SystemState &state, const double &time, const Vector3D &thrust);
 
     // Returns the asteroid the simulator works with
     Asteroid &AsteroidOfSystem();
@@ -26,6 +26,9 @@ public:
 
     // The spacecraft's maximum mass
     double SpacecraftMaximumMass() const;
+
+    // The spacecraft's specific impulse
+    double SpacecraftSpecificImpulse() const;
 
     // Updates the perturbations acceleration
     Vector3D RefreshPerturbationsAcceleration();

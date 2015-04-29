@@ -6,14 +6,14 @@
 #include "constants.h"
 #include "configuration.h"
 
-PaGMOSimulation::PaGMOSimulation(const unsigned int &random_seed)
-    : random_seed_(random_seed), simulation_time_(0.0) {
+PaGMOSimulation::PaGMOSimulation(const unsigned int &random_seed, const std::set<SensorSimulator::SensorType> &control_sensor_types, const bool &control_with_noise, const std::set<SensorSimulator::SensorType> &recording_sensor_types, const bool &recording_with_noise)
+    : random_seed_(random_seed), simulation_time_(0.0), control_sensor_types_(control_sensor_types), control_with_noise_(control_with_noise), recording_sensor_types_(recording_sensor_types), recording_with_noise_(recording_with_noise) {
     Init();
     simulation_time_ = (int) (asteroid_.EstimatedMainMotionPeriod() * 0.5);
 }
 
-PaGMOSimulation::PaGMOSimulation(const unsigned int &random_seed, const double &simulation_time)
-    : random_seed_(random_seed), simulation_time_(simulation_time) {
+PaGMOSimulation::PaGMOSimulation(const unsigned int &random_seed, const double &simulation_time, const std::set<SensorSimulator::SensorType> &control_sensor_types, const bool &control_with_noise, const std::set<SensorSimulator::SensorType> &recording_sensor_types, const bool &recording_with_noise)
+    : random_seed_(random_seed), simulation_time_(simulation_time), control_sensor_types_(control_sensor_types), control_with_noise_(control_with_noise), recording_sensor_types_(recording_sensor_types), recording_with_noise_(recording_with_noise)  {
     Init();
 }
 
@@ -43,6 +43,10 @@ double PaGMOSimulation::SpacecraftMaximumMass() const {
 
 double PaGMOSimulation::SpacecraftMinimumMass() const {
     return spacecraft_minimum_mass_;
+}
+
+double PaGMOSimulation::SpacecraftSpecificImpulse() const {
+    return spacecraft_specific_impulse_;
 }
 
 double PaGMOSimulation::SpacecraftMaximumThrust() const {
@@ -190,21 +194,6 @@ void PaGMOSimulation::Init() {
     }
 
     initial_system_state_[6] = spacecraft_maximum_mass_;
-
-    enable_sensor_noise_ = PGMOS_ENABLE_NOISE;
-
-#if PGMOS_ENABLE_RELATIVE_POSITION
-    sensor_types_.insert(SensorSimulator::SensorType::RelativePosition);
-#endif
-#if PGMOS_ENABLE_VELOCITY
-    sensor_types_.insert(SensorSimulator::SensorType::Velocity);
-#endif
-#if PGMOS_ENABLE_OPTICAL_FLOW
-    sensor_types_.insert(SensorSimulator::SensorType::OpticalFlow);
-#endif
-#if PGMOS_ENABLE_ACCELEROMETER
-    sensor_types_.insert(SensorSimulator::SensorType::ExternalAcceleration);
-#endif
 
     // Means: [-2.34315594537, -2.27956514526, -21.2874117161, -2.3236143943, -3.2269601852, 13.7950111531]
     //Stdevs: [5454.37836105, 7966.07979339, 21295.1854193, 10658.0857674, 18415.6359962, 5702.25191872]

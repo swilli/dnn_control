@@ -13,8 +13,8 @@ class PaGMOSimulation {
     * This abstract class represents a full simulation of a spacecraft placed next to an asteroid.
     */
 public:
-    PaGMOSimulation(const unsigned int &random_seed);
-    PaGMOSimulation(const unsigned int &random_seed, const double &simulation_time);
+    PaGMOSimulation(const unsigned int &random_seed, const std::set<SensorSimulator::SensorType> &control_sensor_types={}, const bool &control_with_noise=false, const std::set<SensorSimulator::SensorType> &recording_sensor_types={}, const bool &recording_with_noise=false);
+    PaGMOSimulation(const unsigned int &random_seed, const double &simulation_time, const std::set<SensorSimulator::SensorType> &control_sensor_types={}, const bool &control_with_noise=false, const std::set<SensorSimulator::SensorType> &recording_sensor_types={}, const bool &recording_with_noise=false);
 
     virtual ~PaGMOSimulation();
 
@@ -132,11 +132,17 @@ protected:
     // The parameters for the controller
     std::vector<double> simulation_parameters_;
 
-    // Is noise enabled during the simulation
-    bool enable_sensor_noise_;
+    // The sensor types used in the simulation for control
+    std::set<SensorSimulator::SensorType> control_sensor_types_;
 
-    // The sensor types used in the simulation
-    std::set<SensorSimulator::SensorType> sensor_types_;
+    // Is noise enabled during the simulation
+    bool control_with_noise_;
+
+    // The sensor types used in the simulation for recording
+    std::set<SensorSimulator::SensorType> recording_sensor_types_;
+
+    // Is noise enabled during the simulation
+    bool recording_with_noise_;
 
     // Sensor values can be transformed using these two parameters
     std::map<SensorSimulator::SensorType, std::vector<std::pair<double, double> > > sensor_value_transformations_;

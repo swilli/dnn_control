@@ -19,7 +19,24 @@ static const unsigned int kNumHiddenNeurons = ER_NUM_HIDDEN_NODES;
 static const unsigned int kEarlyStoppingTestInterval = 10;
 static const unsigned int kNumEarlyStoppingTests = 100;
 static const unsigned int kNumEarlyStoppingDelay = 10;
+static const bool kEnableSensorNoise = ER_ENABLE_SENSOR_NOISE;
 
+static std::set<SensorSimulator::SensorType> kSensorTypes;
+
+static void Init() {
+#if ER_ENABLE_RELATIVE_POSITION
+    kSensorTypes.insert(SensorSimulator::SensorType::RelativePosition);
+#endif
+#if ER_ENABLE_VELOCITY
+    kSensorTypes.insert(SensorSimulator::SensorType::Velocity);
+#endif
+#if ER_ENABLE_OPTICAL_FLOW
+    kSensorTypes.insert(SensorSimulator::SensorType::OpticalFlow);
+#endif
+#if ER_ENABLE_ACCELEROMETER
+    kSensorTypes.insert(SensorSimulator::SensorType::ExternalAcceleration);
+#endif
+}
 
 static unsigned int ArchipelagoChampionID(pagmo::archipelago archi) {
     double min = archi.get_island(0)->get_population().champion().f[0];
@@ -122,6 +139,7 @@ static void ArchipelagoEvolve(pagmo::archipelago &archi, const pagmo::problem::h
 
 void TrainNeuralNetworkController() {
     ConfigurationPaGMO();
+    Init();
 
     srand(time(0));
 
@@ -137,7 +155,7 @@ void TrainNeuralNetworkController() {
     for (unsigned int j = 0;j < kNumIslands; ++j) {
         std::cout << " [" << j;
         fflush(stdout);
-        pagmo::problem::hovering_problem_neural_network prob(rand(), kNumEvaluations, kSimulationTime, kNumHiddenNeurons);
+        pagmo::problem::hovering_problem_neural_network prob(rand(), kNumEvaluations, kSimulationTime, kNumHiddenNeurons, kSensorTypes, kEnableSensorNoise);
 
         // This instantiates a population within the original bounds (-1,1)
         pagmo::population pop_temp(prob, kPopulationSize);
@@ -197,21 +215,22 @@ static void ConvexityCheck(pagmo::problem::hovering_problem_neural_network &prob
 
 void TestNeuralNetworkController(const unsigned int &random_seed) {
     ConfigurationPaGMO();
+    Init();
 
     const unsigned int worst_case_seed = random_seed;
 
-    const pagmo::decision_vector &solution = {3.029506878, 5.920776096, -0.6954663801, -2.084201016, 2.901741114, -2.703666157, -0.8361321469, 4.217928173, 0.2271514851, 0.669312924, 3.430800097, -5.595167316, 1.068138745, 2.428427804, 3.153371716, -2.811535036, 1.817673226, -0.4303820009, -1.198913345, -1.090662357, -4.999863385, -3.396505621, -4.306196326, -0.4927390932, 1.704048763, 2.604055063, -0.6848533721, -1.65814225, 6.189078364, -0.3324037482, -4.422659017, 1.847192286, 7.273787622, 0.5029598237, 0.1691830311, -4.174990116, -0.4836497653, 2.630119328, -2.024932577, -4.665299388, -3.87314456, -1.920174896, -1.368259047, -1.29890367, -0.401414487, 1.700848623, 3.737086446, 0.06603159418, -0.3448020221, -2.974154104, -0.1007722235, 0.08102218147, -7.877349202, 4.065310135, 3.640264835, 5.637098866, 4.253135194, 3.588216298, -2.823381096, 2.103837222, -1.011566583, 1.146481284, -0.308559377, -0.8827949338, 5.224376016, -0.7316942109, 0.7380328444, -1.67613986, 4.139552687, -0.334528333, -0.0938551802, -0.02785121602, -3.388803266, 7.293616497, 1.431982217, -0.4003014024, 3.066233115, 4.808817249, 0.5856678579, -3.144395761, -4.638532473, -2.510970352, -2.421688762, 8.505497759, -5.687488995, 5.748679534, 4.782954794, 2.675972698, -1.89386327, -1.147524036, 2.070100368, -1.075176765, -4.141387318, 6.459400947, 3.152550381, -0.626856043, 3.480009318, -7.310873543, -0.1285314144, -2.137152259, -1.021720354, 3.04691681, -7.191341877, -0.04523143453, 1.817588148, 2.863667669, -2.643510964, -5.696053247, 1.910802364, 0.691540613, -1.296716516, 0.3474816654, -2.558885409, -6.202657995, 0.02170004213, 4.149512864, -2.367229887, -0.1978019427, -2.957177753, 1.137488425, 1.83820455, -2.742597632, -0.6963896656, 5.878953728, -3.045404634, -5.347228448, 1.651793383, 1.502283297, -3.835026293, -6.741500355, -0.1803661447, -0.6958428088, -5.6110423, -0.1754260492, 2.225832084, -0.3330844456, 0.8506149507, -1.880581888, 4.007018202, -4.514046149, 2.129995434, 9.601546111, 1.663068398, -0.5712892172, -7.223223972, -0.9862387142, -0.0697366674, -1.341183004, 0.9603821498, 5.294273675, -0.3594702676, 5.106002104, -2.000552457, 1.644907013, -2.246196339, 4.146585287, 5.418945789, -0.02931200837, 4.814033779, -0.2560448512, 1.283844649, 2.115889106, -3.971757632, 6.928459845, -7.401736882, 0.1512576105, 3.12982937, 1.535878802, -1.938551275, 1.717001092, -1.837239449, 1.043503695, 7.272505987, 2.652563518, -1.871849661, -5.074460891, 2.183274265, 1.183457037, -4.913993819, 0.09814671153, 2.041229433, 1.833492395, -0.5816691382, -2.437753273, 4.198870564, -1.288273767, -5.096786248, 3.848784306, 3.323075712, 3.76157903, -3.460765991, -4.162008862, -6.353870524, -9.63571011, 2.584822072, 6.694550299, -0.6963469366, -0.1002722554, -2.891641809, -8.424369036, 1.982158593, 2.527151758, 0.4093860327, 0.2863791534, 1.947148573, 6.321686234, -1.815570609, 0.9024711768, -2.657538932, 2.154624253, 0.4227921252, 1.539893695, -4.937716751, -0.1197216231, -0.3275662189, 5.757754714, 1.320694827, -2.995234482, -1.851742891, 3.20195685, -3.390158446, -1.002760607, 1.019160566};
+    const pagmo::decision_vector &solution = {1.001103789, -8.161331234, 0.3520941629, 21.31224108, 2.993190596, 1.540083983, -4.960443718, 0.07848678025, 21.50888414, -1.016576372, 2.527411128, -10.16261973, -2.73463824, 0.5018890191, -0.9125227149, -0.5766106474, -2.635801162, -6.731137006, 5.495700868, 4.043348968, 12.0606057, 0.0373994039, -0.9530464447, 10.87969989, 8.12263668, 6.525536847, -8.688256578, -3.232172807, -0.8889480546, 0.9646354963, -13.9637541, 0.5056783048, 5.792543577, 16.97313262, -3.077920321, 0.1209991542, -1.021725346, 3.075370631, 0.5546551459, 6.795723845, -4.87550421, -3.542912142, 0.4711377657, -0.6430664077, 4.793894827, -3.242255107, -0.8484921515, -1.070496677, -1.592554738, 0.1722556504, -0.8767766873, 0.2031663292, -1.962621847, 1.909640343, -2.218611753, 1.124499377, -0.9393535706, 1.038633255, 0.7051762329, -3.698254931, 0.6465689793, 0.8694362508, 0.5576020991};
 
     std::cout << std::setprecision(10);
 
-    pagmo::problem::hovering_problem_neural_network prob(random_seed, kNumEvaluations, kSimulationTime, kNumHiddenNeurons);
+    pagmo::problem::hovering_problem_neural_network prob(random_seed, kNumEvaluations, kSimulationTime, kNumHiddenNeurons, kSensorTypes, kEnableSensorNoise);
 
     std::cout << "Checking NN controller fitness... ";
     const double fitness = prob.objfun_seeded(random_seed, solution)[0];
     std::cout << fitness << std::endl;
 
     std::cout << "Simulating NN controller ... ";
-    PaGMOSimulationNeuralNetwork simulation(worst_case_seed, kNumHiddenNeurons, solution);
+    PaGMOSimulationNeuralNetwork simulation(worst_case_seed, kNumHiddenNeurons, solution, kSensorTypes, kEnableSensorNoise);
     simulation.SetSimulationTime(2.0 * 86400.0);
     const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<std::vector<double> > > result = simulation.EvaluateAdaptive();
     const std::vector<double> &times = boost::get<0>(result);
@@ -232,13 +251,14 @@ void TestNeuralNetworkController(const unsigned int &random_seed) {
     std::cout << "done." << std::endl;
 
     std::cout << "Performing post evaluation ... ";
-    const boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<std::pair<double, double> > > post_evaluation = prob.post_evaluate(solution, random_seed);
+    const boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<std::pair<double, double> >, std::vector<std::pair<double, double> > > post_evaluation = prob.post_evaluate(solution, random_seed);
     const std::vector<unsigned int> &random_seeds = boost::get<0>(post_evaluation);
     const std::vector<double> &mean_errors = boost::get<1>(post_evaluation);
     const std::vector<std::pair<double, double> > &min_max_errors = boost::get<2>(post_evaluation);
+    const std::vector<std::pair<double, double> > &fuel_consumptions = boost::get<3>(post_evaluation);
 
     std::cout << "done." << std::endl << "Writing post evaluation file ... ";
     FileWriter writer_post_evaluation(PATH_TO_NEURO_POST_EVALUATION_FILE);
-    writer_post_evaluation.CreatePostEvaluationFile(random_seeds, mean_errors, min_max_errors);
+    writer_post_evaluation.CreatePostEvaluationFile(random_seeds, mean_errors, min_max_errors, fuel_consumptions);
     std::cout << "done." << std::endl;
 }

@@ -35,13 +35,37 @@ LSPISimulator::LSPISimulator(const unsigned int &random_seed)
     perturbations_acceleration_ = {0.0, 0.0, 0.0};
 }
 
-boost::tuple<SystemState, double, bool> LSPISimulator::NextState(const SystemState &state, const double &time, const Vector3D &thrust) {
+boost::tuple<SystemState, Vector3D, double, bool> LSPISimulator::NextState(const SystemState &state, const double &time, const Vector3D &thrust) {
     typedef odeint::runge_kutta_cash_karp54<SystemState> ErrorStepper;
     typedef odeint::modified_controlled_runge_kutta<ErrorStepper> ControlledStepper;
 
     SystemState state_copy(state);
 
     const double engine_noise = sample_factory_.SampleNormal(0.0, spacecraft_engine_noise_);
+
+    const Vector3D &position = {state[0], state[1], state[2]};
+    const Vector3D &velocity = {state[3], state[4], state[5]};
+    const double &mass = state[6];
+
+    const Vector3D gravity_acceleration = asteroid_.GravityAccelerationAtPosition(position);
+
+    const boost::tuple<Vector3D, Vector3D> result_angular = asteroid_.AngularVelocityAndAccelerationAtTime(time);
+    const Vector3D &angular_velocity = boost::get<0>(result_angular);
+    const Vector3D &angular_acceleration = boost::get<1>(result_angular);
+
+    const Vector3D euler_acceleration = VectorCrossProduct(angular_acceleration, position);
+    const Vector3D centrifugal_acceleration = VectorCrossProduct(angular_velocity, VectorCrossProduct(angular_velocity, position));
+
+    const Vector3D coriolis_acceleration = VectorCrossProduct(VectorMul(2.0, angular_velocity), velocity);
+
+    Vector3D acceleration;
+    for (unsigned int i = 0; i < 3; ++i) {
+        acceleration[i] = perturbations_acceleration_[i]
+                + gravity_acceleration[i]
+                - coriolis_acceleration[i]
+                - euler_acceleration[i]
+                - centrifugal_acceleration[i];
+    }
 
     ODESystem ode_system(asteroid_, perturbations_acceleration_, thrust, spacecraft_specific_impulse_, spacecraft_minimum_mass_, engine_noise);
 
@@ -60,7 +84,7 @@ boost::tuple<SystemState, double, bool> LSPISimulator::NextState(const SystemSta
         exception_thrown = true;
     }
 
-    return boost::make_tuple(state_copy, current_time_observer, exception_thrown);
+    return boost::make_tuple(state_copy, acceleration, current_time_observer, exception_thrown);
 }
 
 Asteroid &LSPISimulator::AsteroidOfSystem() {
@@ -77,6 +101,10 @@ double LSPISimulator::ControlFrequency() const {
 
 double LSPISimulator::SpacecraftMaximumMass() const {
     return spacecraft_maximum_mass_;
+}
+
+double LSPISimulator::SpacecraftSpecificImpulse() const {
+    return spacecraft_specific_impulse_;
 }
 
 Vector3D LSPISimulator::RefreshPerturbationsAcceleration() {

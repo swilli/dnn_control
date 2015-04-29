@@ -27,7 +27,16 @@ public:
 
     const static std::map<SensorType, std::pair<unsigned int, double> > SensorTypeConfigurations;
 
-    SensorSimulator(SampleFactory &sample_factory, const Asteroid &asteroid, const std::set<SensorType> &sensor_types_, const bool &enable_noise, const Vector3D &target_position={0.0, 0.0, 0.0}, const std::map<SensorType, std::vector<std::pair<double, double> > > &sensor_value_transformations={});
+    SensorSimulator(SampleFactory &sample_factory, const Asteroid &asteroid);
+
+    void SetSensorTypes(const std::set<SensorType> &sensor_types);
+
+    void SetNoiseEnabled(const bool &enable_noise);
+
+    void SetTargetPosition(const Vector3D &target_position);
+
+    void SetSensorValueTransformations(const std::map<SensorType, std::vector<std::pair<double, double> > > &sensor_value_transformations);
+
 
     // Generates (simulates) sensor data based on the current spacecraft state "state" and time "time"
     virtual std::vector<double> Simulate(const SystemState &state, const Vector3D &height, const Vector3D &perturbations_acceleration, const double &time, const Vector3D &thrust);
