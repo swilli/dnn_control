@@ -9,7 +9,7 @@
  */
 
 // Task Name
-#define TASK_NAME   "master"
+#define TASK_NAME   "task_lspi0"
 
 // Euler home or not
 #define ENABLE_EULER_HOME   false

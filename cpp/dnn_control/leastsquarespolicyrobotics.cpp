@@ -458,18 +458,23 @@ static boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<
         const std::vector<double> &evaluated_times = boost::get<0>(result);
         const std::vector<double> &evaluated_masses = boost::get<1>(result);
         const std::vector<Vector3D> &evaluated_positions = boost::get<2>(result);
-        const std::vector<Vector3D> &evaluated_accelerations = boost::get<3>(result);
+        const std::vector<Vector3D> &evaluated_accelerations = boost::get<6>(result);
 
         const unsigned int num_samples = evaluated_times.size();
 
         double predicted_fuel = 0.0;
         const double dt = 1.0 / simulator.ControlFrequency();
         const double coef = 1.0 / (simulator.SpacecraftSpecificImpulse() * kEarthAcceleration);
+        int index = -1;
         for (unsigned int i = 0; i < num_samples; ++i) {
-            predicted_fuel += VectorNorm(evaluated_accelerations.at(i)) * coef;
+            if (evaluated_times.at(i) >= LSPR_TRANSIENT_RESPONSE_TIME) {
+                if (index == -1) {
+                    index = i;
+                }
+                predicted_fuel += dt * VectorNorm(evaluated_accelerations.at(i)) * evaluated_masses.at(i) * coef;
+            }
         }
-
-        double used_fuel = evaluated_masses.at(0) - evaluated_masses.at(num_samples - 1);
+        double used_fuel = evaluated_masses.at(index) - evaluated_masses.at(num_samples - 1);
 
         double mean_error = 0.0;
         double min_error = std::numeric_limits<double>::max();

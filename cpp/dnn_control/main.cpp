@@ -5,8 +5,7 @@
 
 int main(int argc, char *argv[]) {
 
-    //TrainNeuralNetworkController();
-    TestNeuralNetworkController(0);
+    TestLeastSquaresPolicyController(0);
     return 0;
 }
 
