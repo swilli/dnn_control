@@ -152,11 +152,7 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     evaluated_positions.back() = position;
     evaluated_velocities.back() = velocity;
     evaluated_heights.back() = height;
-#if PGMOS_ENABLE_SENSOR_DATA_RECORDING
     evaluated_sensor_data.back() = sensor_recording;
-#else
-    evaluated_sensor_data.back() = sensor_data;
-#endif
     evaluated_thrusts.back() = thrust;
 
     return boost::make_tuple(evaluated_times, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities, evaluated_thrusts, evaluated_sensor_data);
