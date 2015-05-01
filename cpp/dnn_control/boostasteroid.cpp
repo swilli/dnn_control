@@ -45,7 +45,7 @@ bp::tuple BoostAsteroid::AngularVelocityAndAccelerationAtTime(const double &time
         angular_acceleration_py.append(angular_acceleration_cpp[i]);
     }
 
-    return make_tuple(angular_velocity_py, angular_acceleration_py);
+    return bp::make_tuple(angular_velocity_py, angular_acceleration_py);
 }
 
 bp::tuple BoostAsteroid::NearestPointOnSurfaceToPosition(const bp::list &position) const {
@@ -62,7 +62,7 @@ bp::tuple BoostAsteroid::NearestPointOnSurfaceToPosition(const bp::list &positio
     surface_point_py.append(surface_point_cpp[1]);
     surface_point_py.append(surface_point_cpp[2]);
 
-    return make_tuple(surface_point_py, distance);
+    return bp::make_tuple(surface_point_py, distance);
 }
 
 bp::list BoostAsteroid::SemiAxis() const {
@@ -74,6 +74,18 @@ bp::list BoostAsteroid::SemiAxis() const {
     semi_axis_py.append(semi_axis_cpp[2]);
 
     return semi_axis_py;
+}
+
+bp::tuple BoostAsteroid::LatitudeAndLongitudeAtPosition(const bp::list &position) const {
+    const Vector3D position_cpp = {bp::extract<double>(position[0]),
+        bp::extract<double>(position[1]),
+        bp::extract<double>(position[2])};
+
+    const boost::tuple<double, double> result = asteroid_cpp_->LatitudeAndLongitudeAtPosition(position_cpp);
+    const double latitude = boost::get<0>(result);
+    const double longitude = boost::get<1>(result);
+   
+    return bp::make_tuple(latitude, longitude);
 }
 
 bp::list BoostAsteroid::IntersectLineToCenterFromPosition(const bp::list &position) const {
@@ -101,6 +113,7 @@ BOOST_PYTHON_MODULE(boost_asteroid)
             .def("gravity_acceleration_at_position", &BoostAsteroid::GravityAccelerationAtPosition)
             .def("angular_velocity_and_acceleration_at_time", &BoostAsteroid::AngularVelocityAndAccelerationAtTime)
             .def("nearest_point_on_surface_to_position", &BoostAsteroid::NearestPointOnSurfaceToPosition)
+            .def("latitude_and_longitude_at_position", &BoostAsteroid::LatitudeAndLongitudeAtPosition)
             .def("semi_axis", &BoostAsteroid::SemiAxis)
             .def("intersect_line_to_center_from_position", &BoostAsteroid::IntersectLineToCenterFromPosition)
             .def("angular_velocity_period", &BoostAsteroid::AngularVelocityPeriod)

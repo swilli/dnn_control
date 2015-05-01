@@ -16,6 +16,8 @@ public:
 
     bp::tuple NearestPointOnSurfaceToPosition(const bp::list &position) const;
 
+    bp::tuple LatitudeAndLongitudeAtPosition(const bp::list &position) const;
+    
     bp::list IntersectLineToCenterFromPosition(const bp::list &position) const;
 
     bp::list SemiAxis() const;
