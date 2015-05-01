@@ -37,6 +37,9 @@ public:
     // Computes the distance "distance" and orthogonal projection of a position "position" outside the asteroid onto the asteroid's surface "point" in asteroid centered RF
     boost::tuple<Vector3D, double> NearestPointOnSurfaceToPosition(const Vector3D &position) const;
 
+    // Computes "Latitude" and "Longitude" for cartesian coordinates [x,y,z] which have to belong to the asteroid's surface
+    boost::tuple<double, double> LatitudeAndLongitudeAtPosition(const Vector3D &position) const;
+
     // Computes the intersection of a direct line directed to the asteroid's center with the Asteroid's surface
     Vector3D IntersectLineToCenterFromPosition(const Vector3D &position) const;
 
@@ -68,9 +71,11 @@ public:
     double EstimatedMainMotionPeriod() const;
 
 
+    // Asteroid can throw the following exceptions
     class Exception {};
     class PositionInsideException : public Exception {};
     class InvalidParametersException: public Exception {};
+    class PositionNotOnSurfaceException: public Exception {};
 
 private:
     // Helper functions for NearestPointOnSurfaceToPosition

@@ -61,7 +61,7 @@ boost::tuple<Vector3D, double, double, double> SampleFactory::SamplePointOutSide
     point[1] = s * semi_axis[1] * sin(u) * sin(v);
     point[2] = s * semi_axis[2] * cos(v);
 
-    return boost::make_tuple(point, u, v, s);
+    return boost::make_tuple(point, v, u, s);
 }
 
 boost::tuple<Vector3D, double, double> SampleFactory::SamplePointOnEllipsoidSurface(const Vector3D &semi_axis) {
@@ -73,7 +73,7 @@ boost::tuple<Vector3D, double, double> SampleFactory::SamplePointOnEllipsoidSurf
     point[1] = semi_axis[1] * sin(u) * sin(v);
     point[2] = semi_axis[2] * cos(v);
 
-    return boost::make_tuple(point, u, v);
+    return boost::make_tuple(point, v, u);
 }
 
 void SampleFactory::SetSeed(const unsigned int &random_seed) {

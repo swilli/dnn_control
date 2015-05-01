@@ -264,6 +264,33 @@ boost::tuple<Vector3D, double> Asteroid::NearestPointOnSurfaceToPosition(const V
     return boost::make_tuple(point, distance);
 }
 
+boost::tuple<double, double> Asteroid::LatitudeAndLongitudeAtPosition(const Vector3D &position) const {
+    double val_phi = 0;
+    double val_theta = 0;
+    const double eval = EvaluatePointWithStandardEquation(position);
+    if (eval > (1.0 + 1e-5) || eval < (1.0 - 1e-5)) {
+        throw PositionNotOnSurfaceException();
+    }
+
+    double cos_phi = position[2] / semi_axis_[2];
+    if (cos_phi > 1.0) {
+        cos_phi = 1.0;
+    } else if (cos_phi < -1.0) {
+        cos_phi = -1.0;
+    }
+    val_phi = acos(position[2]/semi_axis_[2]);
+    if (val_phi < 0.0) {
+        val_phi += 2.0 * kPi;
+    }
+    if ((position[1] != 0.0) && (position[0] != 0)) {
+        val_theta = atan2(semi_axis_[0] * position[1], semi_axis_[1] * position[0]);
+    }
+    if (val_theta < 0.0) {
+        val_theta += 2.0 * kPi;
+    }
+    return boost::make_tuple(val_phi, val_theta);
+}
+
 Vector3D Asteroid::IntersectLineToCenterFromPosition(const Vector3D &position) const {
     double root = 0.0;
 
@@ -325,9 +352,9 @@ Vector3D Asteroid::NearestPointOnEllipsoidFirstQuadrant(const Vector3D &position
 
         if (semi_axis_mul_pos[0] < denominator[0] && semi_axis_mul_pos[1] < denominator[1]) {
             const Vector2D &semi_axis_div_denom = {semi_axis_mul_pos[0] / denominator[0] ,
-                                                  semi_axis_mul_pos[1] / denominator[1]};
+                                                   semi_axis_mul_pos[1] / denominator[1]};
             const Vector2D &semi_axis_div_denom_pow2 = {semi_axis_div_denom[0] * semi_axis_div_denom[0],
-                                                       semi_axis_div_denom[1] * semi_axis_div_denom[1]};
+                                                        semi_axis_div_denom[1] * semi_axis_div_denom[1]};
             const double discr = 1.0 - semi_axis_div_denom_pow2[0] - semi_axis_div_denom_pow2[1];
             if (discr > 0.0) {
                 point[0] = semi_axis_[0] * semi_axis_div_denom[0];
