@@ -21,6 +21,10 @@ from mpl_toolkits.mplot3d import Axes3D
 from numpy import array, linspace
 from scipy.integrate import odeint
 
+import seaborn as sns
+sns.set_context("notebook", font_scale=3, rc={"lines.linewidth": 2.5})
+sns.set_style("whitegrid")
+
 reference_frame = "body"
 
 file_name = sys.argv[1]

@@ -1,25 +1,26 @@
 '''
 usage:
-./python2.7 vheight.py <data_file> [time] [x_axis_is_time]
+./python2.7 vgroundtrack.py <data_file> [time] 
 
-default time is 3600. default x_axis_is_time is False 
+default time is 3600. default
 
 examples:
-./python2.7 vheight.py trajectory.txt
-./python2.7 vheight.py trajectory.txt 7200.0
-./python2.7 vheight.py trajectory.txt 7200.0 True
+./python2.7 vgroundtrack.py trajectory.txt
+./python2.7 vgroundtrack.py trajectory.txt 7200.0
 '''
 
 import sys
 import matplotlib.pyplot as plt
 from numpy import array, linspace, arange
 from numpy.linalg import norm
+from numpy import pi
+import math
 from boost_asteroid import boost_asteroid
 Asteroid = boost_asteroid.BoostAsteroid
 from scipy.integrate import odeint
 
 import seaborn as sns
-sns.set_context("notebook", font_scale=5, rc={"lines.linewidth": 5})
+sns.set_context("notebook", font_scale=5, rc={"lines.linewidth": 4})
 sns.set_style("whitegrid")
 
 x_axis_is_time = False
@@ -56,30 +57,22 @@ data = data[0:end_time * frequency,:]
 
 times = arange(0.0, len(data) * frequency, frequency)
 
+positions = data[:,0:3]
 heights = data[:,3:7]
 
-x_axis_label = "Time [s]"
+surface_positions = positions - heights
 
-if not x_axis_is_time:
-    x_axis_label = "Periods"
-    val = 0
-    ticks = []
-    while val < times[-1]:
-        ticks.append(val)
-        val += asteroid_period
+latitude_longitudes = [asteroid.latitude_and_longitude_at_position(pos.tolist()) for pos in surface_positions]
+latitudes = [val for val, _ in latitude_longitudes]
+longitudes = [val for _, val in latitude_longitudes]
 
-    ticks = array(ticks)
+latitudes = [math.cos(val) * 90.0 for val in latitudes]
+longitudes = [val / (2.0 * pi) * 360 for val in longitudes]
 
-magn_height = norm(heights, axis=1)
-fig = plt.figure(1)
-ax = plt.gca()
-plt.plot(magn_height)
-plt.xlabel(x_axis_label)
-plt.ylabel('Altitude [m]')
-plt.yscale('log')
-if not x_axis_is_time:
-    plt.xticks(ticks, [val for val in range(len(ticks))])
-
-#plt.xlim(plt.ylim()[0], len(heights) * 1.0 / frequency)
+plt.plot(longitudes, latitudes)
+plt.plot(longitudes[0],latitudes[0], 'go', markersize=15, label="Start")
+plt.plot(longitudes[-1], latitudes[-1], 'ro', markersize=15, label="End")
+plt.legend()
+plt.xlabel("Longitude [deg]")
+plt.ylabel("Latitude [deg]")
 plt.show()
-#plt.savefig(file_name.replace(".txt", ".svg"))

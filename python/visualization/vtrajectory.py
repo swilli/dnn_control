@@ -74,6 +74,7 @@ if reference_frame == "inertial":
                                 [2.0 * (q[0] * q[1] + q[3] * q[2]), q[3] ** 2 - q[0] ** 2 + q[1] ** 2 - q[2] ** 2, 2.0 * (q[1] * q[2] - q[3] * q[0])],
                                 [2.0 * (q[0] * q[2] - q[3] * q[1]), 2.0 * (q[1] * q[2] + q[3] * q[0]), q[3] ** 2 - q[0] ** 2 - q[1] ** 2 + q[2] ** 2]]) for q in quaternions]
 
+scene.background=(1,1,1)
 scene.up = vector(0, 0, 1)
 
 asteroid_3d = ellipsoid(pos=(0.0, 0.0, 0.0), up=(0.0, 0.0, 1.0),
@@ -84,14 +85,14 @@ asteroid_3d = ellipsoid(pos=(0.0, 0.0, 0.0), up=(0.0, 0.0, 1.0),
 
 spacecraft = box(pos=tuple(states[0][0:3]), size=(100, 100, 100), make_trail=True,
                  color=(0.0, 128.0 / 255.0, 1.0), up=(0.0, 0.0, 1.0))
-spacecraft.trail_object.color = color.gray(0.5)
+spacecraft.trail_object.color = color.gray(0.0)
 
 height = arrow(pos=spacecraft.pos-states[0][3:7], axis=tuple(states[0][3:7]), shaftwidth=20.0,
                color=color.orange, up=(0.0, 0.0, 1.0))
 
 if reference_frame == "body":
     ground_position = sphere(pos=height.pos, radius=5.0, make_trail=True, color=(0.0, 0.0, 204.0 / 255.0))
-    ground_position.trail_object.color = (25.0 / 255.0, 25.0 / 255.0, 112.0 / 255.0)
+    ground_position.trail_object.color = (255.0 / 255.0, 255.0 / 255.0, 255.0 / 255.0)
 
 else:
     ground_position = sphere(pos=height.pos, radius=5.0, color=(0.0, 0.0, 204.0 / 255.0))
@@ -108,11 +109,11 @@ else:
     y_axis = arrow(pos=(0, 0, 0), axis=(0.0, norms[0], 0.0), shaftwidth=100.0, color=color.red)
     z_axis = arrow(pos=(0, 0, 0), axis=(0.0, 0.0, norms[0]), shaftwidth=100.0, color=color.blue)
 
-x_axis_label = label(text='x', pos=x_axis.axis, zoffset=20.0)
-y_axis_label = label(text='y', pos=y_axis.axis)
-z_axis_label = label(text='z', pos=z_axis.axis, zoffset=20.0)
+x_axis_label = label(text='x', pos=x_axis.axis, zoffset=20.0, height=50.0, color=(0.0, 0.0, 0.0), opacity=0.0, box=False, line=False, background=(1.0,1.0,1.0))
+y_axis_label = label(text='y', pos=y_axis.axis, zoffset=20.0, height=50.0, color=(0.0, 0.0, 0.0), opacity=0.0, box=False, line=False, background=(1.0,1.0,1.0))
+z_axis_label = label(text='z', pos=z_axis.axis, zoffset=20.0, height=50.0, color=(0.0, 0.0, 0.0), opacity=0.0, box=False, line=False, background=(1.0,1.0,1.0))
 
-height_label = label(text='nan', pos=height.pos/2.0)
+height_label = label(text='nan', pos=height.pos/2.0, height=40.0, color=(0.0, 0.0, 0.0), opacity=0.0, box=False, line=False, background=(0.0,0.0,0.0))
 
 
 
@@ -157,7 +158,7 @@ for i in range(1, len(states)):
         height.axis = height_axis
         ground_position.pos = height.pos
         height_label.pos = tuple([pos + val / 2.0 for pos, val in zip(ground_position.pos, height.axis)])
-        height_label.text = str(norm(height.axis))
+        height_label.text = "%.2f" % norm(height.axis)
 
     else:
         spacecraft_pos = array(states[i][0:3])
@@ -175,7 +176,7 @@ for i in range(1, len(states)):
 
         ground_position.pos = height.pos
         height_label.pos = tuple([pos + val / 2.0 for pos, val in zip(ground_position.pos, height.axis)])
-        height_label.text = str(norm(height.axis))
+        height_label.text = "%.2f" % norm(height.axis)
 
         asteroid_3d.rotate(angle=-previous_angle, axis=previous_axis, origin=(0.0, 0.0, 0.0))
 

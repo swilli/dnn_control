@@ -17,7 +17,8 @@ import matplotlib
 from boost_asteroid import boost_asteroid
 Asteroid = boost_asteroid.BoostAsteroid
 
-matplotlib.rcParams.update({'font.size': 22})
+import seaborn as sns
+sns.set_context("notebook", font_scale=5, rc={"lines.linewidth": 2.5})
 
 end_time = 3600.0
 
@@ -64,10 +65,7 @@ norm_dist = norm_positions / norm_surface_points
 fig = plt.figure(1)
 plt.plot(times, norm_dist)
 plt.title('Outwards Projection Factor vs Time')
-plt.ylabel('Outwards Projection Factor')
-plt.xlabel('Periods')
-plt.xticks(ticks, [val for val in range(len(ticks))])
+plt.ylabel('outwards projection factor')
+plt.xlabel('time [s]')
+#plt.xticks(ticks, [val for val in range(len(ticks))])
 plt.show()
-
-
-

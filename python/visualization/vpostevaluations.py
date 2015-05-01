@@ -6,10 +6,12 @@ from numpy.matlib import repmat
 from numpy.linalg import norm
 
 import seaborn as sns
-sns.set_context("notebook", font_scale=2.5, rc={"lines.linewidth": 2.5})
+sns.set_context("notebook", font_scale=5.0, rc={"lines.linewidth": 2.5})
+sns.set_style("whitegrid")
 
 
-file_names = sys.argv[1:3]
+file_names = sys.argv[1:4]
+threshold = 100.0
 
 print("preparing data... ")
 
@@ -33,10 +35,16 @@ for file_name in file_names:
             worst_case_value = mean_error
             worst_case_seed = line[0]
 
+        if mean_error >= threshold:
+            print(line)
+            continue
+
         filtered_data += [line]
 
     total_data += [array(filtered_data)]
 
-plt.boxplot([total_data[0][:,1], total_data[1][:,1]])
-plt.ylabel('mean offset [m]')
+sns.boxplot([total_data[0][:,1], total_data[1][:,1], total_data[2][:,1]], widths=0.5)
+plt.yscale('log')
+plt.ylabel('Mean Offset [m]')
+plt.xticks([1, 2, 3], ['DPS1', 'DPS2', 'LSPI1'])
 plt.show()

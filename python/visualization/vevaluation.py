@@ -16,14 +16,15 @@ import matplotlib.pyplot as plt
 from numpy import array, pi
 from numpy.matlib import repmat
 from numpy.linalg import norm
-import matplotlib.ticker as ticker
+import matplotlib.ticker as mtick
 import matplotlib
 
 from boost_asteroid import boost_asteroid
 Asteroid = boost_asteroid.BoostAsteroid
 
 import seaborn as sns
-sns.set_context("notebook", font_scale=2.5, rc={"lines.linewidth": 2.5})
+sns.set_context("notebook", font_scale=3, rc={"lines.linewidth": 2.5})
+sns.set_style("whitegrid")
 
 start_time = 0.0
 end_time = 3600.0
@@ -84,10 +85,10 @@ for i in range(len(times)):
 
 times = times[start_index:end_index]
 num_samples = len(times)
-x_axis_label = "time [s]"
+x_axis_label = "Time [s]"
 
 if not x_axis_is_time:
-    x_axis_label = "periods"
+    x_axis_label = "Period"
     val = 0
     ticks = []
     while val < times[-1]:
@@ -104,7 +105,7 @@ velocities = data[start_index:end_index, 7:10]
 errors = repmat(target_position, num_samples, 1) - positions
 
 fig = plt.figure(1)
-fig.subplots_adjust(hspace=1.0)
+fig.subplots_adjust(hspace=1.0, wspace=0.4)
 
 if show_magnitude:
     errors = norm(errors, axis=1)
@@ -140,7 +141,9 @@ else:
     plt.plot(times, errors[:, 0])
     plt.title('X Offset vs Time')
     plt.xlabel(x_axis_label)
-    plt.ylabel('offset [m]')
+    plt.ylabel('Offset [m]')
+    plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+    plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
     if not x_axis_is_time:
         plt.xticks(ticks, [val for val in range(len(ticks))])
 
@@ -148,7 +151,9 @@ else:
     plt.plot(times, errors[:, 1])
     plt.title('Y Offset vs Time')
     plt.xlabel(x_axis_label)
-    plt.ylabel('offset [m]')
+    plt.ylabel('Offset [m]')
+    plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+    plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
     if not x_axis_is_time:
         plt.xticks(ticks, [val for val in range(len(ticks))])
 
@@ -156,7 +161,9 @@ else:
     plt.plot(times, errors[:, 2])
     plt.title('Z Offset vs Time')
     plt.xlabel(x_axis_label)
-    plt.ylabel('offset [m]')
+    plt.ylabel('Offset [m]')
+    plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+    plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
     if not x_axis_is_time:
         plt.xticks(ticks, [val for val in range(len(ticks))])
 
@@ -164,7 +171,10 @@ else:
     plt.plot(times, velocities[:, 0])
     plt.title('X Velocity vs Time')
     plt.xlabel(x_axis_label)
-    plt.ylabel('velocity [m/s]')
+    plt.ylabel('Velocity [m/s]')
+    plt.ylim(-1,1)
+    plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+    plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
     if not x_axis_is_time:
         plt.xticks(ticks, [val for val in range(len(ticks))])
 
@@ -172,7 +182,10 @@ else:
     plt.plot(times, velocities[:, 1])
     plt.title('Y Velocity vs Time')
     plt.xlabel(x_axis_label)
-    plt.ylabel('velocity [m/s]')
+    plt.ylabel('Velocity [m/s]')
+    plt.ylim(-1,1)
+    plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+    plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
     if not x_axis_is_time:
         plt.xticks(ticks, [val for val in range(len(ticks))])
 
@@ -180,7 +193,10 @@ else:
     plt.plot(times, velocities[:, 2])
     plt.title('Z Velocity vs Time')
     plt.xlabel(x_axis_label)
-    plt.ylabel('velocity [m/s]')
+    plt.ylabel('Velocity [m/s]')
+    plt.ylim(-1,1)
+    plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+    plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
     if not x_axis_is_time:
         plt.xticks(ticks, [val for val in range(len(ticks))])
 
@@ -188,7 +204,10 @@ else:
     plt.step(times, thrusts[:, 0])
     plt.title('X Thrust vs Time')
     plt.xlabel(x_axis_label)
-    plt.ylabel('thrust [N]')
+    plt.ylabel('Thrust [N]')
+    plt.ylim(-30,30)
+    plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+    plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
     if not x_axis_is_time:
         plt.xticks(ticks, [val for val in range(len(ticks))])
 
@@ -196,7 +215,10 @@ else:
     plt.step(times, thrusts[:, 1])
     plt.title('Y Thrust vs Time')
     plt.xlabel(x_axis_label)
-    plt.ylabel('thrust [N]')
+    plt.ylabel('Thrust [N]')
+    plt.ylim(-30,30)
+    plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+    plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
     if not x_axis_is_time:
         plt.xticks(ticks, [val for val in range(len(ticks))])
 
@@ -204,7 +226,10 @@ else:
     plt.step(times, thrusts[:, 2])
     plt.title('Z Thrust vs Time')
     plt.xlabel(x_axis_label)
-    plt.ylabel('thrust [N]')
+    plt.ylabel('Thrust [N]')
+    plt.ylim(-30,30)
+    plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+    plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
     if not x_axis_is_time:
         plt.xticks(ticks, [val for val in range(len(ticks))])
 

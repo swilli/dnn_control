@@ -11,6 +11,9 @@ def visualize_convexity(file_path, save=False):
 	from numpy import array, nan, diff
 	from numpy.matlib import repmat
 	from numpy.linalg import norm
+
+	import seaborn as sns
+	sns.set_context("notebook", font_scale=2.5, rc={"lines.linewidth": 2.5})
 	
 	print("preparing data... ")
 	result_file = open(file_path, 'r')
@@ -29,8 +32,8 @@ def visualize_convexity(file_path, save=False):
 
 	plt.plot(data[:,0], discontinuous(data[:,1]))
 	#plt.title("Convexity of problem (seed: {0}, dimension: {1})".format(seed, dimension))
-	plt.xlabel('Parameter value')
-	plt.ylabel('Utility')
+	plt.xlabel('parameter value')
+	plt.ylabel('negative utility')
 	if save:
 		plt.savefig(file_path.replace(".txt", ".svg"))
 		plt.close()
