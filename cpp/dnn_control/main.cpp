@@ -8,6 +8,8 @@
 
 int main(int argc, char *argv[]) {
 
+    TrainNeuralNetworkController();
+
     const unsigned int num_asteroids = 10000;
     const unsigned int num_tests = 1000;
 
@@ -25,7 +27,7 @@ int main(int argc, char *argv[]) {
         Asteroid asteroid(semi_axis, density, angular_velocity_xz, time_bias);
 
         for (unsigned int j = 0; j < num_tests; ++j) {
-            const boost::tuple<Vector3D, double, double, double> sample = sf.SamplePointOutSideEllipsoid(semi_axis, 1.0 + 1e-6, 1.0 + 1e-6);
+            const boost::tuple<Vector3D, double, double, double> sample = sf.SamplePointOutSideEllipsoid(semi_axis, 1.0, 1.0);
             const Vector3D &position = boost::get<0>(sample);
             const double &correct_phi = boost::get<1>(sample);
             const double &correct_theta = boost::get<2>(sample);
