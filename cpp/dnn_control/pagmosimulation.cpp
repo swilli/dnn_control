@@ -6,14 +6,14 @@
 #include "constants.h"
 #include "configuration.h"
 
-PaGMOSimulation::PaGMOSimulation(const unsigned int &random_seed, const std::set<SensorSimulator::SensorType> &control_sensor_types, const bool &control_with_noise, const std::set<SensorSimulator::SensorType> &recording_sensor_types, const bool &recording_with_noise)
-    : random_seed_(random_seed), simulation_time_(0.0), control_sensor_types_(control_sensor_types), control_with_noise_(control_with_noise), recording_sensor_types_(recording_sensor_types), recording_with_noise_(recording_with_noise) {
+PaGMOSimulation::PaGMOSimulation(const unsigned int &random_seed, const std::set<SensorSimulator::SensorType> &control_sensor_types, const bool &control_with_noise, const std::set<SensorSimulator::SensorType> &recording_sensor_types, const bool &recording_with_noise, const bool &fuel_usage_enabled)
+    : random_seed_(random_seed), simulation_time_(0.0), control_sensor_types_(control_sensor_types), control_with_noise_(control_with_noise), recording_sensor_types_(recording_sensor_types), recording_with_noise_(recording_with_noise), fuel_usage_enabled_(fuel_usage_enabled) {
     Init();
     simulation_time_ = (int) (asteroid_.EstimatedMainMotionPeriod() * 0.5);
 }
 
-PaGMOSimulation::PaGMOSimulation(const unsigned int &random_seed, const double &simulation_time, const std::set<SensorSimulator::SensorType> &control_sensor_types, const bool &control_with_noise, const std::set<SensorSimulator::SensorType> &recording_sensor_types, const bool &recording_with_noise)
-    : random_seed_(random_seed), simulation_time_(simulation_time), control_sensor_types_(control_sensor_types), control_with_noise_(control_with_noise), recording_sensor_types_(recording_sensor_types), recording_with_noise_(recording_with_noise)  {
+PaGMOSimulation::PaGMOSimulation(const unsigned int &random_seed, const double &simulation_time, const std::set<SensorSimulator::SensorType> &control_sensor_types, const bool &control_with_noise, const std::set<SensorSimulator::SensorType> &recording_sensor_types, const bool &recording_with_noise, const bool &fuel_usage_enabled)
+    : random_seed_(random_seed), simulation_time_(simulation_time), control_sensor_types_(control_sensor_types), control_with_noise_(control_with_noise), recording_sensor_types_(recording_sensor_types), recording_with_noise_(recording_with_noise), fuel_usage_enabled_(fuel_usage_enabled) {
     Init();
 }
 

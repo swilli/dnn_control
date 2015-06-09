@@ -9,7 +9,7 @@
 
 class LSPISimulator {
 public:
-    LSPISimulator(const unsigned int &random_seed);
+    LSPISimulator(const unsigned int &random_seed, const bool &fuel_usage_enabled=true);
 
 
     // (s', t', end_of_sim) = NextState(s, t, a)
@@ -81,6 +81,10 @@ private:
     // The SampleFactory the simulator works with
     SampleFactory sample_factory_;
 
+    // Is the spacecraft consuming fuel for the taken actions
+    bool fuel_usage_enabled_;
+
+    // The acceleration caused by the perturbations
     Vector3D perturbations_acceleration_;
 };
 

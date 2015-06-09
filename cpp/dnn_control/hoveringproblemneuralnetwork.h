@@ -15,7 +15,27 @@ class __PAGMO_VISIBLE hovering_problem_neural_network : public base_stochastic {
     * The optimization problem is to find a neural network controller which minimizes the objective function.
     */
 public:
-    hovering_problem_neural_network(const unsigned int &seed=0, const unsigned int &n_evaluations=10, const double &simulation_time=0.0, const unsigned int &n_hidden_neurons=6, const std::set<SensorSimulator::SensorType> &sensor_types={}, const bool &enable_sensor_noise=false);
+
+    // The different types of fitness functions
+    enum FitnessFunctionType {
+        FitnessCompareStartEndPosition,
+        FitnessAveragePositionOffset,
+        FitnessAveragePositionOffsetAndVelocity,
+        FitnessAveragePositionOffsetAndFuel,
+        FitnessAveragePositionOffsetAndVelocityAndFuel,
+        FitnessAverageVelocity,
+        FitnessAverageOpticFlowAndConstantDivergence
+    };
+
+    // The different types of post evaluation functions
+    enum PostEvaluationFunctionType {
+        PostEvalAveragePositionOffset,
+        PostEvalAverageVelocity
+    };
+
+    hovering_problem_neural_network(const unsigned int &seed=0, const unsigned int &n_evaluations=10, const double &simulation_time=0.0, const unsigned int &n_hidden_neurons=6, const std::set<SensorSimulator::SensorType> &sensor_types={}, const bool &enable_sensor_noise=false,
+                                    const FitnessFunctionType &fitness_function=FitnessFunctionType::FitnessAveragePositionOffsetAndVelocity, const PostEvaluationFunctionType &post_evaluation_function=PostEvaluationFunctionType::PostEvalAveragePositionOffset,
+                                    const double &transient_response_time=150.0, const double &divergence_set_value=1e-3);
 
     hovering_problem_neural_network(const hovering_problem_neural_network &other);
 
@@ -31,6 +51,11 @@ public:
 
     // Returns the fitness of a solution with respect to a seeded (= deterministic problem) simulation
     fitness_vector objfun_seeded(const unsigned int &seed, const decision_vector &x) const;
+
+    // HoveringProblemNeuralNetwork can throw the following exceptions
+    class Exception {};
+    class FitnessFunctionTypeNotImplemented : public Exception {};
+    class PostEvaluationFunctionTypeNotImplemented : public Exception {};
 
 protected:
     void objfun_impl(fitness_vector &f, const decision_vector &x) const;
@@ -60,6 +85,18 @@ private:
     // Is noise enabled in the sensor simulator
     bool m_enable_sensor_noise;
 
+    // The fitness function type
+    enum FitnessFunctionType m_fitness_function;
+
+    // The post evaluation type
+    enum PostEvaluationFunctionType m_post_evaluation_function;
+
+    // The transient response, if needed
+    double m_transient_response_time;
+
+    // The set divergence value, if needed
+    double m_divergence_set_value;
+
     friend class boost::serialization::access;
     template <class Archive>
     void serialize(Archive &ar, const unsigned int) {
@@ -69,6 +106,10 @@ private:
         ar & m_simulation_time;
         ar & m_sensor_types;
         ar & m_enable_sensor_noise;
+        ar & m_fitness_function;
+        ar & m_post_evaluation_function;
+        ar & m_transient_response_time;
+        ar & m_divergence_set_value;
     }
 };
 

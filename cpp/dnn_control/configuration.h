@@ -11,9 +11,6 @@
 // Task Name
 #define TASK_NAME   "master"
 
-// Euler home or not
-#define ENABLE_EULER_HOME   false
-
 // Evolutionary Robotics configs
 #define ER_NUM_GENERATIONS  1000
 #define ER_POPULATION_SIZE  21
@@ -26,32 +23,25 @@
 #define ER_ENABLE_OPTICAL_FLOW   false
 #define ER_ENABLE_ACCELEROMETER  false
 #define ER_ENABLE_SENSOR_NOISE true
-
+#define ER_OBJ_FUN_TRANSIENT_RESPONSE_TIME  150.0
+#define ER_OBJ_FUN_DIVERGENCE_SET_VALUE  0.0001
 
 // Class hovering_problem configs
-#define HP_OBJ_FUN_METHOD_1     1   // Compare start and ending position and velocity.
-#define HP_OBJ_FUN_METHOD_2     2   // Compare mean distance to target point. Transient response aware.
-#define HP_OBJ_FUN_METHOD_3     3   // Compare mean distance to target point, also consider velocity. Transient response aware.
-#define HP_OBJ_FUN_METHOD_4     4   // Compare mean distance to target point, also consider fuel consumption. Transient response aware.
-#define HP_OBJ_FUN_METHOD_5     5   // Compare mean distance to target point, , also consider velocity, also consider fuel consumption. Transient response aware.
-#define HP_OBJ_FUN_METHOD_6     6   // Mean velocity. Transient response aware.
-#define HP_OBJ_FUN_METHOD_7     7   // Mean optical flow, constant divergence. Transient response aware.
-#define HP_OBJ_FUN_METHOD_8     8   // Mean offset to optimal landing path.
-#define HP_OBJ_FUN_METHOD_9     9   // Mean distance to target point, target point set to position after the deep controller starts to work.
+#define ER_OBJ_FUN_METHOD_1     1   // Compare start and ending position and velocity.
+#define ER_OBJ_FUN_METHOD_2     2   // Compare mean distance to target point. Transient response aware.
+#define ER_OBJ_FUN_METHOD_3     3   // Compare mean distance to target point, also consider velocity. Transient response aware.
+#define ER_OBJ_FUN_METHOD_4     4   // Compare mean distance to target point, also consider fuel consumption. Transient response aware.
+#define ER_OBJ_FUN_METHOD_5     5   // Compare mean distance to target point, , also consider velocity, also consider fuel consumption. Transient response aware.
+#define ER_OBJ_FUN_METHOD_6     6   // Mean velocity. Transient response aware.
+#define ER_OBJ_FUN_METHOD_7     7   // Mean optical flow, constant divergence. Transient response aware.
 
-#define HP_OBJECTIVE_FUNCTION_METHOD  HP_OBJ_FUN_METHOD_6
+#define ER_OBJECTIVE_FUNCTION_METHOD  ER_OBJ_FUN_METHOD_6
 
-#define HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME  150.0
-#define HP_OBJ_FUN_COEF_DIVERGENCE  0.0001
-#define HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED    true
 
-#define HP_POST_EVAL_METHOD_1   1   // Compare mean distance to target point. Transient response aware.
-#define HP_POST_EVAL_METHOD_2   2   // Compare mean velocity. Transient response aware.
-#define HP_POST_EVAL_METHOD_3   3   // Compare mean distance to target path.
+#define ER_POST_EVAL_METHOD_1   1   // Compare mean distance to target point. Transient response aware.
+#define ER_POST_EVAL_METHOD_2   2   // Compare mean velocity. Transient response aware.
 
-#define HP_POST_EVALUATION_METHOD   HP_POST_EVAL_METHOD_1
-
-//#define HP_FIXED_SEED  1990
+#define ER_POST_EVALUATION_METHOD   ER_POST_EVAL_METHOD_1
 
 
 // Class ODESystem configs
@@ -81,7 +71,6 @@
 
 #define LSPR_IC_VELOCITY_TYPE  LSPR_IC_BODY_RANDOM_VELOCITY
 #define LSPR_IC_POSITION_OFFSET_ENABLED true
-//#define LSPR_FIXED_SEED     1990
 
 #define LSPR_TRANSIENT_RESPONSE_TIME  150.0
 #define LSPR_NUM_EPISODES    10000
@@ -91,11 +80,7 @@
 #define LSPR_WRITE_ACTION_SET_TO_FILE   true
 
 // Other stuff configs, not relevant for simulation
-#if ENABLE_EULER_HOME
-#define OUTPUT_ROOT_PATH   "/cluster/home/willist/Documents/dnn/"
-#else
 #define OUTPUT_ROOT_PATH   "/home/willist/Documents/dnn/"
-#endif
 #define PATH_TO_NEURO_TRAJECTORY_FILE   OUTPUT_ROOT_PATH    "results/trajectory_neuro_" TASK_NAME ".txt"
 #define PATH_TO_NEURO_EVALUATION_FILE  OUTPUT_ROOT_PATH "results/evaluation_neuro_" TASK_NAME ".txt"
 #define PATH_TO_NEURO_POST_EVALUATION_FILE    OUTPUT_ROOT_PATH  "results/post_evaluation_neuro_" TASK_NAME ".txt"
@@ -110,11 +95,6 @@
 #define PATH_TO_LSPI_WEIGHT_VECTOR_FILE OUTPUT_ROOT_PATH "results/lspi_weights_" TASK_NAME ".txt"
 #define PATH_TO_SENSOR_DATA_FOLDER  OUTPUT_ROOT_PATH    "data/raw/"
 #define PATH_TO_AUTOENCODER_LAYER_CONFIGURATION OUTPUT_ROOT_PATH "autoencoder/" CNN_STACKED_AUTOENCODER_CONFIGURATION "/"
-
-#ifdef HP_FIXED_SEED
-#undef ER_EVALUATIONS
-#define ER_EVALUATIONS  1
-#endif
 
 static inline std::string ToString(const bool &value) {
     return (value ? "true" : "false");
@@ -138,16 +118,10 @@ inline void ConfigurationPaGMO() {
     std::cout << "ER_ENABLE_OPTICAL_FLOW   " << ToString(ER_ENABLE_OPTICAL_FLOW) << std::endl;
     std::cout << "ER_ENABLE_ACCELEROMETER   " << ToString(ER_ENABLE_ACCELEROMETER) << std::endl;
     std::cout << "ER_ENABLE_SENSOR_NOISE   " << ToString(ER_ENABLE_SENSOR_NOISE) << std::endl;
-#ifdef HP_FIXED_SEED
-    std::cout << "HP_FIXED_SEED   " << HP_FIXED_SEED << std::endl;
-#else
-    std::cout << "HP_FIXED_SEED   undefined" << std::endl;
-#endif
-    std::cout << "HP_OBJECTIVE_FUNCTION_METHOD   " << HP_OBJECTIVE_FUNCTION_METHOD << std::endl;
-    std::cout << "HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED   " << ToString(HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED) << std::endl;
-    std::cout << "HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME   " << HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME << std::endl;
-    std::cout << "HP_OBJ_FUN_COEF_DIVERGENCE   " << HP_OBJ_FUN_COEF_DIVERGENCE << std::endl;
-    std::cout << "HP_POST_EVALUATION_METHOD   " << HP_POST_EVALUATION_METHOD << std::endl;
+    std::cout << "ER_OBJ_FUN_TRANSIENT_RESPONSE_TIME   " << ER_OBJ_FUN_TRANSIENT_RESPONSE_TIME << std::endl;
+    std::cout << "ER_OBJ_FUN_DIVERGENCE_SET_VALUE   " << ER_OBJ_FUN_DIVERGENCE_SET_VALUE << std::endl;
+    std::cout << "ER_OBJECTIVE_FUNCTION_METHOD   " << ER_OBJECTIVE_FUNCTION_METHOD << std::endl;
+    std::cout << "ER_POST_EVALUATION_METHOD   " << ER_POST_EVALUATION_METHOD << std::endl;
 
     std::cout << "PGMOS_IC_VELOCITY_TYPE   " << PGMOS_IC_VELOCITY_TYPE << std::endl;
     std::cout << "PGMOS_IC_ENABLE_POSITION_OFFSET   " << ToString(PGMOS_IC_ENABLE_POSITION_OFFSET) << std::endl;
@@ -165,11 +139,6 @@ inline void ConfigurationLSPI() {
     std::cout << "LSPR_TRANSIENT_RESPONSE_TIME   " << LSPR_TRANSIENT_RESPONSE_TIME << std::endl;
     std::cout << "LSPR_GAMMA   " << LSPR_GAMMA << std::endl;
     std::cout << "LSPR_EPSILON   " << LSPR_EPSILON << std::endl;
-#ifdef LSPR_FIXED_SEED
-    std::cout << "LSPR_FIXED_SEED   " << LSPR_FIXED_SEED << std::endl;
-#else
-    std::cout << "LSPR_FIXED_SEED   undefined" << std::endl;
-#endif
     std::cout << "LSPR_IC_POSITION_OFFSET_ENABLED   " << ToString(LSPR_IC_POSITION_OFFSET_ENABLED) << std::endl;
     std::cout << "LSPR_IC_VELOCITY_TYPE   " << LSPR_IC_VELOCITY_TYPE << std::endl;
     std::cout << "LSPR_WRITE_ACTION_SET_TO_FILE   " << ToString(LSPR_WRITE_ACTION_SET_TO_FILE) << std::endl;

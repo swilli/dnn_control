@@ -6,9 +6,11 @@
 
 namespace pagmo { namespace problem {
 
-hovering_problem_neural_network::hovering_problem_neural_network(const unsigned int &seed, const unsigned int &n_evaluations, const double &simulation_time, const unsigned int &n_hidden_neurons, const std::set<SensorSimulator::SensorType> &sensor_types, const bool &enable_sensor_noise)
+hovering_problem_neural_network::hovering_problem_neural_network(const unsigned int &seed, const unsigned int &n_evaluations, const double &simulation_time, const unsigned int &n_hidden_neurons, const std::set<SensorSimulator::SensorType> &sensor_types, const bool &enable_sensor_noise, const FitnessFunctionType &fitness_function, const PostEvaluationFunctionType &post_evaluation_function, const double &transient_response_time, const double &divergence_set_value)
     : base_stochastic(PaGMOSimulationNeuralNetwork(0, n_hidden_neurons, sensor_types).ChromosomeSize(), seed),
-      m_n_evaluations(n_evaluations), m_n_hidden_neurons(n_hidden_neurons), m_simulation_time(simulation_time), m_sensor_types(sensor_types), m_enable_sensor_noise(enable_sensor_noise) {
+      m_n_evaluations(n_evaluations), m_n_hidden_neurons(n_hidden_neurons), m_simulation_time(simulation_time), m_sensor_types(sensor_types), m_enable_sensor_noise(enable_sensor_noise),
+      m_fitness_function(fitness_function), m_post_evaluation_function(post_evaluation_function),
+      m_transient_response_time(transient_response_time), m_divergence_set_value(divergence_set_value) {
 
     set_lb(-1.0);
     set_ub(1.0);
@@ -21,6 +23,10 @@ hovering_problem_neural_network::hovering_problem_neural_network(const hovering_
     m_n_hidden_neurons = other.m_n_hidden_neurons;
     m_sensor_types = other.m_sensor_types;
     m_enable_sensor_noise = other.m_enable_sensor_noise;
+    m_fitness_function = other.m_fitness_function;
+    m_post_evaluation_function = other.m_post_evaluation_function;
+    m_transient_response_time = other.m_transient_response_time;
+    m_divergence_set_value = other.m_divergence_set_value;
 }
 
 std::string hovering_problem_neural_network::get_name() const {
@@ -54,11 +60,7 @@ void hovering_problem_neural_network::objfun_impl(fitness_vector &f, const decis
     for (unsigned int count = 0; count < m_n_evaluations; count++) {
 
         // Creates the initial conditions at random, based on the current seed
-#ifdef HP_FIXED_SEED
-        const unsigned int current_seed = HP_FIXED_SEED;
-#else
         const unsigned int current_seed = m_urng();
-#endif
 
         // Neural Network simulation
         PaGMOSimulationNeuralNetwork simulation(current_seed, m_n_hidden_neurons, x, m_sensor_types, m_enable_sensor_noise);
@@ -99,7 +101,6 @@ double hovering_problem_neural_network::single_fitness(PaGMOSimulationNeuralNetw
     const Vector3D target_position = simulation.TargetPosition();
 
     // punish unfinished simulations (crash / out of fuel)
-#if HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED
     double time_diff = evaluated_times.back() - simulation.SimulationTime();
     time_diff = (time_diff < 0.0 ? -time_diff : time_diff);
     if (time_diff > 0.1) {
@@ -119,139 +120,128 @@ double hovering_problem_neural_network::single_fitness(PaGMOSimulationNeuralNetw
             fitness += 1e30;
         }
     }
-#endif
 
-#if HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_1
-    // Method 1 : Compare start and ending position and velocity
-    const Vector3D &position_end = evaluated_positions.back();
-    const Vector3D &velocity_end = evaluated_velocities.back();
-    fitness += VectorNorm(VectorSub(target_position, position_end)) + VectorNorm(velocity_end);
+    switch(m_fitness_function) {
 
-#elif HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_2
-    // Method 2 : Compare mean distance to target point. Transient response aware
-    unsigned int considered_samples = 0;
-    for (unsigned int i = 0; i < num_samples; ++i) {
-        if (evaluated_times.at(i) >= HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME) {
-            fitness += VectorNorm(VectorSub(target_position, evaluated_positions.at(i)));
-            considered_samples++;
-        }
+    case FitnessFunctionType::FitnessCompareStartEndPosition:
+    {
+        // Method 1 : Compare start and ending position and velocity
+        const Vector3D &position_end = evaluated_positions.back();
+        const Vector3D &velocity_end = evaluated_velocities.back();
+        fitness += VectorNorm(VectorSub(target_position, position_end)) + VectorNorm(velocity_end);
     }
-    fitness /= considered_samples;
+        break;
 
-#elif HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_3
-    // Method 3 : Compare mean distance to target point, also consider velocity. Transient response aware.
-    unsigned int considered_samples = 0;
-    for (unsigned int i = 0; i < num_samples; ++i) {
-        if (evaluated_times.at(i) >= HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME) {
-            fitness += VectorNorm(VectorSub(target_position, evaluated_positions.at(i))) + VectorNorm(evaluated_velocities.at(i));
-            considered_samples++;
-        }
-    }
-    fitness /= considered_samples;
-
-#elif HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_4
-    // Method 4 : Compare mean distance to target point, also consider fuel consumption. Transient response aware.
-    unsigned int considered_samples = 0;
-    for (unsigned int i = 0; i < num_samples; ++i) {
-        if (evaluated_times.at(i) >= HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME) {
-            fitness += VectorNorm(VectorSub(target_position, evaluated_positions.at(i)));
-            considered_samples++;
-        }
-    }
-    fitness /= considered_samples;
-    fitness += 200.0 * (simulation.SpacecraftMaximumMass() / evaluated_masses.back() - 1.0);
-
-#elif HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_5
-    // Method 5 : Compare mean distance to target point, also consider velocity, also consider fuel consumption. Transient response aware.
-    unsigned int considered_samples = 0;
-    for (unsigned int i = 0; i < num_samples; ++i) {
-        if (evaluated_times.at(i) >= HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME) {
-            fitness += VectorNorm(VectorSub(target_position, evaluated_positions.at(i))) + VectorNorm(evaluated_velocities.at(i));
-            considered_samples++;
-        }
-    }
-    fitness /= considered_samples;
-    fitness += 200.0 * (simulation.SpacecraftMaximumMass() / evaluated_masses.back() - 1.0);
-
-#elif HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_6
-    // Method 6 : Mean velocity. Transient response aware.
-    unsigned int considered_samples = 0;
-    for (unsigned int i = 0; i < num_samples; ++i) {
-        if (evaluated_times.at(i) >= HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME) {
-            fitness += VectorNorm(evaluated_velocities.at(i));
-            considered_samples++;
-        }
-    }
-    fitness /= considered_samples;
-
-#elif HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_7
-    // Method 7 : Mean optical flow, constant divergence. Transient response aware.
-    unsigned int considered_samples = 0;
-    for (unsigned int i = 0; i < num_samples; ++i) {
-        if (evaluated_times.at(i) >= HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME) {
-            const Vector3D &height = evaluated_heights.at(i);
-            const Vector3D &velocity = evaluated_velocities.at(i);
-
-            const double coef_norm_height = 1.0 / VectorNorm(height);
-            const Vector3D normalized_height = VectorMul(coef_norm_height, height);
-
-            const double magn_velocity_parallel = VectorDotProduct(velocity, normalized_height);
-            const double divergence = magn_velocity_parallel * coef_norm_height;
-
-            const Vector3D velocity_parallel = VectorMul(magn_velocity_parallel, normalized_height);
-            const Vector3D velocity_perpendicular = VectorSub(velocity, velocity_parallel);
-
-            const Vector3D &optic_flow = VectorMul(coef_norm_height, velocity_perpendicular);
-
-            double error_divergence = divergence + HP_OBJ_FUN_COEF_DIVERGENCE;
-            error_divergence = (error_divergence < 0.0 ? -error_divergence : error_divergence);
-
-            const double error_optical_flow = VectorNorm(optic_flow);
-
-            fitness += error_optical_flow + error_divergence;
-
-            considered_samples++;
-        }
-    }
-    fitness /= considered_samples;
-
-#elif HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_8
-    // Method 8 : Mean offset to optimal landing path.
-    Vector3D direction = evaluated_heights.at(0);
-    Vector3D landing_point = VectorSub(evaluated_positions.at(0), direction);
-    const double dt = 1.0 / simulation.ControlFrequency();
-    double t = 0;
-    for (unsigned int i = 0; i < num_samples; ++i) {
-        const double magn = exp(-HP_OBJ_FUN_COEF_DIVERGENCE * t);
-        const Vector3D target_path_position = VectorAdd(landing_point, VectorMul(magn, direction));
-        const Vector3D &actual_position = evaluated_positions.at(i);
-        const double error = VectorNorm(VectorSub(target_path_position, actual_position));
-        fitness += error;
-        t += dt;
-    }
-    fitness /= num_samples;
-
-#elif HP_OBJECTIVE_FUNCTION_METHOD == HP_OBJ_FUN_METHOD_9
-    // Method 9 : Mean distance to target point, target point set to position after the deep controller starts to work.
-    Vector3D first_counting_position;
-    const double init_phase = 10.0;
-    bool initialized = false;
-    unsigned int considered_samples = 0;
-    for (unsigned int i = 0; i < num_samples; ++i) {
-        if (evaluated_times.at(i) >= init_phase) {
-            const Vector3D &actual_position = evaluated_positions.at(i);
-            if (!initialized) {
-                initialized = true;
-                first_counting_position = actual_position;
+    case FitnessFunctionType::FitnessAveragePositionOffset:
+    {
+        // Method 2 : Compare mean distance to target point. Transient response aware
+        unsigned int considered_samples = 0;
+        for (unsigned int i = 0; i < num_samples; ++i) {
+            if (evaluated_times.at(i) >= m_transient_response_time) {
+                fitness += VectorNorm(VectorSub(target_position, evaluated_positions.at(i)));
+                considered_samples++;
             }
-            const double error = VectorNorm(VectorSub(first_counting_position, actual_position));
-            fitness += error;
-            considered_samples++;
         }
+        fitness /= considered_samples;
     }
-    fitness /= considered_samples;
+        break;
 
-#endif
+    case FitnessFunctionType::FitnessAveragePositionOffsetAndVelocity:
+    {
+        // Method 3 : Compare mean distance to target point, also consider velocity. Transient response aware.
+        unsigned int considered_samples = 0;
+        for (unsigned int i = 0; i < num_samples; ++i) {
+            if (evaluated_times.at(i) >= m_transient_response_time) {
+                fitness += VectorNorm(VectorSub(target_position, evaluated_positions.at(i))) + VectorNorm(evaluated_velocities.at(i));
+                considered_samples++;
+            }
+        }
+        fitness /= considered_samples;
+    }
+        break;
+
+    case FitnessFunctionType::FitnessAveragePositionOffsetAndFuel:
+    {
+        // Method 4 : Compare mean distance to target point, also consider fuel consumption. Transient response aware.
+        unsigned int considered_samples = 0;
+        for (unsigned int i = 0; i < num_samples; ++i) {
+            if (evaluated_times.at(i) >= m_transient_response_time) {
+                fitness += VectorNorm(VectorSub(target_position, evaluated_positions.at(i)));
+                considered_samples++;
+            }
+        }
+        fitness /= considered_samples;
+        fitness += 200.0 * (simulation.SpacecraftMaximumMass() / evaluated_masses.back() - 1.0);
+    }
+        break;
+
+    case FitnessFunctionType::FitnessAveragePositionOffsetAndVelocityAndFuel:
+    {
+        // Method 5 : Compare mean distance to target point, also consider velocity, also consider fuel consumption. Transient response aware.
+        unsigned int considered_samples = 0;
+        for (unsigned int i = 0; i < num_samples; ++i) {
+            if (evaluated_times.at(i) >= m_transient_response_time) {
+                fitness += VectorNorm(VectorSub(target_position, evaluated_positions.at(i))) + VectorNorm(evaluated_velocities.at(i));
+                considered_samples++;
+            }
+        }
+        fitness /= considered_samples;
+        fitness += 200.0 * (simulation.SpacecraftMaximumMass() / evaluated_masses.back() - 1.0);
+    }
+        break;
+
+    case FitnessFunctionType::FitnessAverageVelocity:
+    {
+        // Method 6 : Mean velocity. Transient response aware.
+        unsigned int considered_samples = 0;
+        for (unsigned int i = 0; i < num_samples; ++i) {
+            if (evaluated_times.at(i) >= m_transient_response_time) {
+                fitness += VectorNorm(evaluated_velocities.at(i));
+                considered_samples++;
+            }
+        }
+        fitness /= considered_samples;
+    }
+        break;
+
+    case FitnessFunctionType::FitnessAverageOpticFlowAndConstantDivergence:
+    {
+        // Method 7 : Mean optical flow, constant divergence. Transient response aware.
+        unsigned int considered_samples = 0;
+        for (unsigned int i = 0; i < num_samples; ++i) {
+            if (evaluated_times.at(i) >= m_transient_response_time) {
+                const Vector3D &height = evaluated_heights.at(i);
+                const Vector3D &velocity = evaluated_velocities.at(i);
+
+                const double coef_norm_height = 1.0 / VectorNorm(height);
+                const Vector3D normalized_height = VectorMul(coef_norm_height, height);
+
+                const double magn_velocity_parallel = VectorDotProduct(velocity, normalized_height);
+                const double divergence = magn_velocity_parallel * coef_norm_height;
+
+                const Vector3D velocity_parallel = VectorMul(magn_velocity_parallel, normalized_height);
+                const Vector3D velocity_perpendicular = VectorSub(velocity, velocity_parallel);
+
+                const Vector3D &optic_flow = VectorMul(coef_norm_height, velocity_perpendicular);
+
+                double error_divergence = divergence + m_divergence_set_value;
+                error_divergence = (error_divergence < 0.0 ? -error_divergence : error_divergence);
+
+                const double error_optical_flow = VectorNorm(optic_flow);
+
+                fitness += error_optical_flow + error_divergence;
+
+                considered_samples++;
+            }
+        }
+        fitness /= considered_samples;
+    }
+        break;
+
+    default:
+        throw FitnessFunctionTypeNotImplemented();
+
+    }
 
     return fitness;
 }
@@ -279,7 +269,7 @@ boost::tuple<double, double, double, double, double> hovering_problem_neural_net
     unsigned int samples = 0;
     int index = -1;
     for (unsigned int i = 0; i < num_samples; ++i) {
-        if (evaluated_times.at(i) >= HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME) {
+        if (evaluated_times.at(i) >= m_transient_response_time) {
             if (index == -1) {
                 index = i;
             }
@@ -294,7 +284,7 @@ boost::tuple<double, double, double, double, double> hovering_problem_neural_net
     const Vector3D target_position = simulation.TargetPosition();
 
     // punish unfinished simulations (crash / out of fuel)
-#if HP_OBJ_FUN_PUNISH_UNFINISHED_SIMULATIONS_ENABLED
+    // punish unfinished simulations (crash / out of fuel)
     double time_diff = evaluated_times.back() - simulation.SimulationTime();
     time_diff = (time_diff < 0.0 ? -time_diff : time_diff);
     if (time_diff > 0.1) {
@@ -314,82 +304,63 @@ boost::tuple<double, double, double, double, double> hovering_problem_neural_net
             mean_error += 1e30;
         }
     }
-#endif
 
-#if HP_POST_EVALUATION_METHOD == HP_POST_EVAL_METHOD_1
-    // Compare mean distance to target point. Transient response aware.
-    unsigned int considered_samples = 0;
-    for (unsigned int i = 0; i < num_samples; ++i) {
-        if (evaluated_times.at(i) >= HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME) {
-            const double error = VectorNorm(VectorSub(target_position, evaluated_positions.at(i)));
-            if (error > max_error) {
-                max_error = error;
-                if (min_error == std::numeric_limits<double>::max()) {
-                    min_error = max_error;
-                }
-            } else if(error < min_error) {
-                min_error = error;
-                if (max_error == -std::numeric_limits<double>::max()){
-                    max_error = min_error;
-                }
-            }
-            mean_error += error;
-            considered_samples++;
-        }
-    }
-    mean_error /= considered_samples;
+    switch (m_post_evaluation_function) {
 
-#elif HP_POST_EVALUATION_METHOD == HP_POST_EVAL_METHOD_2
-    // Compare mean velocity. Transient response aware.
-    unsigned int considered_samples = 0;
-    for (unsigned int i = 0; i < num_samples; ++i) {
-        if (evaluated_times.at(i) >= HP_OBJ_FUN_TRANSIENT_RESPONSE_TIME) {
-            const double error = VectorNorm(evaluated_velocities.at(i));
-            if (error > max_error) {
-                max_error = error;
-                if (min_error == std::numeric_limits<double>::max()) {
-                    min_error = max_error;
+        case PostEvaluationFunctionType::PostEvalAveragePositionOffset:
+    {
+        unsigned int considered_samples = 0;
+        for (unsigned int i = 0; i < num_samples; ++i) {
+            if (evaluated_times.at(i) >= m_transient_response_time) {
+                const double error = VectorNorm(VectorSub(target_position, evaluated_positions.at(i)));
+                if (error > max_error) {
+                    max_error = error;
+                    if (min_error == std::numeric_limits<double>::max()) {
+                        min_error = max_error;
+                    }
+                } else if(error < min_error) {
+                    min_error = error;
+                    if (max_error == -std::numeric_limits<double>::max()){
+                        max_error = min_error;
+                    }
                 }
-            } else if(error < min_error) {
-                min_error = error;
-                if (max_error == -std::numeric_limits<double>::max()){
-                    max_error = min_error;
-                }
-            }
-            mean_error += error;
-            considered_samples++;
-        }
-    }
-    mean_error /= considered_samples;
-
-#elif HP_POST_EVALUATION_METHOD == HP_POST_EVAL_METHOD_3
-    // Compare mean distance to target path.
-    Vector3D direction = evaluated_heights.at(0);
-    Vector3D landing_point = VectorSub(evaluated_positions.at(0), direction);
-    const double dt = 1.0 / simulation.ControlFrequency();
-    double t = 0;
-    for (unsigned int i = 0; i < num_samples; ++i) {
-        const double magn = exp(-HP_OBJ_FUN_COEF_DIVERGENCE * t);
-        const Vector3D target_path_position = VectorAdd(landing_point, VectorMul(magn, direction));
-        const Vector3D &actual_position = evaluated_positions.at(i);
-        const double error = VectorNorm(VectorSub(target_path_position, actual_position));
-
-        if (error > max_error) {
-            max_error = error;
-            if (min_error == std::numeric_limits<double>::max()) {
-                min_error = max_error;
-            }
-        } else if(error < min_error) {
-            min_error = error;
-            if (max_error == -std::numeric_limits<double>::max()){
-                max_error = min_error;
+                mean_error += error;
+                considered_samples++;
             }
         }
-        mean_error += error;
-        t += dt;
+        mean_error /= considered_samples;
     }
-    mean_error /= num_samples;
-#endif
+        break;
+
+    case PostEvaluationFunctionType::PostEvalAverageVelocity:
+    {
+        // Compare mean velocity. Transient response aware.
+        unsigned int considered_samples = 0;
+        for (unsigned int i = 0; i < num_samples; ++i) {
+            if (evaluated_times.at(i) >= m_transient_response_time) {
+                const double error = VectorNorm(evaluated_velocities.at(i));
+                if (error > max_error) {
+                    max_error = error;
+                    if (min_error == std::numeric_limits<double>::max()) {
+                        min_error = max_error;
+                    }
+                } else if(error < min_error) {
+                    min_error = error;
+                    if (max_error == -std::numeric_limits<double>::max()){
+                        max_error = min_error;
+                    }
+                }
+                mean_error += error;
+                considered_samples++;
+            }
+        }
+        mean_error /= considered_samples;
+    }
+        break;
+
+    default:
+        throw PostEvaluationFunctionTypeNotImplemented();
+    }
 
     return boost::make_tuple(mean_error, min_error, max_error, predicted_fuel, used_fuel);
 }

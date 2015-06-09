@@ -116,7 +116,7 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
 
             const double engine_noise = sample_factory.SampleNormal(0.0, spacecraft_engine_noise_);
 
-            ODESystem ode_system(asteroid_, perturbations_acceleration, thrust, spacecraft_specific_impulse_, spacecraft_minimum_mass_, engine_noise);
+            ODESystem ode_system(asteroid_, perturbations_acceleration, thrust, spacecraft_specific_impulse_, spacecraft_minimum_mass_, engine_noise, fuel_usage_enabled_);
 
             integrate_adaptive(controlled_stepper, ode_system, system_state, current_time, current_time + dt, minimum_step_size_, observer);
 
@@ -229,7 +229,7 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
 
             engine_noise = sample_factory.SampleNormal(0.0, spacecraft_engine_noise_);
 
-            ODESystem ode_system(asteroid_, perturbations_acceleration, thrust, spacecraft_specific_impulse_, spacecraft_minimum_mass_, engine_noise);
+            ODESystem ode_system(asteroid_, perturbations_acceleration, thrust, spacecraft_specific_impulse_, spacecraft_minimum_mass_, engine_noise, fuel_usage_enabled_);
 
             for (unsigned int i = 0; i < num_steps; ++i) {
                 stepper.do_step(ode_system, system_state, current_time, fixed_step_size_);

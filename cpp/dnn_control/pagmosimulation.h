@@ -13,8 +13,8 @@ class PaGMOSimulation {
     * This abstract class represents a full simulation of a spacecraft placed next to an asteroid.
     */
 public:
-    PaGMOSimulation(const unsigned int &random_seed, const std::set<SensorSimulator::SensorType> &control_sensor_types={}, const bool &control_with_noise=false, const std::set<SensorSimulator::SensorType> &recording_sensor_types={}, const bool &recording_with_noise=false);
-    PaGMOSimulation(const unsigned int &random_seed, const double &simulation_time, const std::set<SensorSimulator::SensorType> &control_sensor_types={}, const bool &control_with_noise=false, const std::set<SensorSimulator::SensorType> &recording_sensor_types={}, const bool &recording_with_noise=false);
+    PaGMOSimulation(const unsigned int &random_seed, const std::set<SensorSimulator::SensorType> &control_sensor_types={}, const bool &control_with_noise=false, const std::set<SensorSimulator::SensorType> &recording_sensor_types={}, const bool &recording_with_noise=false, const bool &fuel_usage_enabled=true);
+    PaGMOSimulation(const unsigned int &random_seed, const double &simulation_time, const std::set<SensorSimulator::SensorType> &control_sensor_types={}, const bool &control_with_noise=false, const std::set<SensorSimulator::SensorType> &recording_sensor_types={}, const bool &recording_with_noise=false, const bool &fuel_usage_enabled=true);
 
     virtual ~PaGMOSimulation();
 
@@ -143,6 +143,9 @@ protected:
 
     // Is noise enabled during the simulation
     bool recording_with_noise_;
+
+    // Is the spacecraft actually consuming fuel for the taken thrust actions
+    bool fuel_usage_enabled_;
 
     // Sensor values can be transformed using these two parameters
     std::map<SensorSimulator::SensorType, std::vector<std::pair<double, double> > > sensor_value_transformations_;

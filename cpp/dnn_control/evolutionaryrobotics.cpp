@@ -3,7 +3,9 @@
 #include "samplefactory.h"
 #include "filewriter.h"
 #include "configuration.h"
+
 #include <sstream>
+#include <pagmo/src/pagmo.h>
 
 // Training configuration
 static const unsigned int kNumGenerations = ER_NUM_GENERATIONS;
@@ -20,7 +22,11 @@ static const unsigned int kEarlyStoppingTestInterval = 10;
 static const unsigned int kNumEarlyStoppingTests = 100;
 static const unsigned int kNumEarlyStoppingDelay = 10;
 static const bool kEnableSensorNoise = ER_ENABLE_SENSOR_NOISE;
+static const double kTransientResponseTime = ER_OBJ_FUN_TRANSIENT_RESPONSE_TIME;
+static const double kDivergenceSetValue = ER_OBJ_FUN_DIVERGENCE_SET_VALUE;
 
+static pagmo::problem::hovering_problem_neural_network::FitnessFunctionType kFitnessFunctionType;
+static pagmo::problem::hovering_problem_neural_network::PostEvaluationFunctionType kPostEvaluationFunctionType;
 static std::set<SensorSimulator::SensorType> kSensorTypes;
 
 static void Init() {
@@ -35,6 +41,28 @@ static void Init() {
 #endif
 #if ER_ENABLE_ACCELEROMETER
     kSensorTypes.insert(SensorSimulator::SensorType::ExternalAcceleration);
+#endif
+
+#if ER_OBJECTIVE_FUNCTION_METHOD == ER_OBJ_FUN_METHOD_1
+    kFitnessFunctionType = pagmo::problem::hovering_problem_neural_network::FitnessFunctionType::FitnessCompareStartEndPosition;
+#elif ER_OBJECTIVE_FUNCTION_METHOD == ER_OBJ_FUN_METHOD_2
+    kFitnessFunctionType = pagmo::problem::hovering_problem_neural_network::FitnessFunctionType::FitnessAveragePositionOffset;
+#elif ER_OBJECTIVE_FUNCTION_METHOD == ER_OBJ_FUN_METHOD_3
+    kFitnessFunctionType = pagmo::problem::hovering_problem_neural_network::FitnessFunctionType::FitnessAveragePositionOffsetAndVelocity;
+#elif ER_OBJECTIVE_FUNCTION_METHOD == ER_OBJ_FUN_METHOD_4
+    kFitnessFunctionType = pagmo::problem::hovering_problem_neural_network::FitnessFunctionType::FitnessAveragePositionOffsetAndFuel;
+#elif ER_OBJECTIVE_FUNCTION_METHOD == ER_OBJ_FUN_METHOD_5
+    kFitnessFunctionType = pagmo::problem::hovering_problem_neural_network::FitnessFunctionType::FitnessAveragePositionOffsetAndVelocityAndFuel;
+#elif ER_OBJECTIVE_FUNCTION_METHOD == ER_OBJ_FUN_METHOD_6
+    kFitnessFunctionType = pagmo::problem::hovering_problem_neural_network::FitnessFunctionType::FitnessAverageVelocity;
+#elif ER_OBJECTIVE_FUNCTION_METHOD == ER_OBJ_FUN_METHOD_7
+    kFitnessFunctionType = pagmo::problem::hovering_problem_neural_network::FitnessFunctionType::FitnessAverageOpticFlowAndConstantDivergence;
+#endif
+
+#if ER_POST_EVALUATION_METHOD == ER_POST_EVAL_METHOD_1
+    kPostEvaluationFunctionType =  pagmo::problem::hovering_problem_neural_network::PostEvaluationFunctionType::PostEvalAveragePositionOffset;
+#elif ER_POST_EVALUATION_METHOD == ER_POST_EVAL_METHOD_2
+    kPostEvaluationFunctionType =  pagmo::problem::hovering_problem_neural_network::PostEvaluationFunctionType::PostEvalAverageVelocity;
 #endif
 }
 
@@ -96,16 +124,13 @@ static void ArchipelagoEvolve(pagmo::archipelago &archi, const pagmo::problem::h
             generations = 0;
             std::cout << std::endl << ">> early stopping test ... ";
             fflush(stdout);
-            std::vector<unsigned int> random_seeds;
-            for (unsigned int j = 0; j < num_early_stopping_tests; ++j) {
-                random_seeds.push_back(rand());
-            }
 
             double cur_avg_error = 0.0;
             for (unsigned int j = 0; j < num_early_stopping_tests; ++j) {
-                cur_avg_error += prob.objfun_seeded(random_seeds.at(j), x)[0];
+                cur_avg_error += prob.objfun_seeded(rand(), x)[0];
             }
             cur_avg_error /= num_early_stopping_tests;
+
             std::cout << "average error: " << cur_avg_error << "/" << avg_error << " patience: ";
             fflush(stdout);
             if (cur_avg_error > avg_error) {
@@ -145,7 +170,7 @@ void TrainNeuralNetworkController() {
 
     std::cout << std::setprecision(10);
 
-    // We instantiate a PSO algorithm capable of coping with stochastic prolems
+    // We instantiate a PSO algorithm which can cope with stochastic problems
     pagmo::algorithm::pso_generational algo(1,0.7298,2.05,2.05,0.05);
 
     std::cout << "Initializing NN controller evolution ....";
@@ -155,7 +180,7 @@ void TrainNeuralNetworkController() {
     for (unsigned int j = 0;j < kNumIslands; ++j) {
         std::cout << " [" << j;
         fflush(stdout);
-        pagmo::problem::hovering_problem_neural_network prob(rand(), kNumEvaluations, kSimulationTime, kNumHiddenNeurons, kSensorTypes, kEnableSensorNoise);
+        pagmo::problem::hovering_problem_neural_network prob(rand(), kNumEvaluations, kSimulationTime, kNumHiddenNeurons, kSensorTypes, kEnableSensorNoise, kFitnessFunctionType, kPostEvaluationFunctionType, kTransientResponseTime, kDivergenceSetValue);
 
         // This instantiates a population within the original bounds (-1,1)
         pagmo::population pop_temp(prob, kPopulationSize);
@@ -163,7 +188,7 @@ void TrainNeuralNetworkController() {
         // We make the bounds larger to allow neurons weights to grow
         prob.set_bounds(-30.0,30.0);
 
-        // We create an empty population on the new prolem (-10,10)
+        // We create an empty population on the new problem (-10,10)
         pagmo::population pop(prob);
 
         // And we fill it up with (-1,1) individuals having zero velocities

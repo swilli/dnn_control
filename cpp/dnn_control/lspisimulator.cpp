@@ -5,8 +5,8 @@
 #include "modifiedcontrolledrungekutta.h"
 #include "constants.h"
 
-LSPISimulator::LSPISimulator(const unsigned int &random_seed)
-    : random_seed_(random_seed), sample_factory_(random_seed) {
+LSPISimulator::LSPISimulator(const unsigned int &random_seed, const bool &fuel_usage_enabled)
+    : random_seed_(random_seed), sample_factory_(random_seed), fuel_usage_enabled_(fuel_usage_enabled) {
 
     minimum_step_size_ = 0.1;
     control_frequency_ = 1.0;
@@ -45,7 +45,6 @@ boost::tuple<SystemState, Vector3D, double, bool> LSPISimulator::NextState(const
 
     const Vector3D &position = {state[0], state[1], state[2]};
     const Vector3D &velocity = {state[3], state[4], state[5]};
-    const double &mass = state[6];
 
     const Vector3D gravity_acceleration = asteroid_.GravityAccelerationAtPosition(position);
 
@@ -58,6 +57,10 @@ boost::tuple<SystemState, Vector3D, double, bool> LSPISimulator::NextState(const
 
     const Vector3D coriolis_acceleration = VectorCrossProduct(VectorMul(2.0, angular_velocity), velocity);
 
+    for (unsigned int i = 0; i < 3; ++i) {
+        perturbations_acceleration_[i] = sample_factory_.SampleNormal(perturbation_mean_, perturbation_noise_);
+    }
+
     Vector3D acceleration;
     for (unsigned int i = 0; i < 3; ++i) {
         acceleration[i] = perturbations_acceleration_[i]
@@ -67,7 +70,7 @@ boost::tuple<SystemState, Vector3D, double, bool> LSPISimulator::NextState(const
                 - centrifugal_acceleration[i];
     }
 
-    ODESystem ode_system(asteroid_, perturbations_acceleration_, thrust, spacecraft_specific_impulse_, spacecraft_minimum_mass_, engine_noise);
+    ODESystem ode_system(asteroid_, perturbations_acceleration_, thrust, spacecraft_specific_impulse_, spacecraft_minimum_mass_, engine_noise, fuel_usage_enabled_);
 
     ControlledStepper controlled_stepper;
     double current_time_observer = 0.0;

@@ -2,8 +2,9 @@
 #include "constants.h"
 #include "configuration.h"
 
-ODESystem::ODESystem(const Asteroid &asteroid, const Vector3D &perturbations_acceleration, const Vector3D &thrust, const double &spacecraft_specific_impulse, const double &spacecraft_minimum_mass, const double &engine_noise)
+ODESystem::ODESystem(const Asteroid &asteroid, const Vector3D &perturbations_acceleration, const Vector3D &thrust, const double &spacecraft_specific_impulse, const double &spacecraft_minimum_mass, const double &engine_noise, const bool &fuel_usage_enabled)
     : asteroid_(asteroid) {
+    fuel_usage_enabled_ = fuel_usage_enabled;
     perturbations_acceleration_ = perturbations_acceleration;
     thrust_ = thrust;
     spacecraft_specific_impulse_ = spacecraft_specific_impulse;
@@ -13,6 +14,7 @@ ODESystem::ODESystem(const Asteroid &asteroid, const Vector3D &perturbations_acc
 
 ODESystem::ODESystem(const ODESystem &other)
     : asteroid_(other.asteroid_) {
+    fuel_usage_enabled_ = other.fuel_usage_enabled_;
     perturbations_acceleration_ = other.perturbations_acceleration_;
     thrust_ = other.thrust_;
     spacecraft_specific_impulse_ = other.spacecraft_specific_impulse_;
@@ -63,10 +65,10 @@ void ODESystem::operator ()(const SystemState &state, SystemState &d_state_dt, c
                 - centrifugal_acceleration[i];
     }
 
-#if ODES_ENABLE_FUEL
-    d_state_dt[6] = -VectorNorm(thrust_) / ((spacecraft_specific_impulse_ + spacecraft_specific_impulse_ * engine_noise_) * kEarthAcceleration);
-#else
-    d_state_dt[6] = 0.0;
-#endif
+    if (fuel_usage_enabled_) {
+        d_state_dt[6] = -VectorNorm(thrust_) / ((spacecraft_specific_impulse_ + spacecraft_specific_impulse_ * engine_noise_) * kEarthAcceleration);
+    } else {
+        d_state_dt[6] = 0.0;
+    }
 }
 

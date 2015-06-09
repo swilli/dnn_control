@@ -287,14 +287,9 @@ static std::vector<Sample> PrepareSamples(SampleFactory &sample_factory, const u
     std::vector<Sample> samples;
 
     for (unsigned int i = 0; i < num_samples; ++i) {
-#ifdef LSPR_FIXED_SEED
-        LSPISimulator simulator(LSPR_FIXED_SEED);
-        const Vector3D target_position = simulator.SampleFactoryOfSystem().SamplePointOutSideEllipsoid(simulator.AsteroidOfSystem().SemiAxis(), 1.1, 4.0);
-#else
         LSPISimulator simulator(sample_factory.SampleRandomNatural());
         const boost::tuple<Vector3D, double, double, double> sampled_point = sample_factory.SamplePointOutSideEllipsoid(simulator.AsteroidOfSystem().SemiAxis(), 1.1, 4.0);
         const Vector3D &target_position = boost::get<0>(sampled_point);
-#endif
         const double dt = 1.0 / simulator.ControlFrequency();
 
         Asteroid &asteroid = simulator.AsteroidOfSystem();

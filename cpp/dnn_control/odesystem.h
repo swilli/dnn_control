@@ -10,7 +10,7 @@ class ODESystem {
     * This class represents an ordinary differential equation system.
     */
 public:
-    ODESystem(const Asteroid &asteroid, const Vector3D &perturbations_acceleration, const Vector3D &thrust, const double &spacecraft_specific_impulse, const double &spacecraft_minimum_mass, const double &engine_noise);
+    ODESystem(const Asteroid &asteroid, const Vector3D &perturbations_acceleration, const Vector3D &thrust, const double &spacecraft_specific_impulse, const double &spacecraft_minimum_mass, const double &engine_noise, const bool &fuel_usage_enabled);
     ODESystem(const ODESystem &other);
 
 
@@ -21,6 +21,9 @@ public:
     class OutOfFuelException : public Exception {};
 
 private:
+    // Is fuel usage enabled
+    bool fuel_usage_enabled_;
+
     // The spacecraft's Isp
     double spacecraft_specific_impulse_;
 
