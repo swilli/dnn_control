@@ -57,10 +57,6 @@ boost::tuple<SystemState, Vector3D, double, bool> LSPISimulator::NextState(const
 
     const Vector3D coriolis_acceleration = VectorCrossProduct(VectorMul(2.0, angular_velocity), velocity);
 
-    for (unsigned int i = 0; i < 3; ++i) {
-        perturbations_acceleration_[i] = sample_factory_.SampleNormal(perturbation_mean_, perturbation_noise_);
-    }
-
     Vector3D acceleration;
     for (unsigned int i = 0; i < 3; ++i) {
         acceleration[i] = perturbations_acceleration_[i]

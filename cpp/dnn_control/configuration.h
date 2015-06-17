@@ -66,10 +66,7 @@
 
 
 // Least Squares Policy Robotics configs
-#define LSPR_IC_BODY_ZERO_VELOCITY          0
-#define LSPR_IC_BODY_RANDOM_VELOCITY        1
-
-#define LSPR_IC_VELOCITY_TYPE  LSPR_IC_BODY_RANDOM_VELOCITY
+#define LSPR_IC_VELOCITY_NON_ZERO  true
 #define LSPR_IC_POSITION_OFFSET_ENABLED true
 
 #define LSPR_TRANSIENT_RESPONSE_TIME  150.0
@@ -140,7 +137,7 @@ inline void ConfigurationLSPI() {
     std::cout << "LSPR_GAMMA   " << LSPR_GAMMA << std::endl;
     std::cout << "LSPR_EPSILON   " << LSPR_EPSILON << std::endl;
     std::cout << "LSPR_IC_POSITION_OFFSET_ENABLED   " << ToString(LSPR_IC_POSITION_OFFSET_ENABLED) << std::endl;
-    std::cout << "LSPR_IC_VELOCITY_TYPE   " << LSPR_IC_VELOCITY_TYPE << std::endl;
+    std::cout << "LSPR_IC_VELOCITY_NON_ZERO   " << ToString(LSPR_IC_VELOCITY_NON_ZERO) << std::endl;
     std::cout << "LSPR_WRITE_ACTION_SET_TO_FILE   " << ToString(LSPR_WRITE_ACTION_SET_TO_FILE) << std::endl;
     std::cout << std::endl;
 }

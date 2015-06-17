@@ -25,6 +25,9 @@ enum MDPState {
 
 static const MDPState kMDPState = MDPState::RelativeLocalisation;
 static const unsigned int kSpacecraftStateDimension = 6;
+static const bool kNonZeroInitialVelocity = LSPR_IC_VELOCITY_NON_ZERO;
+static const bool kNonZeroInitialOffset = LSPR_IC_POSITION_OFFSET_ENABLED;
+static const double kTransientResponseTime = LSPR_TRANSIENT_RESPONSE_TIME;
 
 typedef boost::array<double, kSpacecraftStateDimension> LSPIState;
 
@@ -336,7 +339,7 @@ static std::vector<Sample> PrepareSamples(SampleFactory &sample_factory, const u
 }
 
 
-static boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > EvaluatePolicy(SampleFactory &sample_factory, const Eigen::VectorXd &weights, LSPISimulator &simulator, const Vector3D &target_position, const unsigned int &num_steps) {
+static boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > EvaluatePolicy(SampleFactory &sample_factory, const Eigen::VectorXd &weights, LSPISimulator &simulator, const Vector3D &target_position, const unsigned int &num_steps, const bool &initial_offset_non_zero, const bool &initial_velocity_non_zero) {
     std::vector<double> evaluated_times(num_steps + 1);
     std::vector<double> evaluated_masses(num_steps + 1);
     std::vector<Vector3D> evaluated_positions(num_steps + 1);
@@ -348,11 +351,13 @@ static boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector
     Asteroid &asteroid = simulator.AsteroidOfSystem();
     const double dt = 1.0 / simulator.ControlFrequency();
 
-#if LSPR_IC_VELOCITY_TYPE == LSPR_IC_BODY_ZERO_VELOCITY
-    SystemState state = InitializeState(sample_factory, target_position, simulator.SpacecraftMaximumMass(),  LSPR_IC_POSITION_OFFSET_ENABLED * 3.0, 0.0);
-#elif LSPR_IC_VELOCITY_TYPE == LSPR_IC_BODY_RANDOM_VELOCITY
-    SystemState state = InitializeState(sample_factory, target_position, simulator.SpacecraftMaximumMass(), LSPR_IC_POSITION_OFFSET_ENABLED * 3.0, 0.3);
-#endif
+    SystemState state;
+    if (initial_velocity_non_zero) {
+        state = InitializeState(sample_factory, target_position, simulator.SpacecraftMaximumMass(), initial_offset_non_zero * 3.0, 0.3);
+    } else {
+        state = InitializeState(sample_factory, target_position, simulator.SpacecraftMaximumMass(),  initial_offset_non_zero * 3.0, 0.0);
+    }
+
     double time = 0.0;
 
     Vector3D thrust = {0.0, 0.0, 0.0};
@@ -422,7 +427,7 @@ static boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector
     return boost::make_tuple(evaluated_times, evaluated_masses, evaluated_positions, evaluated_heights, evaluated_velocities, evaluated_thrusts, evaluated_accelerations);
 }
 
-static boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<std::pair<double, double> >, std::vector<std::pair<double, double> > > PostEvaluateLSPIController(const Eigen::VectorXd &controller_weights, const unsigned int &start_seed, const std::vector<unsigned int> &random_seeds=std::vector<unsigned int>()) {
+static boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<std::pair<double, double> >, std::vector<std::pair<double, double> > > PostEvaluateLSPIController(const Eigen::VectorXd &controller_weights, const unsigned int &start_seed, const bool &non_zero_initial_offset, const bool &non_zero_initial_velocity, const double &transient_response_time, const std::vector<unsigned int> &random_seeds=std::vector<unsigned int>()) {
     unsigned int num_tests = random_seeds.size();
     std::vector<unsigned int> used_random_seeds;
     if (num_tests == 0) {
@@ -449,7 +454,7 @@ static boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<
         const boost::tuple<Vector3D, double, double, double> sampled_point = sample_factory.SamplePointOutSideEllipsoid(simulator.AsteroidOfSystem().SemiAxis(), 1.1, 4.0);
         const Vector3D &target_position = boost::get<0>(sampled_point);
 
-        const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = EvaluatePolicy(sample_factory, controller_weights, simulator, target_position, test_time * simulator.ControlFrequency());
+        const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = EvaluatePolicy(sample_factory, controller_weights, simulator, target_position, test_time * simulator.ControlFrequency(), non_zero_initial_offset, non_zero_initial_velocity);
         const std::vector<double> &evaluated_times = boost::get<0>(result);
         const std::vector<double> &evaluated_masses = boost::get<1>(result);
         const std::vector<Vector3D> &evaluated_positions = boost::get<2>(result);
@@ -462,7 +467,7 @@ static boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<
         const double coef = 1.0 / (simulator.SpacecraftSpecificImpulse() * kEarthAcceleration);
         int index = -1;
         for (unsigned int i = 0; i < num_samples; ++i) {
-            if (evaluated_times.at(i) >= LSPR_TRANSIENT_RESPONSE_TIME) {
+            if (evaluated_times.at(i) >= transient_response_time) {
                 if (index == -1) {
                     index = i;
                 }
@@ -477,7 +482,7 @@ static boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<
 
         unsigned int considered_samples = 0;
         for (unsigned int i = 0; i < num_samples; ++i) {
-            if (evaluated_times.at(i) >= LSPR_TRANSIENT_RESPONSE_TIME) {
+            if (evaluated_times.at(i) >= transient_response_time) {
                 const double error = VectorNorm(VectorSub(target_position, evaluated_positions.at(i)));
                 if (error > max_error) {
                     max_error = error;
@@ -530,7 +535,7 @@ void TestLeastSquaresPolicyController(const unsigned int &random_seed) {
     weight_file.close();
 
     std::cout << "Simulating LSPI controller ... ";
-    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = EvaluatePolicy(sample_factory, weights, simulator, target_position, test_time * simulator.ControlFrequency());
+    const boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D>, std::vector<Vector3D> > result = EvaluatePolicy(sample_factory, weights, simulator, target_position, test_time * simulator.ControlFrequency(), kNonZeroInitialOffset, kNonZeroInitialVelocity);
     const std::vector<double> &times = boost::get<0>(result);
     const std::vector<Vector3D> &positions = boost::get<2>(result);
     const std::vector<Vector3D> &heights = boost::get<3>(result);
@@ -550,7 +555,7 @@ void TestLeastSquaresPolicyController(const unsigned int &random_seed) {
 
 
     std::cout << "Performing post evaluation ... ";
-    const boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<std::pair<double, double> >, std::vector<std::pair<double, double> > > post_evaluation = PostEvaluateLSPIController(weights, random_seed);
+    const boost::tuple<std::vector<unsigned int>, std::vector<double>, std::vector<std::pair<double, double> >, std::vector<std::pair<double, double> > > post_evaluation = PostEvaluateLSPIController(weights, random_seed, kNonZeroInitialOffset, kNonZeroInitialVelocity, kTransientResponseTime);
     const std::vector<unsigned int> &random_seeds = boost::get<0>(post_evaluation);
     const std::vector<double> &mean_errors = boost::get<1>(post_evaluation);
     const std::vector<std::pair<double, double > > &min_max_errors = boost::get<2>(post_evaluation);
@@ -567,11 +572,6 @@ void TrainLeastSquaresPolicyController() {
 
     std::cout << "Initializing LSPI controller learning .... ";
     Init();
-
-#if LSPR_WRITE_ACTION_SET_TO_FILE
-    FileWriter writer(PATH_TO_LSPI_ACTION_SET_FILE);
-    writer.CreateActionSetFile(kSpacecraftActions);
-#endif
 
     const unsigned int num_samples = LSPR_NUM_EPISODES;
     const unsigned int num_steps = LSPR_NUM_STEPS;

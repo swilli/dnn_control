@@ -11,10 +11,6 @@
 StackedAutoencoder::StackedAutoencoder(const std::string &path_to_layer_configurations) {
     using namespace boost::filesystem;
 
-#if CNN_ENABLE_STACKED_AUTOENCODER == false
-    return;
-#endif
-
     const unsigned int num_files_per_compression_layer = 4;
 
     path configuration_dir(path_to_layer_configurations);

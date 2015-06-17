@@ -6,14 +6,14 @@
 #include "constants.h"
 #include "configuration.h"
 
-PaGMOSimulation::PaGMOSimulation(const unsigned int &random_seed, const std::set<SensorSimulator::SensorType> &control_sensor_types, const bool &control_with_noise, const std::set<SensorSimulator::SensorType> &recording_sensor_types, const bool &recording_with_noise, const bool &fuel_usage_enabled)
-    : random_seed_(random_seed), simulation_time_(0.0), control_sensor_types_(control_sensor_types), control_with_noise_(control_with_noise), recording_sensor_types_(recording_sensor_types), recording_with_noise_(recording_with_noise), fuel_usage_enabled_(fuel_usage_enabled) {
+PaGMOSimulation::PaGMOSimulation(const unsigned int &random_seed, const std::set<SensorSimulator::SensorType> &control_sensor_types, const bool &control_with_noise, const std::set<SensorSimulator::SensorType> &recording_sensor_types, const bool &recording_with_noise, const bool &fuel_usage_enabled, const bool &initial_spacecraft_offset_enabled, const InitialSpacecraftVelocity &initial_spacecraft_velocity, const std::map<SensorSimulator::SensorType, std::vector<std::pair<double, double> > > &sensor_value_transformations)
+    : random_seed_(random_seed), simulation_time_(0.0), control_sensor_types_(control_sensor_types), control_with_noise_(control_with_noise), recording_sensor_types_(recording_sensor_types), recording_with_noise_(recording_with_noise), fuel_usage_enabled_(fuel_usage_enabled), initial_spacecraft_offset_enabled_(initial_spacecraft_offset_enabled), initial_spacecraft_velocity_(initial_spacecraft_velocity), sensor_value_transformations_(sensor_value_transformations) {
     Init();
     simulation_time_ = (int) (asteroid_.EstimatedMainMotionPeriod() * 0.5);
 }
 
-PaGMOSimulation::PaGMOSimulation(const unsigned int &random_seed, const double &simulation_time, const std::set<SensorSimulator::SensorType> &control_sensor_types, const bool &control_with_noise, const std::set<SensorSimulator::SensorType> &recording_sensor_types, const bool &recording_with_noise, const bool &fuel_usage_enabled)
-    : random_seed_(random_seed), simulation_time_(simulation_time), control_sensor_types_(control_sensor_types), control_with_noise_(control_with_noise), recording_sensor_types_(recording_sensor_types), recording_with_noise_(recording_with_noise), fuel_usage_enabled_(fuel_usage_enabled) {
+PaGMOSimulation::PaGMOSimulation(const unsigned int &random_seed, const double &simulation_time, const std::set<SensorSimulator::SensorType> &control_sensor_types, const bool &control_with_noise, const std::set<SensorSimulator::SensorType> &recording_sensor_types, const bool &recording_with_noise, const bool &fuel_usage_enabled, const bool &initial_spacecraft_offset_enabled, const InitialSpacecraftVelocity &initial_spacecraft_velocity, const std::map<SensorSimulator::SensorType, std::vector<std::pair<double, double> > > &sensor_value_transformations)
+    : random_seed_(random_seed), simulation_time_(simulation_time), control_sensor_types_(control_sensor_types), control_with_noise_(control_with_noise), recording_sensor_types_(recording_sensor_types), recording_with_noise_(recording_with_noise), fuel_usage_enabled_(fuel_usage_enabled), initial_spacecraft_offset_enabled_(initial_spacecraft_offset_enabled), initial_spacecraft_velocity_(initial_spacecraft_velocity), sensor_value_transformations_(sensor_value_transformations)  {
     Init();
 }
 
@@ -100,93 +100,99 @@ void PaGMOSimulation::Init() {
     perturbation_mean_ = 1e-6;
     perturbation_noise_ = 1e-7;
 
-#if PGMOS_IC_VELOCITY_TYPE == PGMOS_IC_INERTIAL_ORBITAL_VELOCITY
-    // higher for orbit, so we don't crash into the asteroid
-    const boost::tuple<Vector3D, double, double, double> sampled_point = spacecraft_sf.SamplePointOutSideEllipsoid(semi_axis, 2.0, 4.0);
-    target_position_ = boost::get<0>(sampled_point);
-#else
-    // random
-    const boost::tuple<Vector3D, double, double, double> sampled_point = spacecraft_sf.SamplePointOutSideEllipsoid(semi_axis, 1.1, 4.0);
-    target_position_ = boost::get<0>(sampled_point);
-#endif
+    switch (initial_spacecraft_velocity_) {
+    case BodyZeroVelocity:
+    case BodyRandomVelocity:
+    case InertialZeroVelocity:
+    {
+        const boost::tuple<Vector3D, double, double, double> sampled_point = spacecraft_sf.SamplePointOutSideEllipsoid(semi_axis, 1.1, 4.0);
+        target_position_ = boost::get<0>(sampled_point);
+    }
+        break;
 
-#if PGMOS_IC_ENABLE_POSITION_OFFSET
-    // spacecraft has uniformly distributed offset to target position
+    case InertialOrbitalVelocity:
+    {
+        const boost::tuple<Vector3D, double, double, double> sampled_point = spacecraft_sf.SamplePointOutSideEllipsoid(semi_axis, 2.0, 4.0);
+        target_position_ = boost::get<0>(sampled_point);
+    }
+        break;
+
+    default:
+        throw new InitialConditionNotImplemented();
+    }
+
+
     Vector3D spacecraft_position;
-    for (unsigned int i = 0 ; i < 3; ++i) {
-        spacecraft_position[i] = target_position_[i] + spacecraft_sf.SampleUniformReal(-3.0, 3.0);
+    if (initial_spacecraft_offset_enabled_) {
+        for (unsigned int i = 0 ; i < 3; ++i) {
+            spacecraft_position[i] = target_position_[i] + spacecraft_sf.SampleUniformReal(-3.0, 3.0);
+        }
+    } else {
+        spacecraft_position = target_position_;
     }
-#else
-    // spacecraft starts at target position
-    const Vector3D &spacecraft_position = target_position_;
-#endif
 
-
-#if PGMOS_IC_VELOCITY_TYPE == PGMOS_IC_INERTIAL_ORBITAL_VELOCITY
-    // orbital velocity in inertial frame
-    const Vector3D angular_velocity = boost::get<0>(asteroid_.AngularVelocityAndAccelerationAtTime(0.0));
-    Vector3D spacecraft_velocity = VectorCrossProduct(angular_velocity, spacecraft_position);
-
-    const double norm_position = VectorNorm(spacecraft_position);
-    const double magn_orbital_vel = sqrt(asteroid_.MassGravitationalConstant() / norm_position);
-    Vector3D orth_pos = {spacecraft_sf.SampleSign() * spacecraft_sf.SampleUniform(1e-10, 1.0), spacecraft_sf.SampleSign() * spacecraft_sf.SampleUniform(1e-10, 1.0), spacecraft_sf.SampleSign() * spacecraft_sf.SampleUniform(1e-10, 1.0)};
-
-    std::vector<unsigned int> choices;
-    if (spacecraft_position[2] > 1.0 || spacecraft_position[2] < -1.0) {
-        choices.push_back(0);
-    }
-    if (spacecraft_position[1] > 1.0 || spacecraft_position[1] < -1.0) {
-        choices.push_back(1);
-    }
-    if (spacecraft_position[0] > 1.0 || spacecraft_position[0] < -1.0) {
-        choices.push_back(2);
-    }
-    const unsigned int choice = choices.at(spacecraft_sf.SampleRandomInteger() % choices.size());
-    switch (choice) {
-    case 0:
-        orth_pos[2] = -(orth_pos[0]*spacecraft_position[0] + orth_pos[1]*spacecraft_position[1]) / spacecraft_position[2];
-        break;
-    case 1:
-        orth_pos[1] = -(orth_pos[0]*spacecraft_position[0] + orth_pos[2]*spacecraft_position[2]) / spacecraft_position[1];
-        break;
-    case 2:
-        orth_pos[0] = -(orth_pos[1]*spacecraft_position[1] + orth_pos[2]*spacecraft_position[2]) / spacecraft_position[0];
-        break;
-    }
-    orth_pos = VectorNormalized(orth_pos);
-    spacecraft_velocity = VectorSub(VectorMul(magn_orbital_vel, orth_pos), spacecraft_velocity);
-
-
-#elif PGMOS_IC_VELOCITY_TYPE == PGMOS_IC_INERTIAL_ZERO_VELOCITY
-    // zero velocity in inertial frame
-    const Vector3D angular_velocity = boost::get<0>(asteroid_.AngularVelocityAndAccelerationAtTime(0.0));
-    Vector3D spacecraft_velocity = VectorCrossProduct(angular_velocity, spacecraft_position);
-
-    spacecraft_velocity[0] *= -1; spacecraft_velocity[1] *= -1; spacecraft_velocity[2] *= -1;
-
-#elif PGMOS_IC_VELOCITY_TYPE == PGMOS_IC_BODY_ZERO_VELOCITY
-    // zero velocity in body frame
-    const Vector3D spacecraft_velocity = {0.0, 0.0, 0.0};
-
-#elif PGMOS_IC_VELOCITY_TYPE == PGMOS_IC_BODY_RANDOM_VELOCITY
-    // uniformly distributed random velocity in body frame
     Vector3D spacecraft_velocity;
-    for (unsigned int i = 0 ; i < 3; ++i) {
-        spacecraft_velocity[i] = spacecraft_sf.SampleUniformReal(-0.3, 0.3);
-    }
+    switch(initial_spacecraft_velocity_) {
+    case InertialOrbitalVelocity:
+    {
+        const Vector3D angular_velocity = boost::get<0>(asteroid_.AngularVelocityAndAccelerationAtTime(0.0));
+        spacecraft_velocity = VectorCrossProduct(angular_velocity, spacecraft_position);
 
-#elif PGMOS_IC_VELOCITY_TYPE == PGMOS_IC_BODY_PROPORTIONAL_VELOCITY
-    // velocity proportional to height
-    const double up_scale = 1000000.0;
-    const double max_initital_sensor_value = 10.0;
-    const double norm_height = boost::get<1>(asteroid_.NearestPointOnSurfaceToPosition(spacecraft_position));
-    const double magn_velocity = max_initital_sensor_value * norm_height / up_scale;
-    Vector3D spacecraft_velocity;
-    for (unsigned int i = 0 ; i < 3; ++i) {
-        spacecraft_velocity[i] = spacecraft_sf.SampleUniform(-magn_velocity, magn_velocity);
-    }
+        const double norm_position = VectorNorm(spacecraft_position);
+        const double magn_orbital_vel = sqrt(asteroid_.MassGravitationalConstant() / norm_position);
+        Vector3D orth_pos = {spacecraft_sf.SampleSign() * spacecraft_sf.SampleUniformReal(1e-10, 1.0), spacecraft_sf.SampleSign() * spacecraft_sf.SampleUniformReal(1e-10, 1.0), spacecraft_sf.SampleSign() * spacecraft_sf.SampleUniformReal(1e-10, 1.0)};
 
-#endif
+        std::vector<unsigned int> choices;
+        if (spacecraft_position[2] > 1.0 || spacecraft_position[2] < -1.0) {
+            choices.push_back(0);
+        }
+        if (spacecraft_position[1] > 1.0 || spacecraft_position[1] < -1.0) {
+            choices.push_back(1);
+        }
+        if (spacecraft_position[0] > 1.0 || spacecraft_position[0] < -1.0) {
+            choices.push_back(2);
+        }
+        const unsigned int choice = choices.at(spacecraft_sf.SampleRandomNatural() % choices.size());
+        switch (choice) {
+        case 0:
+            orth_pos[2] = -(orth_pos[0]*spacecraft_position[0] + orth_pos[1]*spacecraft_position[1]) / spacecraft_position[2];
+            break;
+        case 1:
+            orth_pos[1] = -(orth_pos[0]*spacecraft_position[0] + orth_pos[2]*spacecraft_position[2]) / spacecraft_position[1];
+            break;
+        case 2:
+            orth_pos[0] = -(orth_pos[1]*spacecraft_position[1] + orth_pos[2]*spacecraft_position[2]) / spacecraft_position[0];
+            break;
+        }
+        orth_pos = VectorNormalized(orth_pos);
+        spacecraft_velocity = VectorSub(VectorMul(magn_orbital_vel, orth_pos), spacecraft_velocity);
+    }
+        break;
+
+    case InertialZeroVelocity:
+    {
+        const Vector3D angular_velocity = boost::get<0>(asteroid_.AngularVelocityAndAccelerationAtTime(0.0));
+        spacecraft_velocity = VectorMul(-1.0, VectorCrossProduct(angular_velocity, spacecraft_position));
+    }
+        break;
+
+    case BodyZeroVelocity:
+    {
+        spacecraft_velocity = {0.0, 0.0, 0.0};
+    }
+        break;
+
+    case BodyRandomVelocity:
+    {
+        for (unsigned int i = 0 ; i < 3; ++i) {
+            spacecraft_velocity[i] = spacecraft_sf.SampleUniformReal(-0.3, 0.3);
+        }
+    }
+        break;
+
+    default:
+        throw new InitialConditionNotImplemented();
+    }
 
     for (unsigned int i = 0; i < 3; ++i) {
         initial_system_state_[i] = spacecraft_position[i];
@@ -194,18 +200,4 @@ void PaGMOSimulation::Init() {
     }
 
     initial_system_state_[6] = spacecraft_maximum_mass_;
-
-    // Means: [-2.34315594537, -2.27956514526, -21.2874117161, -2.3236143943, -3.2269601852, 13.7950111531]
-    //Stdevs: [5454.37836105, 7966.07979339, 21295.1854193, 10658.0857674, 18415.6359962, 5702.25191872]
-
-#if PGMOS_STANDARDIZE_SENSOR_VALUES
-    sensor_value_transformations_[SensorSimulator::SensorType::OpticalFlow] = {
-        {-2.34315594537, 5454.37836105},
-        {-2.27956514526, 7966.07979339},
-        {-21.2874117161, 21295.1854193},
-        {-2.3236143943, 10658.0857674},
-        {-3.2269601852, 18415.6359962},
-        {13.7950111531, 5702.25191872}
-    };
-#endif
 }

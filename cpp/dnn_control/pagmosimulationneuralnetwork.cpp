@@ -8,24 +8,24 @@
 #include "controllerdeepneuralnetwork.h"
 #include "configuration.h"
 
-PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &random_seed, const std::set<SensorSimulator::SensorType> &control_sensor_types, const bool &control_with_noise, const std::set<SensorSimulator::SensorType> &recording_sensor_types, const bool &recording_with_noise)
-    : PaGMOSimulation(random_seed, control_sensor_types, control_with_noise, recording_sensor_types, recording_with_noise) {
+PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &random_seed, const std::set<SensorSimulator::SensorType> &control_sensor_types, const bool &control_with_noise, const std::set<SensorSimulator::SensorType> &recording_sensor_types, const bool &recording_with_noise, const bool &fuel_usage_enabled, const bool &initial_spacecraft_offset_enabled, const InitialSpacecraftVelocity &initial_spacecraft_velocity, const std::map<SensorSimulator::SensorType, std::vector<std::pair<double, double> > > &sensor_value_transformations)
+    : PaGMOSimulation(random_seed, control_sensor_types, control_with_noise, recording_sensor_types, recording_with_noise, fuel_usage_enabled, initial_spacecraft_offset_enabled, initial_spacecraft_velocity, sensor_value_transformations) {
     neural_network_hidden_nodes_ = kHiddenNodes;
 }
 
-PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &random_seed, const unsigned int &hidden_nodes, const std::set<SensorSimulator::SensorType> &control_sensor_types, const bool &control_with_noise, const std::set<SensorSimulator::SensorType> &recording_sensor_types, const bool &recording_with_noise)
-    : PaGMOSimulation(random_seed, control_sensor_types, control_with_noise, recording_sensor_types, recording_with_noise) {
+PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &random_seed, const unsigned int &hidden_nodes, const std::set<SensorSimulator::SensorType> &control_sensor_types, const bool &control_with_noise, const std::set<SensorSimulator::SensorType> &recording_sensor_types, const bool &recording_with_noise, const bool &fuel_usage_enabled, const bool &initial_spacecraft_offset_enabled, const InitialSpacecraftVelocity &initial_spacecraft_velocity, const std::map<SensorSimulator::SensorType, std::vector<std::pair<double, double> > > &sensor_value_transformations)
+    : PaGMOSimulation(random_seed, control_sensor_types, control_with_noise, recording_sensor_types, recording_with_noise, fuel_usage_enabled, initial_spacecraft_offset_enabled, initial_spacecraft_velocity, sensor_value_transformations) {
     neural_network_hidden_nodes_ = hidden_nodes;
 }
 
-PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &random_seed, const std::vector<double> &neural_network_weights, const std::set<SensorSimulator::SensorType> &control_sensor_types, const bool &control_with_noise, const std::set<SensorSimulator::SensorType> &recording_sensor_types, const bool &recording_with_noise)
-    : PaGMOSimulation(random_seed, control_sensor_types, control_with_noise, recording_sensor_types, recording_with_noise) {
+PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &random_seed, const std::vector<double> &neural_network_weights, const std::set<SensorSimulator::SensorType> &control_sensor_types, const bool &control_with_noise, const std::set<SensorSimulator::SensorType> &recording_sensor_types, const bool &recording_with_noise, const bool &fuel_usage_enabled, const bool &initial_spacecraft_offset_enabled, const InitialSpacecraftVelocity &initial_spacecraft_velocity, const std::map<SensorSimulator::SensorType, std::vector<std::pair<double, double> > > &sensor_value_transformations)
+    : PaGMOSimulation(random_seed, control_sensor_types, control_with_noise, recording_sensor_types, recording_with_noise, fuel_usage_enabled, initial_spacecraft_offset_enabled, initial_spacecraft_velocity, sensor_value_transformations) {
     neural_network_hidden_nodes_ = kHiddenNodes;
     simulation_parameters_ = neural_network_weights;
 }
 
-PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &random_seed, const unsigned int &hidden_nodes, const std::vector<double> &neural_network_weights, const std::set<SensorSimulator::SensorType> &control_sensor_types, const bool &control_with_noise, const std::set<SensorSimulator::SensorType> &recording_sensor_types, const bool &recording_with_noise)
-    : PaGMOSimulation(random_seed, control_sensor_types, control_with_noise, recording_sensor_types, recording_with_noise) {
+PaGMOSimulationNeuralNetwork::PaGMOSimulationNeuralNetwork(const unsigned int &random_seed, const unsigned int &hidden_nodes, const std::vector<double> &neural_network_weights, const std::set<SensorSimulator::SensorType> &control_sensor_types, const bool &control_with_noise, const std::set<SensorSimulator::SensorType> &recording_sensor_types, const bool &recording_with_noise, const bool &fuel_usage_enabled, const bool &initial_spacecraft_offset_enabled, const InitialSpacecraftVelocity &initial_spacecraft_velocity, const std::map<SensorSimulator::SensorType, std::vector<std::pair<double, double> > > &sensor_value_transformations)
+    : PaGMOSimulation(random_seed, control_sensor_types, control_with_noise, recording_sensor_types, recording_with_noise, fuel_usage_enabled, initial_spacecraft_offset_enabled, initial_spacecraft_velocity, sensor_value_transformations) {
     neural_network_hidden_nodes_ = hidden_nodes;
     simulation_parameters_ = neural_network_weights;
 }
@@ -53,11 +53,8 @@ boost::tuple<std::vector<double>, std::vector<double>, std::vector<Vector3D>, st
     sensor_recorder.SetTargetPosition(target_position_);
 
 
-#if CNN_ENABLE_STACKED_AUTOENCODER
-    ControllerDeepNeuralNetwork controller(sensor_simulator.Dimensions(), spacecraft_maximum_thrust_, neural_network_hidden_nodes_);
-#else
     ControllerNeuralNetwork controller(sensor_simulator.Dimensions(), spacecraft_maximum_thrust_, neural_network_hidden_nodes_);
-#endif
+
 
     if (simulation_parameters_.size()) {
         controller.SetWeights(simulation_parameters_);
@@ -251,10 +248,6 @@ unsigned int PaGMOSimulationNeuralNetwork::ChromosomeSize() const {
     sens_sim.SetSensorTypes(control_sensor_types_);
     const unsigned int dimensions = sens_sim.Dimensions();
 
-#if CNN_ENABLE_STACKED_AUTOENCODER
-    return ControllerDeepNeuralNetwork(dimensions, spacecraft_maximum_thrust_, neural_network_hidden_nodes_).NumberOfParameters();
-#else
     return ControllerNeuralNetwork(dimensions, spacecraft_maximum_thrust_, neural_network_hidden_nodes_).NumberOfParameters();
-#endif
 }
 

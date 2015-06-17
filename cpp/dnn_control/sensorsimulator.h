@@ -14,7 +14,7 @@ class SensorSimulator {
      * This class generates the artificial sensor data for a controller.
      */
 public:
-    // The number of output dimensions the sensor simulator will generate
+    // The number of output types the sensor simulator can generate
     enum SensorType {
         RelativePosition,
         Velocity,
@@ -25,16 +25,24 @@ public:
         Mass
     };
 
+    // Sensor types with their number of dimensions and noise standard deviation
     const static std::map<SensorType, std::pair<unsigned int, double> > SensorTypeConfigurations;
 
+
+    // Constructor
     SensorSimulator(SampleFactory &sample_factory, const Asteroid &asteroid);
 
+
+    // Set the active sensor types for the simulator
     void SetSensorTypes(const std::set<SensorType> &sensor_types);
 
+    // Enable/Disable noisy sensor data
     void SetNoiseEnabled(const bool &enable_noise);
 
+    // Set the target position for relative position sensor data
     void SetTargetPosition(const Vector3D &target_position);
 
+    // If sensor data needs to be normalized, specify normalization parameters here
     void SetSensorValueTransformations(const std::map<SensorType, std::vector<std::pair<double, double> > > &sensor_value_transformations);
 
 
@@ -49,8 +57,10 @@ public:
 
 
 protected:
+    // Normalizes sensor data
     static double TransformValue(const double &sensor_value, const std::pair<double, double> &transformation_params);
 
+    // Perturbs perfect sensor data
     double AddNoise(const double &sensor_value, const SensorType &type);
 
     // How large is the sensor data space

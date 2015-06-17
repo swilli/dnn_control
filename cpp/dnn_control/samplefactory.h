@@ -24,7 +24,7 @@ public:
     // X ~ U(minimum, maximum)
     double SampleUniformReal(const double &minimum, const double &maximum);
 
-    // X ~ N(minimum, maximum)
+    // X ~ N(mean, std)
     double SampleNormal(const double &mean, const double &standard_deviation);
 
     // X ~ U({-1,1})

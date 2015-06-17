@@ -13,8 +13,17 @@ class PaGMOSimulation {
     * This abstract class represents a full simulation of a spacecraft placed next to an asteroid.
     */
 public:
-    PaGMOSimulation(const unsigned int &random_seed, const std::set<SensorSimulator::SensorType> &control_sensor_types={}, const bool &control_with_noise=false, const std::set<SensorSimulator::SensorType> &recording_sensor_types={}, const bool &recording_with_noise=false, const bool &fuel_usage_enabled=true);
-    PaGMOSimulation(const unsigned int &random_seed, const double &simulation_time, const std::set<SensorSimulator::SensorType> &control_sensor_types={}, const bool &control_with_noise=false, const std::set<SensorSimulator::SensorType> &recording_sensor_types={}, const bool &recording_with_noise=false, const bool &fuel_usage_enabled=true);
+
+    // The available initial conditions for the spacecraft
+    enum InitialSpacecraftVelocity {
+        BodyZeroVelocity,
+        BodyRandomVelocity,
+        InertialZeroVelocity,
+        InertialOrbitalVelocity
+    };
+
+    PaGMOSimulation(const unsigned int &random_seed, const std::set<SensorSimulator::SensorType> &control_sensor_types={}, const bool &control_with_noise=false, const std::set<SensorSimulator::SensorType> &recording_sensor_types={}, const bool &recording_with_noise=false, const bool &fuel_usage_enabled=true, const bool &initial_spacecraft_offset_enabled=true, const InitialSpacecraftVelocity &initial_spacecraft_velocity=InitialSpacecraftVelocity::BodyZeroVelocity, const std::map<SensorSimulator::SensorType, std::vector<std::pair<double, double> > > &sensor_value_transformations={});
+    PaGMOSimulation(const unsigned int &random_seed, const double &simulation_time, const std::set<SensorSimulator::SensorType> &control_sensor_types={}, const bool &control_with_noise=false, const std::set<SensorSimulator::SensorType> &recording_sensor_types={}, const bool &recording_with_noise=false, const bool &fuel_usage_enabled=true, const bool &initial_spacecraft_offset_enabled=true, const InitialSpacecraftVelocity &initial_spacecraft_velocity=InitialSpacecraftVelocity::BodyZeroVelocity, const std::map<SensorSimulator::SensorType, std::vector<std::pair<double, double> > > &sensor_value_transformations={});
 
     virtual ~PaGMOSimulation();
 
@@ -68,6 +77,7 @@ public:
 
     // PaGMOSimulation can throw the following exceptions
     class Exception {};
+    class InitialConditionNotImplemented : public Exception {};
 
 protected:
     // This class is used to observe the actual simulated time in case of an exception in the adaptive integration (out of fuel, crash)
@@ -146,6 +156,12 @@ protected:
 
     // Is the spacecraft actually consuming fuel for the taken thrust actions
     bool fuel_usage_enabled_;
+
+    // Does the spacecraft start with an initial offset to the target location
+    bool initial_spacecraft_offset_enabled_;
+
+    // What type of initial velocity does the spacecraft have
+    InitialSpacecraftVelocity initial_spacecraft_velocity_;
 
     // Sensor values can be transformed using these two parameters
     std::map<SensorSimulator::SensorType, std::vector<std::pair<double, double> > > sensor_value_transformations_;

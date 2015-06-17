@@ -144,12 +144,18 @@ std::vector<double> SensorSimulator::Simulate(const SystemState &state, const Ve
 
         } else if (t == Height) {
             sensor_data[offset] = AddNoise(VectorNorm(height), t);
+            if (sensor_value_transformations_.find(t) != sensor_value_transformations_.end()) {
+                const std::vector<std::pair<double, double> > &transformations = sensor_value_transformations_.at(t);
+                sensor_data[offset] = TransformValue(sensor_data[offset], transformations.at(0));
+            }
 
         } else if (t == Mass) {
             const double &mass = state[6];
-
             sensor_data[offset] = AddNoise(mass, t);
-
+            if (sensor_value_transformations_.find(t) != sensor_value_transformations_.end()) {
+                const std::vector<std::pair<double, double> > &transformations = sensor_value_transformations_.at(t);
+                sensor_data[offset] = TransformValue(sensor_data[offset], transformations.at(0));
+            }
         }
 
         offset += SensorTypeConfigurations.at(t).first;
