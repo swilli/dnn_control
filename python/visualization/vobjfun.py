@@ -14,7 +14,7 @@ import matplotlib
 import matplotlib.ticker as mtick
 
 import seaborn as sns
-sns.set_context("notebook", font_scale=4, rc={"lines.linewidth": 5})
+sns.set_context("notebook", font_scale=4, rc={"lines.linewidth": 5, "grid.linewidth": 2.0})
 sns.set_style("whitegrid")
 
 file_name = sys.argv[1]
@@ -47,7 +47,6 @@ plt.plot(data)
 plt.xlabel("Generation")
 plt.ylabel("Fitness")
 plt.xscale("log")
-ax = plt.gca()
-ax.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.2e'))
+plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 plt.show()
 

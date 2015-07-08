@@ -17,13 +17,12 @@ from numpy import array, pi
 from numpy.matlib import repmat
 from numpy.linalg import norm
 import matplotlib.ticker as mtick
-import matplotlib
 
 from boost_asteroid import boost_asteroid
 Asteroid = boost_asteroid.BoostAsteroid
 
 import seaborn as sns
-sns.set_context("notebook", font_scale=3, rc={"lines.linewidth": 2.5})
+sns.set_context("notebook", font_scale=3, rc={"lines.linewidth": 2.5, "grid.linewidth": 2.0})
 sns.set_style("whitegrid")
 
 start_time = 0.0

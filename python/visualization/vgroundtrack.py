@@ -20,7 +20,7 @@ Asteroid = boost_asteroid.BoostAsteroid
 from scipy.integrate import odeint
 
 import seaborn as sns
-sns.set_context("notebook", font_scale=5, rc={"lines.linewidth": 4})
+sns.set_context("notebook", font_scale=5, rc={"lines.linewidth": 4, "grid.linewidth": 2.0})
 sns.set_style("whitegrid")
 
 x_axis_is_time = False
@@ -75,4 +75,5 @@ plt.plot(longitudes[-1], latitudes[-1], 'ro', markersize=15, label="End")
 plt.legend()
 plt.xlabel("Longitude [deg]")
 plt.ylabel("Latitude [deg]")
+plt.axes().set_aspect('equal', 'datalim')
 plt.show()

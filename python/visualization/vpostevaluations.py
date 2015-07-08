@@ -6,7 +6,7 @@ from numpy.matlib import repmat
 from numpy.linalg import norm
 
 import seaborn as sns
-sns.set_context("notebook", font_scale=5.0, rc={"lines.linewidth": 2.5})
+sns.set_context("notebook", font_scale=5.0, rc={"lines.linewidth": 2.5, "grid.linewidth": 2.0})
 sns.set_style("whitegrid")
 
 
@@ -46,5 +46,5 @@ for file_name in file_names:
 sns.boxplot([total_data[0][:,1], total_data[1][:,1], total_data[2][:,1]], widths=0.5)
 plt.yscale('log')
 plt.ylabel('Mean Offset [m]')
-plt.xticks([1, 2, 3], ['DPS1', 'DPS2', 'LSPI1'])
+plt.xticks([1, 2, 3], ['DPS3', 'LSPI3', 'DPS4 (EMD)'])
 plt.show()

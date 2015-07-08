@@ -16,7 +16,7 @@ from vconvexity import visualize_convexity
 import sys
 
 import seaborn as sns
-sns.set_context("notebook", font_scale=3, rc={"lines.linewidth": 2.5})
+sns.set_context("notebook", font_scale=4, rc={"lines.linewidth": 2.5, "grid.linewidth": 2.0})
 sns.set_style("whitegrid")
 
 '''
@@ -60,8 +60,7 @@ plt.xlabel('Parameter Value')
 plt.xlim(-5,5)
 plt.ylabel('Negative Utility')
 plt.ylim(545000, 547500)
-ax = plt.gca()
-ax.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.2e'))
+plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 
 plt.subplot(122)
 plt.plot(total_data[1][:,0], discontinuous(total_data[1][:,1]))
@@ -70,6 +69,5 @@ plt.xlabel('Parameter Value')
 plt.xlim(-5,5)
 plt.ylabel('Negative Utility')
 plt.ylim(545000, 546000)
-ax = plt.gca()
-ax.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.2e'))
+plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 plt.show()

@@ -19,7 +19,7 @@ Asteroid = boost_asteroid.BoostAsteroid
 from scipy.integrate import odeint
 
 import seaborn as sns
-sns.set_context("notebook", font_scale=5, rc={"lines.linewidth": 5})
+sns.set_context("notebook", font_scale=4.0, rc={"lines.linewidth": 5, "grid.linewidth": 2.0})
 sns.set_style("whitegrid")
 
 x_axis_is_time = False
@@ -29,7 +29,7 @@ file_name = sys.argv[1]
 if len(sys.argv) > 2:
     end_time = float(sys.argv[2])
     if len(sys.argv) > 3:
-        x_axis_is_time = sys.argv[4] == 'True'
+        x_axis_is_time = sys.argv[3] == 'True'
 
 print("preparing data... ")
 
@@ -61,7 +61,7 @@ heights = data[:,3:7]
 x_axis_label = "Time [s]"
 
 if not x_axis_is_time:
-    x_axis_label = "Periods"
+    x_axis_label = "Period"
     val = 0
     ticks = []
     while val < times[-1]:
@@ -71,12 +71,12 @@ if not x_axis_is_time:
     ticks = array(ticks)
 
 magn_height = norm(heights, axis=1)
-fig = plt.figure(1)
-ax = plt.gca()
 plt.plot(magn_height)
 plt.xlabel(x_axis_label)
 plt.ylabel('Altitude [m]')
-plt.yscale('log')
+plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
+#plt.yscale('log')
 if not x_axis_is_time:
     plt.xticks(ticks, [val for val in range(len(ticks))])
 
